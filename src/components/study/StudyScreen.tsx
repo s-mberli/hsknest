@@ -1,54 +1,30 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { Suspense, useRef } from "react";
 
 import { CardStack } from "@/components/study/CardStack";
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useStudySession } from "@/hooks/useStudySession";
+import type { CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 
 interface StudyScreenProps {
   studyTheme: "dark" | "follow";
+  textSize: CardTextSize;
 }
 
-export function StudyScreen({ studyTheme }: StudyScreenProps) {
+export function StudyScreen({ studyTheme, textSize }: StudyScreenProps) {
   return (
     <Suspense fallback={null}>
-      <StudySession studyTheme={studyTheme} />
+      <StudySession studyTheme={studyTheme} textSize={textSize} />
     </Suspense>
   );
 }
 
-/**
- * Build a queue query string from the URL: ?minutes=M wins, else ?limit=N,
- * plus any scope params (?languageId, ?listIds) passed straight through.
- */
-function useQueueQuery(): { query: string; scoped: boolean } {
-  const params = useSearchParams();
-
-  const parts: string[] = [];
-  const minutes = Number(params.get("minutes"));
-  if (Number.isFinite(minutes) && minutes > 0) {
-    parts.push(`minutes=${Math.floor(minutes)}`);
-  } else {
-    const limit = Number(params.get("limit"));
-    parts.push(
-      Number.isFinite(limit) && limit > 0 ? `limit=${Math.floor(limit)}` : "limit=20"
-    );
-  }
-
-  const languageId = params.get("languageId");
-  const listIds = params.get("listIds");
-  if (languageId) parts.push(`languageId=${encodeURIComponent(languageId)}`);
-  if (listIds) parts.push(`listIds=${encodeURIComponent(listIds)}`);
-
-  return { query: parts.join("&"), scoped: Boolean(languageId || listIds) };
-}
-
-function StudySession({ studyTheme }: StudyScreenProps) {
+function StudySession({ studyTheme, textSize }: StudyScreenProps) {
   const { query, scoped } = useQueueQuery();
   const {
     loading,
@@ -111,6 +87,7 @@ function StudySession({ studyTheme }: StudyScreenProps) {
               stage={stage}
               onAdvance={advance}
               onSwipe={swipe}
+              textSize={textSize}
             />
 
             <p className="text-center text-xs text-muted-foreground">

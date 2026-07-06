@@ -22,6 +22,7 @@ export default async function SettingsPage() {
       fuzzIntervals: true,
       theme: true,
       studyTheme: true,
+      cardTextSize: true,
     },
   });
   if (!user) redirect("/login");
@@ -41,6 +42,9 @@ export default async function SettingsPage() {
         fuzzIntervals={user.fuzzIntervals}
         theme={(user.theme as "light" | "dark" | "system") ?? "system"}
         studyTheme={(user.studyTheme as "dark" | "follow") ?? "dark"}
+        cardTextSize={
+          (user.cardTextSize as "small" | "normal" | "large") ?? "normal"
+        }
       />
     </main>
   );

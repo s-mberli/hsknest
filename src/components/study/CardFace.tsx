@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { hasVoiceFor, speak, speechSupported } from "@/lib/speech";
+import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 import type { Stage, StudyCard } from "@/hooks/useStudySession";
 
@@ -13,6 +14,7 @@ interface CardFaceProps {
   card: StudyCard;
   stage: Stage;
   interactive: boolean;
+  textSize?: CardTextSize;
 }
 
 const PROMPTS: Record<Stage, string> = {
@@ -42,7 +44,13 @@ function metadataExtras(metadata: StudyCard["metadata"]): string[] {
 }
 
 /** Staged-reveal card: TERM → PHONETIC → FULL. Tap advances (handled by parent). */
-export function CardFace({ card, stage, interactive }: CardFaceProps) {
+export function CardFace({
+  card,
+  stage,
+  interactive,
+  textSize = "normal",
+}: CardFaceProps) {
+  const sizes = CARD_TEXT_CLASSES[textSize];
   const showPhonetic = stage !== "TERM" && !!card.phonetic;
   const showFull = stage === "FULL";
   const canSpeak = speechSupported();
@@ -98,7 +106,12 @@ export function CardFace({ card, stage, interactive }: CardFaceProps) {
         </button>
       )}
 
-      <p className="max-w-full break-words px-2 text-5xl font-bold leading-tight tracking-tight sm:text-6xl">
+      <p
+        className={cn(
+          "max-w-full break-words px-2 font-bold leading-tight tracking-tight",
+          sizes.term
+        )}
+      >
         {card.term}
       </p>
 
@@ -109,7 +122,7 @@ export function CardFace({ card, stage, interactive }: CardFaceProps) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="text-lg text-muted-foreground"
+            className={cn("text-muted-foreground", sizes.phonetic)}
           >
             {card.phonetic}
           </motion.p>
@@ -124,7 +137,12 @@ export function CardFace({ card, stage, interactive }: CardFaceProps) {
             animate={{ opacity: 1, y: 0 }}
             className="flex max-h-40 flex-col items-center gap-2 overflow-y-auto overscroll-contain px-2"
           >
-            <p className="max-w-full break-words text-xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-2xl">
+            <p
+              className={cn(
+                "max-w-full break-words font-semibold tracking-tight [overflow-wrap:anywhere]",
+                sizes.translation
+              )}
+            >
               {card.translation}
             </p>
             {extras.length > 0 && (

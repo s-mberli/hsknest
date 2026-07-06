@@ -34,6 +34,7 @@ export const settingsSchema = z.object({
   fuzzIntervals: z.boolean().optional(),
   theme: z.enum(["light", "dark", "system"]).optional(),
   studyTheme: z.enum(["dark", "follow"]).optional(),
+  cardTextSize: z.enum(["small", "normal", "large"]).optional(),
 });
 
 export const accountResetSchema = z.object({

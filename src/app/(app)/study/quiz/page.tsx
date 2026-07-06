@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 
-import { StudyScreen } from "@/components/study/StudyScreen";
+import { QuizScreen } from "@/components/study/QuizScreen";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { normalizeCardTextSize } from "@/lib/textSize";
 
-export default async function StudyPage() {
+export default async function QuizPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
@@ -18,7 +18,7 @@ export default async function StudyPage() {
   const studyTheme = user.studyTheme === "follow" ? "follow" : "dark";
 
   return (
-    <StudyScreen
+    <QuizScreen
       studyTheme={studyTheme}
       textSize={normalizeCardTextSize(user.cardTextSize)}
     />

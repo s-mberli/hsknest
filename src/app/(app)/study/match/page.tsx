@@ -1,26 +1,20 @@
 import { redirect } from "next/navigation";
 
-import { StudyScreen } from "@/components/study/StudyScreen";
+import { MatchScreen } from "@/components/study/MatchScreen";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { normalizeCardTextSize } from "@/lib/textSize";
 
-export default async function StudyPage() {
+export default async function MatchPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { studyTheme: true, cardTextSize: true },
+    select: { studyTheme: true },
   });
   if (!user) redirect("/login");
 
   const studyTheme = user.studyTheme === "follow" ? "follow" : "dark";
 
-  return (
-    <StudyScreen
-      studyTheme={studyTheme}
-      textSize={normalizeCardTextSize(user.cardTextSize)}
-    />
-  );
+  return <MatchScreen studyTheme={studyTheme} />;
 }

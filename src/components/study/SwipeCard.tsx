@@ -10,6 +10,7 @@ import {
 import { CardFace } from "@/components/study/CardFace";
 import { SwipeIndicators } from "@/components/study/SwipeIndicators";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
+import type { CardTextSize } from "@/lib/textSize";
 
 interface SwipeCardProps {
   card: StudyCard;
@@ -21,6 +22,7 @@ interface SwipeCardProps {
   depth: number;
   isTop: boolean;
   exitDirection: SwipeDirection | null;
+  textSize: CardTextSize;
 }
 
 const COMMIT_OFFSET = 120;
@@ -34,6 +36,7 @@ export function SwipeCard({
   depth,
   isTop,
   exitDirection,
+  textSize,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -115,7 +118,12 @@ export function SwipeCard({
           hardOpacity={hardOpacity}
         />
       )}
-      <CardFace card={card} stage={isTop ? stage : "TERM"} interactive={isTop} />
+      <CardFace
+        card={card}
+        stage={isTop ? stage : "TERM"}
+        interactive={isTop}
+        textSize={textSize}
+      />
     </motion.div>
   );
 }

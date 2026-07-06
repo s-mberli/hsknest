@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { SwipeCard } from "@/components/study/SwipeCard";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
+import type { CardTextSize } from "@/lib/textSize";
 
 interface CardStackProps {
   current: StudyCard;
@@ -12,6 +13,7 @@ interface CardStackProps {
   stage: Stage;
   onAdvance: () => void;
   onSwipe: (direction: SwipeDirection) => void;
+  textSize: CardTextSize;
 }
 
 /** Edge-glow color per grade direction. */
@@ -28,6 +30,7 @@ export function CardStack({
   stage,
   onAdvance,
   onSwipe,
+  textSize,
 }: CardStackProps) {
   const [exitDirection, setExitDirection] = useState<SwipeDirection | null>(
     null
@@ -101,6 +104,7 @@ export function CardStack({
             depth={depth}
             isTop={false}
             exitDirection={null}
+            textSize={textSize}
           />
         );
       })}
@@ -118,6 +122,7 @@ export function CardStack({
           depth={0}
           isTop
           exitDirection={exitDirection}
+          textSize={textSize}
         />
       </AnimatePresence>
     </div>

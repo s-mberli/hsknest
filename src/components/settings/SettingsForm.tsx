@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 type Algorithm = "SM2" | "LEITNER";
 type Theme = "light" | "dark" | "system";
 type StudyTheme = "dark" | "follow";
+type CardTextSize = "small" | "normal" | "large";
 type FeedbackCategory = "bug" | "idea" | "other";
 
 const FEEDBACK_OPTIONS: { value: FeedbackCategory; label: string }[] = [
@@ -66,6 +67,12 @@ const STUDY_THEME_OPTIONS: { value: StudyTheme; label: string }[] = [
   { value: "follow", label: "Match app" },
 ];
 
+const CARD_TEXT_SIZE_OPTIONS: { value: CardTextSize; label: string }[] = [
+  { value: "small", label: "Small" },
+  { value: "normal", label: "Normal" },
+  { value: "large", label: "Large" },
+];
+
 interface SettingsFormProps {
   email: string;
   name: string | null;
@@ -78,6 +85,7 @@ interface SettingsFormProps {
   fuzzIntervals: boolean;
   theme: Theme;
   studyTheme: StudyTheme;
+  cardTextSize: CardTextSize;
 }
 
 /**
@@ -356,6 +364,7 @@ export function SettingsForm(props: SettingsFormProps) {
       <AppearanceSection
         initialTheme={props.theme}
         initialStudyTheme={props.studyTheme}
+        initialCardTextSize={props.cardTextSize}
       />
 
       <DataAccountSection email={props.email} name={props.name} />
@@ -444,14 +453,18 @@ function FeedbackSection() {
 function AppearanceSection({
   initialTheme,
   initialStudyTheme,
+  initialCardTextSize,
 }: {
   initialTheme: Theme;
   initialStudyTheme: StudyTheme;
+  initialCardTextSize: CardTextSize;
 }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [studyTheme, setStudyTheme] = useState<StudyTheme>(initialStudyTheme);
+  const [cardTextSize, setCardTextSize] =
+    useState<CardTextSize>(initialCardTextSize);
 
   // Avoid hydration mismatch: only reflect the resolved theme after mount.
   useEffect(() => setMounted(true), []);
@@ -492,6 +505,24 @@ function AppearanceSection({
     toast.success("Setting saved.");
   }
 
+  async function chooseCardTextSize(next: CardTextSize) {
+    const prev = cardTextSize;
+    setCardTextSize(next);
+    setSaving(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardTextSize: next }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      toast.error("Could not save that setting.");
+      setCardTextSize(prev);
+      return;
+    }
+    toast.success("Setting saved.");
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -522,6 +553,19 @@ function AppearanceSection({
             disabled={saving}
             options={STUDY_THEME_OPTIONS}
             onChange={chooseStudyTheme}
+          />
+        </SettingRow>
+
+        <SettingRow
+          name="Card text size"
+          description="How large the word and meaning appear on study cards."
+        >
+          <Segmented
+            label="Card text size"
+            value={cardTextSize}
+            disabled={saving}
+            options={CARD_TEXT_SIZE_OPTIONS}
+            onChange={chooseCardTextSize}
           />
         </SettingRow>
       </CardContent>

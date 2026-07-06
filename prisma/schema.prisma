@@ -30,6 +30,7 @@ model User {
   settings           Json? // future: theme, daily limits, etc.
   theme              String           @default("system") // "light" | "dark" | "system"
   studyTheme         String           @default("follow") // "dark" = forced focus mode | "follow" = match app theme
+  cardTextSize       String           @default("normal") // "small" | "normal" | "large" — study card text scale
 
   // Learning limits
   dailyNewWords      Int     @default(10) // new cards introduced per day; 0 = pause learning

@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, LayoutGrid, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -84,6 +84,28 @@ export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
 
       {hasCards && (
         <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
+      )}
+
+      {/* Alternative practice modes — same session query, different screen. */}
+      {hasCards && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <span>Or practice with</span>
+          <Link
+            href={href.replace(/^\/study/, "/study/quiz")}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            <ListChecks className="size-3.5" />
+            Quiz
+          </Link>
+          <span>·</span>
+          <Link
+            href={href.replace(/^\/study/, "/study/match")}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            <LayoutGrid className="size-3.5" />
+            Match
+          </Link>
+        </div>
       )}
     </div>
   );

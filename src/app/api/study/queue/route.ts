@@ -110,11 +110,49 @@ export async function GET(req: Request) {
     lapses: p.lapses,
   });
 
-  const cards = [
+  const cards: (ReturnType<typeof toCard> & { choices?: string[] })[] = [
     ...due.map((p) => toCard(p, "review")),
     ...checks.map((p) => toCard(p, "check")),
     ...fresh.map((p) => toCard(p, "new")),
   ];
+
+  // ?choices=1 (quiz mode): attach 4 shuffled answer options per card — the
+  // correct translation plus 3 distractors drawn from other words the user is
+  // studying in the same language (falls back to any visible same-language word).
+  if (url.searchParams.get("choices") === "1" && cards.length > 0) {
+    const byLanguage = new Map<string, string[]>();
+    for (const langCode of new Set(cards.map((c) => c.languageCode))) {
+      const pool = await prisma.word.findMany({
+        where: {
+          wordList: { language: { code: langCode } },
+          progress: { some: { userId } },
+        },
+        select: { translation: true },
+        take: 400,
+      });
+      byLanguage.set(
+        langCode,
+        [...new Set(pool.map((w) => w.translation))]
+      );
+    }
+    for (const card of cards) {
+      const pool = (byLanguage.get(card.languageCode) ?? []).filter(
+        (t) => t !== card.translation
+      );
+      // Fisher–Yates partial shuffle for 3 distractors.
+      for (let i = 0; i < Math.min(3, pool.length); i++) {
+        const j = i + Math.floor(Math.random() * (pool.length - i));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const options = [card.translation, ...pool.slice(0, 3)];
+      // Shuffle the final option order.
+      for (let i = options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [options[i], options[j]] = [options[j], options[i]];
+      }
+      card.choices = options;
+    }
+  }
 
   return NextResponse.json({
     cards,

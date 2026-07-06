@@ -24,6 +24,7 @@ export async function GET() {
       fuzzIntervals: true,
       theme: true,
       studyTheme: true,
+      cardTextSize: true,
     },
   });
   if (!user) {
@@ -69,6 +70,7 @@ export async function PATCH(req: Request) {
       fuzzIntervals: true,
       theme: true,
       studyTheme: true,
+      cardTextSize: true,
     },
   });
 

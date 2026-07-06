@@ -41,6 +41,11 @@ pronunciation audio), and never depend on a cloud service.
 - **Gesture-first study** — a full-screen card stack in a dark focus mode. Tap
   to reveal (staged), then swipe to grade. Keyboard fallback on desktop
   (← → ↑ ↓ to grade).
+- **Practice modes** — beyond flashcards: a multiple-choice quiz (pick the
+  meaning from four options) and matching rounds (pair up words and meanings
+  from a five-word pool). Both feed the same scheduler.
+- **Adjustable card text size** — small / normal / large study text, a
+  per-account setting.
 - **On-device pronunciation** — a speaker button reads the word using your
   browser's built-in voices. No cloud, no API key; it tells you how to add a
   system voice if one is missing.
@@ -120,7 +125,8 @@ strategy pattern are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 ## Tests
 
 ```bash
-npm test        # runs the vitest unit suite (SRS algorithms, import parser, validation, rate limiter)
+npm test          # vitest unit suite (SRS algorithms, import parser, validation, rate limiter)
+npm run test:e2e  # Playwright browser suite (signup → enroll → study → practice modes)
 ```
 
 ## Project layout
@@ -185,17 +191,15 @@ focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists 
 words · Light/Dark/System theme + study-screen focus setting · study-scope
 filtering · graded HSK 1–6 + original Chinese lists · CSV export · progress
 reset · on-device pronunciation · security hardening (rate limits, input caps,
-headers) · in-app feedback · Docker + compose self-host packaging.
+headers) · in-app feedback · Docker + compose self-host packaging ·
+multiple-choice quiz + matching-pairs practice modes · card text sizing ·
+Playwright end-to-end suite.
 
 **Next (v0.2):**
 
-- Practice modes beyond flashcards: multiple-choice (pick the meaning from four
-  options) and matching rounds (pair up words and meanings from a small pool);
-  later type-the-answer (phonetic-aware for Chinese) and a picture quiz with
-  generated images
-- Card text sizing — small/normal/large study text; later per-element
-  (character / phonetic / meaning) controls
-- End-to-end browser test suite (signup → enroll → study → review)
+- More practice modes: type-the-answer (phonetic-aware for Chinese) and a
+  picture quiz with generated images
+- Per-element card text controls (character / phonetic / meaning sizes)
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)
 - Email verification + password reset / account recovery flow
