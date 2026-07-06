@@ -64,6 +64,34 @@ Caddy provisions and renews Let's Encrypt certificates automatically. Any
 proxy works (nginx, Traefik) — the essentials are TLS termination and the HSTS
 header.
 
+## Deploying with Coolify
+
+If your VPS runs [Coolify](https://coolify.io/), you don't need the manual
+compose/Caddy steps above — Coolify builds from your git repo, injects env
+vars, and terminates HTTPS through its bundled proxy:
+
+1. **DNS first**: create an `A` record for your chosen subdomain pointing at
+   the server's public IP (plus an `AAAA` record if you have IPv6). Verify with
+   `nslookup <your-subdomain>` before deploying, or certificate issuance will
+   fail.
+2. In Coolify: **+ New → Private Repository**, connect your GitHub account (or
+   a deploy key), pick this repo and the `main` branch, and set the build pack
+   to **Docker Compose** — the shipped `docker-compose.yml` is used as is,
+   including the migrate-and-seed-on-boot entrypoint.
+3. Set the environment variables from the table above (`NEXTAUTH_SECRET`,
+   `NEXTAUTH_URL=https://<your-subdomain>`, `DATABASE_URL=file:/data/recall.db`).
+4. **Confirm the `/data` volume is persistent** in the service's Storage tab.
+   This is the one setting that matters most: without it, every redeploy wipes
+   all accounts and progress.
+5. Set the domain on the service; Coolify provisions the TLS certificate
+   automatically. Add the HSTS header in the proxy settings if desired.
+6. Deploy, then smoke-test: sign up, enroll a list, review a few cards.
+7. Set up the backup cron below (the volume path is under
+   `/var/lib/docker/volumes/` on the Coolify host).
+
+Subsequent updates are just `git push` — Coolify redeploys, and migrations run
+on boot.
+
 ## Backups
 
 SQLite is a single file; back it up with its online-backup command so you get a

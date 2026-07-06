@@ -189,15 +189,24 @@ headers) · in-app feedback · Docker + compose self-host packaging.
 
 **Next (v0.2):**
 
+- Practice modes beyond flashcards: multiple-choice (pick the meaning from four
+  options) and matching rounds (pair up words and meanings from a small pool);
+  later type-the-answer (phonetic-aware for Chinese) and a picture quiz with
+  generated images
+- Card text sizing — small/normal/large study text; later per-element
+  (character / phonetic / meaning) controls
+- End-to-end browser test suite (signup → enroll → study → review)
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)
 - Email verification + password reset / account recovery flow
-- Cloud TTS with your own API key (server proxy, encrypted key storage) for
-  higher-quality voices
+- Bring-your-own-key integrations: cloud TTS and image generation via your own
+  API key (server proxy, encrypted per-user key storage; instance operators can
+  set global keys; features hide when no provider is configured)
 - 4-click response mode (separate pronunciation vs meaning grading) as a setting
 - Suspend/block words (never schedule)
 - Drag-to-reorder list learning queue
-- Review heatmap / streak calendar; richer stats
+- Review heatmap / streak calendar; learner analytics (retention rate, per-list
+  success, learning curve)
 
 **Later (v1.0+):**
 
@@ -209,4 +218,6 @@ headers) · in-app feedback · Docker + compose self-host packaging.
 - AI example-sentence generation from known vocabulary (`metadata` reserved)
 - Shared/public user lists + community library
 - Per-list progress stats (mastery breakdown, completion, due counts)
-- Hosted managed instance (paid) for those who'd rather not self-host
+- Dictionary-style word detail pages (components, example sentences, frequency)
+- Hosted managed instance (paid, free trial) for those who'd rather not
+  self-host, with per-account quotas on costly features
