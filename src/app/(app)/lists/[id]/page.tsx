@@ -1,0 +1,116 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+
+import { AssumeButton } from "@/components/lists/AssumeButton";
+import { EnrollButton } from "@/components/lists/EnrollButton";
+import { ListManageBar } from "@/components/lists/ListManageBar";
+import { ListWordsView } from "@/components/lists/ListWordsView";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/session";
+import { visibleListWhere } from "@/lib/ownership";
+
+export default async function ListDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
+  const { id } = await params;
+
+  const list = await prisma.wordList.findFirst({
+    where: { id, ...visibleListWhere(userId) },
+    include: {
+      language: { select: { name: true, code: true } },
+      words: { orderBy: { position: "asc" } },
+    },
+  });
+  if (!list) notFound();
+
+  const isOwner = list.createdById === userId;
+
+  const progress = await prisma.userProgress.findMany({
+    where: { userId, wordId: { in: list.words.map((w) => w.id) } },
+    select: {
+      wordId: true,
+      state: true,
+      intervalDays: true,
+      lapses: true,
+      dueAt: true,
+    },
+  });
+  const progressByWord = new Map(progress.map((p) => [p.wordId, p]));
+
+  const words = list.words.map((w) => {
+    const p = progressByWord.get(w.id);
+    return {
+      id: w.id,
+      term: w.term,
+      translation: w.translation,
+      phonetic: w.phonetic,
+      state: p?.state ?? null,
+      intervalDays: p?.intervalDays ?? null,
+      lapses: p?.lapses ?? null,
+      dueAt: p?.dueAt ? p.dueAt.toISOString() : null,
+    };
+  });
+
+  const allEnrolled =
+    list.words.length > 0 && progress.length === list.words.length;
+
+  return (
+    <main className="mx-auto w-full max-w-2xl px-6 py-8">
+      <Link
+        href="/lists"
+        className="text-sm text-muted-foreground hover:text-foreground"
+      >
+        ← All lists
+      </Link>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{list.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            {list.language.name} · {list.words.length} words
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="flex flex-wrap gap-2">
+            <AssumeButton listId={list.id} />
+            <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
+          </div>
+          <p className="max-w-xs text-right text-xs text-muted-foreground">
+            Add all to my queue puts these words into your daily study rotation.
+            I already know these sets them aside — they&apos;ll be spot-checked
+            occasionally instead.
+          </p>
+        </div>
+      </div>
+
+      {list.description && (
+        <p className="mt-2 text-sm text-muted-foreground">{list.description}</p>
+      )}
+
+      {isOwner && (
+        <div className="mt-6">
+          <ListManageBar
+            listId={list.id}
+            name={list.name}
+            description={list.description}
+          />
+        </div>
+      )}
+
+      <div className="mt-6">
+        <ListWordsView
+          words={words}
+          listId={list.id}
+          isOwner={isOwner}
+          languageCode={list.language.code}
+          languageName={list.language.name}
+        />
+      </div>
+    </main>
+  );
+}

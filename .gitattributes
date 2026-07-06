@@ -1,0 +1,6 @@
+# Normalize line endings; shell scripts must stay LF for Docker/Alpine.
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.png binary
+*.db binary

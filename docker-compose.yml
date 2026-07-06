@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # SQLite database on the named volume mounted at /data.
+      DATABASE_URL: file:/data/recall.db
+      # Generate a strong secret: `openssl rand -base64 32`.
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in your .env}
+      # Public URL the app is served from (behind your reverse proxy).
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+    volumes:
+      - recall-data:/data
+
+volumes:
+  recall-data:

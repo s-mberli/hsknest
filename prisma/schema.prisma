@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // swap to "postgresql" for VPS deploy
+  url      = env("DATABASE_URL")
+}
+
+enum SRSAlgorithmType {
+  SM2
+  LEITNER
+}
+
+enum CardState {
+  NEW
+  LEARNING
+  REVIEW
+  LAPSED
+  MASTERED
+  ASSUMED
+}
+
+model User {
+  id                 String           @id @default(cuid())
+  email              String           @unique
+  passwordHash       String
+  name               String?
+  preferredAlgorithm SRSAlgorithmType @default(SM2)
+  settings           Json? // future: theme, daily limits, etc.
+  theme              String           @default("system") // "light" | "dark" | "system"
+  studyTheme         String           @default("follow") // "dark" = forced focus mode | "follow" = match app theme
+
+  // Learning limits
+  dailyNewWords      Int     @default(10) // new cards introduced per day; 0 = pause learning
+  assumedCheckPerDay Int     @default(3)  // ASSUMED words reintroduced per day
+
+  // Algorithm tuning
+  intervalModifier     Float   @default(1.0)  // success-interval multiplier
+  lapseModifier        Float   @default(0.0)  // post-lapse interval = prevInterval * this
+  masteryThresholdDays Int? // interval >= this => MASTERED, stop scheduling; null = never
+  fuzzIntervals        Boolean @default(true) // +/-5% interval randomization
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  progress   UserProgress[]
+  reviewLogs ReviewLog[]
+  wordLists  WordList[]
+  languages  Language[]
+  feedback   Feedback[]
+}
+
+model Language {
+  id          String  @id @default(cuid())
+  name        String // "Mandarin Chinese"
+  code        String  @unique // "zh", "ja", "es"
+  createdById String? // null = seeded/global; otherwise owned by the user who added it
+
+  createdBy User?      @relation(fields: [createdById], references: [id])
+  wordLists WordList[]
+
+  @@index([createdById])
+}
+
+model WordList {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  languageId  String
+  isPublic    Boolean  @default(true)
+  createdById String? // null = seeded/public; otherwise owned by this user
+  createdAt   DateTime @default(now())
+
+  language  Language @relation(fields: [languageId], references: [id])
+  createdBy User?    @relation(fields: [createdById], references: [id])
+  words     Word[]
+
+  @@index([languageId])
+  @@index([createdById])
+}
+
+model Word {
+  id          String  @id @default(cuid())
+  term        String // target-language form
+  translation String // user-language meaning
+  phonetic    String? // romanization / reading / IPA — optional
+  metadata    Json? // language-specific extras: tones, radicals, audio URL, pos, frequency rank
+  wordListId  String
+  position    Int     @default(0) // ordering within list
+
+  wordList WordList       @relation(fields: [wordListId], references: [id], onDelete: Cascade)
+  progress UserProgress[]
+
+  @@index([wordListId])
+}
+
+model UserProgress {
+  id     String @id @default(cuid())
+  userId String
+  wordId String
+
+  // Algorithm-agnostic SRS state (superset of SM-2 + Leitner needs)
+  state          CardState @default(NEW)
+  easeFactor     Float     @default(2.5) // SM-2
+  intervalDays   Float     @default(0) // SM-2
+  repetitions    Int       @default(0) // SM-2 consecutive successes
+  box            Int       @default(1) // Leitner box 1–5
+  lapses         Int       @default(0)
+  dueAt          DateTime  @default(now())
+  lastReviewedAt   DateTime?
+  introducedAt     DateTime? // set on first-ever review; drives daily new-word cap
+  assumedCheckedAt DateTime? // set when an ASSUMED card is checked; drives daily assumed-check cap
+  srsData          Json? // algorithm-specific overflow (future FSRS params, etc.)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordId])
+  @@index([userId, dueAt]) // hot path: "due today" queries
+}
+
+model ReviewLog {
+  id             String           @id @default(cuid())
+  userId         String
+  wordId         String
+  quality        Int // 0–5 scale; swipe left = 1, swipe right = 4
+  algorithm      SRSAlgorithmType
+  intervalBefore Float
+  intervalAfter  Float
+  reviewedAt     DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reviewedAt])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  category  String // "bug" | "idea" | "other"
+  message   String
+  page      String? // route the report was filed from, if provided
+  status    String   @default("open") // "open" | "closed" — triaged in Prisma Studio for now
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}

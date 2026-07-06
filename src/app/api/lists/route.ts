@@ -1,0 +1,129 @@
+import { NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/session";
+import { visibleListWhere } from "@/lib/ownership";
+import { createListSchema } from "@/lib/validation";
+
+export async function GET(req: Request) {
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const languageId = url.searchParams.get("languageId") ?? undefined;
+
+  const lists = await prisma.wordList.findMany({
+    where: {
+      ...visibleListWhere(userId),
+      ...(languageId ? { languageId } : {}),
+    },
+    orderBy: { createdAt: "asc" },
+    include: {
+      language: { select: { code: true, name: true } },
+      _count: { select: { words: true } },
+    },
+  });
+
+  // How many words in each list the current user is already enrolled in.
+  const enrollments = await prisma.userProgress.groupBy({
+    by: ["wordId"],
+    where: { userId },
+  });
+  const enrolledWordIds = new Set(enrollments.map((e) => e.wordId));
+
+  const listWords = await prisma.word.findMany({
+    where: { wordListId: { in: lists.map((l) => l.id) } },
+    select: { id: true, wordListId: true },
+  });
+  const enrolledCountByList = new Map<string, number>();
+  for (const w of listWords) {
+    if (enrolledWordIds.has(w.id)) {
+      enrolledCountByList.set(
+        w.wordListId,
+        (enrolledCountByList.get(w.wordListId) ?? 0) + 1
+      );
+    }
+  }
+
+  return NextResponse.json({
+    lists: lists.map((l) => ({
+      id: l.id,
+      name: l.name,
+      description: l.description,
+      languageCode: l.language.code,
+      languageName: l.language.name,
+      wordCount: l._count.words,
+      enrolledCount: enrolledCountByList.get(l.id) ?? 0,
+      isOwner: l.createdById === userId,
+    })),
+  });
+}
+
+export async function POST(req: Request) {
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = createListSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid input", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const { name, description, languageId, newLanguage } = parsed.data;
+
+  // Resolve the target language: either an existing (visible) one, or a new
+  // user-owned language. Existing seeded/global languages can be reused.
+  let resolvedLanguageId: string;
+  if (newLanguage) {
+    const code = newLanguage.code.toLowerCase();
+    const existing = await prisma.language.findUnique({ where: { code } });
+    if (existing) {
+      // A language with this code already exists — reuse it rather than error.
+      resolvedLanguageId = existing.id;
+    } else {
+      const created = await prisma.language.create({
+        data: { name: newLanguage.name, code, createdById: userId },
+        select: { id: true },
+      });
+      resolvedLanguageId = created.id;
+    }
+  } else {
+    const language = await prisma.language.findFirst({
+      where: {
+        id: languageId,
+        OR: [{ createdById: null }, { createdById: userId }],
+      },
+      select: { id: true },
+    });
+    if (!language) {
+      return NextResponse.json({ error: "Language not found" }, { status: 404 });
+    }
+    resolvedLanguageId = language.id;
+  }
+
+  const list = await prisma.wordList.create({
+    data: {
+      name,
+      description: description ?? null,
+      languageId: resolvedLanguageId,
+      isPublic: false,
+      createdById: userId,
+    },
+    select: { id: true },
+  });
+
+  return NextResponse.json({ id: list.id }, { status: 201 });
+}

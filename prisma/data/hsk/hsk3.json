@@ -1,0 +1,3771 @@
+[
+ {
+  "term": "啊",
+  "translation": "interjection of surprise; Ah!; Oh!",
+  "phonetic": "ā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "y",
+    "e"
+   ],
+   "frequencyRank": 47
+  }
+ },
+ {
+  "term": "把",
+  "translation": "to hold; to grasp; to hold a baby in position to help it urinate or defecate; handlebar",
+  "phonetic": "bǎ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p",
+    "qv",
+    "v",
+    "m"
+   ],
+   "frequencyRank": 50
+  }
+ },
+ {
+  "term": "被",
+  "translation": "quilt; to cover (with); (literary) to suffer (a misfortune)",
+  "phonetic": "bèi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p",
+    "g",
+    "d"
+   ],
+   "frequencyRank": 54
+  }
+ },
+ {
+  "term": "自己",
+  "translation": "oneself; one's own",
+  "phonetic": "zì jǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "r",
+    "v"
+   ],
+   "frequencyRank": 56
+  }
+ },
+ {
+  "term": "用",
+  "translation": "to use; to employ; to have to",
+  "phonetic": "yòng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "p",
+    "g"
+   ],
+   "frequencyRank": 79
+  }
+ },
+ {
+  "term": "如果",
+  "translation": "if; in case; in the event that",
+  "phonetic": "rú guǒ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "c",
+    "v"
+   ],
+   "frequencyRank": 89
+  }
+ },
+ {
+  "term": "又",
+  "translation": "(once) again; also; both... and...",
+  "phonetic": "yòu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "c"
+   ],
+   "frequencyRank": 91
+  }
+ },
+ {
+  "term": "只",
+  "translation": "only; merely; just",
+  "phonetic": "zhǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "q"
+   ],
+   "frequencyRank": 98
+  }
+ },
+ {
+  "term": "更",
+  "translation": "to change or replace; to experience; one of the five two-hour periods into which the night was formerly divided",
+  "phonetic": "gēng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 127
+  }
+ },
+ {
+  "term": "需要",
+  "translation": "to need; to want; to demand; to require; needs",
+  "phonetic": "xū yào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n",
+    "vn"
+   ],
+   "frequencyRank": 131
+  }
+ },
+ {
+  "term": "地",
+  "translation": "-ly; structural particle: used before a verb or adjective, linking it to preceding modifying adverbial adjunct",
+  "phonetic": "de",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "u",
+    "n"
+   ],
+   "frequencyRank": 132
+  }
+ },
+ {
+  "term": "才",
+  "translation": "ability; talent; sb of a certain type; a capable individual",
+  "phonetic": "cái",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "c",
+    "n"
+   ],
+   "frequencyRank": 133
+  }
+ },
+ {
+  "term": "跟",
+  "translation": "heel; to follow closely; to go with",
+  "phonetic": "gēn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p",
+    "v"
+   ],
+   "frequencyRank": 135
+  }
+ },
+ {
+  "term": "像",
+  "translation": "to resemble; to be like; to look as if",
+  "phonetic": "xiàng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "p",
+    "n",
+    "d"
+   ],
+   "frequencyRank": 151
+  }
+ },
+ {
+  "term": "还是",
+  "translation": "still (as before); had better; unexpectedly",
+  "phonetic": "hái shi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "c",
+    "d",
+    "v"
+   ],
+   "frequencyRank": 160
+  }
+ },
+ {
+  "term": "认为",
+  "translation": "to believe; to think; to consider; to feel",
+  "phonetic": "rèn wéi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 168
+  }
+ },
+ {
+  "term": "应该",
+  "translation": "ought to; should; must",
+  "phonetic": "yīng gāi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 174
+  }
+ },
+ {
+  "term": "带",
+  "translation": "band; belt; girdle",
+  "phonetic": "dài",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 177
+  }
+ },
+ {
+  "term": "位",
+  "translation": "position; location; place",
+  "phonetic": "wèi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "q",
+    "g"
+   ],
+   "frequencyRank": 177
+  }
+ },
+ {
+  "term": "种",
+  "translation": "seed; species; kind",
+  "phonetic": "zhǒng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "q",
+    "v",
+    "g"
+   ],
+   "frequencyRank": 179
+  }
+ },
+ {
+  "term": "发现",
+  "translation": "to notice; to become aware of; to discover; to find; to detect; a discovery",
+  "phonetic": "fā xiàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 189
+  }
+ },
+ {
+  "term": "一定",
+  "translation": "surely; certainly; necessarily",
+  "phonetic": "yī dìng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "b"
+   ],
+   "frequencyRank": 198
+  }
+ },
+ {
+  "term": "一直",
+  "translation": "straight (in a straight line); continuously; always; all the way through",
+  "phonetic": "yī zhí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 203
+  }
+ },
+ {
+  "term": "为了",
+  "translation": "for; for the purpose of; in order to",
+  "phonetic": "wèi le",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p",
+    "v"
+   ],
+   "frequencyRank": 229
+  }
+ },
+ {
+  "term": "一样",
+  "translation": "same; like; equal to",
+  "phonetic": "yī yàng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "u",
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 235
+  }
+ },
+ {
+  "term": "世界",
+  "translation": "world",
+  "phonetic": "shì jiè",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 238
+  }
+ },
+ {
+  "term": "而且",
+  "translation": "(not only ...) but also; moreover; in addition",
+  "phonetic": "ér qiě",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "c"
+   ],
+   "frequencyRank": 239
+  }
+ },
+ {
+  "term": "重要",
+  "translation": "important; significant; major",
+  "phonetic": "zhòng yào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 240
+  }
+ },
+ {
+  "term": "必须",
+  "translation": "to have to; must; compulsory",
+  "phonetic": "bì xū",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 241
+  }
+ },
+ {
+  "term": "地方",
+  "translation": "region; regional (away from the central administration); local",
+  "phonetic": "dì fāng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 254
+  }
+ },
+ {
+  "term": "老",
+  "translation": "prefix used before the surname of a person or a numeral indicating the order of birth of the children in a family or to indicate affection or familiarity; old (of people); venerable (person)",
+  "phonetic": "lǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "d",
+    "g"
+   ],
+   "frequencyRank": 266
+  }
+ },
+ {
+  "term": "其他",
+  "translation": "other; (sth or sb) else; the rest",
+  "phonetic": "qí tā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "r"
+   ],
+   "frequencyRank": 267
+  }
+ },
+ {
+  "term": "比赛",
+  "translation": "competition (sports etc); match; to compete",
+  "phonetic": "bǐ sài",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "vn",
+    "v"
+   ],
+   "frequencyRank": 275
+  }
+ },
+ {
+  "term": "然后",
+  "translation": "then; after that; afterwards",
+  "phonetic": "rán hòu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "c"
+   ],
+   "frequencyRank": 275
+  }
+ },
+ {
+  "term": "担心",
+  "translation": "anxious; worried; uneasy",
+  "phonetic": "dān xīn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 277
+  }
+ },
+ {
+  "term": "条",
+  "translation": "strip; item; article",
+  "phonetic": "tiáo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "q"
+   ],
+   "frequencyRank": 277
+  }
+ },
+ {
+  "term": "放",
+  "translation": "to put; to place; to release",
+  "phonetic": "fàng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 280
+  }
+ },
+ {
+  "term": "拿",
+  "translation": "old variant of 拿",
+  "phonetic": "ná",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 287
+  }
+ },
+ {
+  "term": "为什么",
+  "translation": "why?; for what reason?",
+  "phonetic": "wèi shén me",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "r"
+   ],
+   "frequencyRank": 299
+  }
+ },
+ {
+  "term": "先",
+  "translation": "early; prior; former",
+  "phonetic": "xiān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "g"
+   ],
+   "frequencyRank": 306
+  }
+ },
+ {
+  "term": "关系",
+  "translation": "relation; relationship; to concern",
+  "phonetic": "guān xi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 318
+  }
+ },
+ {
+  "term": "出现",
+  "translation": "to appear; to arise; to emerge",
+  "phonetic": "chū xiàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 323
+  }
+ },
+ {
+  "term": "了解",
+  "translation": "to understand; to realize; to find out",
+  "phonetic": "liǎo jiě",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 336
+  }
+ },
+ {
+  "term": "过去",
+  "translation": "(in the) past; former; previous",
+  "phonetic": "guò qù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "t"
+   ],
+   "frequencyRank": 353
+  }
+ },
+ {
+  "term": "参加",
+  "translation": "to participate; to take part; to join",
+  "phonetic": "cān jiā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 355
+  }
+ },
+ {
+  "term": "国家",
+  "translation": "country; nation; state",
+  "phonetic": "guó jiā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 356
+  }
+ },
+ {
+  "term": "决定",
+  "translation": "to decide (to do something); to resolve; decision",
+  "phonetic": "jué dìng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n"
+   ],
+   "frequencyRank": 366
+  }
+ },
+ {
+  "term": "分",
+  "translation": "to divide; to separate; to distribute; to allocate; to distinguish (good and bad)",
+  "phonetic": "fēn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "t",
+    "qt",
+    "v",
+    "g",
+    "n",
+    "d"
+   ],
+   "frequencyRank": 372
+  }
+ },
+ {
+  "term": "选择",
+  "translation": "to select; to pick; choice",
+  "phonetic": "xuǎn zé",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 373
+  }
+ },
+ {
+  "term": "或者",
+  "translation": "or; possibly; maybe; perhaps",
+  "phonetic": "huò zhě",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "c",
+    "d"
+   ],
+   "frequencyRank": 382
+  }
+ },
+ {
+  "term": "机会",
+  "translation": "opportunity; chance; occasion",
+  "phonetic": "jī huì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 393
+  }
+ },
+ {
+  "term": "别人",
+  "translation": "other people; others; other person",
+  "phonetic": "bié ren",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "r"
+   ],
+   "frequencyRank": 397
+  }
+ },
+ {
+  "term": "站",
+  "translation": "station; to stand; to halt",
+  "phonetic": "zhàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n",
+    "q"
+   ],
+   "frequencyRank": 399
+  }
+ },
+ {
+  "term": "使",
+  "translation": "to make; to cause; to enable",
+  "phonetic": "shǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 400
+  }
+ },
+ {
+  "term": "其实",
+  "translation": "actually; in fact; really",
+  "phonetic": "qí shí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 405
+  }
+ },
+ {
+  "term": "以后",
+  "translation": "after; later; afterwards",
+  "phonetic": "yǐ hòu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "f"
+   ],
+   "frequencyRank": 407
+  }
+ },
+ {
+  "term": "要求",
+  "translation": "to request; to require; requirement",
+  "phonetic": "yāo qiú",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n"
+   ],
+   "frequencyRank": 409
+  }
+ },
+ {
+  "term": "信",
+  "translation": "letter; mail; to trust",
+  "phonetic": "xìn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 419
+  }
+ },
+ {
+  "term": "当然",
+  "translation": "only natural; as it should be; certainly",
+  "phonetic": "dāng rán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "b"
+   ],
+   "frequencyRank": 423
+  }
+ },
+ {
+  "term": "接",
+  "translation": "to receive; to answer (the phone); to meet or welcome sb",
+  "phonetic": "jiē",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 425
+  }
+ },
+ {
+  "term": "相信",
+  "translation": "to be convinced (that sth is true); to believe; to accept sth as true",
+  "phonetic": "xiāng xìn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 431
+  }
+ },
+ {
+  "term": "花",
+  "translation": "surname Hua",
+  "phonetic": "Huā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n",
+    "a"
+   ],
+   "frequencyRank": 435
+  }
+ },
+ {
+  "term": "虽然",
+  "translation": "although; even though (often used correlatively with 是 or 是 etc)",
+  "phonetic": "suī rán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "c"
+   ],
+   "frequencyRank": 440
+  }
+ },
+ {
+  "term": "解决",
+  "translation": "to solve; to resolve; to settle (a problem); to eliminate; to wipe out (an enemy, bandits etc)",
+  "phonetic": "jiě jué",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 458
+  }
+ },
+ {
+  "term": "关于",
+  "translation": "pertaining to; concerning; with regard to",
+  "phonetic": "guān yú",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p"
+   ],
+   "frequencyRank": 478
+  }
+ },
+ {
+  "term": "完成",
+  "translation": "to complete; to accomplish",
+  "phonetic": "wán chéng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 486
+  }
+ },
+ {
+  "term": "结束",
+  "translation": "termination; to finish; to end",
+  "phonetic": "jié shù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 498
+  }
+ },
+ {
+  "term": "努力",
+  "translation": "to make an effort; to try hard; to strive; hard-working; conscientious",
+  "phonetic": "nǔ lì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "ad",
+    "an",
+    "a"
+   ],
+   "frequencyRank": 505
+  }
+ },
+ {
+  "term": "以前",
+  "translation": "before; formerly; previous",
+  "phonetic": "yǐ qián",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "f"
+   ],
+   "frequencyRank": 524
+  }
+ },
+ {
+  "term": "办法",
+  "translation": "means; method; way (of doing sth)",
+  "phonetic": "bàn fǎ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 538
+  }
+ },
+ {
+  "term": "特别",
+  "translation": "unusual; special; very; especially; particularly; expressly; for a specific purpose",
+  "phonetic": "tè bié",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "a"
+   ],
+   "frequencyRank": 541
+  }
+ },
+ {
+  "term": "难",
+  "translation": "difficult (to...); problem; difficulty",
+  "phonetic": "nán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "ad",
+    "a",
+    "v",
+    "g"
+   ],
+   "frequencyRank": 544
+  }
+ },
+ {
+  "term": "注意",
+  "translation": "to take note of; to pay attention to",
+  "phonetic": "zhù yì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 547
+  }
+ },
+ {
+  "term": "讲",
+  "translation": "to speak; to explain; to negotiate",
+  "phonetic": "jiǎng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 555
+  }
+ },
+ {
+  "term": "离开",
+  "translation": "to depart; to leave",
+  "phonetic": "lí kāi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 557
+  }
+ },
+ {
+  "term": "万",
+  "translation": "used in 俟",
+  "phonetic": "mò",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "m",
+    "t"
+   ],
+   "frequencyRank": 557
+  }
+ },
+ {
+  "term": "以为",
+  "translation": "to think (i.e. to take it to be true that ...) (Usually there is an implication that the notion is mistaken – except when expressing one's own current opinion.)",
+  "phonetic": "yǐ wéi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 567
+  }
+ },
+ {
+  "term": "越",
+  "translation": "generic word for peoples or states of south China or south Asia at different historical periods; abbr. for Vietnam 越南",
+  "phonetic": "Yuè",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "g",
+    "b"
+   ],
+   "frequencyRank": 574
+  }
+ },
+ {
+  "term": "城市",
+  "translation": "city; town",
+  "phonetic": "chéng shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 593
+  }
+ },
+ {
+  "term": "影响",
+  "translation": "influence; effect; to influence",
+  "phonetic": "yǐng xiǎng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 598
+  }
+ },
+ {
+  "term": "游戏",
+  "translation": "game; to play",
+  "phonetic": "yóu xì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 603
+  }
+ },
+ {
+  "term": "马",
+  "translation": "surname Ma; abbr. for Malaysia 马来西亚",
+  "phonetic": "Mǎ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "nr",
+    "b"
+   ],
+   "frequencyRank": 605
+  }
+ },
+ {
+  "term": "比较",
+  "translation": "to compare; to contrast; comparatively",
+  "phonetic": "bǐ jiào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "vn",
+    "v"
+   ],
+   "frequencyRank": 607
+  }
+ },
+ {
+  "term": "最近",
+  "translation": "recently; soon; nearest",
+  "phonetic": "zuì jìn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "t"
+   ],
+   "frequencyRank": 612
+  }
+ },
+ {
+  "term": "换",
+  "translation": "to exchange; to change (clothes etc); to substitute",
+  "phonetic": "huàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 618
+  }
+ },
+ {
+  "term": "终于",
+  "translation": "at last; in the end; finally",
+  "phonetic": "zhōng yú",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 625
+  }
+ },
+ {
+  "term": "脸",
+  "translation": "face",
+  "phonetic": "liǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "q"
+   ],
+   "frequencyRank": 629
+  }
+ },
+ {
+  "term": "口",
+  "translation": "mouth; classifier for things with mouths (people, domestic animals, cannons, wells etc); classifier for bites or mouthfuls",
+  "phonetic": "kǒu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "q",
+    "n"
+   ],
+   "frequencyRank": 637
+  }
+ },
+ {
+  "term": "除了",
+  "translation": "besides; apart from (... also...); in addition to",
+  "phonetic": "chú le",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p"
+   ],
+   "frequencyRank": 638
+  }
+ },
+ {
+  "term": "总是",
+  "translation": "always",
+  "phonetic": "zǒng shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "v"
+   ],
+   "frequencyRank": 638
+  }
+ },
+ {
+  "term": "双",
+  "translation": "surname Shuang",
+  "phonetic": "Shuāng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "m",
+    "q"
+   ],
+   "frequencyRank": 642
+  }
+ },
+ {
+  "term": "突然",
+  "translation": "sudden; abrupt; unexpected",
+  "phonetic": "tū rán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "ad",
+    "a"
+   ],
+   "frequencyRank": 644
+  }
+ },
+ {
+  "term": "段",
+  "translation": "surname Duan",
+  "phonetic": "Duàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "q",
+    "g"
+   ],
+   "frequencyRank": 647
+  }
+ },
+ {
+  "term": "检查",
+  "translation": "inspection; to examine; to inspect",
+  "phonetic": "jiǎn chá",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 659
+  }
+ },
+ {
+  "term": "米",
+  "translation": "surname Mi",
+  "phonetic": "Mǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "q"
+   ],
+   "frequencyRank": 663
+  }
+ },
+ {
+  "term": "容易",
+  "translation": "easy; straightforward; likely; liable to; apt to",
+  "phonetic": "róng yì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 664
+  }
+ },
+ {
+  "term": "明白",
+  "translation": "clear; obvious; unequivocal",
+  "phonetic": "míng bai",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "a",
+    "an"
+   ],
+   "frequencyRank": 676
+  }
+ },
+ {
+  "term": "根据",
+  "translation": "according to; based on; basis",
+  "phonetic": "gēn jù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p",
+    "n",
+    "v"
+   ],
+   "frequencyRank": 694
+  }
+ },
+ {
+  "term": "记得",
+  "translation": "to remember",
+  "phonetic": "jì de",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 699
+  }
+ },
+ {
+  "term": "辆",
+  "translation": "classifier for vehicles",
+  "phonetic": "liàng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "q"
+   ],
+   "frequencyRank": 699
+  }
+ },
+ {
+  "term": "简单",
+  "translation": "simple; not complicated",
+  "phonetic": "jiǎn dān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 726
+  }
+ },
+ {
+  "term": "半",
+  "translation": "half; semi-; incomplete",
+  "phonetic": "bàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "m"
+   ],
+   "frequencyRank": 727
+  }
+ },
+ {
+  "term": "愿意",
+  "translation": "to wish; to want; ready",
+  "phonetic": "yuàn yì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 738
+  }
+ },
+ {
+  "term": "音乐",
+  "translation": "music",
+  "phonetic": "yīn yuè",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 742
+  }
+ },
+ {
+  "term": "包",
+  "translation": "surname Bao",
+  "phonetic": "Bāo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n",
+    "q"
+   ],
+   "frequencyRank": 755
+  }
+ },
+ {
+  "term": "楼",
+  "translation": "surname Lou",
+  "phonetic": "Lóu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 765
+  }
+ },
+ {
+  "term": "清楚",
+  "translation": "clear; distinct; to understand thoroughly",
+  "phonetic": "qīng chu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "v",
+    "ad"
+   ],
+   "frequencyRank": 766
+  }
+ },
+ {
+  "term": "照片",
+  "translation": "photograph; picture",
+  "phonetic": "zhào piàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 766
+  }
+ },
+ {
+  "term": "银行",
+  "translation": "bank",
+  "phonetic": "yín háng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 769
+  }
+ },
+ {
+  "term": "故事",
+  "translation": "old practice",
+  "phonetic": "gù shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 772
+  }
+ },
+ {
+  "term": "一般",
+  "translation": "same; ordinary; so-so",
+  "phonetic": "yī bān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad",
+    "u"
+   ],
+   "frequencyRank": 798
+  }
+ },
+ {
+  "term": "可爱",
+  "translation": "adorable; cute; lovely",
+  "phonetic": "kě ài",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 799
+  }
+ },
+ {
+  "term": "新闻",
+  "translation": "news",
+  "phonetic": "xīn wén",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 805
+  }
+ },
+ {
+  "term": "声音",
+  "translation": "voice; sound",
+  "phonetic": "shēng yīn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 841
+  }
+ },
+ {
+  "term": "马上",
+  "translation": "at once; right away; immediately",
+  "phonetic": "mǎ shàng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "s"
+   ],
+   "frequencyRank": 847
+  }
+ },
+ {
+  "term": "表示",
+  "translation": "to express; to show; to say",
+  "phonetic": "biǎo shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 854
+  }
+ },
+ {
+  "term": "经过",
+  "translation": "to pass; to go through; process",
+  "phonetic": "jīng guò",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "p",
+    "v",
+    "n"
+   ],
+   "frequencyRank": 867
+  }
+ },
+ {
+  "term": "历史",
+  "translation": "history",
+  "phonetic": "lì shǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 882
+  }
+ },
+ {
+  "term": "哭",
+  "translation": "to cry; to weep",
+  "phonetic": "kū",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 898
+  }
+ },
+ {
+  "term": "敢",
+  "translation": "to dare; daring; (polite) may I venture",
+  "phonetic": "gǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "g"
+   ],
+   "frequencyRank": 902
+  }
+ },
+ {
+  "term": "会议",
+  "translation": "meeting; conference",
+  "phonetic": "huì yì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 928
+  }
+ },
+ {
+  "term": "经常",
+  "translation": "frequently; constantly; regularly; often; day-to-day; everyday; daily",
+  "phonetic": "jīng cháng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "b"
+   ],
+   "frequencyRank": 940
+  }
+ },
+ {
+  "term": "低",
+  "translation": "low; beneath; to lower (one's head)",
+  "phonetic": "dī",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad",
+    "v"
+   ],
+   "frequencyRank": 951
+  }
+ },
+ {
+  "term": "节目",
+  "translation": "program; item (on a program)",
+  "phonetic": "jié mù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 951
+  }
+ },
+ {
+  "term": "健康",
+  "translation": "health; healthy",
+  "phonetic": "jiàn kāng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "an",
+    "ad"
+   ],
+   "frequencyRank": 952
+  }
+ },
+ {
+  "term": "作用",
+  "translation": "to act on; to affect; action",
+  "phonetic": "zuò yòng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 955
+  }
+ },
+ {
+  "term": "西",
+  "translation": "the West; abbr. for Spain 牙; Spanish",
+  "phonetic": "Xī",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "f",
+    "b"
+   ],
+   "frequencyRank": 958
+  }
+ },
+ {
+  "term": "差",
+  "translation": "difference; discrepancy; (math.) difference (amount remaining after a subtraction); (literary) a little; somewhat; slightly",
+  "phonetic": "chā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "v",
+    "g"
+   ],
+   "frequencyRank": 968
+  }
+ },
+ {
+  "term": "结婚",
+  "translation": "to marry; to get married",
+  "phonetic": "jié hūn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 982
+  }
+ },
+ {
+  "term": "短",
+  "translation": "short; brief; to lack",
+  "phonetic": "duǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 983
+  }
+ },
+ {
+  "term": "同意",
+  "translation": "to agree; to consent; to approve",
+  "phonetic": "tóng yì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 985
+  }
+ },
+ {
+  "term": "教",
+  "translation": "surname Jiao",
+  "phonetic": "Jiào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "g"
+   ],
+   "frequencyRank": 988
+  }
+ },
+ {
+  "term": "几乎",
+  "translation": "almost; nearly; practically",
+  "phonetic": "jī hū",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 1001
+  }
+ },
+ {
+  "term": "附近",
+  "translation": "nearby; neighboring; (in the) vicinity (of); neighborhood",
+  "phonetic": "fù jìn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "f"
+   ],
+   "frequencyRank": 1020
+  }
+ },
+ {
+  "term": "认真",
+  "translation": "conscientious; earnest; serious",
+  "phonetic": "rèn zhēn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 1020
+  }
+ },
+ {
+  "term": "脚",
+  "translation": "foot; leg (of an animal or an object); base (of an object)",
+  "phonetic": "jiǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "q"
+   ],
+   "frequencyRank": 1024
+  }
+ },
+ {
+  "term": "主要",
+  "translation": "main; principal; major",
+  "phonetic": "zhǔ yào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "b",
+    "d"
+   ],
+   "frequencyRank": 1031
+  }
+ },
+ {
+  "term": "遇到",
+  "translation": "to meet; to run into; to come across",
+  "phonetic": "yù dào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 1063
+  }
+ },
+ {
+  "term": "年轻",
+  "translation": "young",
+  "phonetic": "nián qīng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 1100
+  }
+ },
+ {
+  "term": "久",
+  "translation": "(long) time; (long) duration of time",
+  "phonetic": "jiǔ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "g",
+    "ad"
+   ],
+   "frequencyRank": 1103
+  }
+ },
+ {
+  "term": "画",
+  "translation": "to draw; to paint; picture; painting; to draw (a line) (variant of 划)",
+  "phonetic": "huà",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v",
+    "q"
+   ],
+   "frequencyRank": 1119
+  }
+ },
+ {
+  "term": "表演",
+  "translation": "play; show; performance",
+  "phonetic": "biǎo yǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "vn",
+    "v"
+   ],
+   "frequencyRank": 1127
+  }
+ },
+ {
+  "term": "关",
+  "translation": "surname Guan",
+  "phonetic": "Guān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n",
+    "nr"
+   ],
+   "frequencyRank": 1129
+  }
+ },
+ {
+  "term": "刚才",
+  "translation": "just now; a moment ago",
+  "phonetic": "gāng cái",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "t"
+   ],
+   "frequencyRank": 1149
+  }
+ },
+ {
+  "term": "办公室",
+  "translation": "office; business premises; bureau",
+  "phonetic": "bàn gōng shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1162
+  }
+ },
+ {
+  "term": "环境",
+  "translation": "environment; circumstances; surroundings",
+  "phonetic": "huán jìng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1171
+  }
+ },
+ {
+  "term": "关心",
+  "translation": "to be concerned about; to care about",
+  "phonetic": "guān xīn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 1190
+  }
+ },
+ {
+  "term": "祝",
+  "translation": "surname Zhu",
+  "phonetic": "Zhù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "nr"
+   ],
+   "frequencyRank": 1197
+  }
+ },
+ {
+  "term": "层",
+  "translation": "to pile on top of one another; layer; stratum; floor (of a building); story",
+  "phonetic": "céng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "qv",
+    "n"
+   ],
+   "frequencyRank": 1202
+  }
+ },
+ {
+  "term": "腿",
+  "translation": "leg",
+  "phonetic": "tuǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1216
+  }
+ },
+ {
+  "term": "班",
+  "translation": "surname Ban",
+  "phonetic": "Bān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "q",
+    "nr"
+   ],
+   "frequencyRank": 1238
+  }
+ },
+ {
+  "term": "坏",
+  "translation": "bad; spoiled; broken",
+  "phonetic": "huài",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "v"
+   ],
+   "frequencyRank": 1239
+  }
+ },
+ {
+  "term": "一边",
+  "translation": "one side; either side; on the one hand",
+  "phonetic": "yī biān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "f"
+   ],
+   "frequencyRank": 1241
+  }
+ },
+ {
+  "term": "鞋",
+  "translation": "shoe",
+  "phonetic": "xié",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1249
+  }
+ },
+ {
+  "term": "习惯",
+  "translation": "habit; custom; usual practice",
+  "phonetic": "xí guàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 1251
+  }
+ },
+ {
+  "term": "变化",
+  "translation": "(intransitive) to change; to vary; change; variation",
+  "phonetic": "biàn huà",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "vn",
+    "v"
+   ],
+   "frequencyRank": 1262
+  }
+ },
+ {
+  "term": "周末",
+  "translation": "weekend",
+  "phonetic": "zhōu mò",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "t"
+   ],
+   "frequencyRank": 1269
+  }
+ },
+ {
+  "term": "忘记",
+  "translation": "to forget",
+  "phonetic": "wàng jì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 1335
+  }
+ },
+ {
+  "term": "打算",
+  "translation": "to plan; to intend; to calculate",
+  "phonetic": "dǎ suàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "n",
+    "vn"
+   ],
+   "frequencyRank": 1374
+  }
+ },
+ {
+  "term": "极",
+  "translation": "extremely; pole (geography, physics); utmost",
+  "phonetic": "jí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "g"
+   ],
+   "frequencyRank": 1404
+  }
+ },
+ {
+  "term": "小心",
+  "translation": "to be careful; to take care",
+  "phonetic": "xiǎo xīn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "v",
+    "ad"
+   ],
+   "frequencyRank": 1411
+  }
+ },
+ {
+  "term": "举行",
+  "translation": "to hold (a meeting, ceremony etc)",
+  "phonetic": "jǔ xíng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 1431
+  }
+ },
+ {
+  "term": "动物",
+  "translation": "animal",
+  "phonetic": "dòng wù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1438
+  }
+ },
+ {
+  "term": "饿",
+  "translation": "to be hungry; hungry; to starve (sb)",
+  "phonetic": "è",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "a"
+   ],
+   "frequencyRank": 1477
+  }
+ },
+ {
+  "term": "树",
+  "translation": "tree; to cultivate; to set up",
+  "phonetic": "shù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 1481
+  }
+ },
+ {
+  "term": "水平",
+  "translation": "level (of achievement etc); standard; horizontal",
+  "phonetic": "shuǐ píng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1490
+  }
+ },
+ {
+  "term": "借",
+  "translation": "to lend; to borrow; by means of",
+  "phonetic": "jiè",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "p"
+   ],
+   "frequencyRank": 1495
+  }
+ },
+ {
+  "term": "东",
+  "translation": "surname Dong",
+  "phonetic": "Dōng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "f",
+    "b"
+   ],
+   "frequencyRank": 1509
+  }
+ },
+ {
+  "term": "头发",
+  "translation": "hair (on the head)",
+  "phonetic": "tóu fa",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1533
+  }
+ },
+ {
+  "term": "害怕",
+  "translation": "to be afraid; to be scared",
+  "phonetic": "hài pà",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 1536
+  }
+ },
+ {
+  "term": "鸟",
+  "translation": "variant of 屌; penis",
+  "phonetic": "diǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1593
+  }
+ },
+ {
+  "term": "蓝",
+  "translation": "surname Lan",
+  "phonetic": "Lán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "g"
+   ],
+   "frequencyRank": 1615
+  }
+ },
+ {
+  "term": "照顾",
+  "translation": "to take care of; to show consideration; to attend to",
+  "phonetic": "zhào gu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 1631
+  }
+ },
+ {
+  "term": "文化",
+  "translation": "culture; civilization; cultural",
+  "phonetic": "wén huà",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1632
+  }
+ },
+ {
+  "term": "疼",
+  "translation": "(it) hurts; sore; to love dearly",
+  "phonetic": "téng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "a"
+   ],
+   "frequencyRank": 1641
+  }
+ },
+ {
+  "term": "奇怪",
+  "translation": "strange; odd; to marvel",
+  "phonetic": "qí guài",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "a"
+   ],
+   "frequencyRank": 1655
+  }
+ },
+ {
+  "term": "礼物",
+  "translation": "gift; present",
+  "phonetic": "lǐ wù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1673
+  }
+ },
+ {
+  "term": "南",
+  "translation": "surname Nan",
+  "phonetic": "Nán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "b",
+    "f"
+   ],
+   "frequencyRank": 1709
+  }
+ },
+ {
+  "term": "提高",
+  "translation": "to raise; to increase; to improve",
+  "phonetic": "tí gāo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 1724
+  }
+ },
+ {
+  "term": "满意",
+  "translation": "satisfied; pleased; to one's satisfaction",
+  "phonetic": "mǎn yì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 1761
+  }
+ },
+ {
+  "term": "旧",
+  "translation": "old; opposite: new 新; former",
+  "phonetic": "jiù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "g"
+   ],
+   "frequencyRank": 1787
+  }
+ },
+ {
+  "term": "司机",
+  "translation": "chauffeur; driver",
+  "phonetic": "sī jī",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1804
+  }
+ },
+ {
+  "term": "黄",
+  "translation": "surname Huang or Hwang",
+  "phonetic": "Huáng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "nr",
+    "a",
+    "b"
+   ],
+   "frequencyRank": 1809
+  }
+ },
+ {
+  "term": "经理",
+  "translation": "manager; director",
+  "phonetic": "jīng lǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1838
+  }
+ },
+ {
+  "term": "兴趣",
+  "translation": "interest (desire to know about sth); interest (thing in which one is interested); hobby",
+  "phonetic": "xìng qù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1847
+  }
+ },
+ {
+  "term": "帮忙",
+  "translation": "to help; to lend a hand; to do a favor",
+  "phonetic": "bāng máng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 1860
+  }
+ },
+ {
+  "term": "电子",
+  "translation": "electronic; electron (particle physics)",
+  "phonetic": "diàn zǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1874
+  }
+ },
+ {
+  "term": "见面",
+  "translation": "to meet; to see each other",
+  "phonetic": "jiàn miàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 1876
+  }
+ },
+ {
+  "term": "成绩",
+  "translation": "achievement; performance records; grades",
+  "phonetic": "chéng jì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 1888
+  }
+ },
+ {
+  "term": "中间",
+  "translation": "the middle; the inside; in the middle; within; between; among; during; in the meantime",
+  "phonetic": "zhōng jiān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "f"
+   ],
+   "frequencyRank": 1889
+  }
+ },
+ {
+  "term": "聪明",
+  "translation": "intelligent; clever; bright",
+  "phonetic": "cōng ming",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "an"
+   ],
+   "frequencyRank": 1918
+  }
+ },
+ {
+  "term": "多么",
+  "translation": "how (wonderful etc); what (a great idea etc); however (difficult it may be etc)",
+  "phonetic": "duō me",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d",
+    "a"
+   ],
+   "frequencyRank": 1940
+  }
+ },
+ {
+  "term": "灯",
+  "translation": "lamp; light; lantern",
+  "phonetic": "dēng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2001
+  }
+ },
+ {
+  "term": "太阳",
+  "translation": "sun; abbr. for 太阳穴",
+  "phonetic": "tài yang",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2001
+  }
+ },
+ {
+  "term": "方便",
+  "translation": "convenient; suitable; to facilitate",
+  "phonetic": "fāng biàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "a",
+    "an"
+   ],
+   "frequencyRank": 2014
+  }
+ },
+ {
+  "term": "糖",
+  "translation": "sugar; sweets; candy",
+  "phonetic": "táng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2036
+  }
+ },
+ {
+  "term": "相同",
+  "translation": "identical; same",
+  "phonetic": "xiāng tóng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2110
+  }
+ },
+ {
+  "term": "生气",
+  "translation": "to get angry; to take offense; angry",
+  "phonetic": "shēng qì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "n",
+    "v",
+    "an"
+   ],
+   "frequencyRank": 2113
+  }
+ },
+ {
+  "term": "公园",
+  "translation": "park (for public recreation)",
+  "phonetic": "gōng yuán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2134
+  }
+ },
+ {
+  "term": "热情",
+  "translation": "cordial; enthusiastic; passion",
+  "phonetic": "rè qíng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "an",
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 2149
+  }
+ },
+ {
+  "term": "一会儿",
+  "translation": "a moment; a while; in a moment",
+  "phonetic": "yī huì r",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "mq"
+   ],
+   "frequencyRank": 2207
+  }
+ },
+ {
+  "term": "骑",
+  "translation": "(Tw) saddle horse; mounted soldier",
+  "phonetic": "jì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 2231
+  }
+ },
+ {
+  "term": "河",
+  "translation": "river",
+  "phonetic": "hé",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2245
+  }
+ },
+ {
+  "term": "搬",
+  "translation": "to move (i.e. relocate oneself); to move (sth relatively heavy or bulky); to shift",
+  "phonetic": "bān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 2254
+  }
+ },
+ {
+  "term": "同事",
+  "translation": "colleague; co-worker",
+  "phonetic": "tóng shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2337
+  }
+ },
+ {
+  "term": "舒服",
+  "translation": "comfortable; feeling well",
+  "phonetic": "shū fu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2343
+  }
+ },
+ {
+  "term": "体育",
+  "translation": "sports; physical education",
+  "phonetic": "tǐ yù",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2354
+  }
+ },
+ {
+  "term": "角",
+  "translation": "surname Jue",
+  "phonetic": "Jué",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "q",
+    "g"
+   ],
+   "frequencyRank": 2370
+  }
+ },
+ {
+  "term": "胖",
+  "translation": "healthy; at ease",
+  "phonetic": "pán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2396
+  }
+ },
+ {
+  "term": "干净",
+  "translation": "clean; neat",
+  "phonetic": "gān jìng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 2430
+  }
+ },
+ {
+  "term": "放心",
+  "translation": "to feel relieved; to feel reassured; to be at ease",
+  "phonetic": "fàng xīn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 2458
+  }
+ },
+ {
+  "term": "草",
+  "translation": "variant of 草",
+  "phonetic": "cǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2467
+  }
+ },
+ {
+  "term": "甜",
+  "translation": "sweet",
+  "phonetic": "tián",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2472
+  }
+ },
+ {
+  "term": "安静",
+  "translation": "quiet; peaceful; calm",
+  "phonetic": "ān jìng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2501
+  }
+ },
+ {
+  "term": "作业",
+  "translation": "school assignment; homework; work",
+  "phonetic": "zuò yè",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 2574
+  }
+ },
+ {
+  "term": "瘦",
+  "translation": "thin; to lose weight; (of clothing) tight",
+  "phonetic": "shòu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2595
+  }
+ },
+ {
+  "term": "绿",
+  "translation": "green; (slang) (derived from 绿帽子) to cheat on (one's spouse or boyfriend or girlfriend)",
+  "phonetic": "lǜ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "an"
+   ],
+   "frequencyRank": 2608
+  }
+ },
+ {
+  "term": "啤酒",
+  "translation": "beer (loanword)",
+  "phonetic": "pí jiǔ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2622
+  }
+ },
+ {
+  "term": "蛋糕",
+  "translation": "cake",
+  "phonetic": "dàn gāo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2650
+  }
+ },
+ {
+  "term": "新鲜",
+  "translation": "fresh (experience, food etc); freshness; novel",
+  "phonetic": "xīn xiān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2651
+  }
+ },
+ {
+  "term": "难过",
+  "translation": "to feel sad; to feel unwell; (of life) to be difficult",
+  "phonetic": "nán guò",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 2714
+  }
+ },
+ {
+  "term": "客人",
+  "translation": "visitor; guest; customer",
+  "phonetic": "kè rén",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2750
+  }
+ },
+ {
+  "term": "奶奶",
+  "translation": "(informal) grandma (paternal grandmother); (respectful) mistress of the house; (coll.) boobies",
+  "phonetic": "nǎi nai",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 2809
+  }
+ },
+ {
+  "term": "碗",
+  "translation": "variant of 碗",
+  "phonetic": "wǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "q"
+   ],
+   "frequencyRank": 2866
+  }
+ },
+ {
+  "term": "数学",
+  "translation": "mathematics; mathematical",
+  "phonetic": "shù xué",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3024
+  }
+ },
+ {
+  "term": "地铁",
+  "translation": "underground railway; subway; subway train",
+  "phonetic": "dì tiě",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3046
+  }
+ },
+ {
+  "term": "刷",
+  "translation": "to brush; to paint; to daub",
+  "phonetic": "shuā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "o"
+   ],
+   "frequencyRank": 3060
+  }
+ },
+ {
+  "term": "厨房",
+  "translation": "kitchen",
+  "phonetic": "chú fáng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3076
+  }
+ },
+ {
+  "term": "练习",
+  "translation": "to practice; exercise; drill",
+  "phonetic": "liàn xí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 3084
+  }
+ },
+ {
+  "term": "爷爷",
+  "translation": "(coll.) father's father; paternal grandfather",
+  "phonetic": "yé ye",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3099
+  }
+ },
+ {
+  "term": "云",
+  "translation": "(classical) to say",
+  "phonetic": "yún",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "g",
+    "b"
+   ],
+   "frequencyRank": 3335
+  }
+ },
+ {
+  "term": "邻居",
+  "translation": "neighbor; next door",
+  "phonetic": "lín jū",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3360
+  }
+ },
+ {
+  "term": "校长",
+  "translation": "(college, university) president; headmaster",
+  "phonetic": "xiào zhǎng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3365
+  }
+ },
+ {
+  "term": "花园",
+  "translation": "garden",
+  "phonetic": "huā yuán",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3403
+  }
+ },
+ {
+  "term": "耳朵",
+  "translation": "ear; handle (on a cup)",
+  "phonetic": "ěr duo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3451
+  }
+ },
+ {
+  "term": "节日",
+  "translation": "holiday; festival",
+  "phonetic": "jié rì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3477
+  }
+ },
+ {
+  "term": "鼻子",
+  "translation": "nose",
+  "phonetic": "bí zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3484
+  }
+ },
+ {
+  "term": "叔叔",
+  "translation": "father's younger brother; uncle; Taiwan pr. [shú shu]",
+  "phonetic": "shū shu",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3510
+  }
+ },
+ {
+  "term": "洗澡",
+  "translation": "to bathe; to take a shower",
+  "phonetic": "xǐ zǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 3512
+  }
+ },
+ {
+  "term": "地图",
+  "translation": "map",
+  "phonetic": "dì tú",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3548
+  }
+ },
+ {
+  "term": "帽子",
+  "translation": "hat; cap; (fig.) label",
+  "phonetic": "mào zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3553
+  }
+ },
+ {
+  "term": "街道",
+  "translation": "street; subdistrict; residential district",
+  "phonetic": "jiē dào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3604
+  }
+ },
+ {
+  "term": "感冒",
+  "translation": "to catch cold; (common) cold; (coll.) to be interested in (often used in the negative)",
+  "phonetic": "gǎn mào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 3621
+  }
+ },
+ {
+  "term": "迟到",
+  "translation": "to arrive late",
+  "phonetic": "chí dào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 3667
+  }
+ },
+ {
+  "term": "刻",
+  "translation": "quarter (hour); moment; to carve",
+  "phonetic": "kè",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "qt"
+   ],
+   "frequencyRank": 3756
+  }
+ },
+ {
+  "term": "锻炼",
+  "translation": "to toughen; to temper; to engage in physical exercise",
+  "phonetic": "duàn liàn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 3764
+  }
+ },
+ {
+  "term": "裤子",
+  "translation": "variant of 裤子, trousers; pants",
+  "phonetic": "kù zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3765
+  }
+ },
+ {
+  "term": "夏",
+  "translation": "the Xia or Hsia dynasty c. 2000 BC; Xia of the Sixteen Kingdoms (407-432); surname Xia",
+  "phonetic": "Xià",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "tg",
+    "g",
+    "nr"
+   ],
+   "frequencyRank": 3828
+  }
+ },
+ {
+  "term": "图书馆",
+  "translation": "library",
+  "phonetic": "tú shū guǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3836
+  }
+ },
+ {
+  "term": "电梯",
+  "translation": "elevator; escalator",
+  "phonetic": "diàn tī",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3894
+  }
+ },
+ {
+  "term": "刮",
+  "translation": "to scrape; to blow; to shave",
+  "phonetic": "guā",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 3910
+  }
+ },
+ {
+  "term": "矮",
+  "translation": "low; short (in length)",
+  "phonetic": "ǎi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "v"
+   ],
+   "frequencyRank": 3952
+  }
+ },
+ {
+  "term": "眼镜",
+  "translation": "spectacles; eyeglasses",
+  "phonetic": "yǎn jìng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 3998
+  }
+ },
+ {
+  "term": "上网",
+  "translation": "to go online; to connect to the Internet; (of a document etc) to be uploaded to the Internet",
+  "phonetic": "shàng wǎng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 4061
+  }
+ },
+ {
+  "term": "春",
+  "translation": "old variant of 春",
+  "phonetic": "chūn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "tg"
+   ],
+   "frequencyRank": 4065
+  }
+ },
+ {
+  "term": "面包",
+  "translation": "bread",
+  "phonetic": "miàn bāo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4138
+  }
+ },
+ {
+  "term": "冰箱",
+  "translation": "icebox; freezer cabinet; refrigerator",
+  "phonetic": "bīng xiāng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4168
+  }
+ },
+ {
+  "term": "阿姨",
+  "translation": "maternal aunt; step-mother; childcare worker",
+  "phonetic": "ā yí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4355
+  }
+ },
+ {
+  "term": "超市",
+  "translation": "supermarket (abbr. for 超级市场)",
+  "phonetic": "chāo shì",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4427
+  }
+ },
+ {
+  "term": "着急",
+  "translation": "to worry; to feel anxious; to feel a sense of urgency; to be in a hurry; Taiwan pr. [zhāo jí]",
+  "phonetic": "zháo jí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad"
+   ],
+   "frequencyRank": 4461
+  }
+ },
+ {
+  "term": "季节",
+  "translation": "time; season; period",
+  "phonetic": "jì jié",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4724
+  }
+ },
+ {
+  "term": "饱",
+  "translation": "to eat till full; satisfied",
+  "phonetic": "bǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "ad",
+    "v"
+   ],
+   "frequencyRank": 4742
+  }
+ },
+ {
+  "term": "空调",
+  "translation": "air conditioning; air conditioner (including units that have a heating mode)",
+  "phonetic": "kōng tiáo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4763
+  }
+ },
+ {
+  "term": "一共",
+  "translation": "altogether",
+  "phonetic": "yī gòng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "d"
+   ],
+   "frequencyRank": 4765
+  }
+ },
+ {
+  "term": "月亮",
+  "translation": "the moon",
+  "phonetic": "yuè liang",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4781
+  }
+ },
+ {
+  "term": "北方",
+  "translation": "north; the northern part a country; China north of the Yellow River",
+  "phonetic": "běi fāng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "s",
+    "f"
+   ],
+   "frequencyRank": 4879
+  }
+ },
+ {
+  "term": "爱好",
+  "translation": "to like; to be fond of; to take pleasure in; to be keen on; interest; hobby",
+  "phonetic": "ài hào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "v"
+   ],
+   "frequencyRank": 4902
+  }
+ },
+ {
+  "term": "衬衫",
+  "translation": "shirt; blouse",
+  "phonetic": "chèn shān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4988
+  }
+ },
+ {
+  "term": "宾馆",
+  "translation": "guesthouse; lodge; hotel",
+  "phonetic": "bīn guǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 4994
+  }
+ },
+ {
+  "term": "冬",
+  "translation": "winter",
+  "phonetic": "dōng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "tg"
+   ],
+   "frequencyRank": 5272
+  }
+ },
+ {
+  "term": "裙子",
+  "translation": "skirt",
+  "phonetic": "qún zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 5466
+  }
+ },
+ {
+  "term": "香蕉",
+  "translation": "banana",
+  "phonetic": "xiāng jiāo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 5473
+  }
+ },
+ {
+  "term": "秋",
+  "translation": "surname Qiu",
+  "phonetic": "Qiū",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "tg",
+    "g"
+   ],
+   "frequencyRank": 5603
+  }
+ },
+ {
+  "term": "发烧",
+  "translation": "to have a high temperature (from illness); to have a fever",
+  "phonetic": "fā shāo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn",
+    "b"
+   ],
+   "frequencyRank": 5836
+  }
+ },
+ {
+  "term": "伞",
+  "translation": "umbrella; parasol",
+  "phonetic": "sǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 6101
+  }
+ },
+ {
+  "term": "有名",
+  "translation": "famous; well-known",
+  "phonetic": "yǒu míng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a"
+   ],
+   "frequencyRank": 6219
+  }
+ },
+ {
+  "term": "打扫",
+  "translation": "to clean; to sweep",
+  "phonetic": "dǎ sǎo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v"
+   ],
+   "frequencyRank": 6258
+  }
+ },
+ {
+  "term": "葡萄",
+  "translation": "grape",
+  "phonetic": "pú tao",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 6422
+  }
+ },
+ {
+  "term": "复习",
+  "translation": "to review; revision",
+  "phonetic": "fù xí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 6867
+  }
+ },
+ {
+  "term": "熊猫",
+  "translation": "panda",
+  "phonetic": "xióng māo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n",
+    "nz"
+   ],
+   "frequencyRank": 7123
+  }
+ },
+ {
+  "term": "护照",
+  "translation": "passport",
+  "phonetic": "hù zhào",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 7152
+  }
+ },
+ {
+  "term": "菜单",
+  "translation": "menu",
+  "phonetic": "cài dān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 7509
+  }
+ },
+ {
+  "term": "年级",
+  "translation": "grade; year (in school, college etc)",
+  "phonetic": "nián jí",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 7644
+  }
+ },
+ {
+  "term": "果汁",
+  "translation": "fruit juice",
+  "phonetic": "guǒ zhī",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 7765
+  }
+ },
+ {
+  "term": "面条",
+  "translation": "noodles",
+  "phonetic": "miàn tiáo",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 8961
+  }
+ },
+ {
+  "term": "盘子",
+  "translation": "tray; plate; dish",
+  "phonetic": "pán zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 9039
+  }
+ },
+ {
+  "term": "铅笔",
+  "translation": "(lead) pencil",
+  "phonetic": "qiān bǐ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 9108
+  }
+ },
+ {
+  "term": "渴",
+  "translation": "thirsty",
+  "phonetic": "kě",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "a",
+    "v"
+   ],
+   "frequencyRank": 9442
+  }
+ },
+ {
+  "term": "洗手间",
+  "translation": "toilet; lavatory; washroom",
+  "phonetic": "xǐ shǒu jiān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 9674
+  }
+ },
+ {
+  "term": "词语",
+  "translation": "word (general term including monosyllables through to short phrases); term (e.g. technical term); expression",
+  "phonetic": "cí yǔ",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 10379
+  }
+ },
+ {
+  "term": "句子",
+  "translation": "sentence",
+  "phonetic": "jù zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 10428
+  }
+ },
+ {
+  "term": "照相机",
+  "translation": "camera",
+  "phonetic": "zhào xiàng jī",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 10452
+  }
+ },
+ {
+  "term": "筷子",
+  "translation": "chopsticks",
+  "phonetic": "kuài zi",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 10486
+  }
+ },
+ {
+  "term": "字典",
+  "translation": "Chinese character dictionary (containing entries for single characters, contrasted with a 词典, which has entries for words of one or more characters); (coll.) dictionary",
+  "phonetic": "zì diǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 13961
+  }
+ },
+ {
+  "term": "普通话",
+  "translation": "Mandarin (common language); Putonghua (common speech of the Chinese language); ordinary speech",
+  "phonetic": "pǔ tōng huà",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 14869
+  }
+ },
+ {
+  "term": "爬山",
+  "translation": "to climb a mountain; to mountaineer; hiking",
+  "phonetic": "pá shān",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "v",
+    "vn"
+   ],
+   "frequencyRank": 15470
+  }
+ },
+ {
+  "term": "黑板",
+  "translation": "blackboard",
+  "phonetic": "hēi bǎn",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 15524
+  }
+ },
+ {
+  "term": "行李箱",
+  "translation": "suitcase; baggage compartment; overhead bin",
+  "phonetic": "xíng li xiāng",
+  "metadata": {
+   "level": 3,
+   "pos": [
+    "n"
+   ],
+   "frequencyRank": 16680
+  }
+ }
+]

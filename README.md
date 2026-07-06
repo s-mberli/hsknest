@@ -1,0 +1,212 @@
+# Recall
+
+**A self-hostable spaced-repetition study app for learning any language.**
+
+Recall helps you remember vocabulary the efficient way: a research-backed
+schedule brings each word back right before you'd forget it, so you spend your
+time on the words that need it. Build your own lists (or start from included
+graded content), study a gesture-first swipe deck, and tune the schedule to how
+you learn. The data model is language-agnostic — anything with a term, a
+meaning, and an optional reading fits, no schema changes required.
+
+Own your data: run it on your own server, keep everything on-device (even the
+pronunciation audio), and never depend on a cloud service.
+
+## Screenshots
+
+|                Dashboard                 |               Study deck               |
+| :--------------------------------------: | :------------------------------------: |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Study deck](docs/screenshots/study.png) |
+
+|            Word-strength browser             |              List editor               |
+| :------------------------------------------: | :------------------------------------: |
+| ![Word browser](docs/screenshots/words.png)  | ![Lists](docs/screenshots/lists.png)   |
+
+## Features
+
+- **Multi-language by design** — every word carries a `term`, `translation`,
+  optional `phonetic`, and a free-form `metadata` JSON blob (tones, gender, part
+  of speech, audio URLs, etc.), so any language fits without schema changes.
+- **Your own content** — create lists, add words one at a time, or paste / CSV
+  import a whole batch. Add a language inline when none fits. Edit and delete
+  your own lists and words; starter lists stay read-only.
+- **Paste / CSV import** — bring vocabulary in from a spreadsheet or a
+  tab-separated export from other flashcard tools. Auto-detects tab vs comma,
+  maps columns to term / meaning / reading, and skips blank or duplicate entries.
+- **Selectable scheduling algorithms** — **SM-2** (adaptive SuperMemo 2) or
+  **Leitner** (5 fixed boxes), chosen per account. Progress is stored as a
+  superset, so switching never loses state.
+- **Tunable schedule** — daily new-word and known-word-check caps, interval and
+  lapse modifiers, a mastery cut-off, and optional interval fuzz.
+- **Gesture-first study** — a full-screen card stack in a dark focus mode. Tap
+  to reveal (staged), then swipe to grade. Keyboard fallback on desktop
+  (← → ↑ ↓ to grade).
+- **On-device pronunciation** — a speaker button reads the word using your
+  browser's built-in voices. No cloud, no API key; it tells you how to add a
+  system voice if one is missing.
+- **Word-strength browser** — see every word banded by recall strength, in a
+  searchable table view.
+- **Focus-ring dashboard** — due counts, words learned, streak, and a 7-day
+  review forecast.
+- **Light / Dark / System theme** — a real account setting that follows you
+  across devices, with a separate Dark focus / Match app setting for the study
+  screen.
+- **Study scope** — narrow a session to one language and/or specific lists; the
+  choice is remembered.
+- **Graded Chinese content** — full HSK 1–6 lists plus original
+  everyday-conversation and news-reading sets.
+- **Accounts & auth** — email + password via NextAuth (credentials), passwords
+  hashed with bcrypt, with rate-limited signup and login.
+- **In-app feedback** — report a bug or share an idea straight from Settings.
+- **Data control** — export every word and its progress as CSV; reset progress
+  for a clean slate.
+
+## Tech stack
+
+- **Next.js** (App Router) + **TypeScript**
+- **Tailwind CSS** + **shadcn/ui**-style primitives + **framer-motion** animations
+- **Prisma ORM** with **SQLite** for local dev (swap to Postgres for production)
+- **NextAuth.js** (Credentials provider, JWT sessions)
+- **next-themes** for theme switching
+- **Zod** for input validation
+- **Vitest** for unit tests
+
+## Quick start
+
+Requires Node.js 18+ (Node 22 recommended).
+
+```bash
+# 1. Clone and install
+git clone <your-fork-url> recall && cd recall
+npm install
+
+# 2. Configure environment
+cp .env.example .env      # then edit: set NEXTAUTH_SECRET (`openssl rand -base64 32`)
+
+# 3. Create the database and apply migrations
+npm run db:migrate
+
+# 4. Seed starter content (sample languages + word lists)
+npm run db:seed
+
+# 5. Run the dev server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000), create an account, add or
+import a word list, and start studying.
+
+## Deploy
+
+For self-hosting on a VPS with Docker Compose, HTTPS via a reverse proxy, and
+nightly backups, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. The short
+version:
+
+```bash
+cp .env.example .env      # set NEXTAUTH_SECRET and NEXTAUTH_URL
+docker compose up -d --build
+```
+
+The container applies migrations and seeds starter content on first boot, then
+serves the standalone Next build.
+
+## Configuration
+
+Environment variables, per-account settings, adding system voices for audio,
+and reading in-app feedback are all documented in
+**[docs/CONFIGURATION.md](docs/CONFIGURATION.md)**. The data model and SRS
+strategy pattern are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+## Tests
+
+```bash
+npm test        # runs the vitest unit suite (SRS algorithms, import parser, validation, rate limiter)
+```
+
+## Project layout
+
+```
+src/
+  app/            # App Router pages + API routes
+  components/     # UI primitives + study/dashboard/list components
+  hooks/          # useStudySession (session + optimistic reviews)
+  lib/
+    srs/          # spaced-repetition strategies (SM-2, Leitner) + registry
+    import.ts     # dependency-free delimited-text parser for imports
+    ownership.ts  # per-user list/language visibility rules
+    validation.ts # Zod schemas for every API input
+    rateLimit.ts  # in-memory fixed-window limiter (auth + feedback)
+    speech.ts     # Web Speech API pronunciation wrapper
+    auth.ts       # NextAuth configuration
+    prisma.ts     # Prisma client singleton
+prisma/
+  schema.prisma   # data model
+  seed.ts         # starter languages + word lists
+scripts/
+  screenshots.mjs # Playwright helper that captures the README screenshots
+docs/
+  ARCHITECTURE.md # data model + SRS strategy pattern + request flow
+  CONFIGURATION.md# environment variables, settings, audio, feedback
+  DEPLOYMENT.md   # VPS / Docker deploy guide + backups
+```
+
+## SRS algorithm
+
+Scheduling is a pluggable strategy. **SM-2** (adaptive ease factor + interval)
+and **Leitner** (5 fixed boxes) are both implemented in `src/lib/srs/` behind a
+shared interface, selectable per account, with progress stored as a superset so
+switching never loses state. A modifier layer applies interval/lapse tuning, a
+mastery cut-off, and optional fuzz on top of whichever strategy is active. The
+schema reserves `srsData` and a `ReviewLog` history so a future strategy (e.g.
+FSRS) can slot in without a migration.
+
+## Contributing
+
+Bug reports and ideas are welcome — file them right from the app
+(**Settings → Feedback**) or open an issue. Pull requests should keep the
+existing style and pass `npm test` and `npm run build`.
+
+## License
+
+**AGPL-3.0** — self-host freely; if you offer it as a service with your own
+modifications, you must share those modifications. See [LICENSE](LICENSE) for
+the full text.
+
+The included HSK vocabulary data is MIT-licensed; see
+[prisma/data/hsk/README.md](prisma/data/hsk/README.md) for attribution.
+
+## Roadmap
+
+**Shipped (v0.1 MVP):** multi-language schema · SM-2 + Leitner (selectable) ·
+staged-reveal study with gesture + keyboard grading · daily new/review caps +
+session sizing · algorithm tuning (interval/lapse modifiers, mastery, fuzz) ·
+assumed-known + daily checks · weak-word triage · word-strength browser ·
+focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists &
+words · Light/Dark/System theme + study-screen focus setting · study-scope
+filtering · graded HSK 1–6 + original Chinese lists · CSV export · progress
+reset · on-device pronunciation · security hardening (rate limits, input caps,
+headers) · in-app feedback · Docker + compose self-host packaging.
+
+**Next (v0.2):**
+
+- Speaking-practice mode — say the word aloud and get graded by speech
+  recognition (a distinct study mode)
+- Email verification + password reset / account recovery flow
+- Cloud TTS with your own API key (server proxy, encrypted key storage) for
+  higher-quality voices
+- 4-click response mode (separate pronunciation vs meaning grading) as a setting
+- Suspend/block words (never schedule)
+- Drag-to-reorder list learning queue
+- Review heatmap / streak calendar; richer stats
+
+**Later (v1.0+):**
+
+- FSRS as a third scheduling strategy (schema already reserves `srsData` +
+  `ReviewLog` history)
+- PostgreSQL option for horizontal scaling
+- Feedback admin dashboard
+- PWA + installable mobile app with offline queue and idempotent batch sync
+- AI example-sentence generation from known vocabulary (`metadata` reserved)
+- Shared/public user lists + community library
+- Per-list progress stats (mastery breakdown, completion, due counts)
+- Hosted managed instance (paid) for those who'd rather not self-host

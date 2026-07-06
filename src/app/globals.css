@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Palette: "Paper & Ink" ─────────────────────────────────────────────
+   Warm paper light theme, warm-charcoal night-study dark theme.
+   Vermilion/cinnabar primary, amber secondary. All shadcn var names kept
+   so ui components inherit automatically. */
+:root {
+  --radius: 0.65rem;
+
+  /* warm paper */
+  --background: oklch(0.97 0.012 85);
+  --foreground: oklch(0.24 0.015 60);
+  --card: oklch(0.99 0.008 85);
+  --card-foreground: oklch(0.24 0.015 60);
+  --popover: oklch(0.99 0.008 85);
+  --popover-foreground: oklch(0.24 0.015 60);
+
+  /* vermilion / cinnabar accent */
+  --primary: oklch(0.55 0.19 30);
+  --primary-foreground: oklch(0.98 0.01 85);
+
+  /* amber secondary tones */
+  --secondary: oklch(0.93 0.03 80);
+  --secondary-foreground: oklch(0.3 0.05 60);
+  --muted: oklch(0.93 0.014 80);
+  --muted-foreground: oklch(0.5 0.02 60);
+  --accent: oklch(0.92 0.035 75);
+  --accent-foreground: oklch(0.3 0.05 60);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.98 0.01 85);
+
+  --border: oklch(0.88 0.014 75);
+  --input: oklch(0.88 0.014 75);
+  --ring: oklch(0.55 0.19 30);
+
+  /* semantic study/dashboard accents (not shadcn, used directly) */
+  --amber: oklch(0.72 0.15 70);
+  --amber-foreground: oklch(0.28 0.05 60);
+  --success: oklch(0.55 0.13 150);
+  --success-foreground: oklch(0.98 0.01 85);
+}
+
+.dark {
+  /* deep warm charcoal — night study */
+  --background: oklch(0.21 0.012 60);
+  --foreground: oklch(0.93 0.014 85);
+  --card: oklch(0.25 0.014 60);
+  --card-foreground: oklch(0.93 0.014 85);
+  --popover: oklch(0.25 0.014 60);
+  --popover-foreground: oklch(0.93 0.014 85);
+
+  /* vermilion stays, lifted slightly for dark bg */
+  --primary: oklch(0.62 0.19 32);
+  --primary-foreground: oklch(0.15 0.01 60);
+
+  --secondary: oklch(0.3 0.025 65);
+  --secondary-foreground: oklch(0.93 0.014 85);
+  --muted: oklch(0.3 0.016 60);
+  --muted-foreground: oklch(0.68 0.018 70);
+  --accent: oklch(0.33 0.03 65);
+  --accent-foreground: oklch(0.93 0.014 85);
+  --destructive: oklch(0.62 0.19 27);
+  --destructive-foreground: oklch(0.95 0.01 85);
+
+  --border: oklch(0.95 0.02 85 / 12%);
+  --input: oklch(0.95 0.02 85 / 15%);
+  --ring: oklch(0.62 0.19 32);
+
+  --amber: oklch(0.75 0.14 72);
+  --amber-foreground: oklch(0.2 0.02 60);
+  --success: oklch(0.7 0.15 152);
+  --success-foreground: oklch(0.18 0.02 150);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-amber: var(--amber);
+  --color-amber-foreground: var(--amber-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in oklch, var(--ring) 50%, transparent);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+}
+
+/* Respect reduced-motion: kill nonessential transitions/animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
