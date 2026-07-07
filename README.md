@@ -41,9 +41,14 @@ pronunciation audio), and never depend on a cloud service.
 - **Gesture-first study** — a full-screen card stack in a dark focus mode. Tap
   to reveal (staged), then swipe to grade. Keyboard fallback on desktop
   (← → ↑ ↓ to grade).
-- **Practice modes** — beyond flashcards: a multiple-choice quiz (pick the
-  meaning from four options) and matching rounds (pair up words and meanings
-  from a five-word pool). Both feed the same scheduler.
+- **Practice modes** — beyond flashcards: a meaning quiz (pick the meaning
+  from four options), a **pronunciation quiz** (see the character, pick how
+  it's read — trains symbol → sound, ideal for Chinese), and matching rounds
+  (pair up words and meanings from a five-word pool). All feed the same
+  scheduler.
+- **Hide-the-reading mode** — an optional per-account setting: flashcards skip
+  the reading hint so you recall the pronunciation yourself; it still appears
+  with the answer to check against.
 - **Adjustable card text size** — small / normal / large study text, a
   per-account setting.
 - **On-device pronunciation** — a speaker button reads the word using your
@@ -215,6 +220,7 @@ words + re-study.
 
 - More practice modes: type-the-answer (phonetic-aware for Chinese) and a
   picture quiz with generated images
+  (pronunciation quiz + hide-reading mode shipped)
 - Per-element card text controls (character / phonetic / meaning sizes)
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)

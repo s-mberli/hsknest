@@ -14,17 +14,26 @@ import { cn } from "@/lib/utils";
 interface StudyScreenProps {
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
+  showReading?: boolean;
 }
 
-export function StudyScreen({ studyTheme, textSize }: StudyScreenProps) {
+export function StudyScreen({
+  studyTheme,
+  textSize,
+  showReading = true,
+}: StudyScreenProps) {
   return (
     <Suspense fallback={null}>
-      <StudySession studyTheme={studyTheme} textSize={textSize} />
+      <StudySession
+        studyTheme={studyTheme}
+        textSize={textSize}
+        showReading={showReading}
+      />
     </Suspense>
   );
 }
 
-function StudySession({ studyTheme, textSize }: StudyScreenProps) {
+function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenProps) {
   const { query, scoped } = useQueueQuery();
   const {
     loading,
@@ -40,7 +49,7 @@ function StudySession({ studyTheme, textSize }: StudyScreenProps) {
     done,
     advance,
     swipe,
-  } = useStudySession(query);
+  } = useStudySession(query, { showReading });
 
   const startedAt = useRef(Date.now()).current;
 

@@ -48,14 +48,30 @@ interface UseStudySession {
   swipe: (direction: SwipeDirection) => void;
 }
 
-/** Next reveal stage for a card; phonetic-less words jump straight to FULL. */
-function nextStage(stage: Stage, card: StudyCard | null): Stage {
-  if (stage === "TERM") return card?.phonetic ? "PHONETIC" : "FULL";
+/**
+ * Next reveal stage for a card; phonetic-less words jump straight to FULL.
+ * When the reading hint is hidden, TERM also jumps straight to FULL so the
+ * learner recalls the pronunciation themselves (it still shows with the answer).
+ */
+function nextStage(
+  stage: Stage,
+  card: StudyCard | null,
+  showReading: boolean
+): Stage {
+  if (stage === "TERM") return showReading && card?.phonetic ? "PHONETIC" : "FULL";
   return "FULL";
 }
 
+interface StudySessionOptions {
+  /** false → skip the intermediate reading-hint stage. Defaults to true. */
+  showReading?: boolean;
+}
+
 /** `query` is the queue query string, e.g. "limit=10" or "minutes=5". */
-export function useStudySession(query = "limit=20"): UseStudySession {
+export function useStudySession(
+  query = "limit=20",
+  { showReading = true }: StudySessionOptions = {}
+): UseStudySession {
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [cursor, setCursor] = useState(0);
   const [stage, setStage] = useState<Stage>("TERM");
@@ -93,8 +109,8 @@ export function useStudySession(query = "limit=20"): UseStudySession {
   const done = !loading && current === null;
 
   const advance = useCallback(() => {
-    setStage((s) => nextStage(s, current));
-  }, [current]);
+    setStage((s) => nextStage(s, current, showReading));
+  }, [current, showReading]);
 
   const swipe = useCallback(
     (direction: SwipeDirection) => {

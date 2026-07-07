@@ -87,6 +87,7 @@ interface SettingsFormProps {
   theme: Theme;
   studyTheme: StudyTheme;
   cardTextSize: CardTextSize;
+  showReading: boolean;
 }
 
 /**
@@ -366,6 +367,7 @@ export function SettingsForm(props: SettingsFormProps) {
         initialTheme={props.theme}
         initialStudyTheme={props.studyTheme}
         initialCardTextSize={props.cardTextSize}
+        initialShowReading={props.showReading}
       />
 
       <DataAccountSection email={props.email} name={props.name} />
@@ -455,10 +457,12 @@ function AppearanceSection({
   initialTheme,
   initialStudyTheme,
   initialCardTextSize,
+  initialShowReading,
 }: {
   initialTheme: Theme;
   initialStudyTheme: StudyTheme;
   initialCardTextSize: CardTextSize;
+  initialShowReading: boolean;
 }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -466,6 +470,7 @@ function AppearanceSection({
   const [studyTheme, setStudyTheme] = useState<StudyTheme>(initialStudyTheme);
   const [cardTextSize, setCardTextSize] =
     useState<CardTextSize>(initialCardTextSize);
+  const [showReading, setShowReading] = useState(initialShowReading);
 
   // Avoid hydration mismatch: only reflect the resolved theme after mount.
   useEffect(() => setMounted(true), []);
@@ -524,6 +529,24 @@ function AppearanceSection({
     toast.success("Setting saved.");
   }
 
+  async function chooseShowReading(next: boolean) {
+    const prev = showReading;
+    setShowReading(next);
+    setSaving(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ showReading: next }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      toast.error("Could not save that setting.");
+      setShowReading(prev);
+      return;
+    }
+    toast.success("Setting saved.");
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -567,6 +590,18 @@ function AppearanceSection({
             disabled={saving}
             options={CARD_TEXT_SIZE_OPTIONS}
             onChange={chooseCardTextSize}
+          />
+        </SettingRow>
+
+        <SettingRow
+          name="Show reading on cards"
+          description="Off skips the reading hint so you recall pronunciation yourself; it still appears with the answer."
+        >
+          <Switch
+            checked={showReading}
+            disabled={saving}
+            onCheckedChange={chooseShowReading}
+            aria-label="Show reading on cards"
           />
         </SettingRow>
       </CardContent>

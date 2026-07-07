@@ -25,6 +25,7 @@ export async function GET() {
       theme: true,
       studyTheme: true,
       cardTextSize: true,
+      showReading: true,
     },
   });
   if (!user) {
@@ -71,6 +72,7 @@ export async function PATCH(req: Request) {
       theme: true,
       studyTheme: true,
       cardTextSize: true,
+      showReading: true,
     },
   });
 

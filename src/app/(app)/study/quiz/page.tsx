@@ -21,6 +21,7 @@ export default async function QuizPage() {
     <QuizScreen
       studyTheme={studyTheme}
       textSize={normalizeCardTextSize(user.cardTextSize)}
+      mode="meaning"
     />
   );
 }

@@ -18,21 +18,23 @@ type QuizCard = StudyCard & { choices?: string[] };
 interface QuizScreenProps {
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
+  /** "meaning" = pick the translation; "reading" = pick the pronunciation. */
+  mode?: "meaning" | "reading";
 }
 
 /** Delay before auto-advancing after an answer, long enough to read feedback. */
 const ADVANCE_MS = 900;
 const ADVANCE_WRONG_MS = 1600;
 
-export function QuizScreen({ studyTheme, textSize }: QuizScreenProps) {
+export function QuizScreen({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps) {
   return (
     <Suspense fallback={null}>
-      <QuizSession studyTheme={studyTheme} textSize={textSize} />
+      <QuizSession studyTheme={studyTheme} textSize={textSize} mode={mode} />
     </Suspense>
   );
 }
 
-function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
+function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps) {
   const { query, scoped } = useQueueQuery();
   const [cards, setCards] = useState<QuizCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`/api/study/queue?${query}&choices=1`);
+        const res = await fetch(`/api/study/queue?${query}&choices=${mode}`);
         if (!res.ok) throw new Error("queue fetch failed");
         const data = await res.json();
         if (active) {
@@ -71,15 +73,17 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
     return () => {
       active = false;
     };
-  }, [query]);
+  }, [query, mode]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
+  const answerOf = (c: QuizCard) =>
+    mode === "reading" ? c.phonetic ?? "" : c.translation;
 
   function pick(choice: string) {
     if (!current || picked !== null) return;
     setPicked(choice);
-    const isRight = choice === current.translation;
+    const isRight = choice === answerOf(current);
     if (isRight) {
       setCorrect((n) => n + 1);
       setCombo((c) => {
@@ -132,7 +136,8 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
             {skipped > 0 && (
               <p className="max-w-xs text-center text-xs text-muted-foreground">
                 {skipped} {skipped === 1 ? "card" : "cards"} can&apos;t be
-                quizzed yet — the quiz needs a few more words in the same
+                quizzed yet — the quiz needs a few more words
+                {mode === "reading" ? " with readings" : ""} in the same
                 language to build answer options. Try flashcards instead.
               </p>
             )}
@@ -165,7 +170,8 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
               >
                 {current.term}
               </p>
-              {current.phonetic && (
+              {/* In reading mode the reading IS the answer, so keep it hidden. */}
+              {mode === "meaning" && current.phonetic && (
                 <p className={cn("text-muted-foreground", sizes.phonetic)}>
                   {current.phonetic}
                 </p>
@@ -174,7 +180,7 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
 
             <div className="flex w-full flex-col gap-2">
               {(current.choices ?? []).map((choice) => {
-                const isAnswer = choice === current.translation;
+                const isAnswer = choice === answerOf(current);
                 const isPicked = choice === picked;
                 return (
                   <button
@@ -203,7 +209,7 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
-              Pick the meaning
+              {mode === "reading" ? "Pick the pronunciation" : "Pick the meaning"}
             </p>
           </motion.div>
         )}

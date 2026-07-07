@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, LayoutGrid, ListChecks } from "lucide-react";
+import { GraduationCap, LayoutGrid, ListChecks, Volume2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -104,6 +104,14 @@ export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
           >
             <LayoutGrid className="size-3.5" />
             Match
+          </Link>
+          <span>·</span>
+          <Link
+            href={href.replace(/^\/study/, "/study/pronounce")}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            <Volume2 className="size-3.5" />
+            Pronounce
           </Link>
         </div>
       )}
