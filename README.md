@@ -62,6 +62,9 @@ pronunciation audio), and never depend on a cloud service.
   everyday-conversation and news-reading sets.
 - **Accounts & auth** — email + password via NextAuth (credentials), passwords
   hashed with bcrypt, with rate-limited signup and login.
+- **Guest mode** — one click on the login page creates a throwaway account
+  with a starter list already enrolled, so visitors can try the app without
+  signing up.
 - **In-app feedback** — report a bug or share an idea straight from Settings.
 - **Data control** — export every word and its progress as CSV; reset progress
   for a clean slate.
@@ -203,6 +206,8 @@ Playwright end-to-end suite.
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)
 - Email verification + password reset / account recovery flow
+- Upgrade a guest account to a real one (set email + password, keep progress);
+  prune stale guest accounts after inactivity
 - Bring-your-own-key integrations: cloud TTS and image generation via your own
   API key (server proxy, encrypted per-user key storage; instance operators can
   set global keys; features hide when no provider is configured)
