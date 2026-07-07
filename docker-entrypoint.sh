@@ -19,5 +19,9 @@ else
   echo "→ Seed already applied — skipping."
 fi
 
+# Housekeeping: remove stale guest accounts (non-fatal if it fails).
+echo "→ Pruning stale guest accounts…"
+node_modules/.bin/tsx scripts/prune-guests.ts || true
+
 # Hand off to the CMD (node server.js).
 exec "$@"

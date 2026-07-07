@@ -115,7 +115,9 @@ export function ListWordsView({
         <ImportWords listId={listId} onClose={() => setImporting(false)} />
       )}
 
-      {isOwner && listId && <AddWordRow listId={listId} />}
+      {isOwner && listId && (
+        <AddWordRow listId={listId} languageCode={languageCode} />
+      )}
 
       {view === "strength" ? (
         <WordStrengthGrid

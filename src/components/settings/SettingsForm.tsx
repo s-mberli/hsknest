@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -584,6 +585,18 @@ function DataAccountSection({
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [deleting, setDeleting] = useState<"idle" | "confirm" | "busy">("idle");
+
+  async function deleteAccount() {
+    setDeleting("busy");
+    const res = await fetch("/api/account", { method: "DELETE" });
+    if (!res.ok) {
+      setDeleting("idle");
+      toast.error("Could not delete the account.");
+      return;
+    }
+    await signOut({ callbackUrl: "/signup" });
+  }
 
   async function reset() {
     setResetting(true);
@@ -653,13 +666,7 @@ function DataAccountSection({
           )}
         </SettingRow>
 
-        {email.endsWith("@guest.local") && (
-          <p className="rounded-lg border border-amber/40 bg-amber/10 px-3 py-2 text-sm">
-            You&apos;re on a guest account — it works fully, but there&apos;s no
-            way to log back in if you sign out. Create a real account to keep
-            your progress.
-          </p>
-        )}
+        {email.endsWith("@guest.local") && <UpgradeBanner compact />}
 
         <SettingRow
           name="Signed in as"
@@ -672,6 +679,41 @@ function DataAccountSection({
           >
             Sign out
           </Button>
+        </SettingRow>
+
+        <SettingRow
+          name="Delete account"
+          description="Permanently delete your account, lists, words, and history."
+        >
+          {deleting !== "idle" ? (
+            <div className="flex shrink-0 gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDeleting("idle")}
+                disabled={deleting === "busy"}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={deleteAccount}
+                disabled={deleting === "busy"}
+              >
+                {deleting === "busy" ? "Deleting…" : "Yes, delete everything"}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={() => setDeleting("confirm")}
+            >
+              Delete account
+            </Button>
+          )}
         </SettingRow>
       </CardContent>
     </Card>

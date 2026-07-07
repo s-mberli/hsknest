@@ -113,7 +113,20 @@ export function ImportWords({
       return;
     }
     const data = await res.json();
-    toast.success(`Imported ${data.added} words (${data.skipped} skipped).`);
+    const reasons: string[] = [];
+    if (data.reasons?.duplicateInPaste)
+      reasons.push(`${data.reasons.duplicateInPaste} duplicate in paste`);
+    if (data.reasons?.alreadyInList)
+      reasons.push(`${data.reasons.alreadyInList} already in the list`);
+    if (data.reasons?.noTerm)
+      reasons.push(`${data.reasons.noTerm} missing a term`);
+    if (data.reasons?.overCap)
+      reasons.push(`${data.reasons.overCap} over the 2000-row cap`);
+    toast.success(
+      data.skipped > 0
+        ? `Imported ${data.added} words — skipped ${reasons.join(", ")}.`
+        : `Imported ${data.added} words.`
+    );
     setText("");
     onClose();
     router.refresh();

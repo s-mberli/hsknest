@@ -36,6 +36,7 @@ function StudySession({ studyTheme, textSize }: StudyScreenProps) {
     combo,
     bestCombo,
     correct,
+    missed,
     done,
     advance,
     swipe,
@@ -76,6 +77,7 @@ function StudySession({ studyTheme, textSize }: StudyScreenProps) {
             correct={correct}
             bestCombo={bestCombo}
             elapsedMs={Date.now() - startedAt}
+            missed={missed}
           />
         )}
 

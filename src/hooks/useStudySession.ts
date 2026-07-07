@@ -39,6 +39,8 @@ interface UseStudySession {
   combo: number;
   bestCombo: number;
   correct: number;
+  /** Cards graded wrong this session (deduped), for the session summary. */
+  missed: { term: string; translation: string }[];
   done: boolean;
   /** Advance the reveal stage (tap / Space). */
   advance: () => void;
@@ -62,6 +64,9 @@ export function useStudySession(query = "limit=20"): UseStudySession {
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
   const [correct, setCorrect] = useState(0);
+  const [missed, setMissed] = useState<{ term: string; translation: string }[]>(
+    []
+  );
   const requeued = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -108,6 +113,11 @@ export function useStudySession(query = "limit=20"): UseStudySession {
         setCorrect((n) => n + 1);
       } else {
         setCombo(0);
+        setMissed((m) =>
+          m.some((w) => w.term === card.term)
+            ? m
+            : [...m, { term: card.term, translation: card.translation }]
+        );
       }
 
       // Optimistic: advance immediately, post in the background.
@@ -186,6 +196,7 @@ export function useStudySession(query = "limit=20"): UseStudySession {
     combo,
     bestCombo,
     correct,
+    missed,
     done,
     advance,
     swipe,

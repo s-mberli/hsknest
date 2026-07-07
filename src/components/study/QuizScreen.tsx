@@ -41,6 +41,10 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
   const [correct, setCorrect] = useState(0);
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
+  const [missed, setMissed] = useState<{ term: string; translation: string }[]>(
+    []
+  );
+  const [skipped, setSkipped] = useState(0);
   const startedAt = useRef(Date.now()).current;
   const sizes = CARD_TEXT_CLASSES[textSize];
 
@@ -53,11 +57,10 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
         const data = await res.json();
         if (active) {
           // Quiz needs real options; skip cards with fewer than 2 choices.
-          setCards(
-            (data.cards ?? []).filter(
-              (c: QuizCard) => (c.choices?.length ?? 0) >= 2
-            )
-          );
+          const all: QuizCard[] = data.cards ?? [];
+          const usable = all.filter((c) => (c.choices?.length ?? 0) >= 2);
+          setCards(usable);
+          setSkipped(all.length - usable.length);
         }
       } catch {
         if (active) toast.error("Could not load your quiz.");
@@ -86,6 +89,11 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
       });
     } else {
       setCombo(0);
+      setMissed((m) =>
+        m.some((w) => w.term === current.term)
+          ? m
+          : [...m, { term: current.term, translation: current.translation }]
+      );
     }
     void postReview(current.wordId, isRight ? 4 : 1);
     window.setTimeout(
@@ -118,7 +126,18 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
           </p>
         )}
 
-        {done && cards.length === 0 && <EmptyQueue scoped={scoped} />}
+        {done && cards.length === 0 && (
+          <div className="flex flex-col items-center gap-3">
+            <EmptyQueue scoped={scoped} />
+            {skipped > 0 && (
+              <p className="max-w-xs text-center text-xs text-muted-foreground">
+                {skipped} {skipped === 1 ? "card" : "cards"} can&apos;t be
+                quizzed yet — the quiz needs a few more words in the same
+                language to build answer options. Try flashcards instead.
+              </p>
+            )}
+          </div>
+        )}
 
         {done && cards.length > 0 && (
           <SessionComplete
@@ -126,6 +145,7 @@ function QuizSession({ studyTheme, textSize }: QuizScreenProps) {
             correct={correct}
             bestCombo={bestCombo}
             elapsedMs={Date.now() - startedAt}
+            missed={missed}
           />
         )}
 

@@ -11,14 +11,37 @@ export default async function ListsPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const lists = await prisma.wordList.findMany({
-    where: visibleListWhere(userId),
-    orderBy: { createdAt: "asc" },
-    include: {
-      language: { select: { name: true, code: true } },
-      _count: { select: { words: true } },
-    },
-  });
+  const [lists, progress] = await Promise.all([
+    prisma.wordList.findMany({
+      where: visibleListWhere(userId),
+      orderBy: { createdAt: "asc" },
+      include: {
+        language: { select: { name: true, code: true } },
+        _count: { select: { words: true } },
+      },
+    }),
+    prisma.userProgress.findMany({
+      where: { userId },
+      select: {
+        state: true,
+        dueAt: true,
+        word: { select: { wordListId: true } },
+      },
+    }),
+  ]);
+
+  // Per-list rollup: how many of its words are in the queue, how many due.
+  const now = new Date();
+  const byList = new Map<string, { enrolled: number; due: number }>();
+  for (const p of progress) {
+    const key = p.word.wordListId;
+    const entry = byList.get(key) ?? { enrolled: 0, due: 0 };
+    entry.enrolled += 1;
+    if (p.state !== "NEW" && p.state !== "ASSUMED" && p.dueAt <= now) {
+      entry.due += 1;
+    }
+    byList.set(key, entry);
+  }
 
   const ownLists = lists.filter((l) => l.createdById === userId);
   const exploreLists = lists.filter((l) => l.createdById !== userId);
@@ -50,6 +73,8 @@ export default async function ListsPage() {
                 name={list.name}
                 languageName={list.language.name}
                 wordCount={list._count.words}
+                enrolled={byList.get(list.id)?.enrolled ?? 0}
+                due={byList.get(list.id)?.due ?? 0}
                 owner
               />
             ))}
@@ -79,6 +104,8 @@ export default async function ListsPage() {
               name={list.name}
               languageName={list.language.name}
               wordCount={list._count.words}
+              enrolled={byList.get(list.id)?.enrolled ?? 0}
+              due={byList.get(list.id)?.due ?? 0}
             />
           ))}
           {exploreLists.length === 0 && (
@@ -97,18 +124,22 @@ function ListCard({
   name,
   languageName,
   wordCount,
+  enrolled,
+  due,
   owner = false,
 }: {
   id: string;
   name: string;
   languageName: string;
   wordCount: number;
+  enrolled: number;
+  due: number;
   owner?: boolean;
 }) {
   return (
     <Link href={`/lists/${id}`} className="block">
       <Card className="transition-colors hover:border-primary/50">
-        <CardContent className="flex items-center justify-between py-4">
+        <CardContent className="flex items-center justify-between gap-3 py-4">
           <div>
             <div className="flex items-center gap-2">
               <p className="font-medium">{name}</p>
@@ -120,9 +151,21 @@ function ListCard({
             </div>
             <p className="text-sm text-muted-foreground">{languageName}</p>
           </div>
-          <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-            {wordCount} words
-          </span>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            {due > 0 && (
+              <span className="rounded-full bg-amber/15 px-2.5 py-1 text-xs font-medium text-amber">
+                {due} due
+              </span>
+            )}
+            {enrolled > 0 && (
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                {enrolled} learning
+              </span>
+            )}
+            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+              {wordCount} words
+            </span>
+          </div>
         </CardContent>
       </Card>
     </Link>

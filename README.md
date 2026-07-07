@@ -62,12 +62,19 @@ pronunciation audio), and never depend on a cloud service.
   everyday-conversation and news-reading sets.
 - **Accounts & auth** — email + password via NextAuth (credentials), passwords
   hashed with bcrypt, with rate-limited signup and login.
-- **Guest mode** — one click on the login page creates a throwaway account
-  with a starter list already enrolled, so visitors can try the app without
-  signing up.
+- **Guest mode with upgrade** — one click on the login page creates a
+  throwaway account with a starter list already enrolled, so visitors can try
+  the app without signing up. Liked it? One small form turns the guest into a
+  real account and keeps every word and review. Stale guests are pruned
+  automatically after 14 days of inactivity.
+- **Per-list progress** — every list shows how many of its words are in your
+  queue, how strong they are, and how many are due right now.
+- **Dictionary-assisted entry (Chinese)** — typing a Chinese word suggests
+  pinyin and meaning from the bundled CC-CEDICT dictionary; one tap fills both
+  fields, always editable.
 - **In-app feedback** — report a bug or share an idea straight from Settings.
-- **Data control** — export every word and its progress as CSV; reset progress
-  for a clean slate.
+- **Data control** — export every word and its progress as CSV, reset progress
+  for a clean slate, or delete the account entirely.
 
 ## Tech stack
 
@@ -183,6 +190,9 @@ the full text.
 
 The included HSK vocabulary data is MIT-licensed; see
 [prisma/data/hsk/README.md](prisma/data/hsk/README.md) for attribution.
+The bundled Chinese dictionary data is a trimmed build of
+[CC-CEDICT](https://cc-cedict.org/wiki/) (CC BY-SA 4.0); see
+[prisma/data/cedict/README.md](prisma/data/cedict/README.md).
 
 ## Roadmap
 
@@ -196,7 +206,10 @@ filtering · graded HSK 1–6 + original Chinese lists · CSV export · progress
 reset · on-device pronunciation · security hardening (rate limits, input caps,
 headers) · in-app feedback · Docker + compose self-host packaging ·
 multiple-choice quiz + matching-pairs practice modes · card text sizing ·
-Playwright end-to-end suite.
+Playwright end-to-end suite · guest mode with account upgrade + stale-guest
+pruning · account deletion · per-list progress chips · CC-CEDICT
+dictionary-assisted word entry (Chinese) · session summary with toughest
+words + re-study.
 
 **Next (v0.2):**
 
@@ -206,8 +219,6 @@ Playwright end-to-end suite.
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)
 - Email verification + password reset / account recovery flow
-- Upgrade a guest account to a real one (set email + password, keep progress);
-  prune stale guest accounts after inactivity
 - Bring-your-own-key integrations: cloud TTS and image generation via your own
   API key (server proxy, encrypted per-user key storage; instance operators can
   set global keys; features hide when no provider is configured)
