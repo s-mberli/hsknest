@@ -59,6 +59,16 @@ export default async function ListDetailPage({
   const allEnrolled =
     list.words.length > 0 && progress.length === list.words.length;
 
+  const now = new Date();
+  const strongCount = progress.filter(
+    (p) => p.state === "REVIEW" || p.state === "MASTERED"
+  ).length;
+  const dueCount = progress.filter(
+    (p) => p.state !== "NEW" && p.state !== "ASSUMED" && p.dueAt <= now
+  ).length;
+  const strongPct =
+    progress.length > 0 ? Math.round((strongCount / progress.length) * 100) : 0;
+
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <Link
@@ -90,6 +100,22 @@ export default async function ListDetailPage({
 
       {list.description && (
         <p className="mt-2 text-sm text-muted-foreground">{list.description}</p>
+      )}
+
+      {progress.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">
+          <span className="rounded-full bg-secondary px-2.5 py-1 text-secondary-foreground">
+            {progress.length} of {list.words.length} in your queue
+          </span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+            {strongPct}% strong
+          </span>
+          {dueCount > 0 && (
+            <span className="rounded-full bg-amber/15 px-2.5 py-1 text-amber">
+              {dueCount} due now
+            </span>
+          )}
+        </div>
       )}
 
       {isOwner && (

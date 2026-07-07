@@ -91,6 +91,11 @@ export const updateWordSchema = z.object({
   phonetic: z.string().trim().max(200).nullable().optional(),
 });
 
+export const dictionaryQuerySchema = z.object({
+  term: z.string().trim().min(1).max(50),
+  languageCode: z.string().trim().min(2).max(10),
+});
+
 export const importSchema = z.object({
   // ~100KB cap: guards the parser before the route's 2000-row post-parse limit.
   text: z.string().min(1).max(100_000),

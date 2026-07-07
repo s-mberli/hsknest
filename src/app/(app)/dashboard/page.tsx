@@ -2,10 +2,12 @@ import { Flame } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { Card, CardContent } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getDashboardStats } from "@/lib/stats";
 
@@ -13,7 +15,11 @@ export default async function DashboardPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const stats = await getDashboardStats(userId);
+  const [stats, user] = await Promise.all([
+    getDashboardStats(userId),
+    prisma.user.findUnique({ where: { id: userId }, select: { email: true } }),
+  ]);
+  const isGuest = user?.email.endsWith("@guest.local") ?? false;
 
   // Cap "new" the way the session actually would, so the ring total is honest.
   const newAllowed = Math.max(0, stats.dailyNewWords - stats.newIntroducedToday);
@@ -30,6 +36,12 @@ export default async function DashboardPage() {
           {stats.streakDays} {stats.streakDays === 1 ? "day" : "days"}
         </span>
       </header>
+
+      {isGuest && (
+        <div className="mb-6">
+          <UpgradeBanner />
+        </div>
+      )}
 
       <DashboardHero due={stats.dueCount} checks={stats.checkCount} fresh={fresh} />
 

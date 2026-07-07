@@ -46,7 +46,12 @@ export async function POST(
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
-  const { words, skipped: parseSkipped } = parseDelimited(parsed.data.text, {
+  const {
+    words,
+    skipped: parseSkipped,
+    skippedNoTerm,
+    skippedDuplicate,
+  } = parseDelimited(parsed.data.text, {
     delimiter: parsed.data.delimiter,
     columns: parsed.data.columns,
   });
@@ -59,14 +64,18 @@ export async function POST(
   const existingTerms = new Set(existing.map((w) => w.term.toLowerCase()));
 
   let skipped = parseSkipped;
+  let skippedAlreadyInList = 0;
+  let skippedOverCap = 0;
   const toAdd: typeof words = [];
   for (const w of words) {
     if (existingTerms.has(w.term.toLowerCase())) {
       skipped += 1;
+      skippedAlreadyInList += 1;
       continue;
     }
     if (toAdd.length >= MAX_ROWS) {
       skipped += 1;
+      skippedOverCap += 1;
       continue;
     }
     // A word needs a translation; treat term-only imports as needing a blank.
@@ -94,5 +103,14 @@ export async function POST(
     added = result.count;
   }
 
-  return NextResponse.json({ added, skipped });
+  return NextResponse.json({
+    added,
+    skipped,
+    reasons: {
+      noTerm: skippedNoTerm,
+      duplicateInPaste: skippedDuplicate,
+      alreadyInList: skippedAlreadyInList,
+      overCap: skippedOverCap,
+    },
+  });
 }

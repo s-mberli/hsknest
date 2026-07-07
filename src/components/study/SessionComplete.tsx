@@ -10,6 +10,8 @@ interface SessionCompleteProps {
   correct: number;
   bestCombo: number;
   elapsedMs: number;
+  /** Words graded wrong this session — shown as "toughest this round". */
+  missed?: { term: string; translation: string }[];
 }
 
 function formatElapsed(ms: number): string {
@@ -24,6 +26,7 @@ export function SessionComplete({
   correct,
   bestCombo,
   elapsedMs,
+  missed = [],
 }: SessionCompleteProps) {
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
@@ -47,8 +50,29 @@ export function SessionComplete({
         <Stat label="Time" value={formatElapsed(elapsedMs)} />
       </div>
 
-      <div className="mt-4 flex gap-3">
-        <Button asChild>
+      {missed.length > 0 && (
+        <div className="mt-2 w-full max-w-xs rounded-lg border bg-card p-3 text-left">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Toughest this round
+          </p>
+          <ul className="space-y-1.5">
+            {missed.slice(0, 5).map((w) => (
+              <li key={w.term} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="font-medium">{w.term}</span>
+                <span className="truncate text-muted-foreground">{w.translation}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-wrap justify-center gap-3">
+        {missed.length > 0 && (
+          <Button onClick={() => window.location.reload()}>
+            Study them again
+          </Button>
+        )}
+        <Button asChild variant={missed.length > 0 ? "outline" : "default"}>
           <Link href="/dashboard">Back to dashboard</Link>
         </Button>
         <Button asChild variant="outline">

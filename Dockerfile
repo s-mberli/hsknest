@@ -30,6 +30,9 @@ COPY --from=build /app/public ./public
 # Prisma schema + migrations + seed data
 COPY --from=build /app/prisma ./prisma
 
+# Maintenance scripts run by the entrypoint (guest pruning)
+COPY --from=build /app/scripts ./scripts
+
 # ALL node_modules die Prisma zur Laufzeit braucht (effect, etc.)
 COPY --from=build /app/node_modules ./node_modules
 RUN npm prune --production --no-optional

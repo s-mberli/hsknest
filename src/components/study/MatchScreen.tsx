@@ -53,6 +53,9 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   const [selected, setSelected] = useState<Tile | null>(null);
   const [shaking, setShaking] = useState<string | null>(null);
   const [correct, setCorrect] = useState(0);
+  const [missedWords, setMissedWords] = useState<
+    { term: string; translation: string }[]
+  >([]);
   const startedAt = useRef(Date.now()).current;
 
   useEffect(() => {
@@ -112,6 +115,16 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
     // Each word is graded exactly once per session, at the moment it's matched.
     if (graded.has(wordId)) return;
     setGraded((prev) => new Set(prev).add(wordId));
+    if (wasMissed) {
+      const card = cards.find((c) => c.wordId === wordId);
+      if (card) {
+        setMissedWords((m) =>
+          m.some((w) => w.term === card.term)
+            ? m
+            : [...m, { term: card.term, translation: card.translation }]
+        );
+      }
+    }
     void postReview(wordId, wasMissed ? 1 : 4);
   }
 
@@ -221,6 +234,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
             correct={correct}
             bestCombo={0}
             elapsedMs={Date.now() - startedAt}
+            missed={missedWords}
           />
         )}
 

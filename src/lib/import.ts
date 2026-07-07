@@ -27,6 +27,9 @@ export interface ParseResult {
   words: ParsedWord[];
   /** Rows dropped because they were blank, missing a term, or a duplicate term. */
   skipped: number;
+  /** Breakdown of `skipped`, for a human-readable import summary. */
+  skippedNoTerm: number;
+  skippedDuplicate: number;
 }
 
 const DEFAULT_COLUMNS: ColumnRole[] = ["term", "translation", "phonetic"];
@@ -117,6 +120,8 @@ export function parseDelimited(
   const words: ParsedWord[] = [];
   const seen = new Set<string>();
   let skipped = 0;
+  let skippedNoTerm = 0;
+  let skippedDuplicate = 0;
 
   for (const cells of rows) {
     const term =
@@ -127,12 +132,14 @@ export function parseDelimited(
 
     if (!term) {
       skipped += 1;
+      skippedNoTerm += 1;
       continue;
     }
 
     const key = term.toLowerCase();
     if (seen.has(key)) {
       skipped += 1;
+      skippedDuplicate += 1;
       continue;
     }
     seen.add(key);
@@ -149,5 +156,5 @@ export function parseDelimited(
     });
   }
 
-  return { words, skipped };
+  return { words, skipped, skippedNoTerm, skippedDuplicate };
 }
