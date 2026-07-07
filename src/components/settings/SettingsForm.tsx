@@ -653,6 +653,14 @@ function DataAccountSection({
           )}
         </SettingRow>
 
+        {email.endsWith("@guest.local") && (
+          <p className="rounded-lg border border-amber/40 bg-amber/10 px-3 py-2 text-sm">
+            You&apos;re on a guest account — it works fully, but there&apos;s no
+            way to log back in if you sign out. Create a real account to keep
+            your progress.
+          </p>
+        )}
+
         <SettingRow
           name="Signed in as"
           description={name ? `${email} · ${name}` : email}

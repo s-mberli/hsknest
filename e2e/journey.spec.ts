@@ -94,6 +94,18 @@ test("quiz mode loads and grades an answer", async ({ page }) => {
   expect(res.ok()).toBeTruthy();
 });
 
+test("guest mode: one click to studying", async ({ page }) => {
+  await page.goto("/login");
+  await page
+    .getByRole("button", { name: /try it as a guest/i })
+    .click();
+  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  // A starter list is auto-enrolled, so the Start button is available.
+  await expect(page.getByRole("link", { name: /start/i })).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
 test("match mode loads a round", async ({ page }) => {
   await logIn(page);
   await page.goto("/study/match?limit=5");
