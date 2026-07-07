@@ -33,6 +33,7 @@ COPY --from=build /app/prisma ./prisma
 # ALL node_modules die Prisma zur Laufzeit braucht (effect, etc.)
 COPY --from=build /app/node_modules ./node_modules
 RUN npm prune --production --no-optional
+RUN npm install --no-save tsx
 
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
