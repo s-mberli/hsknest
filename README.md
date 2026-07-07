@@ -63,8 +63,15 @@ pronunciation audio), and never depend on a cloud service.
   screen.
 - **Study scope** — narrow a session to one language and/or specific lists; the
   choice is remembered.
-- **Graded Chinese content** — full HSK 1–6 lists plus original
+- **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–6
+  plus the 7–9 band, frequency lists (Top 100 / Top 1000 words), and original
   everyday-conversation and news-reading sets.
+- **One word, one card** — the same word appearing in several lists shares a
+  single progress record: enrolling a second list skips what you already
+  track, so stats and reviews never double.
+- **Organized list shelf** — lists are grouped into Studying / Your lists /
+  Explore, starter lists you don't want can be hidden (and restored) per
+  account, and every studied word shows a strength meter with its interval.
 - **Accounts & auth** — email + password via NextAuth (credentials), passwords
   hashed with bcrypt, with rate-limited signup and login.
 - **Guest mode with upgrade** — one click on the login page creates a

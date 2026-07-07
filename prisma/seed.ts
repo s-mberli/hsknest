@@ -104,9 +104,9 @@ const esWords: SeedWord[] = [
   { term: "amar", translation: "to love", phonetic: "aˈmaɾ", metadata: { pos: "verb" } },
 ];
 
-/** Load a prepared HSK level file (frequency-sorted) as SeedWords. */
-function loadHskWords(level: number): SeedWord[] {
-  const path = join(__dirname, "data", "hsk", `hsk${level}.json`);
+/** Load a prepared vocabulary file from prisma/data/hsk as SeedWords. */
+function loadWords(file: string): SeedWord[] {
+  const path = join(__dirname, "data", "hsk", `${file}.json`);
   const raw = readFileSync(path, "utf8");
   return JSON.parse(raw) as SeedWord[];
 }
@@ -120,9 +120,35 @@ async function upsertLanguage(code: string, name: string) {
   });
 }
 
+/** How many progress rows hang off a list's words (0 = safe to replace). */
+async function progressCount(listId: string): Promise<number> {
+  return prisma.userProgress.count({
+    where: { word: { wordListId: listId } },
+  });
+}
+
+/** Delete a seeded list plus its ReviewLog rows (no FK, cleared by hand). */
+async function deleteSeededList(listId: string) {
+  const words = await prisma.word.findMany({
+    where: { wordListId: listId },
+    select: { id: true },
+  });
+  await prisma.$transaction([
+    prisma.reviewLog.deleteMany({
+      where: { wordId: { in: words.map((w) => w.id) } },
+    }),
+    // Cascade handles words + their UserProgress.
+    prisma.wordList.delete({ where: { id: listId } }),
+  ]);
+}
+
 /**
- * Idempotently seed a word list: skip if a list with this name already exists
- * for the language, otherwise create it with its words (position by index).
+ * Idempotently seed a word list, refreshing outdated content:
+ * - missing → create with words;
+ * - exists with the same word count → assumed current, no-op;
+ * - exists with a different word count (outdated dataset) → replace when no
+ *   user progress references it, otherwise rename the old list to
+ *   "… (legacy)" and create the new one — never touch studied content.
  */
 async function seedList(
   languageId: string,
@@ -131,10 +157,23 @@ async function seedList(
   words: SeedWord[]
 ) {
   const existing = await prisma.wordList.findFirst({
-    where: { languageId, name },
-    select: { id: true },
+    where: { languageId, name, createdById: null },
+    select: { id: true, _count: { select: { words: true } } },
   });
-  if (existing) return;
+
+  if (existing) {
+    if (existing._count.words === words.length) return; // current
+    if ((await progressCount(existing.id)) === 0) {
+      await deleteSeededList(existing.id);
+      console.log(`Replacing outdated list: ${name}`);
+    } else {
+      await prisma.wordList.update({
+        where: { id: existing.id },
+        data: { name: `${name} (legacy)` },
+      });
+      console.log(`Kept studied list as: ${name} (legacy)`);
+    }
+  }
 
   const list = await prisma.wordList.create({
     data: { name, description, isPublic: true, languageId },
@@ -151,47 +190,61 @@ async function seedList(
       position: i,
     })),
   });
+  console.log(`Seeded: ${name} (${words.length} words)`);
 }
 
-const HSK_LISTS: { level: number; name: string; description: string }[] = [
-  { level: 1, name: "HSK 1 — Foundation", description: "The first 150 words: greetings, numbers, and everyday essentials." },
-  { level: 2, name: "HSK 2 — Elementary", description: "Build on the basics with common verbs, times, and places." },
-  { level: 3, name: "HSK 3 — Intermediate", description: "Everyday topics — travel, work, and simple opinions." },
-  { level: 4, name: "HSK 4 — Upper Intermediate", description: "Richer vocabulary for describing experiences and abstract ideas." },
-  { level: 5, name: "HSK 5 — Advanced", description: "Nuanced words for news, culture, and detailed discussion." },
-  { level: 6, name: "HSK 6 — Mastery", description: "The full advanced set for reading and near-native fluency." },
+// New HSK 3.0 (2021 standard) levels + general frequency lists. File names
+// map to prisma/data/hsk/<file>.json built from complete-hsk-vocabulary (MIT).
+const ZH_LISTS: { file: string; name: string; description: string }[] = [
+  { file: "new1", name: "HSK 1 — Foundation", description: "The first ~500 words of the current (2021) HSK standard." },
+  { file: "new2", name: "HSK 2 — Elementary", description: "Common verbs, times, and places — HSK 3.0 level 2." },
+  { file: "new3", name: "HSK 3 — Intermediate", description: "Everyday topics: travel, work, and simple opinions." },
+  { file: "new4", name: "HSK 4 — Upper Intermediate", description: "Richer vocabulary for experiences and abstract ideas." },
+  { file: "new5", name: "HSK 5 — Advanced", description: "Nuanced words for news, culture, and detailed discussion." },
+  { file: "new6", name: "HSK 6 — Proficient", description: "Advanced vocabulary approaching full working fluency." },
+  { file: "new7", name: "HSK 7–9 — Mastery", description: "The top band of the 2021 standard for near-native reading." },
+  { file: "freq100", name: "Top 100 Most Common Words", description: "The 100 highest-frequency words — the fastest possible start." },
+  { file: "freq1000", name: "Top 1000 Most Common Words", description: "The 1000 highest-frequency words, ordered by real-world usage." },
 ];
 
+// HSK 2.0 list names that no longer exist in the 2021 lineup. Retired only
+// when untouched; renamed to "… (legacy)" when a user has progress in them.
+const RETIRED_ZH_LISTS = ["HSK 6 — Mastery"];
+
 /**
- * Idempotently remove a retired seeded list (createdById null) and everything
- * hanging off it. WordList→Word and Word→UserProgress cascade on delete, but
- * ReviewLog has no FK to Word (only scalar wordId), so its rows are cleared by
- * hand first. No-ops when the list is already gone.
+ * Retire a seeded list whose name left the lineup: delete when untouched,
+ * rename to "… (legacy)" when a user has progress in it. Idempotent.
  */
-async function removeSeededList(name: string) {
+async function retireSeededList(name: string) {
   const list = await prisma.wordList.findFirst({
     where: { name, createdById: null },
-    select: { id: true, words: { select: { id: true } } },
+    select: { id: true },
   });
   if (!list) return;
 
-  const wordIds = list.words.map((w) => w.id);
-  await prisma.$transaction([
-    prisma.reviewLog.deleteMany({ where: { wordId: { in: wordIds } } }),
-    // Cascade handles words + their UserProgress.
-    prisma.wordList.delete({ where: { id: list.id } }),
-  ]);
-  console.log(`Removed retired list: ${name}`);
+  if ((await progressCount(list.id)) === 0) {
+    await deleteSeededList(list.id);
+    console.log(`Removed retired list: ${name}`);
+  } else {
+    await prisma.wordList.update({
+      where: { id: list.id },
+      data: { name: `${name} (legacy)` },
+    });
+    console.log(`Kept studied retired list as: ${name} (legacy)`);
+  }
 }
 
 async function main() {
   // Retired test content — drop from any existing DB.
-  await removeSeededList("Everyday Mandarin Starter");
+  await retireSeededList("Everyday Mandarin Starter");
+  for (const name of RETIRED_ZH_LISTS) {
+    await retireSeededList(name);
+  }
 
   const zh = await upsertLanguage("zh", "Mandarin Chinese");
 
-  for (const { level, name, description } of HSK_LISTS) {
-    await seedList(zh.id, name, description, loadHskWords(level));
+  for (const { file, name, description } of ZH_LISTS) {
+    await seedList(zh.id, name, description, loadWords(file));
   }
 
   await seedList(

@@ -46,11 +46,12 @@ model User {
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
-  progress   UserProgress[]
-  reviewLogs ReviewLog[]
-  wordLists  WordList[]
-  languages  Language[]
-  feedback   Feedback[]
+  progress    UserProgress[]
+  reviewLogs  ReviewLog[]
+  wordLists   WordList[]
+  languages   Language[]
+  feedback    Feedback[]
+  hiddenLists HiddenList[]
 }
 
 model Language {
@@ -74,9 +75,10 @@ model WordList {
   createdById String? // null = seeded/public; otherwise owned by this user
   createdAt   DateTime @default(now())
 
-  language  Language @relation(fields: [languageId], references: [id])
-  createdBy User?    @relation(fields: [createdById], references: [id])
+  language  Language     @relation(fields: [languageId], references: [id])
+  createdBy User?        @relation(fields: [createdById], references: [id])
   words     Word[]
+  hiddenBy  HiddenList[]
 
   @@index([languageId])
   @@index([createdById])
@@ -135,6 +137,17 @@ model ReviewLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, reviewedAt])
+}
+
+model HiddenList {
+  id     String @id @default(cuid())
+  userId String
+  listId String
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list WordList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listId])
 }
 
 model Feedback {

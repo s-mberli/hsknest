@@ -27,7 +27,11 @@ export function EnrollButton({
     }
     const data = await res.json();
     if (data.enrolled > 0) {
-      toast.success(`Added ${data.enrolled} words to your queue.`);
+      toast.success(
+        data.alreadyTracked > 0
+          ? `Added ${data.enrolled} words — ${data.alreadyTracked} were already in your queue from another list.`
+          : `Added ${data.enrolled} words to your queue.`
+      );
     } else {
       toast.info("You already have all of these words.");
     }

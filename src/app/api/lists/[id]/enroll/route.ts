@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { termKey } from "@/lib/progressMerge";
 import { getCurrentUserId } from "@/lib/session";
 import { visibleListWhere } from "@/lib/ownership";
 import { enrollSchema } from "@/lib/validation";
@@ -35,33 +36,47 @@ export async function POST(
 
   const list = await prisma.wordList.findFirst({
     where: { id, ...visibleListWhere(userId) },
-    include: { words: { select: { id: true } } },
+    include: { words: { select: { id: true, term: true } } },
   });
   if (!list) {
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
-  const listWordIds = new Set(list.words.map((w) => w.id));
+  const wordById = new Map(list.words.map((w) => [w.id, w]));
   const requested = parsed.data.wordIds;
   const wordIds = requested
-    ? requested.filter((wid) => listWordIds.has(wid))
-    : [...listWordIds];
+    ? requested.filter((wid) => wordById.has(wid))
+    : [...wordById.keys()];
 
   if (wordIds.length === 0) {
-    return NextResponse.json({ enrolled: 0 });
+    return NextResponse.json({ enrolled: 0, alreadyTracked: 0 });
   }
 
-  // SQLite's createMany doesn't support skipDuplicates, so filter out any
-  // words the user is already enrolled in before inserting.
-  const alreadyEnrolled = await prisma.userProgress.findMany({
-    where: { userId, wordId: { in: wordIds } },
-    select: { wordId: true },
+  // Shared progress by term: skip any term the user already tracks in this
+  // language (same word in another list = same card, not a duplicate).
+  const trackedSameLanguage = await prisma.userProgress.findMany({
+    where: {
+      userId,
+      word: { wordList: { languageId: list.languageId } },
+    },
+    select: { word: { select: { term: true } } },
   });
-  const enrolledSet = new Set(alreadyEnrolled.map((p) => p.wordId));
-  const toEnroll = wordIds.filter((wid) => !enrolledSet.has(wid));
+  const trackedTerms = new Set(
+    trackedSameLanguage.map((p) => termKey(p.word.term))
+  );
+
+  const toEnroll: string[] = [];
+  const seenTerms = new Set<string>();
+  for (const wid of wordIds) {
+    const key = termKey(wordById.get(wid)!.term);
+    if (trackedTerms.has(key) || seenTerms.has(key)) continue;
+    seenTerms.add(key);
+    toEnroll.push(wid);
+  }
+  const alreadyTracked = wordIds.length - toEnroll.length;
 
   if (toEnroll.length === 0) {
-    return NextResponse.json({ enrolled: 0 });
+    return NextResponse.json({ enrolled: 0, alreadyTracked });
   }
 
   const now = new Date();
@@ -73,5 +88,5 @@ export async function POST(
     })),
   });
 
-  return NextResponse.json({ enrolled: result.count });
+  return NextResponse.json({ enrolled: result.count, alreadyTracked });
 }

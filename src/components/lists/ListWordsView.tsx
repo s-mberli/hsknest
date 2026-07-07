@@ -74,6 +74,8 @@ export function ListWordsView({
         translation: w.translation,
         phonetic: w.phonetic,
         state: w.state,
+        intervalDays: w.intervalDays,
+        lapses: w.lapses,
       })),
     [words]
   );

@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { WordRow } from "@/components/lists/WordTable";
+import { StrengthCell, type WordRow } from "@/components/lists/WordTable";
 
 /** Editable word table for list owners: inline edit + delete per row. */
 export function OwnerWordTable({ words }: { words: WordRow[] }) {
@@ -25,6 +25,7 @@ export function OwnerWordTable({ words }: { words: WordRow[] }) {
           <TableHead>Term</TableHead>
           <TableHead>Reading</TableHead>
           <TableHead>Meaning</TableHead>
+          <TableHead>Strength</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -35,7 +36,7 @@ export function OwnerWordTable({ words }: { words: WordRow[] }) {
         {words.length === 0 && (
           <TableRow>
             <TableCell
-              colSpan={4}
+              colSpan={5}
               className="py-6 text-center text-sm text-muted-foreground"
             >
               No words yet. Add one above or import a batch.
@@ -121,6 +122,7 @@ function OwnerWordRow({ word }: { word: WordRow }) {
             aria-label="Meaning"
           />
         </TableCell>
+        <TableCell />
         <TableCell className="text-right">
           <div className="flex justify-end gap-1">
             <Button
@@ -152,6 +154,9 @@ function OwnerWordRow({ word }: { word: WordRow }) {
         {word.phonetic ?? "—"}
       </TableCell>
       <TableCell>{word.translation}</TableCell>
+      <TableCell>
+        <StrengthCell word={word} />
+      </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-1">
           {confirmingDelete ? (

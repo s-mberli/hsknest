@@ -8,20 +8,20 @@ mkdir -p /data
 echo "→ Applying database migrations…"
 node_modules/.bin/prisma migrate deploy
 
-# Seed starter content exactly once, tracked by a marker on the data volume so
-# restarts and re-deploys never re-seed (or clobber user data).
-SEED_MARKER=/data/.seeded
-if [ ! -f "$SEED_MARKER" ]; then
-  echo "→ First boot — seeding starter content…"
-  node_modules/.bin/tsx prisma/seed.ts
-  touch "$SEED_MARKER"
-else
-  echo "→ Seed already applied — skipping."
-fi
+# Seed/refresh starter content on every boot. The seed is idempotent: existing
+# lists with current content are no-ops, outdated seeded lists are replaced
+# only when no user progress references them (studied lists are kept as
+# "… (legacy)"), and user data is never touched.
+echo "→ Seeding starter content…"
+node_modules/.bin/tsx prisma/seed.ts || true
 
 # Housekeeping: remove stale guest accounts (non-fatal if it fails).
 echo "→ Pruning stale guest accounts…"
 node_modules/.bin/tsx scripts/prune-guests.ts || true
+
+# Housekeeping: merge duplicate progress rows from before shared-by-term.
+echo "→ Merging duplicate progress…"
+node_modules/.bin/tsx scripts/merge-duplicate-progress.ts || true
 
 # Hand off to the CMD (node server.js).
 exec "$@"

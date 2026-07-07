@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { ListVisibilityButton } from "@/components/lists/ListVisibilityButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +12,7 @@ export default async function ListsPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const [lists, progress] = await Promise.all([
+  const [lists, progress, hiddenRows] = await Promise.all([
     prisma.wordList.findMany({
       where: visibleListWhere(userId),
       orderBy: { createdAt: "asc" },
@@ -28,6 +29,10 @@ export default async function ListsPage() {
         word: { select: { wordListId: true } },
       },
     }),
+    prisma.hiddenList.findMany({
+      where: { userId },
+      select: { listId: true },
+    }),
   ]);
 
   // Per-list rollup: how many of its words are in the queue, how many due.
@@ -43,8 +48,40 @@ export default async function ListsPage() {
     byList.set(key, entry);
   }
 
-  const ownLists = lists.filter((l) => l.createdById === userId);
-  const exploreLists = lists.filter((l) => l.createdById !== userId);
+  const hiddenIds = new Set(hiddenRows.map((h) => h.listId));
+
+  // Sections, in reading order: what you study, what you made, what you could
+  // add, what you tucked away. Studying wins over hidden.
+  const studying = lists.filter((l) => (byList.get(l.id)?.enrolled ?? 0) > 0);
+  const studyingIds = new Set(studying.map((l) => l.id));
+  const ownLists = lists.filter(
+    (l) => l.createdById === userId && !studyingIds.has(l.id)
+  );
+  const exploreLists = lists.filter(
+    (l) =>
+      l.createdById !== userId &&
+      !studyingIds.has(l.id) &&
+      !hiddenIds.has(l.id)
+  );
+  const hiddenLists = lists.filter(
+    (l) =>
+      l.createdById !== userId && !studyingIds.has(l.id) && hiddenIds.has(l.id)
+  );
+
+  const card = (list: (typeof lists)[number], opts?: { hidden?: boolean }) => (
+    <ListCard
+      key={list.id}
+      id={list.id}
+      name={list.name}
+      languageName={list.language.name}
+      wordCount={list._count.words}
+      enrolled={byList.get(list.id)?.enrolled ?? 0}
+      due={byList.get(list.id)?.due ?? 0}
+      owner={list.createdById === userId}
+      hideable={list.createdById !== userId}
+      hidden={opts?.hidden ?? false}
+    />
+  );
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
@@ -60,26 +97,22 @@ export default async function ListsPage() {
         </Button>
       </div>
 
+      {studying.length > 0 && (
+        <section className="mb-8">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Studying
+          </h2>
+          <div className="space-y-3">{studying.map((l) => card(l))}</div>
+        </section>
+      )}
+
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Your lists
         </h2>
         {ownLists.length > 0 ? (
-          <div className="space-y-3">
-            {ownLists.map((list) => (
-              <ListCard
-                key={list.id}
-                id={list.id}
-                name={list.name}
-                languageName={list.language.name}
-                wordCount={list._count.words}
-                enrolled={byList.get(list.id)?.enrolled ?? 0}
-                due={byList.get(list.id)?.due ?? 0}
-                owner
-              />
-            ))}
-          </div>
-        ) : (
+          <div className="space-y-3">{ownLists.map((l) => card(l))}</div>
+        ) : studyingIds.size === 0 || studying.every((l) => l.createdById !== userId) ? (
           <Card>
             <CardContent className="py-6 text-center text-sm text-muted-foreground">
               You haven&apos;t created any lists yet.{" "}
@@ -89,6 +122,10 @@ export default async function ListsPage() {
               to add your own words.
             </CardContent>
           </Card>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            All your lists are in Studying above.
+          </p>
         )}
       </section>
 
@@ -97,17 +134,7 @@ export default async function ListsPage() {
           Explore
         </h2>
         <div className="space-y-3">
-          {exploreLists.map((list) => (
-            <ListCard
-              key={list.id}
-              id={list.id}
-              name={list.name}
-              languageName={list.language.name}
-              wordCount={list._count.words}
-              enrolled={byList.get(list.id)?.enrolled ?? 0}
-              due={byList.get(list.id)?.due ?? 0}
-            />
-          ))}
+          {exploreLists.map((l) => card(l))}
           {exploreLists.length === 0 && (
             <p className="text-sm text-muted-foreground">
               No starter lists available yet.
@@ -115,6 +142,17 @@ export default async function ListsPage() {
           )}
         </div>
       </section>
+
+      {hiddenLists.length > 0 && (
+        <details className="mt-8">
+          <summary className="cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Hidden ({hiddenLists.length})
+          </summary>
+          <div className="mt-3 space-y-3 opacity-70">
+            {hiddenLists.map((l) => card(l, { hidden: true }))}
+          </div>
+        </details>
+      )}
     </main>
   );
 }
@@ -127,6 +165,8 @@ function ListCard({
   enrolled,
   due,
   owner = false,
+  hideable = false,
+  hidden = false,
 }: {
   id: string;
   name: string;
@@ -135,6 +175,8 @@ function ListCard({
   enrolled: number;
   due: number;
   owner?: boolean;
+  hideable?: boolean;
+  hidden?: boolean;
 }) {
   return (
     <Link href={`/lists/${id}`} className="block">
@@ -165,6 +207,7 @@ function ListCard({
             <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               {wordCount} words
             </span>
+            {hideable && <ListVisibilityButton listId={id} hidden={hidden} />}
           </div>
         </CardContent>
       </Card>
