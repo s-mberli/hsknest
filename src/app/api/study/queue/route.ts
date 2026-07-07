@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { buildChoices } from "@/lib/quizChoices";
 import { getCurrentUserId } from "@/lib/session";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
@@ -116,10 +117,19 @@ export async function GET(req: Request) {
     ...fresh.map((p) => toCard(p, "new")),
   ];
 
-  // ?choices=1 (quiz mode): attach 4 shuffled answer options per card — the
-  // correct translation plus 3 distractors drawn from other words the user is
-  // studying in the same language (falls back to any visible same-language word).
-  if (url.searchParams.get("choices") === "1" && cards.length > 0) {
+  // Quiz modes attach 4 shuffled answer options per card. ?choices=meaning
+  // (legacy "1") draws options from translations; ?choices=reading draws from
+  // readings (phonetic) for the pronunciation quiz. Distractors come from other
+  // words the user is studying in the same language.
+  const choicesParam = url.searchParams.get("choices");
+  const choiceMode =
+    choicesParam === "reading"
+      ? "reading"
+      : choicesParam === "meaning" || choicesParam === "1"
+        ? "meaning"
+        : null;
+
+  if (choiceMode && cards.length > 0) {
     const byLanguage = new Map<string, string[]>();
     for (const langCode of new Set(cards.map((c) => c.languageCode))) {
       const pool = await prisma.word.findMany({
@@ -127,30 +137,22 @@ export async function GET(req: Request) {
           wordList: { language: { code: langCode } },
           progress: { some: { userId } },
         },
-        select: { translation: true },
+        select: { translation: true, phonetic: true },
         take: 400,
       });
-      byLanguage.set(
-        langCode,
-        [...new Set(pool.map((w) => w.translation))]
-      );
+      const values = pool
+        .map((w) =>
+          choiceMode === "reading" ? w.phonetic ?? "" : w.translation
+        )
+        .filter((v) => v.length > 0);
+      byLanguage.set(langCode, [...new Set(values)]);
     }
     for (const card of cards) {
-      const pool = (byLanguage.get(card.languageCode) ?? []).filter(
-        (t) => t !== card.translation
-      );
-      // Fisher–Yates partial shuffle for 3 distractors.
-      for (let i = 0; i < Math.min(3, pool.length); i++) {
-        const j = i + Math.floor(Math.random() * (pool.length - i));
-        [pool[i], pool[j]] = [pool[j], pool[i]];
-      }
-      const options = [card.translation, ...pool.slice(0, 3)];
-      // Shuffle the final option order.
-      for (let i = options.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [options[i], options[j]] = [options[j], options[i]];
-      }
-      card.choices = options;
+      // Reading quiz can only test cards that have a reading.
+      const correct =
+        choiceMode === "reading" ? card.phonetic : card.translation;
+      if (!correct) continue;
+      card.choices = buildChoices(correct, byLanguage.get(card.languageCode) ?? []);
     }
   }
 

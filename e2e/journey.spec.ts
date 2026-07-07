@@ -94,6 +94,52 @@ test("quiz mode loads and grades an answer", async ({ page }) => {
   expect(res.ok()).toBeTruthy();
 });
 
+test("pronunciation quiz loads and grades", async ({ page }) => {
+  await logIn(page);
+  // Enroll a Chinese list so cards carry a reading for the pronunciation quiz.
+  await page.goto("/lists");
+  await page.getByRole("link", { name: /HSK 1/i }).click();
+  await page.waitForURL("**/lists/**");
+  const enrolled = page.waitForResponse(
+    (res) => res.url().includes("/enroll") && res.request().method() === "POST"
+  );
+  await page.getByRole("button", { name: /add all to my queue/i }).click();
+  await enrolled;
+
+  await page.goto("/study/pronounce?limit=2");
+  await expect(page.getByText("Pick the pronunciation")).toBeVisible({
+    timeout: 15_000,
+  });
+  const reviewPosted = page.waitForResponse(
+    (res) =>
+      res.url().includes("/api/study/review") &&
+      res.request().method() === "POST"
+  );
+  await page
+    .locator("main button.rounded-xl, main button.w-full")
+    .first()
+    .click();
+  expect((await reviewPosted).ok()).toBeTruthy();
+});
+
+test("hide-reading toggle persists", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/settings");
+  const saved = page.waitForResponse(
+    (res) =>
+      res.url().includes("/api/settings") &&
+      res.request().method() === "PATCH"
+  );
+  // Flip "Show reading on cards" off.
+  await page
+    .getByRole("switch", { name: /show reading on cards/i })
+    .click();
+  const res = await saved;
+  expect(res.ok()).toBeTruthy();
+  const body = await res.json();
+  expect(body.showReading).toBe(false);
+});
+
 test("guest mode: one click to studying", async ({ page }) => {
   await page.goto("/login");
   await page

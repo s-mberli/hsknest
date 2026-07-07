@@ -23,6 +23,7 @@ export default async function SettingsPage() {
       theme: true,
       studyTheme: true,
       cardTextSize: true,
+      showReading: true,
     },
   });
   if (!user) redirect("/login");
@@ -45,6 +46,7 @@ export default async function SettingsPage() {
         cardTextSize={
           (user.cardTextSize as "small" | "normal" | "large") ?? "normal"
         }
+        showReading={user.showReading}
       />
     </main>
   );

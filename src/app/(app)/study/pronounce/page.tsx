@@ -1,27 +1,28 @@
 import { redirect } from "next/navigation";
 
-import { StudyScreen } from "@/components/study/StudyScreen";
+import { QuizScreen } from "@/components/study/QuizScreen";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { normalizeCardTextSize } from "@/lib/textSize";
 
-export default async function StudyPage() {
+/** Pronunciation quiz: see the term, pick how it's read. */
+export default async function PronouncePage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { studyTheme: true, cardTextSize: true, showReading: true },
+    select: { studyTheme: true, cardTextSize: true },
   });
   if (!user) redirect("/login");
 
   const studyTheme = user.studyTheme === "follow" ? "follow" : "dark";
 
   return (
-    <StudyScreen
+    <QuizScreen
       studyTheme={studyTheme}
       textSize={normalizeCardTextSize(user.cardTextSize)}
-      showReading={user.showReading}
+      mode="reading"
     />
   );
 }
