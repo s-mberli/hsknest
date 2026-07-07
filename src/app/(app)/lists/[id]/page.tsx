@@ -6,6 +6,7 @@ import { EnrollButton } from "@/components/lists/EnrollButton";
 import { ListManageBar } from "@/components/lists/ListManageBar";
 import { ListWordsView } from "@/components/lists/ListWordsView";
 import { prisma } from "@/lib/prisma";
+import { termKey } from "@/lib/progressMerge";
 import { getCurrentUserId } from "@/lib/session";
 import { visibleListWhere } from "@/lib/ownership";
 
@@ -30,20 +31,30 @@ export default async function ListDetailPage({
 
   const isOwner = list.createdById === userId;
 
-  const progress = await prisma.userProgress.findMany({
-    where: { userId, wordId: { in: list.words.map((w) => w.id) } },
+  // Progress is shared per term+language: fetch all rows in this language so
+  // a twin word tracked via another list still shows its strength here.
+  const allProgress = await prisma.userProgress.findMany({
+    where: { userId, word: { wordList: { languageId: list.languageId } } },
     select: {
       wordId: true,
       state: true,
       intervalDays: true,
       lapses: true,
       dueAt: true,
+      lastReviewedAt: true,
+      word: { select: { term: true } },
     },
   });
-  const progressByWord = new Map(progress.map((p) => [p.wordId, p]));
+  const progressByWord = new Map(allProgress.map((p) => [p.wordId, p]));
+  const progressByTerm = new Map(
+    allProgress.map((p) => [termKey(p.word.term), p])
+  );
+  const progress = list.words
+    .map((w) => progressByWord.get(w.id) ?? progressByTerm.get(termKey(w.term)))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   const words = list.words.map((w) => {
-    const p = progressByWord.get(w.id);
+    const p = progressByWord.get(w.id) ?? progressByTerm.get(termKey(w.term));
     return {
       id: w.id,
       term: w.term,
@@ -53,6 +64,7 @@ export default async function ListDetailPage({
       intervalDays: p?.intervalDays ?? null,
       lapses: p?.lapses ?? null,
       dueAt: p?.dueAt ? p.dueAt.toISOString() : null,
+      lastReviewedAt: p?.lastReviewedAt ? p.lastReviewedAt.toISOString() : null,
     };
   });
 

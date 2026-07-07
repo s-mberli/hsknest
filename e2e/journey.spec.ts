@@ -98,7 +98,7 @@ test("pronunciation quiz loads and grades", async ({ page }) => {
   await logIn(page);
   // Enroll a Chinese list so cards carry a reading for the pronunciation quiz.
   await page.goto("/lists");
-  await page.getByRole("link", { name: /HSK 1/i }).click();
+  await page.getByRole("link", { name: /HSK 1/i }).first().click();
   await page.waitForURL("**/lists/**");
   const enrolled = page.waitForResponse(
     (res) => res.url().includes("/enroll") && res.request().method() === "POST"
@@ -192,10 +192,59 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
 test("per-list progress chips show after enrolling", async ({ page }) => {
   await logIn(page);
   await page.goto("/lists");
-  // The list enrolled earlier shows a "learning" rollup chip.
+  // The list enrolled earlier shows a "learning" rollup chip, and enrolled
+  // lists are grouped under a Studying section.
   await expect(page.getByText(/\d+ learning/).first()).toBeVisible({
     timeout: 10_000,
   });
+  await expect(
+    page.getByRole("heading", { name: /studying/i })
+  ).toBeVisible();
+});
+
+test("enrolling a second list skips already-tracked words", async ({ page }) => {
+  await logIn(page);
+  // Top 100 overlaps heavily with the HSK 1 words already enrolled.
+  await page.goto("/lists");
+  await page
+    .getByRole("link", { name: /Top 100 Most Common Words/i })
+    .click();
+  await page.waitForURL("**/lists/**");
+  const enrolled = page.waitForResponse(
+    (res) => res.url().includes("/enroll") && res.request().method() === "POST"
+  );
+  await page.getByRole("button", { name: /add all to my queue/i }).click();
+  const body = await (await enrolled).json();
+  // Some words overlap with HSK 1 (的, 是, …) — they must not be re-enrolled.
+  expect(body.alreadyTracked).toBeGreaterThan(0);
+  expect(body.enrolled + body.alreadyTracked).toBe(100);
+});
+
+test("hide a starter list and restore it", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/lists");
+  // Hide a starter list this account never enrolled (enrolled lists stay
+  // under Studying by design, so hiding them shows no Hidden section).
+  const target = page
+    .getByRole("link", { name: /Everyday Conversations/i })
+    .first();
+  const hidden = page.waitForResponse(
+    (res) => res.url().includes("/hide") && res.request().method() === "POST"
+  );
+  await target.getByRole("button", { name: /hide this list/i }).click();
+  expect((await hidden).ok()).toBeTruthy();
+
+  // It moves into the collapsed Hidden section.
+  const details = page.locator("details", { hasText: "Hidden" });
+  await expect(details).toBeVisible({ timeout: 10_000 });
+  await details.locator("summary").click();
+  const restore = page.waitForResponse(
+    (res) => res.url().includes("/hide") && res.request().method() === "DELETE"
+  );
+  await details
+    .getByRole("button", { name: /show this list again/i })
+    .click();
+  expect((await restore).ok()).toBeTruthy();
 });
 
 test("match mode loads a round", async ({ page }) => {

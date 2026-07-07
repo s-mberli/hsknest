@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { termKey } from "@/lib/progressMerge";
 import { getCurrentUserId } from "@/lib/session";
 import { visibleListWhere } from "@/lib/ownership";
 import { enrollSchema } from "@/lib/validation";
@@ -39,35 +40,49 @@ export async function POST(
 
   const list = await prisma.wordList.findFirst({
     where: { id, ...visibleListWhere(userId) },
-    include: { words: { select: { id: true } } },
+    include: { words: { select: { id: true, term: true } } },
   });
   if (!list) {
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
-  const listWordIds = new Set(list.words.map((w) => w.id));
+  const wordById = new Map(list.words.map((w) => [w.id, w]));
   const requested = parsed.data.wordIds;
   const wordIds = requested
-    ? requested.filter((wid) => listWordIds.has(wid))
-    : [...listWordIds];
+    ? requested.filter((wid) => wordById.has(wid))
+    : [...wordById.keys()];
 
   if (wordIds.length === 0) {
     return NextResponse.json({ assumed: 0 });
   }
 
-  const existing = await prisma.userProgress.findMany({
-    where: { userId, wordId: { in: wordIds } },
-    select: { wordId: true, state: true },
+  // Shared progress by term: a twin word in another same-language list counts
+  // as the same card, so "I know these" flips that row instead of inserting.
+  const trackedSameLanguage = await prisma.userProgress.findMany({
+    where: { userId, word: { wordList: { languageId: list.languageId } } },
+    select: { wordId: true, state: true, word: { select: { term: true } } },
   });
-  const existingByWord = new Map(existing.map((p) => [p.wordId, p.state]));
+  const trackedByTerm = new Map(
+    trackedSameLanguage.map((p) => [termKey(p.word.term), p])
+  );
 
   const now = new Date();
-  // Words with no progress yet — insert as ASSUMED (SQLite: no skipDuplicates).
-  const toInsert = wordIds.filter((wid) => !existingByWord.has(wid));
-  // Words already tracked but not yet "learned" — flip to ASSUMED.
-  const toUpdate = existing
-    .filter((p) => p.state !== "REVIEW" && p.state !== "MASTERED")
-    .map((p) => p.wordId);
+  const toInsert: string[] = [];
+  const toUpdate: string[] = [];
+  const seenTerms = new Set<string>();
+  for (const wid of wordIds) {
+    const key = termKey(wordById.get(wid)!.term);
+    if (seenTerms.has(key)) continue;
+    seenTerms.add(key);
+    const tracked = trackedByTerm.get(key);
+    if (!tracked) {
+      // No progress yet — insert as ASSUMED (SQLite: no skipDuplicates).
+      toInsert.push(wid);
+    } else if (tracked.state !== "REVIEW" && tracked.state !== "MASTERED") {
+      // Tracked but not yet "learned" — flip the existing row to ASSUMED.
+      toUpdate.push(tracked.wordId);
+    }
+  }
 
   const ops = [];
   if (toInsert.length > 0) {

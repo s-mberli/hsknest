@@ -1,3 +1,4 @@
+import { StrengthMeter } from "@/components/words/StrengthMeter";
 import {
   Table,
   TableBody,
@@ -6,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { STRENGTH_META, wordStrength } from "@/lib/strength";
 
 export interface WordRow {
   id: string;
@@ -13,16 +15,31 @@ export interface WordRow {
   translation: string;
   phonetic: string | null;
   state: string | null;
+  intervalDays: number | null;
+  lapses: number | null;
 }
 
-const STATE_LABELS: Record<string, string> = {
-  NEW: "New",
-  LEARNING: "Learning",
-  REVIEW: "Learned",
-  LAPSED: "Relearning",
-  MASTERED: "Mastered",
-  ASSUMED: "Known",
-};
+/** Strength cell shared by both list tables: meter + band + interval days. */
+export function StrengthCell({ word }: { word: WordRow }) {
+  if (!word.state) {
+    return <span className="text-xs text-muted-foreground/60">—</span>;
+  }
+  const strength = wordStrength({
+    state: word.state,
+    intervalDays: word.intervalDays ?? 0,
+    lapses: word.lapses ?? 0,
+  });
+  const days = Math.round(word.intervalDays ?? 0);
+  return (
+    <span className="inline-flex items-center gap-2">
+      <StrengthMeter strength={strength} />
+      <span className="text-xs tabular-nums text-muted-foreground">
+        {STRENGTH_META[strength].label}
+        {days > 0 ? ` · ${days}d` : ""}
+      </span>
+    </span>
+  );
+}
 
 export function WordTable({ words }: { words: WordRow[] }) {
   return (
@@ -32,7 +49,7 @@ export function WordTable({ words }: { words: WordRow[] }) {
           <TableHead>Term</TableHead>
           <TableHead>Reading</TableHead>
           <TableHead>Meaning</TableHead>
-          <TableHead className="text-right">Status</TableHead>
+          <TableHead className="text-right">Strength</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -44,13 +61,7 @@ export function WordTable({ words }: { words: WordRow[] }) {
             </TableCell>
             <TableCell>{w.translation}</TableCell>
             <TableCell className="text-right">
-              {w.state ? (
-                <span className="text-xs text-muted-foreground">
-                  {STATE_LABELS[w.state] ?? w.state}
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground/60">—</span>
-              )}
+              <StrengthCell word={w} />
             </TableCell>
           </TableRow>
         ))}

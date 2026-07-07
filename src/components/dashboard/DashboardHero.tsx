@@ -18,8 +18,8 @@ interface DashboardHeroProps {
 /** One breakdown row: color-matched to its ring segment. */
 const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; className: string }[] = [
   { key: "due", label: "to review", className: "text-primary" },
-  { key: "fresh", label: "new", className: "text-muted-foreground" },
-  { key: "checks", label: "checks", className: "text-amber" },
+  { key: "fresh", label: "new words", className: "text-muted-foreground" },
+  { key: "checks", label: "known-word checks", className: "text-amber" },
 ];
 
 /**
@@ -34,15 +34,23 @@ export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
   // Live session size from the picker (null = All / no cap).
   const [size, setSize] = useState<number | null>(null);
 
-  // Session size tracks the picker choice, clamped to today's total.
-  // NOTE: scope (language/list) narrowing is intentionally NOT reflected here —
-  // that would need an extra API call; segments + total stay global.
-  const shown = Math.min(total, size ?? total);
-  const counts = { due, fresh, checks };
+  // The ring mirrors what the picked session will actually contain, filled in
+  // the same priority order the queue uses: due → checks → new. "All" shows
+  // the whole day. Scope (language/list) narrowing is NOT reflected — that
+  // would need an extra API call; counts stay global.
+  const cap = size ?? total;
+  const sessionDue = Math.min(due, cap);
+  const sessionChecks = Math.min(checks, Math.max(0, cap - sessionDue));
+  const sessionFresh = Math.min(
+    fresh,
+    Math.max(0, cap - sessionDue - sessionChecks)
+  );
+  const shown = sessionDue + sessionChecks + sessionFresh;
+  const counts = { due: sessionDue, fresh: sessionFresh, checks: sessionChecks };
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <FocusRing due={due} checks={checks} fresh={fresh}>
+      <FocusRing due={sessionDue} checks={sessionChecks} fresh={sessionFresh}>
         {hasCards ? (
           <>
             <div className="flex flex-col gap-1">
@@ -83,7 +91,13 @@ export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
       </FocusRing>
 
       {hasCards && (
-        <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
+        <>
+          <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
+          <p className="text-center text-[11px] text-muted-foreground">
+            The ring shows what this session will contain. How many new words
+            appear per day is set in Settings → Daily workload.
+          </p>
+        </>
       )}
 
       {/* Alternative practice modes — same session query, different screen. */}
