@@ -107,4 +107,36 @@ describe("scopeToWordWhere", () => {
   it("ignores an empty listIds array", () => {
     expect(scopeToWordWhere({ listIds: [] })).toEqual({});
   });
+
+  it("excludes hidden lists when userId is provided", () => {
+    expect(scopeToWordWhere({}, "user123")).toEqual({
+      word: {
+        wordList: {
+          hiddenBy: {
+            none: {
+              userId: "user123",
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("combines scope filters and hidden list exclusion with userId", () => {
+    expect(
+      scopeToWordWhere({ languageId: "zh", listIds: ["a", "b"] }, "user123")
+    ).toEqual({
+      word: {
+        wordList: {
+          id: { in: ["a", "b"] },
+          languageId: "zh",
+          hiddenBy: {
+            none: {
+              userId: "user123",
+            },
+          },
+        },
+      },
+    });
+  });
 });

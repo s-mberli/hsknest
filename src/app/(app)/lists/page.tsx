@@ -51,8 +51,10 @@ export default async function ListsPage() {
   const hiddenIds = new Set(hiddenRows.map((h) => h.listId));
 
   // Sections, in reading order: what you study, what you made, what you could
-  // add, what you tucked away. Studying wins over hidden.
-  const studying = lists.filter((l) => (byList.get(l.id)?.enrolled ?? 0) > 0);
+  // add, what you tucked away. Hidden wins over studying (so hiding stops study).
+  const studying = lists.filter(
+    (l) => (byList.get(l.id)?.enrolled ?? 0) > 0 && !hiddenIds.has(l.id)
+  );
   const studyingIds = new Set(studying.map((l) => l.id));
   const ownLists = lists.filter(
     (l) => l.createdById === userId && !studyingIds.has(l.id)
@@ -64,8 +66,7 @@ export default async function ListsPage() {
       !hiddenIds.has(l.id)
   );
   const hiddenLists = lists.filter(
-    (l) =>
-      l.createdById !== userId && !studyingIds.has(l.id) && hiddenIds.has(l.id)
+    (l) => l.createdById !== userId && hiddenIds.has(l.id)
   );
 
   const card = (list: (typeof lists)[number], opts?: { hidden?: boolean }) => (

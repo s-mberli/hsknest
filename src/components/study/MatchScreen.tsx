@@ -52,6 +52,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   const [graded, setGraded] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Tile | null>(null);
   const [shaking, setShaking] = useState<string | null>(null);
+  const [wrongPair, setWrongPair] = useState<{ a: Tile; b: Tile } | null>(null);
   const [correct, setCorrect] = useState(0);
   const [missedWords, setMissedWords] = useState<
     { term: string; translation: string }[]
@@ -171,8 +172,12 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
         next.add(tile.wordId);
         return next;
       });
+      setWrongPair({ a: selected, b: tile });
       setShaking(`${tile.side}:${tile.wordId}`);
-      window.setTimeout(() => setShaking(null), 400);
+      window.setTimeout(() => {
+        setShaking(null);
+        setWrongPair(null);
+      }, 400);
       setSelected(null);
     }
   }
@@ -182,19 +187,33 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
     const isSelected =
       selected?.wordId === tile.wordId && selected.side === tile.side;
     const isShaking = shaking === `${tile.side}:${tile.wordId}`;
+    const isWrong = wrongPair && (
+      (wrongPair.a.wordId === tile.wordId && wrongPair.a.side === tile.side) ||
+      (wrongPair.b.wordId === tile.wordId && wrongPair.b.side === tile.side)
+    );
+
     return (
       <motion.button
         type="button"
         onClick={() => tap(tile)}
         disabled={isMatched}
-        animate={isShaking ? { x: [0, -8, 8, -6, 6, 0] } : { x: 0 }}
+        animate={
+          isShaking
+            ? { x: [0, -8, 8, -6, 6, 0] }
+            : isMatched
+            ? { scale: [1, 1.1, 0.95], opacity: 0.5 }
+            : isSelected
+            ? { scale: 1.05 }
+            : { scale: 1, x: 0 }
+        }
         transition={{ duration: 0.35 }}
         className={cn(
-          "w-full rounded-xl border bg-card px-3 py-3 text-sm font-medium transition-colors",
+          "w-full rounded-xl border bg-card px-3 py-3 text-sm font-medium transition-all duration-200",
           tile.side === "term" && "break-words text-base",
-          isMatched && "border-success/40 bg-success/5 text-muted-foreground/50",
-          !isMatched && isSelected && "border-primary bg-primary/10",
-          !isMatched && !isSelected && "hover:border-primary/50 hover:bg-accent"
+          isMatched && "border-success bg-success/10 text-success/70 pointer-events-none",
+          !isMatched && isWrong && "border-destructive bg-destructive/10 text-destructive",
+          !isMatched && !isWrong && isSelected && "border-primary bg-primary/15 shadow-sm",
+          !isMatched && !isWrong && !isSelected && "hover:border-primary/50 hover:bg-accent"
         )}
       >
         {tile.text}
@@ -245,10 +264,12 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto flex w-full max-w-md flex-col gap-6"
           >
-            <p className="text-center text-sm text-muted-foreground">
-              Round {round + 1} of {rounds.length} — tap a word, then its
-              meaning
-            </p>
+            <div className="text-center">
+              <h2 className="text-lg font-bold tracking-tight mb-1">Tap matching pairs</h2>
+              <p className="text-xs text-muted-foreground">
+                Round {round + 1} of {rounds.length}
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2">
                 {tiles.terms.map((t) => (

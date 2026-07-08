@@ -311,7 +311,7 @@ test("words tab toggles to table view", async ({ page }) => {
 test("match mode loads a round", async ({ page }) => {
   await logIn(page);
   await page.goto("/study/match?limit=5");
-  await expect(page.getByText(/tap a word, then its meaning/i)).toBeVisible({
+  await expect(page.getByText(/tap matching pairs/i)).toBeVisible({
     timeout: 15_000,
   });
 });
