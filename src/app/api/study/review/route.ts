@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { wordId, quality, reviewedAt } = parsed.data;
+  const { wordId, quality, reviewedAt, practice } = parsed.data;
   const now = reviewedAt ?? new Date();
 
   const [user, progress] = await Promise.all([
@@ -59,6 +59,29 @@ export async function POST(req: Request) {
       { error: "Not enrolled in this word" },
       { status: 404 }
     );
+  }
+
+  // Practice/refresh mode: log the review so the streak counts, but leave the
+  // SRS schedule (interval/dueAt/state/caps) completely untouched.
+  if (practice) {
+    await prisma.reviewLog.create({
+      data: {
+        userId,
+        wordId,
+        quality,
+        algorithm: user.preferredAlgorithm,
+        intervalBefore: progress.intervalDays,
+        intervalAfter: progress.intervalDays,
+        reviewedAt: now,
+      },
+    });
+    return NextResponse.json({
+      next: {
+        dueAt: progress.dueAt,
+        intervalDays: progress.intervalDays,
+        state: progress.state,
+      },
+    });
   }
 
   const algorithm = getAlgorithm(user.preferredAlgorithm);

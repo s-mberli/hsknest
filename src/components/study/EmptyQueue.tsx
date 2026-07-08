@@ -8,18 +8,21 @@ import { Button } from "@/components/ui/button";
 interface EmptyQueueProps {
   /** True when the session was narrowed to a language/list selection. */
   scoped: boolean;
+  /** True when this was a practice/refresh session (no learned words to show). */
+  practice?: boolean;
 }
 
-export function EmptyQueue({ scoped }: EmptyQueueProps) {
+export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
       <Moon className="size-14 text-primary" />
       <h2 className="text-2xl font-bold tracking-tight">
-        Nothing to study right now
+        {practice ? "No learned words to refresh yet" : "Nothing to study right now"}
       </h2>
       <p className="max-w-sm text-muted-foreground">
-        You&apos;re all caught up. Add more words or come back when reviews are
-        due.
+        {practice
+          ? "Practice mode refreshes words you already know. Learn a few first, then come back."
+          : "You're all caught up. Add more words or come back when reviews are due."}
       </p>
 
       {scoped && (

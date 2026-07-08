@@ -65,12 +65,14 @@ function nextStage(
 interface StudySessionOptions {
   /** false → skip the intermediate reading-hint stage. Defaults to true. */
   showReading?: boolean;
+  /** true → practice/refresh mode: reviews don't advance the SRS schedule. */
+  practice?: boolean;
 }
 
 /** `query` is the queue query string, e.g. "limit=10" or "minutes=5". */
 export function useStudySession(
   query = "limit=20",
-  { showReading = true }: StudySessionOptions = {}
+  { showReading = true, practice = false }: StudySessionOptions = {}
 ): UseStudySession {
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [cursor, setCursor] = useState(0);
@@ -146,6 +148,7 @@ export function useStudySession(
           wordId: card.wordId,
           quality,
           reviewedAt: new Date().toISOString(),
+          ...(practice ? { practice: true } : {}),
         });
 
         const post = () =>
@@ -198,7 +201,7 @@ export function useStudySession(
         }
       })();
     },
-    [cards, cursor]
+    [cards, cursor, practice]
   );
 
   return {

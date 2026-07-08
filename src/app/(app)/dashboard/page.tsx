@@ -43,7 +43,12 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <DashboardHero due={stats.dueCount} checks={stats.checkCount} fresh={fresh} />
+      <DashboardHero
+        due={stats.dueCount}
+        checks={stats.checkCount}
+        fresh={fresh}
+        learnedCount={stats.learnedTotal + stats.masteredTotal}
+      />
 
       <p className="my-6 text-center text-sm text-muted-foreground">
         {stats.newIntroducedToday} of {stats.dailyNewWords} new words today

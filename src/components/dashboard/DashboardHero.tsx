@@ -13,6 +13,8 @@ interface DashboardHeroProps {
   due: number;
   checks: number;
   fresh: number;
+  /** Words the user has already learned — gates the Practice/Refresh action. */
+  learnedCount?: number;
 }
 
 /** One breakdown row: color-matched to its ring segment. */
@@ -27,12 +29,21 @@ const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; className: str
  * breakdown (what awaits, not just how many) and a Start button whose href
  * tracks the session-length picker below.
  */
-export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
+export function DashboardHero({
+  due,
+  checks,
+  fresh,
+  learnedCount = 0,
+}: DashboardHeroProps) {
   const total = due + checks + fresh;
   const hasCards = total > 0;
   const [href, setHref] = useState("/study?limit=20");
   // Live session size from the picker (null = All / no cap).
   const [size, setSize] = useState<number | null>(null);
+
+  // Practice/refresh reuses the picked session scope, just adds mode=practice.
+  const practiceHref = `${href}${href.includes("?") ? "&" : "?"}mode=practice`;
+  const canPractice = learnedCount > 0;
 
   // The ring mirrors what the picked session will actually contain, filled in
   // the same priority order the queue uses: due → checks → new. "All" shows
@@ -86,6 +97,14 @@ export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
             <span className="text-xs text-muted-foreground">
               Nothing due right now
             </span>
+            {canPractice && (
+              <Button asChild size="sm" className="mt-2 rounded-full">
+                <Link href={practiceHref}>
+                  <GraduationCap className="size-4" />
+                  Refresh learned words
+                </Link>
+              </Button>
+            )}
           </>
         )}
       </FocusRing>
@@ -97,6 +116,14 @@ export function DashboardHero({ due, checks, fresh }: DashboardHeroProps) {
             The ring shows what this session will contain. How many new words
             appear per day is set in Settings → Daily workload.
           </p>
+          {canPractice && (
+            <Link
+              href={practiceHref}
+              className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              or refresh learned words
+            </Link>
+          )}
         </>
       )}
 

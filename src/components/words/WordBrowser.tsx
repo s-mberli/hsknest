@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { WordTable, type WordRow } from "@/components/lists/WordTable";
 import { WordStrengthGrid } from "@/components/words/WordStrengthGrid";
 import type { WordDetail } from "@/components/words/WordHoverCard";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,8 @@ export function WordBrowser() {
   // Language filter ("all" = every language) and the due-only queue toggle.
   const [language, setLanguage] = useState<string>("all");
   const [dueOnly, setDueOnly] = useState(false);
+  // View mode — card grid (default) or a dense table like the Lists page.
+  const [view, setView] = useState<"cards" | "table">("cards");
 
   useEffect(() => {
     let active = true;
@@ -160,8 +163,40 @@ export function WordBrowser() {
   const bands: Strength[] | undefined =
     filter === "all" ? undefined : [filter];
 
+  // Table rows mirror the grid's filtering (band + search), since WordTable
+  // renders a flat list rather than applying filters itself.
+  const q = search.trim().toLowerCase();
+  const tableRows: WordRow[] = visibleWords
+    .filter((w) => !bands || bands.includes(w.strength))
+    .filter(
+      (w) =>
+        q === "" ||
+        w.term.toLowerCase().includes(q) ||
+        (w.phonetic ?? "").toLowerCase().includes(q) ||
+        w.translation.toLowerCase().includes(q)
+    )
+    .map((w) => ({
+      id: w.wordId,
+      term: w.term,
+      translation: w.translation,
+      phonetic: w.phonetic,
+      state: w.state,
+      intervalDays: w.intervalDays,
+      lapses: w.lapses,
+    }));
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <div className="inline-flex rounded-lg border p-0.5">
+          <ToggleBtn active={view === "cards"} onClick={() => setView("cards")}>
+            Cards
+          </ToggleBtn>
+          <ToggleBtn active={view === "table"} onClick={() => setView("table")}>
+            Table
+          </ToggleBtn>
+        </div>
+      </div>
       {languages.length > 1 && (
         <div className="flex flex-wrap gap-2">
           <FilterChip
@@ -222,13 +257,43 @@ export function WordBrowser() {
         />
       )}
 
-      <WordStrengthGrid
-        words={visibleWords}
-        search={search}
-        bands={bands}
-        emptyLabel="No words match this filter."
-      />
+      {view === "cards" ? (
+        <WordStrengthGrid
+          words={visibleWords}
+          search={search}
+          bands={bands}
+          emptyLabel="No words match this filter."
+        />
+      ) : tableRows.length > 0 ? (
+        <WordTable words={tableRows} />
+      ) : (
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          No words match this filter.
+        </p>
+      )}
     </div>
+  );
+}
+
+function ToggleBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Button
+      type="button"
+      variant={active ? "secondary" : "ghost"}
+      size="sm"
+      onClick={onClick}
+      className={cn("h-8", !active && "text-muted-foreground")}
+    >
+      {children}
+    </Button>
   );
 }
 

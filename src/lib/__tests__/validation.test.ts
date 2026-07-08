@@ -3,9 +3,37 @@ import { describe, expect, it } from "vitest";
 import {
   feedbackSchema,
   importSchema,
+  reviewSchema,
   signupSchema,
   wordInputSchema,
 } from "@/lib/validation";
+
+describe("reviewSchema", () => {
+  it("accepts a normal review with no practice flag", () => {
+    const r = reviewSchema.safeParse({ wordId: "w1", quality: 4 });
+    expect(r.success).toBe(true);
+    expect(r.success && r.data.practice).toBeUndefined();
+  });
+
+  it("accepts an explicit practice review", () => {
+    const r = reviewSchema.safeParse({
+      wordId: "w1",
+      quality: 3,
+      practice: true,
+    });
+    expect(r.success).toBe(true);
+    expect(r.success && r.data.practice).toBe(true);
+  });
+
+  it("rejects a non-boolean practice flag", () => {
+    const r = reviewSchema.safeParse({
+      wordId: "w1",
+      quality: 3,
+      practice: "yes",
+    });
+    expect(r.success).toBe(false);
+  });
+});
 
 describe("feedbackSchema", () => {
   it("accepts a valid bug report", () => {

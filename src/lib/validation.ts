@@ -17,6 +17,9 @@ export const reviewSchema = z.object({
     .min(0)
     .max(5) as z.ZodType<0 | 1 | 2 | 3 | 4 | 5>,
   reviewedAt: z.coerce.date().optional(),
+  // Practice/refresh mode: log the review for streak/stats but do NOT advance
+  // the SRS schedule (no interval/dueAt/cap change).
+  practice: z.boolean().optional(),
 });
 
 export const enrollSchema = z.object({
