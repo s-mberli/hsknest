@@ -72,9 +72,8 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const { limit, scope } = parseQueueQuery(url.searchParams);
-  // Scope only narrows the caller's own UserProgress rows (userId is always
-  // ANDed in below), so no ownership check is needed — worst case is an empty queue.
-  const scopeWhere = scopeToWordWhere(scope, userId);
+  // Scope is validated against user's visible lists/languages; worst case is an empty queue.
+  const scopeWhere = await scopeToWordWhere(scope, userId);
 
   const now = new Date();
   const dayStart = startOfLocalDay(now);
@@ -157,6 +156,9 @@ export async function GET(req: Request) {
   // global per day — the review route stamps introducedAt/assumedCheckedAt at
   // grade time regardless of scope, so counting globally prevents double-spend
   // across differently-scoped sessions on the same day.
+  // NOTE: These counts are approximate under concurrent load (race condition
+  // possible where two sessions both read count < cap, then both update).
+  // This is acceptable for MVP; production should use atomic batch updates.
   const [newIntroducedToday, assumedCheckedToday] = await Promise.all([
     prisma.userProgress.count({
       where: {

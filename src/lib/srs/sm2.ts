@@ -8,6 +8,7 @@ import {
 
 const MIN_EASE_FACTOR = 1.3;
 const DEFAULT_EASE_FACTOR = 2.5;
+const MAX_INTERVAL_DAYS = 10950; // 30 years
 
 /**
  * SM-2 (SuperMemo 2) spaced-repetition algorithm.
@@ -58,6 +59,7 @@ export class SM2Algorithm implements SRSAlgorithm {
       } else {
         intervalDays = Math.round(state.intervalDays * easeFactor);
       }
+      intervalDays = Math.min(intervalDays, MAX_INTERVAL_DAYS);
       repetitions = state.repetitions + 1;
       cardState = "REVIEW";
     }

@@ -42,6 +42,10 @@ export async function POST(
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
+  if (!list.isPublic) {
+    return NextResponse.json({ error: "List not public" }, { status: 403 });
+  }
+
   const wordById = new Map(list.words.map((w) => [w.id, w]));
   const requested = parsed.data.wordIds;
   const wordIds = requested

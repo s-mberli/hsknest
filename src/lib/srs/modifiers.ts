@@ -1,5 +1,7 @@
 import { addDays, type ReviewQuality, type SRSResult, type SRSState } from "./types";
 
+const MAX_INTERVAL_DAYS = 10950; // 30 years
+
 /** User-tunable scheduling knobs applied AFTER any strategy computes a result. */
 export interface UserSRSPrefs {
   intervalModifier: number;
@@ -32,12 +34,16 @@ export function applyUserModifiers(
 
   if (quality >= 3) {
     intervalDays *= prefs.intervalModifier;
+    intervalDays = Math.round(intervalDays);
+    intervalDays = Math.min(intervalDays, MAX_INTERVAL_DAYS);
   } else if (prefs.lapseModifier > 0) {
     intervalDays = Math.max(1, prev.intervalDays * prefs.lapseModifier);
   }
 
   if (prefs.fuzzIntervals && intervalDays >= 2) {
     intervalDays *= 0.95 + rng() * 0.1;
+    intervalDays = Math.round(intervalDays);
+    intervalDays = Math.min(intervalDays, MAX_INTERVAL_DAYS);
   }
 
   if (
