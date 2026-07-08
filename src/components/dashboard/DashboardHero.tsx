@@ -1,11 +1,11 @@
 "use client";
 
 import {
+  BookOpen,
   ChevronRight,
   GraduationCap,
   LayoutGrid,
   ListChecks,
-  Volume2,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -69,7 +69,7 @@ export function DashboardHero({
   const PRACTICE_MODES = [
     { key: "quiz", label: "Daily Quiz", icon: ListChecks },
     { key: "match", label: "Word Match", icon: LayoutGrid },
-    { key: "pronounce", label: "Pronounce", icon: Volume2 },
+    { key: "pronounce", label: "Reading Quiz", icon: BookOpen },
   ] as const;
 
   return (
@@ -128,8 +128,7 @@ export function DashboardHero({
         <>
           <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
           <p className="text-center text-[11px] text-muted-foreground">
-            The ring shows what this session will contain. How many new words
-            appear per day is set in Settings → Daily workload.
+            Ring = this session. New words/day → Settings.
           </p>
           {canPractice && (
             <Link
@@ -143,22 +142,28 @@ export function DashboardHero({
       )}
 
       {/* Specialized practice — same session query, different screen. */}
-      {hasCards && (
+      {(hasCards || canPractice) && (
         <div className="w-full max-w-sm space-y-2">
           <SectionLabel>Specialized practice</SectionLabel>
-          {PRACTICE_MODES.map(({ key, label, icon: Icon }) => (
-            <Link
-              key={key}
-              href={href.replace(/^\/study/, `/study/${key}`)}
-              className="flex items-center gap-3 rounded-2xl border border-dashed bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
-            >
-              <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon className="size-4" />
-              </span>
-              <span className="flex-1">{label}</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
-          ))}
+          {PRACTICE_MODES.map(({ key, label, icon: Icon }) => {
+            let practiceModeHref = href.replace(/^\/study/, `/study/${key}`);
+            if (!hasCards) {
+              practiceModeHref += `${practiceModeHref.includes("?") ? "&" : "?"}mode=practice`;
+            }
+            return (
+              <Link
+                key={key}
+                href={practiceModeHref}
+                className="flex items-center gap-3 rounded-2xl border border-dashed bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+              >
+                <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Icon className="size-4" />
+                </span>
+                <span className="flex-1">{label}</span>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

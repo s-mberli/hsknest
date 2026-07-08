@@ -91,7 +91,8 @@ export function parseQueueQuery(params: URLSearchParams): {
  * data — the worst case is an empty queue.
  */
 export function scopeToWordWhere(
-  scope: StudyScope
+  scope: StudyScope,
+  userId?: string
 ): Prisma.UserProgressWhereInput {
   const wordListWhere: Prisma.WordListWhereInput = {};
   if (scope.listIds && scope.listIds.length > 0) {
@@ -99,6 +100,13 @@ export function scopeToWordWhere(
   }
   if (scope.languageId) {
     wordListWhere.languageId = scope.languageId;
+  }
+  if (userId) {
+    wordListWhere.hiddenBy = {
+      none: {
+        userId: userId,
+      },
+    };
   }
   if (Object.keys(wordListWhere).length === 0) return {};
   return { word: { wordList: wordListWhere } };

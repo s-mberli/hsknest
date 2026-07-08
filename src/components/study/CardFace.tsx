@@ -18,8 +18,8 @@ interface CardFaceProps {
 }
 
 const PROMPTS: Record<Stage, string> = {
-  TERM: "Can you say it?",
-  PHONETIC: "And what does it mean?",
+  TERM: "Say it first",
+  PHONETIC: "What does it mean?",
   FULL: "Grade yourself — swipe or use arrows",
 };
 

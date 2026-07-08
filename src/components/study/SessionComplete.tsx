@@ -74,7 +74,14 @@ export function SessionComplete({
 
       <div className="mt-4 flex flex-wrap justify-center gap-3">
         {missed.length > 0 && (
-          <Button onClick={() => window.location.reload()}>
+          <Button
+            onClick={() => {
+              const searchParams = new URLSearchParams(window.location.search);
+              searchParams.set("mode", "practice");
+              searchParams.set("limit", String(missed.length));
+              window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+            }}
+          >
             Study them again
           </Button>
         )}

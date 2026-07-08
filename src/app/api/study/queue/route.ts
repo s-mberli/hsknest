@@ -74,7 +74,7 @@ export async function GET(req: Request) {
   const { limit, scope } = parseQueueQuery(url.searchParams);
   // Scope only narrows the caller's own UserProgress rows (userId is always
   // ANDed in below), so no ownership check is needed — worst case is an empty queue.
-  const scopeWhere = scopeToWordWhere(scope);
+  const scopeWhere = scopeToWordWhere(scope, userId);
 
   const now = new Date();
   const dayStart = startOfLocalDay(now);
