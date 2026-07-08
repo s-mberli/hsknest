@@ -1,11 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { Check, ChevronsUp, Minus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { SwipeCard } from "@/components/study/SwipeCard";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
 import type { CardTextSize } from "@/lib/textSize";
+import { cn } from "@/lib/utils";
 
 interface CardStackProps {
   current: StudyCard;
@@ -74,7 +76,22 @@ export function CardStack({
 
   const behind = [...upcoming].reverse();
 
+  // On-screen grade buttons (mirror the swipe/keyboard gestures) shown once
+  // the answer is revealed. Order left→right: Again, Hard, Good, Easy.
+  const GRADES: {
+    dir: SwipeDirection;
+    label: string;
+    icon: typeof Check;
+    className: string;
+  }[] = [
+    { dir: "left", label: "Again", icon: X, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
+    { dir: "down", label: "Hard", icon: Minus, className: "text-amber border-amber/40 hover:bg-amber/10" },
+    { dir: "right", label: "Good", icon: Check, className: "text-success border-success/40 hover:bg-success/10" },
+    { dir: "up", label: "Easy", icon: ChevronsUp, className: "text-success border-success/40 hover:bg-success/10" },
+  ];
+
   return (
+    <div className="flex w-full max-w-sm flex-col gap-6">
     <div className="relative mx-auto aspect-[3/4] w-full max-w-sm">
       {/* Edge glow flash on commit. */}
       <AnimatePresence>
@@ -125,6 +142,32 @@ export function CardStack({
           textSize={textSize}
         />
       </AnimatePresence>
+    </div>
+
+      {/* Grade buttons: enabled only once the answer is revealed. */}
+      <div
+        className={cn(
+          "grid grid-cols-4 gap-2 transition-opacity",
+          stage === "FULL" ? "opacity-100" : "pointer-events-none opacity-30"
+        )}
+        aria-hidden={stage !== "FULL"}
+      >
+        {GRADES.map(({ dir, label, icon: Icon, className }) => (
+          <button
+            key={dir}
+            type="button"
+            onClick={() => handleSwipe(dir)}
+            disabled={stage !== "FULL"}
+            className={cn(
+              "flex flex-col items-center gap-1 rounded-xl border py-2.5 text-xs font-medium transition-colors",
+              className
+            )}
+          >
+            <Icon className="size-5" />
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

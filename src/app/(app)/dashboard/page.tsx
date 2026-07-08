@@ -56,9 +56,12 @@ export default async function DashboardPage() {
 
       <Card className="mb-6">
         <CardContent className="pt-6">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Next 7 days
-          </p>
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Upcoming schedule
+            </p>
+            <span className="text-[11px] text-muted-foreground">Next 7 days</span>
+          </div>
           <Forecast forecast={stats.forecast} />
         </CardContent>
       </Card>
