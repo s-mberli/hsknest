@@ -106,3 +106,32 @@ describe("SM2Algorithm purity", () => {
     expect(JSON.stringify(state)).toBe(snapshot);
   });
 });
+
+describe("SM2Algorithm interval cap", () => {
+  it("caps interval at MAX_INTERVAL_DAYS (10950)", () => {
+    // Simulate a very large ease factor and interval to exceed cap.
+    const state = freshState({
+      repetitions: 2,
+      intervalDays: 5000,
+      easeFactor: 3.0, // Very high ease factor
+      state: "REVIEW",
+    });
+    const { next } = algo.calculateNextReview(state, 5, NOW);
+    expect(next.intervalDays).toBeLessThanOrEqual(10950);
+    expect(next.intervalDays).toBe(10950);
+  });
+
+  it("does not cap intervals below the max", () => {
+    const state = freshState({
+      repetitions: 2,
+      intervalDays: 100,
+      easeFactor: 2.5,
+      state: "REVIEW",
+    });
+    const { next } = algo.calculateNextReview(state, 5, NOW);
+    // At quality 5: EF delta = 0.1, so new EF = 2.5 + 0.1 = 2.6
+    // 100 * 2.6 = 260, below cap
+    expect(next.intervalDays).toBe(260);
+    expect(next.intervalDays).toBeLessThanOrEqual(10950);
+  });
+});

@@ -1,6 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
+import { visibleLanguageWhere, visibleListWhere } from "@/lib/ownership";
+import { prisma } from "@/lib/prisma";
+
 export const CARDS_PER_MINUTE = 5; // ~12s/card
 const MAX_LIMIT = 500;
 const DEFAULT_LIMIT = 20;
@@ -89,25 +92,71 @@ export function parseQueueQuery(params: URLSearchParams): {
  * Security: this only ever narrows the caller's OWN UserProgress rows (the queue
  * always ANDs in `userId`). Arbitrary listIds/languageId can't leak other users'
  * data — the worst case is an empty queue.
+ *
+ * With userId, also validates that scope parameters are within the user's visible lists/languages.
+ * Without userId, returns the scope as-is (used in tests); with userId, validates against visibility.
  */
 export function scopeToWordWhere(
   scope: StudyScope,
   userId?: string
-): Prisma.UserProgressWhereInput {
+): Prisma.UserProgressWhereInput | Promise<Prisma.UserProgressWhereInput> {
   const wordListWhere: Prisma.WordListWhereInput = {};
+
   if (scope.listIds && scope.listIds.length > 0) {
     wordListWhere.id = { in: scope.listIds };
   }
+
   if (scope.languageId) {
     wordListWhere.languageId = scope.languageId;
   }
-  if (userId) {
-    wordListWhere.hiddenBy = {
-      none: {
-        userId: userId,
-      },
-    };
+
+  // If no userId, skip visibility validation (used in tests)
+  if (!userId) {
+    if (Object.keys(wordListWhere).length === 0) return {};
+    return { word: { wordList: wordListWhere } };
   }
+
+  // With userId: validate languageId and listIds are visible to the user
+  return validateAndBuildWhere(scope, wordListWhere, userId);
+}
+
+/**
+ * Async validation of scope parameters against user's visible lists/languages.
+ */
+async function validateAndBuildWhere(
+  scope: StudyScope,
+  wordListWhere: Prisma.WordListWhereInput,
+  userId: string
+): Promise<Prisma.UserProgressWhereInput> {
+  // Validate languageId is visible to the user if specified
+  if (scope.languageId) {
+    const langExists = await prisma.language.findFirst({
+      where: { id: scope.languageId, ...visibleLanguageWhere(userId) },
+    });
+    if (!langExists) {
+      return {};
+    }
+  }
+
+  // Validate all listIds are visible to the user
+  if (scope.listIds && scope.listIds.length > 0) {
+    const validLists = await prisma.wordList.findMany({
+      where: { id: { in: scope.listIds }, ...visibleListWhere(userId) },
+      select: { id: true },
+    });
+    const validIds = new Set(validLists.map((l) => l.id));
+    const allValid = scope.listIds.every((id) => validIds.has(id));
+    if (!allValid) {
+      return {};
+    }
+  }
+
+  wordListWhere.hiddenBy = {
+    none: {
+      userId: userId,
+    },
+  };
+
   if (Object.keys(wordListWhere).length === 0) return {};
   return { word: { wordList: wordListWhere } };
 }

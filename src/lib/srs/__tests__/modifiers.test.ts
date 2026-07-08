@@ -212,3 +212,66 @@ describe("applyUserModifiers — defaults are identity (regression guard)", () =
     expect(JSON.stringify(result)).toBe(resultSnap);
   });
 });
+
+describe("applyUserModifiers — rounding after mutations", () => {
+  it("rounds interval after intervalModifier multiplication", () => {
+    const { next } = applyUserModifiers(
+      freshState({ intervalDays: 10 }),
+      resultWith({ intervalDays: 10 }),
+      4,
+      prefs({ intervalModifier: 1.33, fuzzIntervals: false }),
+      NOW
+    );
+    expect(next.intervalDays).toBe(13); // 10 * 1.33 = 13.3 → 13
+    expect(Number.isInteger(next.intervalDays)).toBe(true);
+  });
+
+  it("rounds interval after fuzzing", () => {
+    const { next } = applyUserModifiers(
+      freshState({ intervalDays: 100 }),
+      resultWith({ intervalDays: 100 }),
+      4,
+      prefs({ fuzzIntervals: true }),
+      NOW,
+      () => 0.5 // Mid-range rng
+    );
+    expect(Number.isInteger(next.intervalDays)).toBe(true);
+  });
+});
+
+describe("applyUserModifiers — interval cap", () => {
+  it("caps interval at MAX_INTERVAL_DAYS (10950) after modifier", () => {
+    const { next } = applyUserModifiers(
+      freshState({ intervalDays: 7000 }),
+      resultWith({ intervalDays: 7000 }),
+      4,
+      prefs({ intervalModifier: 2.0, fuzzIntervals: false }),
+      NOW
+    );
+    expect(next.intervalDays).toBe(10950);
+    expect(next.intervalDays).toBeLessThanOrEqual(10950);
+  });
+
+  it("caps interval at MAX_INTERVAL_DAYS (10950) after fuzzing", () => {
+    const { next } = applyUserModifiers(
+      freshState({ intervalDays: 10500 }),
+      resultWith({ intervalDays: 10500 }),
+      4,
+      prefs({ fuzzIntervals: true }),
+      NOW,
+      () => 0.9 // Will push towards +5% which exceeds 10950
+    );
+    expect(next.intervalDays).toBeLessThanOrEqual(10950);
+  });
+
+  it("does not cap intervals below the max", () => {
+    const { next } = applyUserModifiers(
+      freshState({ intervalDays: 5000 }),
+      resultWith({ intervalDays: 5000 }),
+      4,
+      prefs({ intervalModifier: 1.5, fuzzIntervals: false }),
+      NOW
+    );
+    expect(next.intervalDays).toBe(7500); // 5000 * 1.5 = 7500, below cap
+  });
+});

@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 import { getCurrentUserId } from "@/lib/session";
 import { applyUserModifiers, getAlgorithm } from "@/lib/srs";
 import type { CardState, SRSResult, SRSState, UserSRSPrefs } from "@/lib/srs";
@@ -15,6 +16,10 @@ export async function POST(req: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!rateLimit(`review:${userId}`, 1000, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
   let body: unknown;
@@ -34,6 +39,7 @@ export async function POST(req: Request) {
 
   const { wordId, quality, reviewedAt, practice } = parsed.data;
   const now = reviewedAt ?? new Date();
+  const submittedAt = new Date();
 
   const [user, progress] = await Promise.all([
     prisma.user.findUnique({
@@ -149,7 +155,11 @@ export async function POST(req: Request) {
 
   await prisma.$transaction([
     prisma.userProgress.update({
-      where: { userId_wordId: { userId, wordId } },
+      where: {
+        userId_wordId: { userId, wordId },
+        // Dedup: prevent duplicate submission within 5 seconds
+        lastReviewedAt: { lt: new Date(submittedAt.getTime() - 5000) },
+      },
       data: {
         state: next.state,
         easeFactor: next.easeFactor,

@@ -21,10 +21,17 @@ export async function postReview(wordId: string, quality: number) {
   try {
     const res = await post();
     if (res.ok || res.status === 404) return;
-    if (res.status < 500) {
-      toast.error("Couldn't save that answer.");
+    // 4xx: client/validation error, non-retriable
+    if (res.status >= 400 && res.status < 500) {
+      try {
+        const errorData = await res.json();
+        toast.error("Review failed: " + (errorData.error || "Invalid input"));
+      } catch {
+        toast.error("Review failed: Invalid input");
+      }
       return;
     }
+    // 5xx: server error, retriable
   } catch {
     // fall through to retry
   }
