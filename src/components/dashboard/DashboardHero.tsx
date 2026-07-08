@@ -1,12 +1,19 @@
 "use client";
 
-import { GraduationCap, LayoutGrid, ListChecks, Volume2 } from "lucide-react";
+import {
+  ChevronRight,
+  GraduationCap,
+  LayoutGrid,
+  ListChecks,
+  Volume2,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { SessionPicker } from "@/components/dashboard/SessionPicker";
 import { Button } from "@/components/ui/button";
+import { SectionLabel } from "@/components/ui/section-label";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeroProps {
@@ -59,8 +66,15 @@ export function DashboardHero({
   const shown = sessionDue + sessionChecks + sessionFresh;
   const counts = { due: sessionDue, fresh: sessionFresh, checks: sessionChecks };
 
+  const PRACTICE_MODES = [
+    { key: "quiz", label: "Daily Quiz", icon: ListChecks },
+    { key: "match", label: "Word Match", icon: LayoutGrid },
+    { key: "pronounce", label: "Pronounce", icon: Volume2 },
+  ] as const;
+
   return (
     <div className="flex flex-col items-center gap-5">
+      <div className="flex w-full flex-col items-center rounded-3xl border bg-card p-6 shadow-card">
       <FocusRing due={sessionDue} checks={sessionChecks} fresh={sessionFresh}>
         {hasCards ? (
           <>
@@ -108,6 +122,7 @@ export function DashboardHero({
           </>
         )}
       </FocusRing>
+      </div>
 
       {hasCards && (
         <>
@@ -127,33 +142,23 @@ export function DashboardHero({
         </>
       )}
 
-      {/* Alternative practice modes — same session query, different screen. */}
+      {/* Specialized practice — same session query, different screen. */}
       {hasCards && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>Or practice with</span>
-          <Link
-            href={href.replace(/^\/study/, "/study/quiz")}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            <ListChecks className="size-3.5" />
-            Quiz
-          </Link>
-          <span>·</span>
-          <Link
-            href={href.replace(/^\/study/, "/study/match")}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            <LayoutGrid className="size-3.5" />
-            Match
-          </Link>
-          <span>·</span>
-          <Link
-            href={href.replace(/^\/study/, "/study/pronounce")}
-            className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            <Volume2 className="size-3.5" />
-            Pronounce
-          </Link>
+        <div className="w-full max-w-sm space-y-2">
+          <SectionLabel>Specialized practice</SectionLabel>
+          {PRACTICE_MODES.map(({ key, label, icon: Icon }) => (
+            <Link
+              key={key}
+              href={href.replace(/^\/study/, `/study/${key}`)}
+              className="flex items-center gap-3 rounded-2xl border border-dashed bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+            >
+              <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon className="size-4" />
+              </span>
+              <span className="flex-1">{label}</span>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+          ))}
         </div>
       )}
     </div>

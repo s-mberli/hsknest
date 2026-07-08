@@ -8,7 +8,7 @@
    Vermilion/cinnabar primary, amber secondary. All shadcn var names kept
    so ui components inherit automatically. */
 :root {
-  --radius: 0.65rem;
+  --radius: 0.9rem;
 
   /* warm paper */
   --background: oklch(0.97 0.012 85);
@@ -118,6 +118,21 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans), system-ui, sans-serif;
+  }
+}
+
+/* Soft raised-card elevation for the warm paper surface. Warmer + softer
+   than a neutral drop shadow; barely-there in dark mode. */
+@layer utilities {
+  .shadow-card {
+    box-shadow:
+      0 1px 2px oklch(0.3 0.03 60 / 0.04),
+      0 6px 20px oklch(0.3 0.03 60 / 0.06);
+  }
+  .dark .shadow-card {
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 0.2),
+      0 6px 20px oklch(0 0 0 / 0.28);
   }
 }
 

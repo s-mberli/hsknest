@@ -111,15 +111,18 @@ export function ScopePicker({ value, onChange }: ScopePickerProps) {
   }
 
   return (
-    <div className="mx-auto max-w-xs">
+    <div className="w-full">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent"
+        className="flex w-full items-center justify-between gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
       >
-        Scope: {summary}
+        <span className="truncate">{summary}</span>
         <ChevronDown
-          className={cn("size-3.5 transition-transform", open && "rotate-180")}
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform",
+            open && "rotate-180"
+          )}
         />
       </button>
 
