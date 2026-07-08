@@ -247,6 +247,67 @@ test("hide a starter list and restore it", async ({ page }) => {
   expect((await restore).ok()).toBeTruthy();
 });
 
+test("practice mode reviews without moving the schedule", async ({ page }) => {
+  await logIn(page);
+
+  // Study a few cards normally so there are learned (non-NEW) words to refresh.
+  await page.goto("/study?limit=3");
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(700);
+  }
+
+  // Snapshot a learned word's dueAt before practicing.
+  const before = await page.evaluate(async () => {
+    const res = await fetch("/api/words");
+    const data = await res.json();
+    const learned = data.words.find(
+      (w: { state: string }) => w.state !== "NEW" && w.state !== "ASSUMED"
+    );
+    return learned ? { wordId: learned.wordId, dueAt: learned.dueAt } : null;
+  });
+  expect(before).not.toBeNull();
+
+  // Practice session: the review POST must carry practice semantics.
+  await page.goto("/study?mode=practice&limit=3");
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+  const reviewPosted = page.waitForResponse(
+    (res) =>
+      res.url().includes("/api/study/review") &&
+      res.request().method() === "POST"
+  );
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("ArrowRight");
+  const postBody = (await reviewPosted).request().postDataJSON();
+  expect(postBody.practice).toBe(true);
+
+  // The learned word's dueAt is unchanged by practice.
+  await page.waitForTimeout(500);
+  const after = await page.evaluate(async (wordId: string) => {
+    const res = await fetch("/api/words");
+    const data = await res.json();
+    const w = data.words.find((x: { wordId: string }) => x.wordId === wordId);
+    return w ? w.dueAt : null;
+  }, before!.wordId);
+  expect(after).toBe(before!.dueAt);
+});
+
+test("words tab toggles to table view", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/words");
+  await page.getByRole("button", { name: /^Table$/ }).click();
+  await expect(page.getByRole("table")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("columnheader", { name: /strength/i })).toBeVisible();
+});
+
 test("match mode loads a round", async ({ page }) => {
   await logIn(page);
   await page.goto("/study/match?limit=5");

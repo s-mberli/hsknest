@@ -6,6 +6,64 @@ import { getCurrentUserId } from "@/lib/session";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
 
+interface QueueCard {
+  wordId: string;
+  term: string;
+  translation: string;
+  phonetic: string | null;
+  metadata: unknown;
+  state: string;
+  kind: "review" | "check" | "new" | "practice";
+  languageCode: string;
+  lapses: number;
+  choices?: string[];
+}
+
+/**
+ * Quiz modes attach 4 shuffled answer options per card. ?choices=meaning
+ * (legacy "1") draws options from translations; ?choices=reading draws from
+ * readings (phonetic) for the pronunciation quiz. Distractors come from other
+ * words the user is studying in the same language. No-op without ?choices.
+ */
+async function attachChoices(
+  url: URL,
+  cards: QueueCard[],
+  userId: string
+): Promise<QueueCard[]> {
+  const choicesParam = url.searchParams.get("choices");
+  const choiceMode =
+    choicesParam === "reading"
+      ? "reading"
+      : choicesParam === "meaning" || choicesParam === "1"
+        ? "meaning"
+        : null;
+
+  if (!choiceMode || cards.length === 0) return cards;
+
+  const byLanguage = new Map<string, string[]>();
+  for (const langCode of new Set(cards.map((c) => c.languageCode))) {
+    const pool = await prisma.word.findMany({
+      where: {
+        wordList: { language: { code: langCode } },
+        progress: { some: { userId } },
+      },
+      select: { translation: true, phonetic: true },
+      take: 400,
+    });
+    const values = pool
+      .map((w) => (choiceMode === "reading" ? w.phonetic ?? "" : w.translation))
+      .filter((v) => v.length > 0);
+    byLanguage.set(langCode, [...new Set(values)]);
+  }
+  for (const card of cards) {
+    // Reading quiz can only test cards that have a reading.
+    const correct = choiceMode === "reading" ? card.phonetic : card.translation;
+    if (!correct) continue;
+    card.choices = buildChoices(correct, byLanguage.get(card.languageCode) ?? []);
+  }
+  return cards;
+}
+
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -33,6 +91,52 @@ export async function GET(req: Request) {
   const wordInclude = {
     word: { include: { wordList: { include: { language: true } } } },
   } as const;
+
+  const toCard = (
+    p: {
+      wordId: string;
+      state: string;
+      lapses: number;
+      word: {
+        term: string;
+        translation: string;
+        phonetic: string | null;
+        metadata: unknown;
+        wordList: { language: { code: string } };
+      };
+    },
+    kind: "review" | "check" | "new" | "practice"
+  ) => ({
+    wordId: p.wordId,
+    term: p.word.term,
+    translation: p.word.translation,
+    phonetic: p.word.phonetic,
+    metadata: p.word.metadata,
+    state: p.state,
+    kind,
+    languageCode: p.word.wordList.language.code,
+    lapses: p.lapses,
+  });
+
+  // Practice/refresh mode: study already-learned words beyond the daily quota
+  // without touching the schedule. Ignores caps entirely; excludes NEW/ASSUMED.
+  if (url.searchParams.get("mode") === "practice") {
+    const practice = await prisma.userProgress.findMany({
+      where: {
+        userId,
+        state: { in: ["LEARNING", "REVIEW", "LAPSED", "MASTERED"] },
+        ...scopeWhere,
+      },
+      orderBy: { dueAt: "asc" },
+      take: limit,
+      include: wordInclude,
+    });
+    const practiceCards: QueueCard[] = practice.map((p) => toCard(p, "practice"));
+    return NextResponse.json({
+      cards: await attachChoices(url, practiceCards, userId),
+      counts: { due: 0, newAllowedToday: 0, checksAllowedToday: 0 },
+    });
+  }
 
   // 1. Due reviews — never blocked by daily caps.
   const due = await prisma.userProgress.findMany({
@@ -96,68 +200,14 @@ export async function GET(req: Request) {
         })
       : [];
 
-  const toCard = (
-    p: (typeof due)[number],
-    kind: "review" | "check" | "new"
-  ) => ({
-    wordId: p.wordId,
-    term: p.word.term,
-    translation: p.word.translation,
-    phonetic: p.word.phonetic,
-    metadata: p.word.metadata,
-    state: p.state,
-    kind,
-    languageCode: p.word.wordList.language.code,
-    lapses: p.lapses,
-  });
-
-  const cards: (ReturnType<typeof toCard> & { choices?: string[] })[] = [
+  const cards: QueueCard[] = [
     ...due.map((p) => toCard(p, "review")),
     ...checks.map((p) => toCard(p, "check")),
     ...fresh.map((p) => toCard(p, "new")),
   ];
 
-  // Quiz modes attach 4 shuffled answer options per card. ?choices=meaning
-  // (legacy "1") draws options from translations; ?choices=reading draws from
-  // readings (phonetic) for the pronunciation quiz. Distractors come from other
-  // words the user is studying in the same language.
-  const choicesParam = url.searchParams.get("choices");
-  const choiceMode =
-    choicesParam === "reading"
-      ? "reading"
-      : choicesParam === "meaning" || choicesParam === "1"
-        ? "meaning"
-        : null;
-
-  if (choiceMode && cards.length > 0) {
-    const byLanguage = new Map<string, string[]>();
-    for (const langCode of new Set(cards.map((c) => c.languageCode))) {
-      const pool = await prisma.word.findMany({
-        where: {
-          wordList: { language: { code: langCode } },
-          progress: { some: { userId } },
-        },
-        select: { translation: true, phonetic: true },
-        take: 400,
-      });
-      const values = pool
-        .map((w) =>
-          choiceMode === "reading" ? w.phonetic ?? "" : w.translation
-        )
-        .filter((v) => v.length > 0);
-      byLanguage.set(langCode, [...new Set(values)]);
-    }
-    for (const card of cards) {
-      // Reading quiz can only test cards that have a reading.
-      const correct =
-        choiceMode === "reading" ? card.phonetic : card.translation;
-      if (!correct) continue;
-      card.choices = buildChoices(correct, byLanguage.get(card.languageCode) ?? []);
-    }
-  }
-
   return NextResponse.json({
-    cards,
+    cards: await attachChoices(url, cards, userId),
     counts: {
       due: due.length,
       newAllowedToday,

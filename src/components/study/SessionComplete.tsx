@@ -12,6 +12,8 @@ interface SessionCompleteProps {
   elapsedMs: number;
   /** Words graded wrong this session — shown as "toughest this round". */
   missed?: { term: string; translation: string }[];
+  /** True when this was a practice/refresh session (schedule untouched). */
+  practice?: boolean;
 }
 
 function formatElapsed(ms: number): string {
@@ -27,6 +29,7 @@ export function SessionComplete({
   bestCombo,
   elapsedMs,
   missed = [],
+  practice = false,
 }: SessionCompleteProps) {
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
@@ -39,9 +42,12 @@ export function SessionComplete({
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
       <CheckCircle2 className="size-14 text-primary" />
-      <h2 className="text-2xl font-bold tracking-tight">Session complete</h2>
+      <h2 className="text-2xl font-bold tracking-tight">
+        {practice ? "Practice done" : "Session complete"}
+      </h2>
       <p className="text-muted-foreground">
-        You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}. Nice work.
+        You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}.{" "}
+        {practice ? "Your review schedule is untouched." : "Nice work."}
       </p>
 
       <div className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3">
@@ -72,12 +78,20 @@ export function SessionComplete({
             Study them again
           </Button>
         )}
-        <Button asChild variant={missed.length > 0 ? "outline" : "default"}>
-          <Link href="/dashboard">Back to dashboard</Link>
+        <Button
+          asChild
+          variant={missed.length > 0 ? "outline" : "default"}
+        >
+          <Link href="/study?mode=practice&limit=20">Keep practicing</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/lists">Add more words</Link>
+          <Link href="/dashboard">Back to dashboard</Link>
         </Button>
+        {!practice && (
+          <Button asChild variant="outline">
+            <Link href="/lists">Add more words</Link>
+          </Button>
+        )}
       </div>
     </div>
   );

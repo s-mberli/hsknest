@@ -225,9 +225,11 @@ words + re-study.
 
 **Next (v0.2):**
 
+- Study reminders / schedule — a calendar of upcoming reviews with optional
+  notifications
 - More practice modes: type-the-answer (phonetic-aware for Chinese) and a
   picture quiz with generated images
-  (pronunciation quiz + hide-reading mode shipped)
+  (pronunciation quiz + hide-reading mode + practice/refresh mode shipped)
 - Per-element card text controls (character / phonetic / meaning sizes)
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)

@@ -7,8 +7,13 @@ import { useSearchParams } from "next/navigation";
  * plus any scope params (?languageId, ?listIds) passed straight through.
  * Shared by the flashcard, quiz, and match screens.
  */
-export function useQueueQuery(): { query: string; scoped: boolean } {
+export function useQueueQuery(): {
+  query: string;
+  scoped: boolean;
+  practice: boolean;
+} {
   const params = useSearchParams();
+  const practice = params.get("mode") === "practice";
 
   const parts: string[] = [];
   const minutes = Number(params.get("minutes"));
@@ -27,6 +32,11 @@ export function useQueueQuery(): { query: string; scoped: boolean } {
   const listIds = params.get("listIds");
   if (languageId) parts.push(`languageId=${encodeURIComponent(languageId)}`);
   if (listIds) parts.push(`listIds=${encodeURIComponent(listIds)}`);
+  if (practice) parts.push("mode=practice");
 
-  return { query: parts.join("&"), scoped: Boolean(languageId || listIds) };
+  return {
+    query: parts.join("&"),
+    scoped: Boolean(languageId || listIds),
+    practice,
+  };
 }

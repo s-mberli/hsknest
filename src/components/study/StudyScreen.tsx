@@ -34,7 +34,7 @@ export function StudyScreen({
 }
 
 function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenProps) {
-  const { query, scoped } = useQueueQuery();
+  const { query, scoped, practice } = useQueueQuery();
   const {
     loading,
     cards,
@@ -49,7 +49,7 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
     done,
     advance,
     swipe,
-  } = useStudySession(query, { showReading });
+  } = useStudySession(query, { showReading, practice });
 
   const startedAt = useRef(Date.now()).current;
 
@@ -77,7 +77,7 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
         )}
 
         {!loading && done && cards.length === 0 && (
-          <EmptyQueue scoped={scoped} />
+          <EmptyQueue scoped={scoped} practice={practice} />
         )}
 
         {!loading && done && cards.length > 0 && (
@@ -87,6 +87,7 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
             bestCombo={bestCombo}
             elapsedMs={Date.now() - startedAt}
             missed={missed}
+            practice={practice}
           />
         )}
 
