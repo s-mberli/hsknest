@@ -5,7 +5,13 @@ import { Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { hasVoiceFor, speak, speechSupported } from "@/lib/speech";
+import {
+  hasVoiceFor,
+  primeSpeech,
+  speak,
+  speechSupported,
+  voicesLoaded,
+} from "@/lib/speech";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 import type { Stage, StudyCard } from "@/hooks/useStudySession";
@@ -103,15 +109,36 @@ export function CardFace({
   const difficult = (card.lapses ?? 0) >= 3;
 
   // Voice availability is device-specific, so resolve it client-side after
-  // mount to avoid a hydration mismatch (and to catch Chrome's async voice load).
+  // mount to avoid a hydration mismatch. Mobile browsers load voices late, so
+  // we re-check a couple of times and track whether the list is known yet.
   const [voiceReady, setVoiceReady] = useState(false);
+  const [voicesKnown, setVoicesKnown] = useState(false);
   useEffect(() => {
-    setVoiceReady(!!card.languageCode && hasVoiceFor(card.languageCode));
+    let cancelled = false;
+    function check() {
+      if (cancelled) return;
+      setVoiceReady(!!card.languageCode && hasVoiceFor(card.languageCode));
+      setVoicesKnown(voicesLoaded());
+    }
+    check();
+    const t1 = setTimeout(check, 600);
+    const t2 = setTimeout(check, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [card.languageCode]);
+
+  // Live when a voice matches, or when the list hasn't loaded yet (let mobile
+  // try). Only show the muted state once voices are known and none match.
+  const speakLive = canSpeak && (voiceReady || !voicesKnown);
 
   function onSpeak(e: React.MouseEvent) {
     e.stopPropagation();
-    if (!voiceReady) {
+    primeSpeech();
+    const trulyNoVoice = voicesKnown && !voiceReady && !!card.languageCode;
+    if (trulyNoVoice) {
       const lang = card.languageCode ?? "this language";
       toast(
         `No ${lang} voice is installed on this device — add one in your system's language settings.`
@@ -136,15 +163,15 @@ export function CardFace({
         <button
           type="button"
           onClick={onSpeak}
-          aria-label={voiceReady ? "Play pronunciation" : "No voice installed"}
+          aria-label={speakLive ? "Play pronunciation" : "No voice installed"}
           className={cn(
             "absolute right-4 top-4 rounded-full p-2 transition-colors hover:bg-accent",
-            voiceReady
+            speakLive
               ? "text-muted-foreground hover:text-foreground"
               : "text-muted-foreground/40 hover:text-muted-foreground"
           )}
         >
-          {voiceReady ? (
+          {speakLive ? (
             <Volume2 className="size-5" />
           ) : (
             <VolumeX className="size-5" />

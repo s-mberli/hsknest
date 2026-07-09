@@ -56,6 +56,7 @@ export const settingsSchema = z.object({
   studyTheme: z.enum(["dark", "follow"]).optional(),
   cardTextSize: z.enum(["small", "normal", "large"]).optional(),
   showReading: z.boolean().optional(),
+  soundEffects: z.boolean().optional(),
 });
 
 export const accountResetSchema = z.object({

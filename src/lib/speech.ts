@@ -20,6 +20,7 @@ export function speechSupported(): boolean {
  */
 let cachedVoices: SpeechSynthesisVoice[] = [];
 let voicesWired = false;
+let retriedVoices = false;
 
 function refreshVoices(): SpeechSynthesisVoice[] {
   const s = synth();
@@ -37,7 +38,43 @@ function refreshVoices(): SpeechSynthesisVoice[] {
     });
   }
 
+  // Mobile browsers sometimes populate voices late without ever firing
+  // `voiceschanged`. Schedule one delayed re-read as a fallback.
+  if (cachedVoices.length === 0 && !retriedVoices) {
+    retriedVoices = true;
+    setTimeout(() => {
+      const next = s.getVoices();
+      if (next.length > 0) cachedVoices = next;
+    }, 500);
+  }
+
   return cachedVoices;
+}
+
+/** True once we've actually received a non-empty voice list from the browser. */
+export function voicesLoaded(): boolean {
+  return refreshVoices().length > 0;
+}
+
+/**
+ * Unlock speech on iOS/Safari, which require a user gesture before any
+ * utterance will play. Call from a click/tap handler. Runs its warm-up once.
+ */
+let primed = false;
+export function primeSpeech(): void {
+  const s = synth();
+  if (!s || typeof SpeechSynthesisUtterance === "undefined") return;
+  try {
+    s.resume();
+    if (!primed) {
+      primed = true;
+      const warm = new SpeechSynthesisUtterance(" ");
+      warm.volume = 0;
+      s.speak(warm);
+    }
+  } catch {
+    // Priming is best-effort; never throw into the study flow.
+  }
 }
 
 /**

@@ -31,9 +31,9 @@ export function StrengthCell({ word }: { word: WordRow }) {
   });
   const days = Math.round(word.intervalDays ?? 0);
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center justify-end gap-2">
       <StrengthMeter strength={strength} />
-      <span className="text-xs tabular-nums text-muted-foreground">
+      <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
         {STRENGTH_META[strength].label}
         {days > 0 ? ` · ${days}d` : ""}
       </span>

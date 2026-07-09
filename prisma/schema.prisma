@@ -27,12 +27,13 @@ model User {
   email              String           @unique
   passwordHash       String
   name               String?
-  preferredAlgorithm SRSAlgorithmType @default(SM2)
+  preferredAlgorithm SRSAlgorithmType @default(FSRS)
   settings           Json? // future: theme, daily limits, etc.
   theme              String           @default("system") // "light" | "dark" | "system"
   studyTheme         String           @default("follow") // "dark" = forced focus mode | "follow" = match app theme
   cardTextSize       String           @default("normal") // "small" | "normal" | "large" — study card text scale
   showReading        Boolean          @default(true) // false = flashcards skip the reading hint stage
+  soundEffects       Boolean          @default(true) // false = mute study sound effects
 
   // Learning limits
   dailyNewWords      Int @default(10) // new cards introduced per day; 0 = pause learning

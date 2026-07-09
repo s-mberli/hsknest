@@ -11,7 +11,12 @@ export default async function StudyPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { studyTheme: true, cardTextSize: true, showReading: true },
+    select: {
+      studyTheme: true,
+      cardTextSize: true,
+      showReading: true,
+      soundEffects: true,
+    },
   });
   if (!user) redirect("/login");
 
@@ -22,6 +27,7 @@ export default async function StudyPage() {
       studyTheme={studyTheme}
       textSize={normalizeCardTextSize(user.cardTextSize)}
       showReading={user.showReading}
+      soundEffects={user.soundEffects}
     />
   );
 }

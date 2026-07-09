@@ -26,6 +26,7 @@ export async function GET() {
       studyTheme: true,
       cardTextSize: true,
       showReading: true,
+      soundEffects: true,
       desiredRetention: true,
     },
   });
@@ -74,6 +75,7 @@ export async function PATCH(req: Request) {
       studyTheme: true,
       cardTextSize: true,
       showReading: true,
+      soundEffects: true,
       desiredRetention: true,
     },
   });

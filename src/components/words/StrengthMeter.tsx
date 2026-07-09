@@ -23,7 +23,7 @@ export function StrengthMeter({
   return (
     <span
       className={cn(
-        "inline-block h-1.5 w-14 overflow-hidden rounded-full bg-muted align-middle",
+        "inline-block h-1.5 w-14 shrink-0 overflow-hidden rounded-full bg-muted align-middle",
         className
       )}
       role="img"
