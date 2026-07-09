@@ -22,6 +22,10 @@ interface DashboardHeroProps {
   fresh: number;
   /** Words the user has already learned — gates the Practice/Refresh action. */
   learnedCount?: number;
+  /** Daily new-word limit, for the "why is this capped" hint. */
+  dailyNewWords?: number;
+  /** New words enrolled but held back today by the daily cap (0 = none). */
+  newBacklog?: number;
 }
 
 /** One breakdown chip: color-matched to its ring segment. */
@@ -41,6 +45,8 @@ export function DashboardHero({
   checks,
   fresh,
   learnedCount = 0,
+  dailyNewWords = 0,
+  newBacklog = 0,
 }: DashboardHeroProps) {
   const total = due + checks + fresh;
   const hasCards = total > 0;
@@ -122,6 +128,20 @@ export function DashboardHero({
 
             {/* Session length: a single compact row of chips. */}
             <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
+
+            {/* Only surfaces when the daily new-word cap is the real limiter —
+                explains why a bigger session size shows the same number. */}
+            {newBacklog > 0 && (
+              <p className="text-center text-[11px] text-muted-foreground">
+                {dailyNewWords} new words/day · {newBacklog} more waiting ·{" "}
+                <Link
+                  href="/settings"
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  adjust
+                </Link>
+              </p>
+            )}
           </>
         ) : (
           canPractice && (
