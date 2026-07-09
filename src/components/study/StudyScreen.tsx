@@ -9,19 +9,24 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useStudySession } from "@/hooks/useStudySession";
+import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
+
+const QUALITY_BY_DIRECTION = { left: 1, right: 4, up: 5, down: 3 } as const;
 
 interface StudyScreenProps {
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
   showReading?: boolean;
+  soundEffects?: boolean;
 }
 
 export function StudyScreen({
   studyTheme,
   textSize,
   showReading = true,
+  soundEffects = true,
 }: StudyScreenProps) {
   return (
     <Suspense fallback={null}>
@@ -29,12 +34,18 @@ export function StudyScreen({
         studyTheme={studyTheme}
         textSize={textSize}
         showReading={showReading}
+        soundEffects={soundEffects}
       />
     </Suspense>
   );
 }
 
-function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenProps) {
+function StudySession({
+  studyTheme,
+  textSize,
+  showReading = true,
+  soundEffects = true,
+}: StudyScreenProps) {
   const { query, scoped, practice } = useQueueQuery();
   const {
     loading,
@@ -55,6 +66,18 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
 
   const startedAt = useRef(Date.now()).current;
 
+  // Mirror the user's setting into the sound module (no-ops when off).
+  useEffect(() => {
+    setSoundEnabled(soundEffects);
+  }, [soundEffects]);
+
+  // Play a blip per grade, keyed off lastGrade.id so each grade fires once.
+  useEffect(() => {
+    if (!lastGrade) return;
+    playGrade(QUALITY_BY_DIRECTION[lastGrade.direction]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastGrade?.id]);
+
   const [milestoneFire, setMilestoneFire] = useState(0);
   const prevBestCombo = useRef(0);
   const MILESTONES = [5, 10, 20];
@@ -63,6 +86,7 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
     const prev = prevBestCombo.current;
     if (MILESTONES.some((m) => prev < m && bestCombo >= m)) {
       setMilestoneFire((f) => f + 1);
+      playCelebrate();
     }
     prevBestCombo.current = bestCombo;
     // eslint-disable-next-line react-hooks/exhaustive-deps

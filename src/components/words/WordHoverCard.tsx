@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
@@ -69,7 +69,9 @@ export function WordHoverCard({
   className,
 }: WordHoverCardProps) {
   const [open, setOpen] = useState(false);
+  const [shiftX, setShiftX] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const meta = STRENGTH_META[word.strength];
 
@@ -107,6 +109,34 @@ export function WordHoverCard({
 
   useEffect(() => () => releaseOpen(setOpen), []);
 
+  // Keep the panel within the viewport: measure its box and nudge it back in
+  // from either edge (8px padding). Runs on open and on resize/scroll while open.
+  useLayoutEffect(() => {
+    if (!open) {
+      setShiftX(0);
+      return;
+    }
+    function clamp() {
+      const el = panelRef.current;
+      if (!el) return;
+      const pad = 8;
+      const rect = el.getBoundingClientRect();
+      const vw = document.documentElement.clientWidth;
+      let correction = 0;
+      if (rect.left < pad) correction = pad - rect.left;
+      else if (rect.right > vw - pad) correction = vw - pad - rect.right;
+      if (correction !== 0) setShiftX((prev) => prev + correction);
+    }
+    clamp();
+    window.addEventListener("resize", clamp);
+    window.addEventListener("scroll", clamp, true);
+    return () => {
+      window.removeEventListener("resize", clamp);
+      window.removeEventListener("scroll", clamp, true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   return (
     <div
       ref={rootRef}
@@ -129,8 +159,10 @@ export function WordHoverCard({
       {open && (
         <div
           id={panelId}
+          ref={panelRef}
           role="dialog"
-          className="absolute left-1/2 top-full z-50 mt-2 w-64 -translate-x-1/2 rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
+          style={{ transform: `translateX(calc(-50% + ${shiftX}px))` }}
+          className="absolute left-1/2 top-full z-50 mt-2 w-64 max-w-[calc(100vw-1rem)] rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
         >
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-lg font-semibold">{word.term}</span>

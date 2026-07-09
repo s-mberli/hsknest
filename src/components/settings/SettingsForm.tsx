@@ -33,22 +33,22 @@ const FEEDBACK_OPTIONS: { value: FeedbackCategory; label: string }[] = [
 
 const ALGORITHMS: { value: Algorithm; label: string; description: string }[] = [
   {
+    value: "FSRS",
+    label: "FSRS",
+    description:
+      "Modern Free Spaced Repetition Scheduler. Optimizes reviews for a target retention rate — the recommended default.",
+  },
+  {
     value: "SM2",
     label: "Adaptive",
     description:
-      "Adjusts each card's interval to your recall strength. Great long-term default.",
+      "Classic SuperMemo-2. Adjusts each card's interval to your recall strength.",
   },
   {
     value: "LEITNER",
     label: "Boxes",
     description:
       "Simple 5-box system with fixed intervals. Predictable and easy to reason about.",
-  },
-  {
-    value: "FSRS",
-    label: "FSRS",
-    description:
-      "Modern Free Spaced Repetition Scheduler. Optimizes for a target retention rate.",
   },
 ];
 
@@ -95,6 +95,7 @@ interface SettingsFormProps {
   studyTheme: StudyTheme;
   cardTextSize: CardTextSize;
   showReading: boolean;
+  soundEffects: boolean;
   desiredRetention: number;
 }
 
@@ -401,6 +402,7 @@ export function SettingsForm(props: SettingsFormProps) {
         initialStudyTheme={props.studyTheme}
         initialCardTextSize={props.cardTextSize}
         initialShowReading={props.showReading}
+        initialSoundEffects={props.soundEffects}
       />
 
       <DataAccountSection email={props.email} name={props.name} />
@@ -491,11 +493,13 @@ function AppearanceSection({
   initialStudyTheme,
   initialCardTextSize,
   initialShowReading,
+  initialSoundEffects,
 }: {
   initialTheme: Theme;
   initialStudyTheme: StudyTheme;
   initialCardTextSize: CardTextSize;
   initialShowReading: boolean;
+  initialSoundEffects: boolean;
 }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -504,6 +508,7 @@ function AppearanceSection({
   const [cardTextSize, setCardTextSize] =
     useState<CardTextSize>(initialCardTextSize);
   const [showReading, setShowReading] = useState(initialShowReading);
+  const [soundEffects, setSoundEffects] = useState(initialSoundEffects);
 
   // Avoid hydration mismatch: only reflect the resolved theme after mount.
   useEffect(() => setMounted(true), []);
@@ -580,6 +585,24 @@ function AppearanceSection({
     toast.success("Setting saved.");
   }
 
+  async function chooseSoundEffects(next: boolean) {
+    const prev = soundEffects;
+    setSoundEffects(next);
+    setSaving(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ soundEffects: next }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      toast.error("Could not save that setting.");
+      setSoundEffects(prev);
+      return;
+    }
+    toast.success("Setting saved.");
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -635,6 +658,18 @@ function AppearanceSection({
             disabled={saving}
             onCheckedChange={chooseShowReading}
             aria-label="Show reading on cards"
+          />
+        </SettingRow>
+
+        <SettingRow
+          name="Sound effects"
+          description="Subtle blips on correct answers and combo streaks while studying."
+        >
+          <Switch
+            checked={soundEffects}
+            disabled={saving}
+            onCheckedChange={chooseSoundEffects}
+            aria-label="Sound effects"
           />
         </SettingRow>
       </CardContent>

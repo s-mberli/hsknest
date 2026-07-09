@@ -25,6 +25,7 @@ export default async function SettingsPage() {
       studyTheme: true,
       cardTextSize: true,
       showReading: true,
+      soundEffects: true,
       desiredRetention: true,
     },
   });
@@ -49,6 +50,7 @@ export default async function SettingsPage() {
           (user.cardTextSize as "small" | "normal" | "large") ?? "normal"
         }
         showReading={user.showReading}
+        soundEffects={user.soundEffects}
         desiredRetention={user.desiredRetention}
       />
       <p className="mt-8 text-center text-xs text-muted-foreground">
