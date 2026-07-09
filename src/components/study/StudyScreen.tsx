@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { CardStack } from "@/components/study/CardStack";
 import { EmptyQueue } from "@/components/study/EmptyQueue";
+import { GradeIsland } from "@/components/study/GradeIsland";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
@@ -46,12 +47,26 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
     bestCombo,
     correct,
     missed,
+    lastGrade,
     done,
     advance,
     swipe,
   } = useStudySession(query, { showReading, practice });
 
   const startedAt = useRef(Date.now()).current;
+
+  const [milestoneFire, setMilestoneFire] = useState(0);
+  const prevBestCombo = useRef(0);
+  const MILESTONES = [5, 10, 20];
+
+  useEffect(() => {
+    const prev = prevBestCombo.current;
+    if (MILESTONES.some((m) => prev < m && bestCombo >= m)) {
+      setMilestoneFire((f) => f + 1);
+    }
+    prevBestCombo.current = bestCombo;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bestCombo]);
 
   return (
     // Full-screen distraction-free study. "dark" forces focus mode; "follow"
@@ -67,7 +82,9 @@ function StudySession({ studyTheme, textSize, showReading = true }: StudyScreenP
         total={cards.length}
         combo={combo}
         startedAt={startedAt}
+        milestoneFire={milestoneFire}
       />
+      <GradeIsland lastGrade={lastGrade} />
 
       <main className="flex flex-1 flex-col justify-center px-6 pb-16">
         {loading && (

@@ -1,8 +1,12 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
+import { AuroraGlow } from "@/components/fx/AuroraGlow";
+import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import { Button } from "@/components/ui/button";
 
 interface SessionCompleteProps {
@@ -39,9 +43,24 @@ export function SessionComplete({
         ? "text-amber"
         : "text-destructive";
 
+  const [fire, setFire] = useState(0);
+
+  useEffect(() => {
+    if (accuracy >= 80) setFire(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      <CheckCircle2 className="size-14 text-primary" />
+    <div className="relative flex flex-1 flex-col items-center justify-center gap-4 overflow-hidden px-6 text-center">
+      <AuroraGlow />
+      <ConfettiCannon fire={fire} intensity={150} />
+      <motion.div
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        <CheckCircle2 className="size-14 text-primary" />
+      </motion.div>
       <h2 className="text-2xl font-bold tracking-tight">
         {practice ? "Practice done" : "Session complete"}
       </h2>
