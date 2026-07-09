@@ -10,6 +10,7 @@ datasource db {
 enum SRSAlgorithmType {
   SM2
   LEITNER
+  FSRS
 }
 
 enum CardState {
@@ -34,24 +35,28 @@ model User {
   showReading        Boolean          @default(true) // false = flashcards skip the reading hint stage
 
   // Learning limits
-  dailyNewWords      Int     @default(10) // new cards introduced per day; 0 = pause learning
-  assumedCheckPerDay Int     @default(3)  // ASSUMED words reintroduced per day
+  dailyNewWords      Int @default(10) // new cards introduced per day; 0 = pause learning
+  assumedCheckPerDay Int @default(3) // ASSUMED words reintroduced per day
 
   // Algorithm tuning
-  intervalModifier     Float   @default(1.0)  // success-interval multiplier
-  lapseModifier        Float   @default(0.0)  // post-lapse interval = prevInterval * this
+  intervalModifier     Float   @default(1.0) // success-interval multiplier
+  lapseModifier        Float   @default(0.0) // post-lapse interval = prevInterval * this
   masteryThresholdDays Int? // interval >= this => MASTERED, stop scheduling; null = never
   fuzzIntervals        Boolean @default(true) // +/-5% interval randomization
+  desiredRetention     Float   @default(0.90) // FSRS desired retention target
 
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  emailVerified DateTime?
 
-  progress    UserProgress[]
-  reviewLogs  ReviewLog[]
-  wordLists   WordList[]
-  languages   Language[]
-  feedback    Feedback[]
-  hiddenLists HiddenList[]
+  progress            UserProgress[]
+  reviewLogs          ReviewLog[]
+  wordLists           WordList[]
+  languages           Language[]
+  feedback            Feedback[]
+  hiddenLists         HiddenList[]
+  passwordResetTokens PasswordResetToken[]
+  verificationTokens  VerificationToken[]
 }
 
 model Language {
@@ -105,13 +110,13 @@ model UserProgress {
   wordId String
 
   // Algorithm-agnostic SRS state (superset of SM-2 + Leitner needs)
-  state          CardState @default(NEW)
-  easeFactor     Float     @default(2.5) // SM-2
-  intervalDays   Float     @default(0) // SM-2
-  repetitions    Int       @default(0) // SM-2 consecutive successes
-  box            Int       @default(1) // Leitner box 1–5
-  lapses         Int       @default(0)
-  dueAt          DateTime  @default(now())
+  state            CardState @default(NEW)
+  easeFactor       Float     @default(2.5) // SM-2
+  intervalDays     Float     @default(0) // SM-2
+  repetitions      Int       @default(0) // SM-2 consecutive successes
+  box              Int       @default(1) // Leitner box 1–5
+  lapses           Int       @default(0)
+  dueAt            DateTime  @default(now())
   lastReviewedAt   DateTime?
   introducedAt     DateTime? // set on first-ever review; drives daily new-word cap
   assumedCheckedAt DateTime? // set when an ASSUMED card is checked; drives daily assumed-check cap
@@ -162,4 +167,28 @@ model Feedback {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([email])
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([email])
 }

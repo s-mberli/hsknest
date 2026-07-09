@@ -9,6 +9,22 @@ export const signupSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email().max(254),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(200),
+});
+
+export const verifyTokenSchema = z.object({
+  token: z.string().min(1),
+});
+
 export const reviewSchema = z.object({
   wordId: z.string().min(1),
   quality: z
@@ -27,7 +43,7 @@ export const enrollSchema = z.object({
 });
 
 export const settingsSchema = z.object({
-  preferredAlgorithm: z.enum(["SM2", "LEITNER"]).optional(),
+  preferredAlgorithm: z.enum(["SM2", "LEITNER", "FSRS"]).optional(),
   name: z.string().trim().min(1).optional(),
   dailyNewWords: z.number().int().min(0).max(200).optional(),
   assumedCheckPerDay: z.number().int().min(0).max(50).optional(),
@@ -35,6 +51,7 @@ export const settingsSchema = z.object({
   lapseModifier: z.number().min(0).max(1).optional(),
   masteryThresholdDays: z.number().int().min(1).max(3650).nullable().optional(),
   fuzzIntervals: z.boolean().optional(),
+  desiredRetention: z.number().min(0.70).max(0.97).optional(),
   theme: z.enum(["light", "dark", "system"]).optional(),
   studyTheme: z.enum(["dark", "follow"]).optional(),
   cardTextSize: z.enum(["small", "normal", "large"]).optional(),
@@ -108,6 +125,9 @@ export const importSchema = z.object({
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type VerifyTokenInput = z.infer<typeof verifyTokenSchema>;
 export type ReviewInput = z.infer<typeof reviewSchema>;
 export type EnrollInput = z.infer<typeof enrollSchema>;
 export type SettingsInput = z.infer<typeof settingsSchema>;

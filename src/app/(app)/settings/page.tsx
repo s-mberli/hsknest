@@ -24,6 +24,7 @@ export default async function SettingsPage() {
       studyTheme: true,
       cardTextSize: true,
       showReading: true,
+      desiredRetention: true,
     },
   });
   if (!user) redirect("/login");
@@ -47,6 +48,7 @@ export default async function SettingsPage() {
           (user.cardTextSize as "small" | "normal" | "large") ?? "normal"
         }
         showReading={user.showReading}
+        desiredRetention={user.desiredRetention}
       />
     </main>
   );

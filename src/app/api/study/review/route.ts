@@ -50,6 +50,7 @@ export async function POST(req: Request) {
         lapseModifier: true,
         masteryThresholdDays: true,
         fuzzIntervals: true,
+        desiredRetention: true,
       },
     }),
     prisma.userProgress.findUnique({
@@ -90,7 +91,9 @@ export async function POST(req: Request) {
     });
   }
 
-  const algorithm = getAlgorithm(user.preferredAlgorithm);
+  const algorithm = getAlgorithm(user.preferredAlgorithm, {
+    desiredRetention: user.desiredRetention,
+  });
 
   const currentState: SRSState = {
     state: progress.state as CardState,
@@ -157,8 +160,11 @@ export async function POST(req: Request) {
     prisma.userProgress.update({
       where: {
         userId_wordId: { userId, wordId },
-        // Dedup: prevent duplicate submission within 5 seconds
-        lastReviewedAt: { lt: new Date(submittedAt.getTime() - 5000) },
+        // Dedup: prevent duplicate submission within 5 seconds, allowing null (first review)
+        OR: [
+          { lastReviewedAt: null },
+          { lastReviewedAt: { lt: new Date(submittedAt.getTime() - 5000) } },
+        ],
       },
       data: {
         state: next.state,

@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-type Algorithm = "SM2" | "LEITNER";
+type Algorithm = "SM2" | "LEITNER" | "FSRS";
 type Theme = "light" | "dark" | "system";
 type StudyTheme = "dark" | "follow";
 type CardTextSize = "small" | "normal" | "large";
@@ -44,6 +44,12 @@ const ALGORITHMS: { value: Algorithm; label: string; description: string }[] = [
     description:
       "Simple 5-box system with fixed intervals. Predictable and easy to reason about.",
   },
+  {
+    value: "FSRS",
+    label: "FSRS",
+    description:
+      "Modern Free Spaced Repetition Scheduler. Optimizes for a target retention rate.",
+  },
 ];
 
 const DAILY_NEW_OPTIONS = [0, 5, 10, 20, 40];
@@ -56,6 +62,7 @@ const MASTERY_OPTIONS: { value: number | null; label: string }[] = [
   { value: 365, label: "1yr" },
   { value: 730, label: "2yr" },
 ];
+const DESIRED_RETENTION_OPTIONS = [0.80, 0.85, 0.90, 0.95];
 
 const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: "light", label: "Light" },
@@ -88,6 +95,7 @@ interface SettingsFormProps {
   studyTheme: StudyTheme;
   cardTextSize: CardTextSize;
   showReading: boolean;
+  desiredRetention: number;
 }
 
 /**
@@ -181,6 +189,7 @@ export function SettingsForm(props: SettingsFormProps) {
     number | null
   >(props.masteryThresholdDays);
   const [fuzzIntervals, setFuzzIntervals] = useState(props.fuzzIntervals);
+  const [desiredRetention, setDesiredRetention] = useState(props.desiredRetention);
 
   async function patch(body: Record<string, unknown>, revert: () => void) {
     setSaving(true);
@@ -283,6 +292,30 @@ export function SettingsForm(props: SettingsFormProps) {
               </p>
             )}
           </div>
+
+          {algorithm === "FSRS" && (
+            <SettingRow
+              name="Desired retention"
+              description="Target probability of recalling a card. Higher means more frequent reviews."
+            >
+              <Segmented
+                label="Desired retention"
+                value={desiredRetention}
+                disabled={saving}
+                options={DESIRED_RETENTION_OPTIONS.map((n) => ({
+                  value: n,
+                  label: `${Math.round(n * 100)}%`,
+                }))}
+                onChange={(next) => {
+                  const prev = desiredRetention;
+                  setDesiredRetention(next);
+                  patch({ desiredRetention: next }, () =>
+                    setDesiredRetention(prev)
+                  );
+                }}
+              />
+            </SettingRow>
+          )}
 
           <SettingRow
             name="Interval multiplier"
