@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { parseBody, requireUser, unauthorized } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { settingsSchema } from "@/lib/validation";
 
 export async function GET() {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -31,36 +29,22 @@ export async function GET() {
     },
   });
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return unauthorized();
   }
 
   return NextResponse.json(user);
 }
 
 export async function PATCH(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  const parsed = settingsSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
+  const parsed = await parseBody(req, settingsSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
   const updated = await prisma.user.update({
     where: { id: userId },
-    data: parsed.data,
+    data: parsed,
     select: {
       preferredAlgorithm: true,
       name: true,

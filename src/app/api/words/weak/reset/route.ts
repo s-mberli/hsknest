@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 
 /** Reset all current weak words back to a fresh NEW state (zeroed fields). */
 export async function POST() {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const now = new Date();
   const result = await prisma.userProgress.updateMany({

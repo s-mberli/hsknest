@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { bulkWordsSchema, wordInputSchema } from "@/lib/validation";
 import type { WordInput } from "@/lib/validation";
 
@@ -13,10 +13,8 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const { id } = await params;
 

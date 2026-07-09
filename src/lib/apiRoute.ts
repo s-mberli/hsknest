@@ -1,0 +1,45 @@
+import { NextResponse } from "next/server";
+import type { z } from "zod";
+
+import { getCurrentUserId } from "@/lib/session";
+
+/**
+ * Shared request plumbing for API routes. Both helpers return a ready
+ * NextResponse on failure so callers can bail with a single instanceof
+ * check, keeping the response shapes identical across every route:
+ *   401 { error: "Unauthorized" }
+ *   400 { error: "Invalid JSON" }
+ *   400 { error: "Invalid input", details: <zod flatten> }
+ */
+
+export function unauthorized() {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+/** Resolve the session user id, or a ready 401 response. */
+export async function requireUser(): Promise<string | NextResponse> {
+  const userId = await getCurrentUserId();
+  return userId ?? unauthorized();
+}
+
+/** Parse and validate a JSON body, or a ready 400 response. */
+export async function parseBody<S extends z.ZodTypeAny>(
+  req: Request,
+  schema: S
+): Promise<z.infer<S> | NextResponse> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid input", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  return parsed.data;
+}

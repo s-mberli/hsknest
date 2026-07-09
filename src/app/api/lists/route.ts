@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { visibleListWhere } from "@/lib/ownership";
 import { createListSchema } from "@/lib/validation";
 
 export async function GET(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const url = new URL(req.url);
   const languageId = url.searchParams.get("languageId") ?? undefined;
@@ -62,27 +60,13 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, createListSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  const parsed = createListSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
-
-  const { name, description, languageId, newLanguage } = parsed.data;
+  const { name, description, languageId, newLanguage } = parsed;
 
   // Resolve the target language: either an existing (visible) one, or a new
   // user-owned language. Existing seeded/global languages can be reused.

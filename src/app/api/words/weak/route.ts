@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 
 /** Weak words: lapsed >= 3 times and not yet mastered or assumed-known. */
 export async function GET() {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const rows = await prisma.userProgress.findMany({
     where: {

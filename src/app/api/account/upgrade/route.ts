@@ -1,9 +1,9 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
-import { getCurrentUserId } from "@/lib/session";
 import { signupSchema } from "@/lib/validation";
 
 /**
@@ -12,10 +12,8 @@ import { signupSchema } from "@/lib/validation";
  * regular accounts change credentials elsewhere (future account settings).
  */
 export async function POST(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   if (!rateLimit(`upgrade:${userId}`, 5, 60 * 60 * 1000)) {
     return NextResponse.json(
@@ -35,22 +33,10 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, signupSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  const parsed = signupSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
-
-  const { email, password, name } = parsed.data;
+  const { email, password, name } = parsed;
   const normalizedEmail = email.toLowerCase();
   if (normalizedEmail.endsWith("@guest.local")) {
     return NextResponse.json(

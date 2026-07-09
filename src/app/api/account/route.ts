@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 
 /**
  * Destructive: delete the account and everything it owns. Progress, review
@@ -10,10 +10,8 @@ import { getCurrentUserId } from "@/lib/session";
  * be deleted explicitly or they'd be orphaned into seeded-looking rows.
  */
 export async function DELETE() {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   await prisma.$transaction([
     // Word rows cascade from their list; other users can't be enrolled in

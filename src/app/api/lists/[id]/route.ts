@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { visibleListWhere } from "@/lib/ownership";
 import { updateListSchema } from "@/lib/validation";
 
@@ -9,10 +9,8 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const { id } = await params;
 
@@ -68,27 +66,13 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const { id } = await params;
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  const parsed = updateListSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
+  const parsed = await parseBody(req, updateListSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
   // Owner-only: seeded/public lists (createdById null) are read-only.
   const list = await prisma.wordList.findUnique({
@@ -99,7 +83,7 @@ export async function PATCH(
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
-  const { name, description } = parsed.data;
+  const { name, description } = parsed;
   const updated = await prisma.wordList.update({
     where: { id },
     data: {
@@ -116,10 +100,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const { id } = await params;
 
