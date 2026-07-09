@@ -61,11 +61,7 @@ export default async function DashboardPage() {
         learnedCount={stats.learnedTotal + stats.masteredTotal}
       />
 
-      <p className="my-6 text-center text-sm text-muted-foreground">
-        {stats.newIntroducedToday} of {stats.dailyNewWords} new words today
-      </p>
-
-      <Card className="mb-6">
+      <Card className="mb-6 mt-6">
         <CardContent className="pt-6">
           <div className="mb-3 flex items-baseline justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
