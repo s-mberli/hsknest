@@ -18,24 +18,28 @@ export function EnrollButton({
 
   async function enroll() {
     setLoading(true);
-    const res = await fetch(`/api/lists/${listId}/enroll`, { method: "POST" });
-    setLoading(false);
-
-    if (!res.ok) {
-      toast.error("Could not add these words. Please try again.");
-      return;
+    try {
+      const res = await fetch(`/api/lists/${listId}/enroll`, { method: "POST" });
+      if (!res.ok) {
+        toast.error("Could not add these words. Please try again.");
+        return;
+      }
+      const data = await res.json();
+      if (data.enrolled > 0) {
+        toast.success(
+          data.alreadyTracked > 0
+            ? `Added ${data.enrolled} words — ${data.alreadyTracked} were already in your queue from another list.`
+            : `Added ${data.enrolled} words to your queue.`
+        );
+      } else {
+        toast.info("You already have all of these words.");
+      }
+      router.refresh();
+    } catch {
+      toast.error("Could not add these words — check your connection.");
+    } finally {
+      setLoading(false);
     }
-    const data = await res.json();
-    if (data.enrolled > 0) {
-      toast.success(
-        data.alreadyTracked > 0
-          ? `Added ${data.enrolled} words — ${data.alreadyTracked} were already in your queue from another list.`
-          : `Added ${data.enrolled} words to your queue.`
-      );
-    } else {
-      toast.info("You already have all of these words.");
-    }
-    router.refresh();
   }
 
   return (

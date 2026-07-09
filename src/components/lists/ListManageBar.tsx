@@ -31,34 +31,44 @@ export function ListManageBar({
       return;
     }
     setBusy(true);
-    const res = await fetch(`/api/lists/${listId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: draftName.trim(),
-        description: draftDescription.trim() ? draftDescription.trim() : null,
-      }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      toast.error("Could not update the list.");
-      return;
+    try {
+      const res = await fetch(`/api/lists/${listId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: draftName.trim(),
+          description: draftDescription.trim() ? draftDescription.trim() : null,
+        }),
+      });
+      if (!res.ok) {
+        toast.error("Could not update the list.");
+        return;
+      }
+      toast.success("List updated.");
+      setEditing(false);
+      router.refresh();
+    } catch {
+      toast.error("Could not update the list — check your connection.");
+    } finally {
+      setBusy(false);
     }
-    toast.success("List updated.");
-    setEditing(false);
-    router.refresh();
   }
 
   async function remove() {
     setBusy(true);
-    const res = await fetch(`/api/lists/${listId}`, { method: "DELETE" });
-    setBusy(false);
-    if (!res.ok) {
-      toast.error("Could not delete the list.");
-      return;
+    try {
+      const res = await fetch(`/api/lists/${listId}`, { method: "DELETE" });
+      if (!res.ok) {
+        toast.error("Could not delete the list.");
+        return;
+      }
+      toast.success("List deleted.");
+      router.push("/lists");
+    } catch {
+      toast.error("Could not delete the list — check your connection.");
+    } finally {
+      setBusy(false);
     }
-    toast.success("List deleted.");
-    router.push("/lists");
   }
 
   if (editing) {

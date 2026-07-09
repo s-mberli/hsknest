@@ -56,19 +56,25 @@ export function SettingsForm(props: SettingsFormProps) {
 
   async function patch(body: Record<string, unknown>, revert: () => void) {
     setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not save that setting.");
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        toast.error("Could not save that setting.");
+        revert();
+        return;
+      }
+      toast.success("Setting saved.");
+      router.refresh();
+    } catch {
+      toast.error("Could not save — check your connection.");
       revert();
-      return;
+    } finally {
+      setSaving(false);
     }
-    toast.success("Setting saved.");
-    router.refresh();
   }
 
   return (

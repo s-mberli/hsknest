@@ -71,26 +71,31 @@ export function AddWordRow({
       return;
     }
     setSaving(true);
-    const res = await fetch(`/api/lists/${listId}/words`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        term: term.trim(),
-        translation: translation.trim(),
-        ...(phonetic.trim() ? { phonetic: phonetic.trim() } : {}),
-      }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not add the word.");
-      return;
+    try {
+      const res = await fetch(`/api/lists/${listId}/words`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          term: term.trim(),
+          translation: translation.trim(),
+          ...(phonetic.trim() ? { phonetic: phonetic.trim() } : {}),
+        }),
+      });
+      if (!res.ok) {
+        toast.error("Could not add the word.");
+        return;
+      }
+      toast.success("Word added.");
+      setTerm("");
+      setTranslation("");
+      setPhonetic("");
+      setSuggestions([]);
+      router.refresh();
+    } catch {
+      toast.error("Could not add the word — check your connection.");
+    } finally {
+      setSaving(false);
     }
-    toast.success("Word added.");
-    setTerm("");
-    setTranslation("");
-    setPhonetic("");
-    setSuggestions([]);
-    router.refresh();
   }
 
   return (

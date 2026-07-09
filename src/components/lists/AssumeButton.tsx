@@ -12,20 +12,24 @@ export function AssumeButton({ listId }: { listId: string }) {
 
   async function assume() {
     setLoading(true);
-    const res = await fetch(`/api/lists/${listId}/assume`, { method: "POST" });
-    setLoading(false);
-
-    if (!res.ok) {
-      toast.error("Could not update these words. Please try again.");
-      return;
+    try {
+      const res = await fetch(`/api/lists/${listId}/assume`, { method: "POST" });
+      if (!res.ok) {
+        toast.error("Could not update these words. Please try again.");
+        return;
+      }
+      const data = await res.json();
+      if (data.assumed > 0) {
+        toast.success(`Marked ${data.assumed} words as already known.`);
+      } else {
+        toast.info("Nothing to mark — these are already tracked.");
+      }
+      router.refresh();
+    } catch {
+      toast.error("Could not update these words — check your connection.");
+    } finally {
+      setLoading(false);
     }
-    const data = await res.json();
-    if (data.assumed > 0) {
-      toast.success(`Marked ${data.assumed} words as already known.`);
-    } else {
-      toast.info("Nothing to mark — these are already tracked.");
-    }
-    router.refresh();
   }
 
   return (
