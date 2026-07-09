@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <div className="container max-w-3xl py-12">
       <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
-      
+
       <div className="prose prose-slate dark:prose-invert">
         <p className="lead">
           Last updated: July 8, 2026
