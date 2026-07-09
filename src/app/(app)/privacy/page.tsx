@@ -41,7 +41,7 @@ export default function PrivacyPage() {
 
         <h2>5. Contact Us</h2>
         <p>
-          If you have any questions about this Privacy Policy, please contact us at privacy@recall-app.com.
+          If you have any questions about this Privacy Policy, please contact us at privacy+mail@markusberlit.de.
         </p>
       </div>
     </div>

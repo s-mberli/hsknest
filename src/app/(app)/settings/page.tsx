@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { SettingsForm } from "@/components/settings/SettingsForm";
@@ -50,6 +51,15 @@ export default async function SettingsPage() {
         showReading={user.showReading}
         desiredRetention={user.desiredRetention}
       />
+      <p className="mt-8 text-center text-xs text-muted-foreground">
+        <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+          Terms
+        </Link>{" "}
+        ·{" "}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+          Privacy Policy
+        </Link>
+      </p>
     </main>
   );
 }
