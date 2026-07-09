@@ -11,8 +11,35 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in your .env}
       # Public URL the app is served from (behind your reverse proxy).
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      # Same URL, used in emailed links (password reset / verification).
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-${NEXTAUTH_URL:-http://localhost:3000}}
+      # Seed/refresh starter word lists on every boot. Idempotent — safe to
+      # leave on; only adds/updates seeded (createdById=null) content.
+      AUTO_SEED: ${AUTO_SEED:-true}
+      # Optional: enables real email delivery for password reset / email
+      # verification via Resend (https://resend.com). Without it, links are
+      # logged to the container's stdout instead of emailed.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@recall-app.com}
     volumes:
       - recall-data:/data
+
+  sqlite-backup:
+    image: alpine:latest
+    restart: unless-stopped
+    depends_on:
+      - app
+    volumes:
+      - recall-data:/data
+      - ./backups:/backups
+    command: >
+      sh -c 'apk add --no-cache sqlite &&
+      echo "#!/bin/sh" > /backup.sh &&
+      echo "sqlite3 /data/recall.db .backup /backups/recall-backup-$$(date +%Y%m%d).db" >> /backup.sh &&
+      echo "find /backups -name \"recall-backup-*.db\" -mtime +7 -exec rm {} \\;" >> /backup.sh &&
+      chmod +x /backup.sh &&
+      echo "0 2 * * * /backup.sh" > /etc/crontabs/root &&
+      crond -f -d 8'
 
 volumes:
   recall-data:

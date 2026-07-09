@@ -9,6 +9,10 @@ Set these in a `.env` file at the project root.
 | `DATABASE_URL`    | yes      | `file:./dev.db`               | Prisma connection string. SQLite file for local dev; a Postgres URL in production.          |
 | `NEXTAUTH_SECRET` | yes      | output of `openssl rand -base64 32` | Secret used to sign NextAuth JWT session tokens. Use a long random value.             |
 | `NEXTAUTH_URL`    | yes\*    | `http://localhost:3000`       | The canonical base URL of the app. Required in most non-local deployments.                  |
+| `NEXT_PUBLIC_APP_URL` | no   | `http://localhost:3000`       | Used to build links inside emails (password reset / verification). Usually same as `NEXTAUTH_URL`. |
+| `AUTO_SEED`       | no       | `true`                        | Seed/refresh starter word lists on container boot. Idempotent — safe to leave on. Default in `docker-compose.yml` is `true`. |
+| `RESEND_API_KEY`  | no       | `re_...`                      | Enables real email delivery (password reset, verification) via [Resend](https://resend.com). Without it, links are logged to the server console instead — fine for local dev/self-hosting without email set up. |
+| `EMAIL_FROM`      | no       | `noreply@myapp.com`           | Sender address for outgoing email. Only matters if `RESEND_API_KEY` is set.                 |
 
 \* Optional in some local setups but recommended everywhere.
 
@@ -30,7 +34,8 @@ All of these are per-user and edited on the **Settings** page (persisted on the 
 
 ### Scheduling algorithm
 
-- **Algorithm** (`preferredAlgorithm`) — `SM2` (adaptive) or `LEITNER` (fixed boxes). Progress carries over when you switch.
+- **Algorithm** (`preferredAlgorithm`) — `SM2` (adaptive), `LEITNER` (fixed boxes), or `FSRS` (modern memory-model scheduler). Progress carries over when you switch.
+- **Desired retention** (`desiredRetention`, FSRS only) — target probability of recalling a word when it comes due, 0.70–0.97 (default 0.90). Higher = shorter intervals, more frequent review, higher retention; lower = longer intervals, less review, more forgetting.
 
 ### Fine-tuning
 

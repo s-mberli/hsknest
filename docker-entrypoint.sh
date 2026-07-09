@@ -8,12 +8,13 @@ mkdir -p /data
 echo "→ Applying database migrations…"
 node_modules/.bin/prisma migrate deploy
 
-# Seed/refresh starter content on every boot. The seed is idempotent: existing
-# lists with current content are no-ops, outdated seeded lists are replaced
-# only when no user progress references them (studied lists are kept as
-# "… (legacy)"), and user data is never touched.
-echo "→ Seeding starter content…"
-node_modules/.bin/tsx prisma/seed.ts || true
+# Seed/refresh starter content only if requested (saves boot time)
+if [ "$AUTO_SEED" = "true" ]; then
+  echo "→ Seeding starter content…"
+  node_modules/.bin/tsx prisma/seed.ts || true
+else
+  echo "→ Skipping seed (AUTO_SEED!=true)"
+fi
 
 # Housekeeping: remove stale guest accounts (non-fatal if it fails).
 echo "→ Pruning stale guest accounts…"

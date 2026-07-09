@@ -32,14 +32,21 @@ export async function POST(req: Request) {
     select: { id: true },
   });
 
-  // Auto-enroll the smallest seeded list so there's something to study.
+  // Auto-enroll a sensible starter list: prefer "Everyday Spanish Starter" or
+  // "HSK 1 — Foundation" by name, falling back to the smallest seeded list.
   const seededLists = await prisma.wordList.findMany({
     where: { createdById: null, isPublic: true },
-    select: { id: true, _count: { select: { words: true } } },
+    select: { id: true, name: true, _count: { select: { words: true } } },
   });
-  const starter = seededLists
-    .filter((l) => l._count.words > 0)
-    .sort((a, b) => a._count.words - b._count.words)[0];
+  let starter = seededLists.find((l) => l.name === "Everyday Spanish Starter");
+  if (!starter) {
+    starter = seededLists.find((l) => l.name === "HSK 1 — Foundation");
+  }
+  if (!starter) {
+    starter = seededLists
+      .filter((l) => l._count.words > 0)
+      .sort((a, b) => a._count.words - b._count.words)[0];
+  }
 
   if (starter) {
     const words = await prisma.word.findMany({

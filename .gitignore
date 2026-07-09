@@ -51,3 +51,4 @@ next-env.d.ts
 # local assistant config (not part of the app)
 /CLAUDE.md
 /.claude/
+/.opencode/
