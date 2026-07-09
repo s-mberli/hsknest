@@ -1,10 +1,16 @@
 import { hash } from "bcryptjs";
+import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
+import { sendVerificationEmail } from "@/lib/email";
 import { signupSchema } from "@/lib/validation";
+
+function hashToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 /**
  * Upgrade a guest account to a real one: set a chosen email + password on the
@@ -64,6 +70,20 @@ export async function POST(req: Request) {
       passwordHash,
       ...(name ? { name } : { name: null }),
     },
+  });
+
+  // Fire-and-forget verification email — mirrors signup so upgraded users get
+  // the same (soft, non-blocking) verify link instead of a dead-end banner.
+  const token = randomBytes(32).toString("hex");
+  await prisma.verificationToken.create({
+    data: {
+      email: normalizedEmail,
+      token: hashToken(token),
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+    },
+  });
+  sendVerificationEmail(normalizedEmail, token).catch((err) => {
+    console.error("Failed to send verification email:", err);
   });
 
   return NextResponse.json({ email: normalizedEmail });

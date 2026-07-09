@@ -24,6 +24,7 @@ export function AccountSection({
   name: string | null;
 }) {
   const router = useRouter();
+  const isGuest = email.endsWith("@guest.local");
   const [confirming, setConfirming] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [deleting, setDeleting] = useState<"idle" | "confirm" | "busy">("idle");
@@ -107,7 +108,7 @@ export function AccountSection({
           )}
         </SettingRow>
 
-        {email.endsWith("@guest.local") && <UpgradeBanner compact />}
+        {isGuest && <UpgradeBanner compact />}
 
         <SettingRow
           name="Signed in as"
@@ -122,6 +123,7 @@ export function AccountSection({
           </Button>
         </SettingRow>
 
+        {!isGuest && (
         <SettingRow
           name="Delete account"
           description="Permanently delete your account, lists, words, and history."
@@ -156,6 +158,7 @@ export function AccountSection({
             </Button>
           )}
         </SettingRow>
+        )}
       </CardContent>
     </Card>
   );
