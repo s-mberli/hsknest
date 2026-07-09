@@ -129,75 +129,87 @@ export function SessionPicker({ onHrefChange, onSizeChange }: SessionPickerProps
   }, [mode, cardChoice, minuteChoice, scope, onHrefChange, onSizeChange]);
 
   return (
-    <div className="w-full max-w-sm space-y-4 rounded-2xl border bg-card p-4 shadow-card">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Session unit
+    <div className="w-full max-w-xs space-y-2">
+      {/* Primary control: the length chips for the current unit. */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-muted-foreground">
+          Session length
         </span>
-        <div className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
-          {(["cards", "minutes"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className={cn(
-                "rounded-full px-4 py-1 text-xs font-medium capitalize transition-colors",
-                mode === m
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
+        <span className="text-[11px] text-muted-foreground">
+          {mode === "cards" ? "cards" : "minutes"}
+        </span>
+      </div>
+      <div className="grid grid-flow-col auto-cols-fr gap-1.5">
+        {mode === "cards"
+          ? CARD_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => setCardChoice(o.value)}
+                className={cn(
+                  "rounded-full border py-1.5 text-sm font-medium transition-colors",
+                  cardChoice === o.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "hover:bg-accent"
+                )}
+              >
+                {o.label}
+              </button>
+            ))
+          : MINUTE_OPTIONS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setMinuteChoice(n)}
+                className={cn(
+                  "rounded-full border py-1.5 text-sm font-medium transition-colors",
+                  minuteChoice === n
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "hover:bg-accent"
+                )}
+              >
+                {n}m
+              </button>
+            ))}
       </div>
 
-      <div className="space-y-1.5">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Goal size
-        </span>
-        <div className="grid grid-flow-col auto-cols-fr gap-1.5">
-          {mode === "cards"
-            ? CARD_OPTIONS.map((o) => (
+      {/* Secondary controls stay out of the way until asked for. */}
+      <details className="group">
+        <summary className="cursor-pointer list-none text-center text-[11px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+          Options
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-medium text-muted-foreground">
+              Measure by
+            </span>
+            <div className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+              {(["cards", "minutes"] as const).map((m) => (
                 <button
-                  key={o.value}
+                  key={m}
                   type="button"
-                  onClick={() => setCardChoice(o.value)}
+                  onClick={() => setMode(m)}
                   className={cn(
-                    "rounded-full border py-1.5 text-sm font-medium transition-colors",
-                    cardChoice === o.value
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "hover:bg-accent"
+                    "rounded-full px-4 py-1 text-xs font-medium capitalize transition-colors",
+                    mode === m
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  {o.label}
-                </button>
-              ))
-            : MINUTE_OPTIONS.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setMinuteChoice(n)}
-                  className={cn(
-                    "rounded-full border py-1.5 text-sm font-medium transition-colors",
-                    minuteChoice === n
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "hover:bg-accent"
-                  )}
-                >
-                  {n}m
+                  {m}
                 </button>
               ))}
-        </div>
-      </div>
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Word scope
-        </span>
-        <ScopePicker value={scope} onChange={setScope} />
-      </div>
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              Word scope
+            </span>
+            <ScopePicker value={scope} onChange={setScope} />
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

@@ -182,19 +182,29 @@ function ListCard({
   return (
     <Link href={`/lists/${id}`} className="block">
       <Card className="transition-colors hover:border-primary/50">
-        <CardContent className="flex items-center justify-between gap-3 py-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="font-medium">{name}</p>
-              {owner && (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                  Yours
-                </span>
-              )}
+        <CardContent className="py-4">
+          {/* Top row: name + language on the left, hide toggle pinned right. */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="truncate font-medium">{name}</p>
+                {owner && (
+                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                    Yours
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">{languageName}</p>
             </div>
-            <p className="text-sm text-muted-foreground">{languageName}</p>
+            {hideable && (
+              <div className="shrink-0">
+                <ListVisibilityButton listId={id} hidden={hidden} />
+              </div>
+            )}
           </div>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+
+          {/* Stats wrap onto their own line so they never crowd the name. */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {due > 0 && (
               <span className="rounded-full bg-amber/15 px-2.5 py-1 text-xs font-medium text-amber">
                 {due} due
@@ -208,7 +218,6 @@ function ListCard({
             <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               {wordCount} words
             </span>
-            {hideable && <ListVisibilityButton listId={id} hidden={hidden} />}
           </div>
         </CardContent>
       </Card>

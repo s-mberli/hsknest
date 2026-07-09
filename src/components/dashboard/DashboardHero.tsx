@@ -24,11 +24,11 @@ interface DashboardHeroProps {
   learnedCount?: number;
 }
 
-/** One breakdown row: color-matched to its ring segment. */
-const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; className: string }[] = [
-  { key: "due", label: "to review", className: "text-primary" },
-  { key: "fresh", label: "new words", className: "text-muted-foreground" },
-  { key: "checks", label: "known-word checks", className: "text-amber" },
+/** One breakdown chip: color-matched to its ring segment. */
+const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string }[] = [
+  { key: "due", label: "review", dot: "bg-primary" },
+  { key: "fresh", label: "new", dot: "bg-muted-foreground" },
+  { key: "checks", label: "checks", dot: "bg-amber" },
 ];
 
 /**
@@ -74,77 +74,71 @@ export function DashboardHero({
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="flex w-full flex-col items-center rounded-3xl border bg-card p-6 shadow-card">
-      <FocusRing due={sessionDue} checks={sessionChecks} fresh={sessionFresh}>
+      <div className="flex w-full flex-col items-center gap-4 rounded-3xl border bg-card p-6 shadow-card">
+        <FocusRing due={sessionDue} checks={sessionChecks} fresh={sessionFresh}>
+          {hasCards ? (
+            <>
+              <span className="text-5xl font-bold tabular-nums leading-none tracking-tight">
+                {shown}
+              </span>
+              <span className="mt-1 text-sm text-muted-foreground">
+                {shown === 1 ? "card" : "cards"}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-2xl font-semibold">All clear</span>
+              <span className="text-xs text-muted-foreground">
+                Nothing due now
+              </span>
+            </>
+          )}
+        </FocusRing>
+
         {hasCards ? (
           <>
-            <div className="flex flex-col gap-1">
+            {/* One-line breakdown: a dot + count per non-empty category. */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
               {SEGMENTS.filter((s) => counts[s.key] > 0).map((s) => (
-                <div key={s.key} className="flex items-baseline gap-1.5">
-                  <span
-                    className={cn(
-                      "text-2xl font-bold tabular-nums leading-none tracking-tight",
-                      s.className
-                    )}
-                  >
+                <span
+                  key={s.key}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                >
+                  <span className={cn("size-2 rounded-full", s.dot)} />
+                  <span className="font-semibold tabular-nums text-foreground">
                     {counts[s.key]}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {s.label}
-                  </span>
-                </div>
+                  {s.label}
+                </span>
               ))}
             </div>
-            <span className="mt-1 text-xs text-muted-foreground">
-              Session: {shown} {shown === 1 ? "card" : "cards"}
-            </span>
-            <Button asChild size="sm" className="mt-1 rounded-full">
+
+            <Button asChild size="lg" className="w-full max-w-xs rounded-full">
               <Link href={href}>
                 <GraduationCap className="size-4" />
-                Start
+                Start studying
               </Link>
             </Button>
+
+            {/* Session length: a single compact row of chips. */}
+            <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
           </>
         ) : (
-          <>
-            <span className="text-2xl font-semibold">All clear</span>
-            <span className="text-xs text-muted-foreground">
-              Nothing due right now
-            </span>
-            {canPractice && (
-              <Button asChild size="sm" className="mt-2 rounded-full">
-                <Link href={practiceHref}>
-                  <GraduationCap className="size-4" />
-                  Refresh learned words
-                </Link>
-              </Button>
-            )}
-          </>
+          canPractice && (
+            <Button asChild size="lg" className="w-full max-w-xs rounded-full">
+              <Link href={practiceHref}>
+                <GraduationCap className="size-4" />
+                Refresh learned words
+              </Link>
+            </Button>
+          )
         )}
-      </FocusRing>
       </div>
-
-      {hasCards && (
-        <>
-          <SessionPicker onHrefChange={setHref} onSizeChange={setSize} />
-          <p className="text-center text-[11px] text-muted-foreground">
-            Ring = this session. New words/day → Settings.
-          </p>
-          {canPractice && (
-            <Link
-              href={practiceHref}
-              className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-            >
-              or refresh learned words
-            </Link>
-          )}
-        </>
-      )}
 
       {/* Specialized practice — same session query, different screen. */}
       {(hasCards || canPractice) && (
         <div className="w-full max-w-sm space-y-2">
-          <SectionLabel>Specialized practice</SectionLabel>
+          <SectionLabel>More ways to practice</SectionLabel>
           {PRACTICE_MODES.map(({ key, label, icon: Icon }) => {
             let practiceModeHref = href.replace(/^\/study/, `/study/${key}`);
             if (!hasCards) {
