@@ -25,24 +25,17 @@ export async function GET(req: Request) {
   });
 
   // How many words in each list the current user is already enrolled in.
-  const enrollments = await prisma.userProgress.groupBy({
-    by: ["wordId"],
-    where: { userId },
-  });
-  const enrolledWordIds = new Set(enrollments.map((e) => e.wordId));
-
-  const listWords = await prisma.word.findMany({
-    where: { wordListId: { in: lists.map((l) => l.id) } },
-    select: { id: true, wordListId: true },
+  // Fetch only the user's own progress rows (bounded by their study set),
+  // not every word in every visible list — that scan grows with the whole
+  // content library and dominates dashboard load once HSK1–6 is seeded.
+  const progressRows = await prisma.userProgress.findMany({
+    where: { userId, word: { wordListId: { in: lists.map((l) => l.id) } } },
+    select: { word: { select: { wordListId: true } } },
   });
   const enrolledCountByList = new Map<string, number>();
-  for (const w of listWords) {
-    if (enrolledWordIds.has(w.id)) {
-      enrolledCountByList.set(
-        w.wordListId,
-        (enrolledCountByList.get(w.wordListId) ?? 0) + 1
-      );
-    }
+  for (const p of progressRows) {
+    const listId = p.word.wordListId;
+    enrolledCountByList.set(listId, (enrolledCountByList.get(listId) ?? 0) + 1);
   }
 
   return NextResponse.json({

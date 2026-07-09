@@ -24,15 +24,20 @@ export function ListVisibilityButton({
     e.preventDefault();
     e.stopPropagation();
     setBusy(true);
-    const res = await fetch(`/api/lists/${listId}/hide`, {
-      method: hidden ? "DELETE" : "POST",
-    });
-    setBusy(false);
-    if (!res.ok) {
-      toast.error("Could not update that list.");
-      return;
+    try {
+      const res = await fetch(`/api/lists/${listId}/hide`, {
+        method: hidden ? "DELETE" : "POST",
+      });
+      if (!res.ok) {
+        toast.error("Could not update that list.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      toast.error("Could not update that list — check your connection.");
+    } finally {
+      setBusy(false);
     }
-    router.refresh();
   }
 
   return (

@@ -77,7 +77,7 @@ model WordList {
   name        String
   description String?
   languageId  String
-  isPublic    Boolean  @default(true)
+  isPublic    Boolean  @default(false) // private by default; seed + share paths set true explicitly
   createdById String? // null = seeded/public; otherwise owned by this user
   createdAt   DateTime @default(now())
 
