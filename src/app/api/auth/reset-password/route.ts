@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { createHash } from "crypto";
+import { logApiError } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { resetPasswordSchema } from "@/lib/validation";
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Reset password error:", error);
+    logApiError("/api/auth/reset-password", error);
     return NextResponse.json(
       { error: "An unexpected error occurred." },
       { status: 500 }

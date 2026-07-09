@@ -3,7 +3,6 @@ import {
   SRSState,
   SRSResult,
   ReviewQuality,
-  CardState,
   addDays,
 } from "./types";
 
@@ -73,7 +72,7 @@ export class FSRSAlgorithm implements SRSAlgorithm {
     const isSuccess = quality >= 3;
 
     // 2. Hydration
-    let fsrsData = state.srsData?.fsrs as FSRSData | undefined;
+    const fsrsData = state.srsData?.fsrs as FSRSData | undefined;
     let S: number;
     let D: number;
     

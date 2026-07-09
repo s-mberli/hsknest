@@ -12,8 +12,9 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service like Sentry
-    console.error(error);
+    // Server-side render errors carry a digest that matches the structured
+    // log line on the server — log it so users can report it from devtools.
+    console.error("App error", { digest: error.digest, message: error.message });
   }, [error]);
 
   return (
@@ -21,7 +22,8 @@ export default function ErrorPage({
       <AlertCircle className="h-16 w-16 text-destructive mb-6" />
       <h2 className="text-3xl font-bold tracking-tight">Something went wrong!</h2>
       <p className="mt-4 text-lg text-muted-foreground max-w-md">
-        An unexpected error occurred. Our team has been notified.
+        An unexpected error occurred. If it keeps happening, please send us
+        feedback from the settings page.
       </p>
       <div className="mt-8">
         <Button onClick={() => reset()}>Try again</Button>
