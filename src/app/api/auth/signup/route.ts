@@ -2,6 +2,7 @@ import { hash } from "bcryptjs";
 import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 
+import { parseBody } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { signupSchema } from "@/lib/validation";
@@ -23,22 +24,10 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, signupSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  const parsed = signupSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
-
-  const { email, password, name } = parsed.data;
+  const { email, password, name } = parsed;
   const normalizedEmail = email.toLowerCase();
 
   const existing = await prisma.user.findUnique({

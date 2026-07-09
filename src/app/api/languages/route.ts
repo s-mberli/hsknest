@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { visibleLanguageWhere } from "@/lib/ownership";
 
 export async function GET() {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const languages = await prisma.language.findMany({
     where: visibleLanguageWhere(userId),

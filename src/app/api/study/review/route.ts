@@ -1,9 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
-import { getCurrentUserId } from "@/lib/session";
 import { applyUserModifiers, getAlgorithm } from "@/lib/srs";
 import type { CardState, SRSResult, SRSState, UserSRSPrefs } from "@/lib/srs";
 import { addDays } from "@/lib/srs";
@@ -13,31 +13,17 @@ import { reviewSchema } from "@/lib/validation";
 const ASSUMED_CONFIRMED_INTERVAL_DAYS = 30;
 
 export async function POST(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   if (!rateLimit(`review:${userId}`, 1000, 60 * 60 * 1000)) {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+  const parsed = await parseBody(req, reviewSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
-  const parsed = reviewSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
-
-  const { wordId, quality, reviewedAt, practice } = parsed.data;
+  const { wordId, quality, reviewedAt, practice } = parsed;
   const now = reviewedAt ?? new Date();
   const submittedAt = new Date();
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { visibleListWhere } from "@/lib/ownership";
 
 /** Per-user hide/unhide of a visible list (e.g. an unwanted starter list). */
@@ -9,10 +9,8 @@ export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
   const { id } = await params;
 
   const list = await prisma.wordList.findFirst({
@@ -35,10 +33,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
   const { id } = await params;
 
   await prisma.hiddenList.deleteMany({ where: { userId, listId: id } });

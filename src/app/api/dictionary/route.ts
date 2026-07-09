@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { lookupChinese } from "@/lib/dictionary";
-import { getCurrentUserId } from "@/lib/session";
 import { dictionaryQuerySchema } from "@/lib/validation";
 
 /**
@@ -10,10 +10,8 @@ import { dictionaryQuerySchema } from "@/lib/validation";
  * casing.
  */
 export async function GET(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const { searchParams } = new URL(req.url);
   const parsed = dictionaryQuerySchema.safeParse({

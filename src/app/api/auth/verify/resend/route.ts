@@ -1,9 +1,9 @@
 import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
-import { getCurrentUserId } from "@/lib/session";
 import { sendVerificationEmail } from "@/lib/email";
 
 function hashToken(token: string): string {
@@ -11,10 +11,8 @@ function hashToken(token: string): string {
 }
 
 export async function POST() {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   if (!rateLimit(`verify-resend:${userId}`, 3, 15 * 60 * 1000)) {
     return NextResponse.json(

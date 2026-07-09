@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { buildChoices } from "@/lib/quizChoices";
-import { getCurrentUserId } from "@/lib/session";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
 
@@ -65,10 +65,8 @@ async function attachChoices(
 }
 
 export async function GET(req: Request) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const url = new URL(req.url);
   const { limit, scope } = parseQueueQuery(url.searchParams);

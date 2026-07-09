@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/session";
 import { parseDelimited } from "@/lib/import";
 import { importSchema } from "@/lib/validation";
 
@@ -16,27 +16,13 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
 
   const { id } = await params;
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  const parsed = importSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten() },
-      { status: 400 }
-    );
-  }
+  const parsed = await parseBody(req, importSchema);
+  if (parsed instanceof NextResponse) return parsed;
 
   const list = await prisma.wordList.findUnique({
     where: { id },
@@ -51,9 +37,9 @@ export async function POST(
     skipped: parseSkipped,
     skippedNoTerm,
     skippedDuplicate,
-  } = parseDelimited(parsed.data.text, {
-    delimiter: parsed.data.delimiter,
-    columns: parsed.data.columns,
+  } = parseDelimited(parsed.text, {
+    delimiter: parsed.delimiter,
+    columns: parsed.columns,
   });
 
   // Drop terms that already exist in the list (case-insensitive).
