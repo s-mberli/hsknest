@@ -59,6 +59,8 @@ export default async function DashboardPage() {
         checks={stats.checkCount}
         fresh={fresh}
         learnedCount={stats.learnedTotal + stats.masteredTotal}
+        dailyNewWords={stats.dailyNewWords}
+        newBacklog={Math.max(0, stats.newCount - fresh)}
       />
 
       <Card className="mb-6 mt-6">
