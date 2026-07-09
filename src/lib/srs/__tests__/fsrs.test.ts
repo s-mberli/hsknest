@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { FSRSAlgorithm } from "../fsrs";
 import { SM2Algorithm } from "../sm2";
-import type { ReviewQuality, SRSState } from "../types";
+import type { SRSState } from "../types";
 
 const NOW = new Date("2026-01-01T00:00:00.000Z");
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 // We assume FSRSAlgorithm takes desiredRetention as a number in the constructor
 const fsrs = new FSRSAlgorithm(0.9);
@@ -15,10 +14,6 @@ function freshState(overrides: Partial<SRSState> = {}): SRSState {
     ...fsrs.initialState(NOW),
     ...overrides,
   };
-}
-
-function daysBetween(a: Date, b: Date): number {
-  return Math.round((a.getTime() - b.getTime()) / DAY_MS);
 }
 
 describe("FSRSAlgorithm.initialState", () => {
@@ -131,7 +126,6 @@ describe("Lossless switching SM2 -> FSRS -> SM2", () => {
 
     const priorEaseFactor = state.easeFactor;
     const priorBox = state.box;
-    const priorLapses = state.lapses;
 
     // 2. Feed the resulting state into FSRS (q=4)
     const fsrsRes = fsrs.calculateNextReview(state, 4, NOW);

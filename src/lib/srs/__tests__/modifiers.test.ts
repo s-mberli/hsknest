@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyUserModifiers, type UserSRSPrefs } from "../modifiers";
 import { SM2Algorithm } from "../sm2";
-import { addDays, type ReviewQuality, type SRSResult, type SRSState } from "../types";
+import { addDays, type SRSResult, type SRSState } from "../types";
 
 const NOW = new Date("2026-01-01T00:00:00.000Z");
 const DAY_MS = 24 * 60 * 60 * 1000;

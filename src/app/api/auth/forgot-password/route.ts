@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomBytes, createHash } from "crypto";
+import { logApiError } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rateLimit";
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Forgot password error:", error);
+    logApiError("/api/auth/forgot-password", error);
     return NextResponse.json(
       { error: "An unexpected error occurred." },
       { status: 500 }

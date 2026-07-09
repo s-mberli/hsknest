@@ -149,7 +149,12 @@ strategy pattern are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 ```bash
 npm test          # vitest unit suite (SRS algorithms, import parser, validation, rate limiter)
 npm run test:e2e  # Playwright browser suite (signup → enroll → study → practice modes)
+npm run lint      # ESLint (flat config, next/core-web-vitals + typescript)
+npx tsc --noEmit  # type check
 ```
+
+CI (`.github/workflows/ci.yml`) runs type check, lint, unit tests, and a
+production build on every push/PR to `main`.
 
 ## Project layout
 
@@ -192,7 +197,8 @@ FSRS) can slot in without a migration.
 
 Bug reports and ideas are welcome — file them right from the app
 (**Settings → Feedback**) or open an issue. Pull requests should keep the
-existing style and pass `npm test` and `npm run build`.
+existing style and pass `npm test`, `npm run lint`, and `npm run build`
+(the same checks CI runs).
 
 ## License
 

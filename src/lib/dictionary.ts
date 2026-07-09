@@ -44,7 +44,8 @@ export function toneMarks(numbered: string): string {
     .map((syl) => {
       const m = syl.match(/^([a-zA-Zü:]+)([1-5])$/);
       if (!m) return syl;
-      let [, letters, toneStr] = m;
+      let [, letters] = m;
+      const toneStr = m[2];
       letters = letters.replace(/u:/g, "ü").replace(/v/g, "ü");
       const tone = Number(toneStr) - 1;
       if (tone === 4) return letters; // neutral tone: no mark

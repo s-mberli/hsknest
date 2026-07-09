@@ -12,6 +12,25 @@ import { getCurrentUserId } from "@/lib/session";
  *   400 { error: "Invalid input", details: <zod flatten> }
  */
 
+/**
+ * Structured server-side error log: one JSON line per error so a log
+ * aggregator (or `docker logs | grep '"level":"error"'`) can parse it.
+ * Never include request bodies or emails — userId only.
+ */
+export function logApiError(route: string, error: unknown, userId?: string) {
+  const err = error instanceof Error ? error : new Error(String(error));
+  console.error(
+    JSON.stringify({
+      level: "error",
+      time: new Date().toISOString(),
+      route,
+      userId: userId ?? null,
+      message: err.message,
+      stack: err.stack,
+    })
+  );
+}
+
 export function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
