@@ -37,7 +37,7 @@ COPY --from=build /app/scripts ./scripts
 # tsx is a runtime dependency (entrypoint runs seed + maintenance .ts scripts),
 # so it survives the production prune — no separate reinstall needed.
 COPY --from=build /app/node_modules ./node_modules
-RUN npm prune --production --no-optional
+RUN npm prune --production
 
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
