@@ -5,6 +5,7 @@ import { Flame, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import { Button } from "@/components/ui/button";
 
 interface SessionHudProps {
@@ -13,6 +14,8 @@ interface SessionHudProps {
   combo: number;
   /** Session start timestamp (ms) for the timer. */
   startedAt: number;
+  /** Bump to trigger a small confetti burst near the HUD (combo milestones). */
+  milestoneFire?: number;
 }
 
 function formatElapsed(ms: number): string {
@@ -28,6 +31,7 @@ export function SessionHud({
   total,
   combo,
   startedAt,
+  milestoneFire = 0,
 }: SessionHudProps) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -40,6 +44,7 @@ export function SessionHud({
 
   return (
     <div className="relative">
+      <ConfettiCannon fire={milestoneFire} intensity={40} />
       {/* Thin vermilion progress bar. */}
       <div className="h-0.5 w-full bg-muted">
         <motion.div

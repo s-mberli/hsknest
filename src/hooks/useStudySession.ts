@@ -28,6 +28,15 @@ const QUALITY_BY_DIRECTION: Record<SwipeDirection, number> = {
   down: 3, // hard / barely
 };
 
+/** Latest grade outcome, for transient UI feedback (Dynamic Island pill). */
+export interface LastGrade {
+  /** Increments per grade so consumers can retrigger animations via key. */
+  id: number;
+  direction: SwipeDirection;
+  correct: boolean;
+  combo: number;
+}
+
 interface UseStudySession {
   loading: boolean;
   cards: StudyCard[];
@@ -41,6 +50,8 @@ interface UseStudySession {
   correct: number;
   /** Cards graded wrong this session (deduped), for the session summary. */
   missed: { term: string; translation: string }[];
+  /** Outcome of the most recent grade, or null before the first one. */
+  lastGrade: LastGrade | null;
   done: boolean;
   /** Advance the reveal stage (tap / Space). */
   advance: () => void;
@@ -85,6 +96,8 @@ export function useStudySession(
   const [missed, setMissed] = useState<{ term: string; translation: string }[]>(
     []
   );
+  const [lastGrade, setLastGrade] = useState<LastGrade | null>(null);
+  const gradeCounter = useRef(0);
   const requeued = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -120,17 +133,32 @@ export function useStudySession(
       if (!card) return;
 
       const quality = QUALITY_BY_DIRECTION[direction];
+      const wasCorrect = quality >= 3;
 
       // Combo: consecutive q>=3 this session; resets quietly otherwise.
-      if (quality >= 3) {
+      if (wasCorrect) {
         setCombo((c) => {
           const next = c + 1;
           setBestCombo((b) => Math.max(b, next));
+          gradeCounter.current += 1;
+          setLastGrade({
+            id: gradeCounter.current,
+            direction,
+            correct: true,
+            combo: next,
+          });
           return next;
         });
         setCorrect((n) => n + 1);
       } else {
         setCombo(0);
+        gradeCounter.current += 1;
+        setLastGrade({
+          id: gradeCounter.current,
+          direction,
+          correct: false,
+          combo: 0,
+        });
         setMissed((m) =>
           m.some((w) => w.term === card.term)
             ? m
@@ -216,6 +244,7 @@ export function useStudySession(
     bestCombo,
     correct,
     missed,
+    lastGrade,
     done,
     advance,
     swipe,
