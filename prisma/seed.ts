@@ -104,9 +104,9 @@ const esWords: SeedWord[] = [
   { term: "amar", translation: "to love", phonetic: "aˈmaɾ", metadata: { pos: "verb" } },
 ];
 
-/** Load a prepared vocabulary file from prisma/data/hsk as SeedWords. */
-function loadWords(file: string): SeedWord[] {
-  const path = join(__dirname, "data", "hsk", `${file}.json`);
+/** Load a prepared vocabulary file from prisma/data/<dir> as SeedWords. */
+function loadWords(dir: string, file: string): SeedWord[] {
+  const path = join(__dirname, "data", dir, `${file}.json`);
   const raw = readFileSync(path, "utf8");
   return JSON.parse(raw) as SeedWord[];
 }
@@ -244,7 +244,7 @@ async function main() {
   const zh = await upsertLanguage("zh", "Mandarin Chinese");
 
   for (const { file, name, description } of ZH_LISTS) {
-    await seedList(zh.id, name, description, loadWords(file));
+    await seedList(zh.id, name, description, loadWords("hsk", file));
   }
 
   await seedList(
@@ -260,6 +260,18 @@ async function main() {
     zhNewsWords
   );
 
+  const ZH_THEMATIC_LISTS = [
+    { file: "greetings", name: "Chinese Greetings", description: "Basic greetings and polite expressions in Mandarin." },
+    { file: "numbers", name: "Chinese Numbers & Time", description: "Numbers, calendar terms, and time expressions in Chinese." },
+    { file: "family", name: "Chinese Family & People", description: "Essential vocabulary for family members and relationships." },
+    { file: "food", name: "Chinese Food & Drink", description: "Common food, beverages, and basic dining terms in Chinese." },
+    { file: "colors", name: "Chinese Colors & Basics", description: "Colors and fundamental everyday descriptors in Mandarin." },
+  ];
+
+  for (const { file, name, description } of ZH_THEMATIC_LISTS) {
+    await seedList(zh.id, name, description, loadWords("zh", file));
+  }
+
   const es = await upsertLanguage("es", "Spanish");
   await seedList(
     es.id,
@@ -267,6 +279,22 @@ async function main() {
     "A first set of common Spanish words and phrases.",
     esWords
   );
+
+  const de = await upsertLanguage("de", "German");
+
+  const DE_LISTS = [
+    { file: "greetings", name: "German Greetings", description: "Greetings and polite everyday phrases in German." },
+    { file: "numbers", name: "German Numbers & Time", description: "Learn to count and talk about time in German." },
+    { file: "family", name: "German Family & People", description: "Common words for family members and people." },
+    { file: "food", name: "German Food & Drink", description: "Everyday food items, beverages, and dining vocabulary." },
+    { file: "colors", name: "German Colors & Basics", description: "Essential colors and simple descriptive terms." },
+    { file: "a1", name: "A1 Essentials", description: "Core verbs, pronouns, and fundamental nouns for German A1 level." },
+    { file: "freq100", name: "German Top 100", description: "The 100 most frequent German words by corpus occurrence." },
+  ];
+
+  for (const { file, name, description } of DE_LISTS) {
+    await seedList(de.id, name, description, loadWords("de", file));
+  }
 
   console.log("Seed complete.");
 }

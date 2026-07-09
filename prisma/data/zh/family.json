@@ -1,0 +1,17 @@
+[
+  { "term": "爸爸", "translation": "dad", "phonetic": "bàba", "metadata": { "tones": [4, 0], "pos": "noun" } },
+  { "term": "妈妈", "translation": "mom", "phonetic": "māma", "metadata": { "tones": [1, 0], "pos": "noun" } },
+  { "term": "哥哥", "translation": "older brother", "phonetic": "gēge", "metadata": { "tones": [1, 0], "pos": "noun" } },
+  { "term": "姐姐", "translation": "older sister", "phonetic": "jiějie", "metadata": { "tones": [3, 0], "pos": "noun" } },
+  { "term": "弟弟", "translation": "younger brother", "phonetic": "dìdi", "metadata": { "tones": [4, 0], "pos": "noun" } },
+  { "term": "妹妹", "translation": "younger sister", "phonetic": "mèimei", "metadata": { "tones": [4, 0], "pos": "noun" } },
+  { "term": "爷爷", "translation": "grandfather (paternal)", "phonetic": "yéye", "metadata": { "tones": [2, 0], "pos": "noun" } },
+  { "term": "奶奶", "translation": "grandmother (paternal)", "phonetic": "nǎinai", "metadata": { "tones": [3, 0], "pos": "noun" } },
+  { "term": "儿子", "translation": "son", "phonetic": "érzi", "metadata": { "tones": [2, 0], "pos": "noun" } },
+  { "term": "女儿", "translation": "daughter", "phonetic": "nǚ'ér", "metadata": { "tones": [3, 2], "pos": "noun" } },
+  { "term": "孩子", "translation": "child", "phonetic": "háizi", "metadata": { "tones": [2, 0], "pos": "noun" } },
+  { "term": "朋友", "translation": "friend", "phonetic": "péngyou", "metadata": { "tones": [2, 0], "pos": "noun" } },
+  { "term": "先生", "translation": "husband; Mr.; gentleman", "phonetic": "xiānsheng", "metadata": { "tones": [1, 0], "pos": "noun" } },
+  { "term": "太太", "translation": "wife; Mrs.", "phonetic": "tàitai", "metadata": { "tones": [4, 0], "pos": "noun" } },
+  { "term": "家人", "translation": "family members", "phonetic": "jiārén", "metadata": { "tones": [1, 2], "pos": "noun" } }
+]

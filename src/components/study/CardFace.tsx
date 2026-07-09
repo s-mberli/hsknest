@@ -23,20 +23,66 @@ const PROMPTS: Record<Stage, string> = {
   FULL: "Grade yourself — swipe or use arrows",
 };
 
+const POS_LABELS: Record<string, string> = {
+  n: "noun",
+  v: "verb",
+  a: "adjective",
+  d: "adverb",
+  r: "pronoun",
+  p: "preposition",
+  c: "conjunction",
+  m: "numeral",
+  q: "classifier",
+  u: "auxiliary",
+  y: "modal",
+  phrase: "phrase",
+};
+
 /** Pull a few glanceable extras out of language-specific metadata. */
 function metadataExtras(metadata: StudyCard["metadata"]): string[] {
   if (!metadata || typeof metadata !== "object") return [];
   const out: string[] = [];
   const m = metadata as Record<string, unknown>;
+
+  const formatPos = (val: unknown): string | null => {
+    if (typeof val === "string") {
+      const tokens = val.split(",").map((s) => s.trim());
+      return tokens.map((t) => POS_LABELS[t] ?? t).join(", ");
+    }
+    if (Array.isArray(val)) {
+      return val
+        .map((t) => {
+          const s = String(t).trim();
+          return POS_LABELS[s] ?? s;
+        })
+        .filter(Boolean)
+        .join(", ");
+    }
+    return null;
+  };
+
   const pick = (key: string, label?: string) => {
     const v = m[key];
+    if (key === "pos") {
+      const formatted = formatPos(v);
+      if (formatted) {
+        out.push(label ? `${label}: ${formatted}` : formatted);
+      }
+      return;
+    }
     if (typeof v === "string" && v.trim()) {
       out.push(label ? `${label}: ${v}` : v);
     } else if (typeof v === "number") {
       out.push(label ? `${label}: ${v}` : String(v));
+    } else if (Array.isArray(v) && v.length > 0) {
+      const joined = v.map(String).filter((s) => s.trim()).join(", ");
+      if (joined) {
+        out.push(label ? `${label}: ${joined}` : joined);
+      }
     }
   };
   pick("gender");
+  pick("plural", "pl");
   pick("pos");
   pick("tone", "tone");
   pick("radical", "radical");

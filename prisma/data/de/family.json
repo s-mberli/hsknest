@@ -1,0 +1,23 @@
+[
+  { "term": "die Familie", "translation": "family", "phonetic": "faˈmiːli̯ə", "metadata": { "gender": "feminine", "plural": "Familien", "pos": "noun" } },
+  { "term": "die Mutter", "translation": "mother", "phonetic": "ˈmʊtɐ", "metadata": { "gender": "feminine", "plural": "Mütter", "pos": "noun" } },
+  { "term": "der Vater", "translation": "father", "phonetic": "ˈfaːtɐ", "metadata": { "gender": "masculine", "plural": "Väter", "pos": "noun" } },
+  { "term": "die Eltern", "translation": "parents", "phonetic": "ˈɛltɐn", "metadata": { "gender": "plural", "plural": "Eltern", "pos": "noun" } },
+  { "term": "das Kind", "translation": "child", "phonetic": "kɪnt", "metadata": { "gender": "neuter", "plural": "Kinder", "pos": "noun" } },
+  { "term": "der Sohn", "translation": "son", "phonetic": "zoːn", "metadata": { "gender": "masculine", "plural": "Söhne", "pos": "noun" } },
+  { "term": "die Tochter", "translation": "daughter", "phonetic": "ˈtɔxtɐ", "metadata": { "gender": "feminine", "plural": "Töchter", "pos": "noun" } },
+  { "term": "der Bruder", "translation": "brother", "phonetic": "ˈbʁuːdɐ", "metadata": { "gender": "masculine", "plural": "Brüder", "pos": "noun" } },
+  { "term": "die Schwester", "translation": "sister", "phonetic": "ˈʃvɛstɐ", "metadata": { "gender": "feminine", "plural": "Schwestern", "pos": "noun" } },
+  { "term": "die Großmutter", "translation": "grandmother", "phonetic": "ˈɡʁoːsmʊtɐ", "metadata": { "gender": "feminine", "plural": "Großmütter", "pos": "noun" } },
+  { "term": "der Großvater", "translation": "grandfather", "phonetic": "ˈɡʁoːsfaːtɐ", "metadata": { "gender": "masculine", "plural": "Großväter", "pos": "noun" } },
+  { "term": "der Mann", "translation": "man; husband", "phonetic": "man", "metadata": { "gender": "masculine", "plural": "Männer", "pos": "noun" } },
+  { "term": "die Frau", "translation": "woman; wife", "phonetic": "fʁaʊ", "metadata": { "gender": "feminine", "plural": "Frauen", "pos": "noun" } },
+  { "term": "der Freund", "translation": "friend; boyfriend", "phonetic": "fʁɔʏnt", "metadata": { "gender": "masculine", "plural": "Freunde", "pos": "noun" } },
+  { "term": "die Freundin", "translation": "friend; girlfriend (female)", "phonetic": "ˈfʁɔʏndɪn", "metadata": { "gender": "feminine", "plural": "Freundinnen", "pos": "noun" } },
+  { "term": "das Baby", "translation": "baby", "phonetic": "ˈbeːbi", "metadata": { "gender": "neuter", "plural": "Babys", "pos": "noun" } },
+  { "term": "der Onkel", "translation": "uncle", "phonetic": "ˈɔŋkl̩", "metadata": { "gender": "masculine", "plural": "Onkel", "pos": "noun" } },
+  { "term": "die Tante", "translation": "aunt", "phonetic": "ˈtantə", "metadata": { "gender": "feminine", "plural": "Tanten", "pos": "noun" } },
+  { "term": "der Name", "translation": "name", "phonetic": "ˈnaːmə", "metadata": { "gender": "masculine", "plural": "Namen", "pos": "noun" } },
+  { "term": "der Mensch", "translation": "human; person", "phonetic": "mɛnʃ", "metadata": { "gender": "masculine", "plural": "Menschen", "pos": "noun" } },
+  { "term": "die Leute", "translation": "people", "phonetic": "ˈlɔʏtə", "metadata": { "gender": "plural", "plural": "Leute", "pos": "noun" } }
+]
