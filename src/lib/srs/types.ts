@@ -9,7 +9,7 @@ export type CardState =
   | "MASTERED"
   | "ASSUMED";
 
-export type SRSAlgorithmType = "SM2" | "LEITNER";
+export type SRSAlgorithmType = "SM2" | "LEITNER" | "FSRS";
 
 /** Algorithm-agnostic snapshot — mirrors UserProgress columns. */
 export interface SRSState {
