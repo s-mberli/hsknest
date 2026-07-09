@@ -1,0 +1,17 @@
+[
+  { "term": "水", "translation": "water", "phonetic": "shuǐ", "metadata": { "tones": [3], "pos": "noun" } },
+  { "term": "茶", "translation": "tea", "phonetic": "chá", "metadata": { "tones": [2], "pos": "noun" } },
+  { "term": "咖啡", "translation": "coffee", "phonetic": "kāfēi", "metadata": { "tones": [1, 1], "pos": "noun" } },
+  { "term": "米饭", "translation": "cooked rice", "phonetic": "mǐfàn", "metadata": { "tones": [3, 4], "pos": "noun" } },
+  { "term": "面条", "translation": "noodles", "phonetic": "miàntiáo", "metadata": { "tones": [4, 2], "pos": "noun" } },
+  { "term": "肉", "translation": "meat", "phonetic": "ròu", "metadata": { "tones": [4], "pos": "noun" } },
+  { "term": "鸡肉", "translation": "chicken meat", "phonetic": "jīròu", "metadata": { "tones": [1, 4], "pos": "noun" } },
+  { "term": "牛肉", "translation": "beef", "phonetic": "niúròu", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "鱼", "translation": "fish", "phonetic": "yú", "metadata": { "tones": [2], "pos": "noun" } },
+  { "term": "蔬菜", "translation": "vegetable", "phonetic": "shūcài", "metadata": { "tones": [1, 4], "pos": "noun" } },
+  { "term": "水果", "translation": "fruit", "phonetic": "shuǐguǒ", "metadata": { "tones": [3, 3], "pos": "noun" } },
+  { "term": "苹果", "translation": "apple", "phonetic": "píngguǒ", "metadata": { "tones": [2, 3], "pos": "noun" } },
+  { "term": "面包", "translation": "bread", "phonetic": "miànbāo", "metadata": { "tones": [4, 1], "pos": "noun" } },
+  { "term": "牛奶", "translation": "milk", "phonetic": "niúnǎi", "metadata": { "tones": [2, 3], "pos": "noun" } },
+  { "term": "鸡蛋", "translation": "egg", "phonetic": "jīdàn", "metadata": { "tones": [1, 4], "pos": "noun" } }
+]

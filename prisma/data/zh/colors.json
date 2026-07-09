@@ -1,0 +1,13 @@
+[
+  { "term": "颜色", "translation": "color", "phonetic": "yánsè", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "红色", "translation": "red", "phonetic": "hóngsè", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "蓝色", "translation": "blue", "phonetic": "lánsè", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "绿色", "translation": "green", "phonetic": "lǜsè", "metadata": { "tones": [4, 4], "pos": "noun" } },
+  { "term": "黄色", "translation": "yellow", "phonetic": "huángsè", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "黑色", "translation": "black", "phonetic": "hēisè", "metadata": { "tones": [1, 4], "pos": "noun" } },
+  { "term": "白色", "translation": "white", "phonetic": "báisè", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "橙色", "translation": "orange", "phonetic": "chéngsè", "metadata": { "tones": [2, 4], "pos": "noun" } },
+  { "term": "紫色", "translation": "purple", "phonetic": "zǐsè", "metadata": { "tones": [3, 4], "pos": "noun" } },
+  { "term": "粉红色", "translation": "pink", "phonetic": "fěnhóngsè", "metadata": { "tones": [3, 2, 4], "pos": "noun" } },
+  { "term": "灰色", "translation": "gray", "phonetic": "huīsè", "metadata": { "tones": [1, 4], "pos": "noun" } }
+]

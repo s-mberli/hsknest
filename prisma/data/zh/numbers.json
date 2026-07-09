@@ -1,0 +1,22 @@
+[
+  { "term": "一", "translation": "one", "phonetic": "yī", "metadata": { "tones": [1], "pos": "numeral" } },
+  { "term": "二", "translation": "two", "phonetic": "èr", "metadata": { "tones": [4], "pos": "numeral" } },
+  { "term": "三", "translation": "three", "phonetic": "sān", "metadata": { "tones": [1], "pos": "numeral" } },
+  { "term": "四", "translation": "four", "phonetic": "sì", "metadata": { "tones": [4], "pos": "numeral" } },
+  { "term": "五", "translation": "five", "phonetic": "wǔ", "metadata": { "tones": [3], "pos": "numeral" } },
+  { "term": "六", "translation": "six", "phonetic": "liù", "metadata": { "tones": [4], "pos": "numeral" } },
+  { "term": "七", "translation": "seven", "phonetic": "qī", "metadata": { "tones": [1], "pos": "numeral" } },
+  { "term": "八", "translation": "eight", "phonetic": "bā", "metadata": { "tones": [1], "pos": "numeral" } },
+  { "term": "九", "translation": "nine", "phonetic": "jiǔ", "metadata": { "tones": [3], "pos": "numeral" } },
+  { "term": "十", "translation": "ten", "phonetic": "shí", "metadata": { "tones": [2], "pos": "numeral" } },
+  { "term": "百", "translation": "hundred", "phonetic": "bǎi", "metadata": { "tones": [3], "pos": "numeral" } },
+  { "term": "千", "translation": "thousand", "phonetic": "qiān", "metadata": { "tones": [1], "pos": "numeral" } },
+  { "term": "万", "translation": "ten thousand", "phonetic": "wàn", "metadata": { "tones": [4], "pos": "numeral" } },
+  { "term": "零", "translation": "zero", "phonetic": "líng", "metadata": { "tones": [2], "pos": "numeral" } },
+  { "term": "两", "translation": "two (for counting)", "phonetic": "liǎng", "metadata": { "tones": [3], "pos": "numeral" } },
+  { "term": "时间", "translation": "time", "phonetic": "shíjiān", "metadata": { "tones": [2, 1], "pos": "noun" } },
+  { "term": "分钟", "translation": "minute", "phonetic": "fēnzhōng", "metadata": { "tones": [1, 1], "pos": "noun" } },
+  { "term": "小时", "translation": "hour", "phonetic": "xiǎoshí", "metadata": { "tones": [3, 2], "pos": "noun" } },
+  { "term": "星期", "translation": "week", "phonetic": "xīngqī", "metadata": { "tones": [1, 1], "pos": "noun" } },
+  { "term": "月", "translation": "month; moon", "phonetic": "yuè", "metadata": { "tones": [4], "pos": "noun" } }
+]

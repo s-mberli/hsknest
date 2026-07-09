@@ -1,0 +1,17 @@
+[
+  { "term": "你好", "translation": "hello", "phonetic": "nǐ hǎo", "metadata": { "tones": [3, 3], "pos": "phrase" } },
+  { "term": "早上好", "translation": "good morning", "phonetic": "zǎoshang hǎo", "metadata": { "tones": [3, 0, 3], "pos": "phrase" } },
+  { "term": "下午好", "translation": "good afternoon", "phonetic": "xiàwǔ hǎo", "metadata": { "tones": [4, 3, 3], "pos": "phrase" } },
+  { "term": "晚上好", "translation": "good evening", "phonetic": "wǎnshang hǎo", "metadata": { "tones": [3, 0, 3], "pos": "phrase" } },
+  { "term": "晚安", "translation": "good night", "phonetic": "wǎn'ān", "metadata": { "tones": [3, 1], "pos": "phrase" } },
+  { "term": "再见", "translation": "goodbye", "phonetic": "zàijiàn", "metadata": { "tones": [4, 4], "pos": "phrase" } },
+  { "term": "谢谢", "translation": "thank you", "phonetic": "xièxie", "metadata": { "tones": [4, 0], "pos": "phrase" } },
+  { "term": "不客气", "translation": "you're welcome", "phonetic": "bú kèqi", "metadata": { "tones": [2, 4, 0], "pos": "phrase" } },
+  { "term": "对不起", "translation": "sorry", "phonetic": "duìbuqǐ", "metadata": { "tones": [4, 0, 3], "pos": "phrase" } },
+  { "term": "没关系", "translation": "it doesn't matter; no problem", "phonetic": "méi guānxi", "metadata": { "tones": [2, 1, 0], "pos": "phrase" } },
+  { "term": "请问", "translation": "excuse me (may I ask)", "phonetic": "qǐngwèn", "metadata": { "tones": [3, 4], "pos": "phrase" } },
+  { "term": "没问题", "translation": "no problem", "phonetic": "méi wèntí", "metadata": { "tones": [2, 4, 2], "pos": "phrase" } },
+  { "term": "欢迎", "translation": "welcome", "phonetic": "huānyíng", "metadata": { "tones": [1, 2], "pos": "verb" } },
+  { "term": "慢走", "translation": "take care (when leaving)", "phonetic": "mànzǒu", "metadata": { "tones": [4, 3], "pos": "phrase" } },
+  { "term": "明天见", "translation": "see you tomorrow", "phonetic": "míngtiān jiàn", "metadata": { "tones": [2, 1, 4], "pos": "phrase" } }
+]
