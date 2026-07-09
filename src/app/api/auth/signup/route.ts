@@ -1,9 +1,15 @@
 import { hash } from "bcryptjs";
+import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { signupSchema } from "@/lib/validation";
+import { sendVerificationEmail } from "@/lib/email";
+
+function hashToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 export async function POST(req: Request) {
   // 5 signups per hour per IP. x-forwarded-for's first hop is the client when
@@ -49,6 +55,20 @@ export async function POST(req: Request) {
   const user = await prisma.user.create({
     data: { email: normalizedEmail, passwordHash, name },
     select: { id: true },
+  });
+
+  // Fire-and-forget verification email — never block signup on email delivery.
+  // (Not sent for guest accounts, which are created via /api/auth/guest.)
+  const token = randomBytes(32).toString("hex");
+  await prisma.verificationToken.create({
+    data: {
+      email: normalizedEmail,
+      token: hashToken(token),
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+    },
+  });
+  sendVerificationEmail(normalizedEmail, token).catch((err) => {
+    console.error("Failed to send verification email:", err);
   });
 
   return NextResponse.json({ userId: user.id }, { status: 201 });

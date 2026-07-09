@@ -221,7 +221,8 @@ multiple-choice quiz + matching-pairs practice modes · card text sizing ·
 Playwright end-to-end suite · guest mode with account upgrade + stale-guest
 pruning · account deletion · per-list progress chips · CC-CEDICT
 dictionary-assisted word entry (Chinese) · session summary with toughest
-words + re-study.
+words + re-study · FSRS as a third scheduling strategy · email verification +
+password reset / account recovery flow.
 
 **Next (v0.2):**
 
@@ -233,7 +234,6 @@ words + re-study.
 - Per-element card text controls (character / phonetic / meaning sizes)
 - Speaking-practice mode — say the word aloud and get graded by speech
   recognition (a distinct study mode)
-- Email verification + password reset / account recovery flow
 - Bring-your-own-key integrations: cloud TTS and image generation via your own
   API key (server proxy, encrypted per-user key storage; instance operators can
   set global keys; features hide when no provider is configured)
@@ -245,8 +245,6 @@ words + re-study.
 
 **Later (v1.0+):**
 
-- FSRS as a third scheduling strategy (schema already reserves `srsData` +
-  `ReviewLog` history)
 - PostgreSQL option for horizontal scaling
 - Feedback admin dashboard
 - PWA + installable mobile app with offline queue and idempotent batch sync

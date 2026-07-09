@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
+import { VerifyEmailBanner } from "@/components/auth/VerifyEmailBanner";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
@@ -17,9 +18,13 @@ export default async function DashboardPage() {
 
   const [stats, user] = await Promise.all([
     getDashboardStats(userId),
-    prisma.user.findUnique({ where: { id: userId }, select: { email: true } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, emailVerified: true },
+    }),
   ]);
   const isGuest = user?.email.endsWith("@guest.local") ?? false;
+  const showVerifyBanner = !isGuest && user && !user.emailVerified;
 
   // Cap "new" the way the session actually would, so the ring total is honest.
   const newAllowed = Math.max(0, stats.dailyNewWords - stats.newIntroducedToday);
@@ -40,6 +45,12 @@ export default async function DashboardPage() {
       {isGuest && (
         <div className="mb-6">
           <UpgradeBanner />
+        </div>
+      )}
+
+      {showVerifyBanner && (
+        <div className="mb-6">
+          <VerifyEmailBanner email={user.email} />
         </div>
       )}
 
