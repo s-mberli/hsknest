@@ -33,7 +33,8 @@ pronunciation audio), and never depend on a cloud service.
 - **Paste / CSV import** — bring vocabulary in from a spreadsheet or a
   tab-separated export from other flashcard tools. Auto-detects tab vs comma,
   maps columns to term / meaning / reading, and skips blank or duplicate entries.
-- **Selectable scheduling algorithms** — **SM-2** (adaptive SuperMemo 2) or
+- **Selectable scheduling algorithms** — **FSRS** (modern memory-model
+  scheduler, the default for new accounts), **SM-2** (adaptive SuperMemo 2), or
   **Leitner** (5 fixed boxes), chosen per account. Progress is stored as a
   superset, so switching never loses state.
 - **Tunable schedule** — daily new-word and known-word-check caps, interval and
@@ -51,6 +52,9 @@ pronunciation audio), and never depend on a cloud service.
   with the answer to check against.
 - **Adjustable card text size** — small / normal / large study text, a
   per-account setting.
+- **Sound effects** — subtle, dependency-free audio cues on correct grades and
+  combo streaks (Web Audio, no asset files), on by default and toggleable in
+  Settings.
 - **On-device pronunciation** — a speaker button reads the word using your
   browser's built-in voices. No cloud, no API key; it tells you how to add a
   system voice if one is missing.
@@ -64,8 +68,12 @@ pronunciation audio), and never depend on a cloud service.
 - **Study scope** — narrow a session to one language and/or specific lists; the
   choice is remembered.
 - **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–6
-  plus the 7–9 band, frequency lists (Top 100 / Top 1000 words), and original
-  everyday-conversation and news-reading sets.
+  plus the 7–9 band, frequency lists (Top 100 / Top 1000 words), original
+  everyday-conversation and news-reading sets, plus themed starter lists
+  (greetings, numbers, family, food, colors).
+- **German starter content** — A1 essentials, a Top 100 frequency list, and the
+  same themed starter lists (greetings, numbers, family, food, colors). A
+  starter Spanish list is included too.
 - **One word, one card** — the same word appearing in several lists shares a
   single progress record: enrolling a second list skips what you already
   track, so stats and reviews never double.
@@ -73,7 +81,9 @@ pronunciation audio), and never depend on a cloud service.
   Explore, starter lists you don't want can be hidden (and restored) per
   account, and every studied word shows a strength meter with its interval.
 - **Accounts & auth** — email + password via NextAuth (credentials), passwords
-  hashed with bcrypt, with rate-limited signup and login.
+  hashed with bcrypt, rate-limited signup and login, soft (non-blocking) email
+  verification, and self-service password reset — both via email if you
+  configure Resend, or via a link logged to the server console if you don't.
 - **Guest mode with upgrade** — one click on the login page creates a
   throwaway account with a starter list already enrolled, so visitors can try
   the app without signing up. Liked it? One small form turns the guest into a
@@ -185,13 +195,15 @@ docs/
 
 ## SRS algorithm
 
-Scheduling is a pluggable strategy. **SM-2** (adaptive ease factor + interval)
-and **Leitner** (5 fixed boxes) are both implemented in `src/lib/srs/` behind a
-shared interface, selectable per account, with progress stored as a superset so
-switching never loses state. A modifier layer applies interval/lapse tuning, a
-mastery cut-off, and optional fuzz on top of whichever strategy is active. The
-schema reserves `srsData` and a `ReviewLog` history so a future strategy (e.g.
-FSRS) can slot in without a migration.
+Scheduling is a pluggable strategy. **FSRS** (the default for new accounts),
+**SM-2** (adaptive ease factor + interval), and **Leitner** (5 fixed boxes) are
+all implemented in `src/lib/srs/` behind a shared interface, selectable per
+account, with progress stored as a superset so switching never loses state. A
+modifier layer applies interval/lapse tuning, a mastery cut-off, and optional
+fuzz on top of whichever strategy is active. FSRS additionally reads a
+per-account `desiredRetention` target. The schema's `srsData` JSON field and
+`ReviewLog` history give each strategy room to store its own state without a
+migration.
 
 ## Contributing
 
