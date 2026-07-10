@@ -37,12 +37,18 @@ Set at minimum:
 docker compose up -d --build
 ```
 
-On first boot the container entrypoint:
+On **every** boot the container entrypoint:
 
-1. runs `prisma migrate deploy` to bring the schema up to date, then
-2. seeds starter content **once**, tracked by a `/data/.seeded` marker on the
-   volume so restarts and re-deploys never re-seed or clobber your data, then
-3. starts the standalone Next server (`node server.js`).
+1. runs `prisma migrate deploy` to bring the schema up to date,
+2. seeds/refreshes starter content if `AUTO_SEED` is `true` (the default) —
+   this is idempotent and safe on every restart: it only adds lists that don't
+   exist yet or restores an untouched starter list, it never touches your
+   accounts, progress, or review history,
+3. runs the guest-pruning and duplicate-progress maintenance scripts, then
+4. starts the standalone Next server (`node server.js`).
+
+This means new starter content (e.g. a newly-added language) shows up
+automatically the next time you redeploy — no manual re-seed step needed.
 
 The database lives in the named volume `recall-data`, mounted at `/data`.
 
@@ -80,6 +86,12 @@ vars, and terminates HTTPS through its bundled proxy:
    including the migrate-and-seed-on-boot entrypoint.
 3. Set the environment variables from the table above (`NEXTAUTH_SECRET`,
    `NEXTAUTH_URL=https://<your-subdomain>`, `DATABASE_URL=file:/data/recall.db`).
+   Also set `NEXT_PUBLIC_APP_URL` to that same public HTTPS URL explicitly —
+   some platforms (Coolify included) can inject their own internal container
+   hostname as a default, which silently breaks links inside password-reset
+   and verification emails if you don't set this yourself. See
+   [CONFIGURATION.md](CONFIGURATION.md) for the full variable list, including
+   the optional `RESEND_API_KEY`/`EMAIL_FROM` pair for real email delivery.
 4. **Confirm the `/data` volume is persistent** in the service's Storage tab.
    This is the one setting that matters most: without it, every redeploy wipes
    all accounts and progress.

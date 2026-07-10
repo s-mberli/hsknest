@@ -8,7 +8,7 @@ A concise tour of how Recall is put together: the data model, the spaced-repetit
 - **Language** — `name` + unique `code`. `createdById` is `null` for seeded/global languages; set to a user id for languages that user added.
 - **WordList** — belongs to a `Language`. `isPublic` is `true` for seeded starter lists. `createdById` is `null` for seeded lists, or the owner's id for user-created lists.
 - **Word** — the language-agnostic unit: `term`, `translation`, optional `phonetic`, and a free-form `metadata` JSON blob (tones, gender, part of speech, audio URLs, frequency rank…). `position` orders words within a list. Deleting a list cascades to its words.
-- **UserProgress** — one row per (user, word). Holds an algorithm-agnostic superset of SRS state: `state` (NEW/LEARNING/REVIEW/LAPSED/MASTERED/ASSUMED), SM-2 fields (`easeFactor`, `intervalDays`, `repetitions`), the Leitner `box`, `lapses`, `dueAt`, and scheduling bookkeeping (`introducedAt`, `assumedCheckedAt`). `srsData` is reserved JSON overflow for future strategies. Deleting a word cascades to its progress.
+- **UserProgress** — one row per (user, word). Holds an algorithm-agnostic superset of SRS state: `state` (NEW/LEARNING/REVIEW/LAPSED/MASTERED/ASSUMED), SM-2 fields (`easeFactor`, `intervalDays`, `repetitions`), the Leitner `box`, `lapses`, `dueAt`, and scheduling bookkeeping (`introducedAt`, `assumedCheckedAt`). `srsData` is JSON overflow that FSRS uses to store its stability/difficulty state; also reserved for any future strategy. Deleting a word cascades to its progress.
 - **ReviewLog** — an append-only history of every grade (`quality`, `algorithm`, interval before/after, `reviewedAt`). Reserved for analytics and future replay/offline sync.
 
 ### Ownership & visibility
@@ -20,12 +20,15 @@ A list or language is **visible** to a user when it is public/seeded **or** owne
 Scheduling is a pluggable strategy behind a shared interface:
 
 - `types.ts` — the common `SRSStrategy` shape and the review input/output types.
+- `fsrs.ts` — FSRS-5: modern memory-model scheduler (stability/difficulty tracked
+  in `srsData`), reads a per-account `desiredRetention` target. **Default for
+  new accounts.**
 - `sm2.ts` — SuperMemo 2: adjusts `easeFactor` and grows `intervalDays` on success.
 - `leitner.ts` — a 5-box system with fixed per-box intervals.
 - `index.ts` — a small registry that resolves the user's `preferredAlgorithm` to a strategy.
 - `modifiers.ts` — a **modifier layer** applied on top of whichever strategy runs: the interval multiplier, post-lapse interval retention, the mastery cut-off (interval past a threshold → `MASTERED`, stop scheduling), and optional ±5% interval fuzz.
 
-Because `UserProgress` stores a superset of every strategy's needs, switching algorithms never discards state. A future strategy (e.g. FSRS) can read/write `srsData` and the `ReviewLog` history without a schema change.
+Because `UserProgress` stores a superset of every strategy's needs, switching algorithms never discards state — existing accounts keep their `preferredAlgorithm` even when the new-account default changes.
 
 ## Queue & cap logic
 
