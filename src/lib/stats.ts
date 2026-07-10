@@ -22,12 +22,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const FORECAST_DAYS = 7;
 
 export async function getDashboardStats(
-  userId: string
+  userId: string,
+  targetLanguageId: string | null = null
 ): Promise<DashboardStats> {
   const now = new Date();
   const dayStart = startOfLocalDay(now);
   // End of the 7-day window (exclusive) = start of day+7.
   const windowEnd = new Date(dayStart.getTime() + FORECAST_DAYS * DAY_MS);
+
+  const langFilter = targetLanguageId ? { word: { wordList: { languageId: targetLanguageId } } } : {};
 
   const [
     user,
@@ -52,16 +55,18 @@ export async function getDashboardStats(
         userId,
         dueAt: { lte: now },
         state: { in: ["LEARNING", "REVIEW", "LAPSED"] },
+        ...langFilter,
       },
     }),
-    prisma.userProgress.count({ where: { userId, state: "NEW" } }),
-    prisma.userProgress.count({ where: { userId, state: "REVIEW" } }),
-    prisma.userProgress.count({ where: { userId, state: "MASTERED" } }),
+    prisma.userProgress.count({ where: { userId, state: "NEW", ...langFilter } }),
+    prisma.userProgress.count({ where: { userId, state: "REVIEW", ...langFilter } }),
+    prisma.userProgress.count({ where: { userId, state: "MASTERED", ...langFilter } }),
     prisma.userProgress.count({
       where: {
         userId,
         lapses: { gte: 3 },
         state: { notIn: ["MASTERED", "ASSUMED"] },
+        ...langFilter,
       },
     }),
     prisma.userProgress.count({
@@ -69,13 +74,14 @@ export async function getDashboardStats(
         userId,
         introducedAt: { gte: dayStart },
         state: { notIn: ["ASSUMED"] },
+        ...langFilter,
       },
     }),
-    prisma.userProgress.count({ where: { userId, state: "ASSUMED" } }),
+    prisma.userProgress.count({ where: { userId, state: "ASSUMED", ...langFilter } }),
     prisma.userProgress.count({
-      where: { userId, assumedCheckedAt: { gte: dayStart } },
+      where: { userId, assumedCheckedAt: { gte: dayStart }, ...langFilter },
     }),
-    prisma.userProgress.count({ where: { userId } }),
+    prisma.userProgress.count({ where: { userId, ...langFilter } }),
     prisma.reviewLog.findMany({
       where: { userId },
       select: { reviewedAt: true },
@@ -88,6 +94,7 @@ export async function getDashboardStats(
         userId,
         dueAt: { lt: windowEnd },
         state: { in: ["LEARNING", "REVIEW", "LAPSED"] },
+        ...langFilter,
       },
       select: { dueAt: true },
     }),

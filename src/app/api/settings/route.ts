@@ -26,6 +26,7 @@ export async function GET() {
       showReading: true,
       soundEffects: true,
       desiredRetention: true,
+      targetLanguageId: true,
     },
   });
   if (!user) {
@@ -61,6 +62,7 @@ export async function PATCH(req: Request) {
       showReading: true,
       soundEffects: true,
       desiredRetention: true,
+      targetLanguageId: true,
     },
   });
 

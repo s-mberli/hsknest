@@ -72,40 +72,52 @@ export function SessionPicker({ onHrefChange, onSizeChange }: SessionPickerProps
   const [minuteChoice, setMinuteChoice] = useState(5);
   const [scope, setScope] = useState<StudyScope>({});
 
-  // Restore last choice.
+  // Restore last choice and sync across tabs
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw) as {
-        mode?: Mode;
-        cardChoice?: string;
-        minuteChoice?: number;
-        languageId?: unknown;
-        listIds?: unknown;
-      };
-      if (saved.mode === "cards" || saved.mode === "minutes") {
-        setMode(saved.mode);
+    function loadStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw) as {
+          mode?: Mode;
+          cardChoice?: string;
+          minuteChoice?: number;
+          languageId?: unknown;
+          listIds?: unknown;
+        };
+        if (saved.mode === "cards" || saved.mode === "minutes") {
+          setMode(saved.mode);
+        }
+        if (saved.cardChoice) setCardChoice(saved.cardChoice);
+        if (typeof saved.minuteChoice === "number") {
+          setMinuteChoice(saved.minuteChoice);
+        }
+        // Defensively tolerate old blobs
+        const restored: StudyScope = {};
+        if (typeof saved.languageId === "string" && saved.languageId) {
+          restored.languageId = saved.languageId;
+        }
+        if (Array.isArray(saved.listIds)) {
+          const ids = saved.listIds.filter(
+            (x): x is string => typeof x === "string" && x.length > 0
+          );
+          if (ids.length > 0) restored.listIds = ids;
+        }
+        setScope(restored);
+      } catch {
+        // ignore malformed storage
       }
-      if (saved.cardChoice) setCardChoice(saved.cardChoice);
-      if (typeof saved.minuteChoice === "number") {
-        setMinuteChoice(saved.minuteChoice);
-      }
-      // Defensively tolerate old blobs (no scope keys) and junk values.
-      const restored: StudyScope = {};
-      if (typeof saved.languageId === "string" && saved.languageId) {
-        restored.languageId = saved.languageId;
-      }
-      if (Array.isArray(saved.listIds)) {
-        const ids = saved.listIds.filter(
-          (x): x is string => typeof x === "string" && x.length > 0
-        );
-        if (ids.length > 0) restored.listIds = ids;
-      }
-      setScope(restored);
-    } catch {
-      // ignore malformed storage
     }
+
+    loadStorage();
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        loadStorage();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   // Keep the parent's Start href in sync + persist on every change.

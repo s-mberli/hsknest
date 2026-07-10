@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AccountSection } from "@/components/settings/sections/AccountSection";
 import { AppearanceSection } from "@/components/settings/sections/AppearanceSection";
 import { FeedbackSection } from "@/components/settings/sections/FeedbackSection";
+import { LanguageSection } from "@/components/settings/sections/LanguageSection";
 import { SchedulingSection } from "@/components/settings/sections/SchedulingSection";
 import { WorkloadSection } from "@/components/settings/sections/WorkloadSection";
 
@@ -31,11 +32,14 @@ interface SettingsFormProps {
   showReading: boolean;
   soundEffects: boolean;
   desiredRetention: number;
+  targetLanguageId: string | null;
+  languages: { id: string; name: string }[];
 }
 
 export function SettingsForm(props: SettingsFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [targetLanguageId, setTargetLanguageId] = useState(props.targetLanguageId);
 
   const [algorithm, setAlgorithm] = useState<Algorithm>(
     props.preferredAlgorithm
@@ -79,6 +83,17 @@ export function SettingsForm(props: SettingsFormProps) {
 
   return (
     <div className="space-y-6">
+      <LanguageSection
+        targetLanguageId={targetLanguageId}
+        languages={props.languages}
+        saving={saving}
+        onTargetLanguageChange={(next) => {
+          const prev = targetLanguageId;
+          setTargetLanguageId(next);
+          patch({ targetLanguageId: next }, () => setTargetLanguageId(prev));
+        }}
+      />
+
       <WorkloadSection
         dailyNewWords={dailyNewWords}
         assumedCheckPerDay={assumedCheckPerDay}

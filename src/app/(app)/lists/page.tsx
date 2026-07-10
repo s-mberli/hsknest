@@ -12,9 +12,22 @@ export default async function ListsPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { targetLanguageId: true },
+  });
+  if (!user) redirect("/login");
+
+  if (!user.targetLanguageId) {
+    redirect("/onboarding");
+  }
+
   const [lists, progress, hiddenRows] = await Promise.all([
     prisma.wordList.findMany({
-      where: visibleListWhere(userId),
+      where: {
+        ...visibleListWhere(userId),
+        ...(user.targetLanguageId ? { languageId: user.targetLanguageId } : {}),
+      },
       orderBy: { createdAt: "asc" },
       include: {
         language: { select: { name: true, code: true } },

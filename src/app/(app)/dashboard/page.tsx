@@ -16,13 +16,19 @@ export default async function DashboardPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const [stats, user] = await Promise.all([
-    getDashboardStats(userId),
+  const [user] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, emailVerified: true },
+      select: { email: true, emailVerified: true, targetLanguageId: true },
     }),
   ]);
+  
+  if (!user?.targetLanguageId) {
+    redirect("/onboarding");
+  }
+
+  const stats = await getDashboardStats(userId, user.targetLanguageId);
+
   const isGuest = user?.email.endsWith("@guest.local") ?? false;
   const showVerifyBanner = !isGuest && user && !user.emailVerified;
 
