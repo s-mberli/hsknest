@@ -144,11 +144,18 @@ export function DashboardHero({
             )}
           </>
         ) : (
-          canPractice && (
+          canPractice ? (
             <Button asChild size="lg" className="w-full max-w-xs rounded-full">
               <Link href={practiceHref}>
                 <GraduationCap className="size-4" />
                 Refresh learned words
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild size="lg" className="w-full max-w-xs rounded-full">
+              <Link href="/lists">
+                <BookOpen className="size-4" />
+                Browse word lists
               </Link>
             </Button>
           )

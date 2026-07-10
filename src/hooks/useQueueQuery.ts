@@ -28,15 +28,13 @@ export function useQueueQuery(): {
     );
   }
 
-  const languageId = params.get("languageId");
   const listIds = params.get("listIds");
-  if (languageId) parts.push(`languageId=${encodeURIComponent(languageId)}`);
   if (listIds) parts.push(`listIds=${encodeURIComponent(listIds)}`);
   if (practice) parts.push("mode=practice");
 
   return {
     query: parts.join("&"),
-    scoped: Boolean(languageId || listIds),
+    scoped: Boolean(listIds),
     practice,
   };
 }
