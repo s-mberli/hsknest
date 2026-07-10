@@ -32,6 +32,10 @@ export default async function SettingsPage() {
   });
   if (!user) redirect("/login");
 
+  if (!user.targetLanguageId) {
+    redirect("/onboarding");
+  }
+
   const languages = await prisma.language.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true },

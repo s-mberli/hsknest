@@ -32,32 +32,5 @@ export async function POST(req: Request) {
     select: { id: true },
   });
 
-  // Auto-enroll a sensible starter list: prefer "Everyday Spanish Starter" or
-  // "HSK 1 — Foundation" by name, falling back to the smallest seeded list.
-  const seededLists = await prisma.wordList.findMany({
-    where: { createdById: null, isPublic: true },
-    select: { id: true, name: true, _count: { select: { words: true } } },
-  });
-  let starter = seededLists.find((l) => l.name === "Everyday Spanish Starter");
-  if (!starter) {
-    starter = seededLists.find((l) => l.name === "HSK 1 — Foundation");
-  }
-  if (!starter) {
-    starter = seededLists
-      .filter((l) => l._count.words > 0)
-      .sort((a, b) => a._count.words - b._count.words)[0];
-  }
-
-  if (starter) {
-    const words = await prisma.word.findMany({
-      where: { wordListId: starter.id },
-      select: { id: true },
-    });
-    const now = new Date();
-    await prisma.userProgress.createMany({
-      data: words.map((w) => ({ userId: user.id, wordId: w.id, dueAt: now })),
-    });
-  }
-
   return NextResponse.json({ email, password }, { status: 201 });
 }
