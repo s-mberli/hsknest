@@ -78,11 +78,18 @@ export async function GET(req: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { dailyNewWords: true, assumedCheckPerDay: true },
+    select: { dailyNewWords: true, assumedCheckPerDay: true, targetLanguageId: true },
   });
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const queueWhere = {
+    AND: [
+      scopeWhere,
+      user.targetLanguageId ? { word: { wordList: { languageId: user.targetLanguageId } } } : {},
+    ],
+  };
 
   // Include chain so each card carries its language code for TTS.
   const wordInclude = {
@@ -122,7 +129,7 @@ export async function GET(req: Request) {
       where: {
         userId,
         state: { in: ["LEARNING", "REVIEW", "LAPSED", "MASTERED"] },
-        ...scopeWhere,
+        ...queueWhere,
       },
       orderBy: { dueAt: "asc" },
       take: limit,
@@ -141,7 +148,7 @@ export async function GET(req: Request) {
       userId,
       dueAt: { lte: now },
       state: { in: ["LEARNING", "REVIEW", "LAPSED"] },
-      ...scopeWhere,
+      ...queueWhere,
     },
     orderBy: { dueAt: "asc" },
     take: limit,
@@ -181,7 +188,7 @@ export async function GET(req: Request) {
   const checks =
     remaining > 0 && checksAllowedToday > 0
       ? await prisma.userProgress.findMany({
-          where: { userId, state: "ASSUMED", ...scopeWhere },
+          where: { userId, state: "ASSUMED", ...queueWhere },
           orderBy: { word: { position: "asc" } },
           take: Math.min(remaining, checksAllowedToday),
           include: wordInclude,
@@ -193,7 +200,7 @@ export async function GET(req: Request) {
   const fresh =
     remaining > 0 && newAllowedToday > 0
       ? await prisma.userProgress.findMany({
-          where: { userId, state: "NEW", ...scopeWhere },
+          where: { userId, state: "NEW", ...queueWhere },
           orderBy: { word: { position: "asc" } },
           take: Math.min(remaining, newAllowedToday),
           include: wordInclude,

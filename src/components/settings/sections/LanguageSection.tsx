@@ -6,10 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Languages } from "lucide-react";
 
 interface LanguageSectionProps {
-  targetLanguageId: string | null;
+  targetLanguageId: string;
   languages: { id: string; name: string }[];
   saving: boolean;
-  onTargetLanguageChange: (id: string | null) => void;
+  onTargetLanguageChange: (id: string) => void;
 }
 
 export function LanguageSection({
@@ -25,21 +25,24 @@ export function LanguageSection({
         <CardContent className="p-0">
           <div className="flex items-center justify-between p-4">
             <div className="space-y-1">
-              <span className="flex items-center gap-2 text-sm font-medium">
+              <label
+                htmlFor="target-language-select"
+                className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+              >
                 <Languages className="size-4 text-muted-foreground" />
                 Target Language
-              </span>
+              </label>
               <p className="max-w-[280px] text-xs text-muted-foreground sm:max-w-md">
-                Only show words and lists for this language across the app.
+                The app focuses on one language at a time to optimize your study. Switch your active target language here; your study progress and word lists for other languages are preserved.
               </p>
             </div>
             <div className="w-[180px]">
               <Select
-                value={targetLanguageId ?? "all"}
-                onChange={(e) => onTargetLanguageChange(e.target.value === "all" ? null : e.target.value)}
+                id="target-language-select"
+                value={targetLanguageId}
+                onChange={(e) => onTargetLanguageChange(e.target.value)}
                 disabled={saving}
               >
-                <option value="all">All Languages</option>
                 {languages.map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.name}

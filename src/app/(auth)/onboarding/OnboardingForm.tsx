@@ -66,7 +66,7 @@ export function OnboardingForm({ languages }: OnboardingFormProps) {
               Which language do you want to master?
             </CardTitle>
             <CardDescription className="text-base mt-3 px-4 leading-relaxed">
-              Choose your target language to start building your custom flashcard deck. You can always add more later in settings.
+              Choose your target language to start building your custom flashcard deck. You can always switch languages anytime in settings.
             </CardDescription>
           </CardHeader>
           

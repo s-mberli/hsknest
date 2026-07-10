@@ -32,14 +32,14 @@ interface SettingsFormProps {
   showReading: boolean;
   soundEffects: boolean;
   desiredRetention: number;
-  targetLanguageId: string | null;
+  targetLanguageId: string;
   languages: { id: string; name: string }[];
 }
 
 export function SettingsForm(props: SettingsFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [targetLanguageId, setTargetLanguageId] = useState(props.targetLanguageId);
+  const [targetLanguageId, setTargetLanguageId] = useState<string>(props.targetLanguageId);
 
   const [algorithm, setAlgorithm] = useState<Algorithm>(
     props.preferredAlgorithm
