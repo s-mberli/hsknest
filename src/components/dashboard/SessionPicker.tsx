@@ -31,9 +31,6 @@ function buildHref(
       ? `/study?limit=${cardChoice === "all" ? ALL_LIMIT : cardChoice}`
       : `/study?minutes=${minuteChoice}`;
   let href = base;
-  if (scope.languageId) {
-    href += `&languageId=${encodeURIComponent(scope.languageId)}`;
-  }
   if (scope.listIds && scope.listIds.length > 0) {
     href += `&listIds=${encodeURIComponent(scope.listIds.join(","))}`;
   }
@@ -71,6 +68,7 @@ export function SessionPicker({ onHrefChange, onSizeChange }: SessionPickerProps
   const [cardChoice, setCardChoice] = useState("20");
   const [minuteChoice, setMinuteChoice] = useState(5);
   const [scope, setScope] = useState<StudyScope>({});
+  const [optionsOpen, setOptionsOpen] = useState(false);
 
   // Restore last choice and sync across tabs
   useEffect(() => {
@@ -94,9 +92,6 @@ export function SessionPicker({ onHrefChange, onSizeChange }: SessionPickerProps
         }
         // Defensively tolerate old blobs
         const restored: StudyScope = {};
-        if (typeof saved.languageId === "string" && saved.languageId) {
-          restored.languageId = saved.languageId;
-        }
         if (Array.isArray(saved.listIds)) {
           const ids = saved.listIds.filter(
             (x): x is string => typeof x === "string" && x.length > 0
@@ -131,7 +126,6 @@ export function SessionPicker({ onHrefChange, onSizeChange }: SessionPickerProps
           mode,
           cardChoice,
           minuteChoice,
-          languageId: scope.languageId,
           listIds: scope.listIds,
         })
       );
@@ -186,7 +180,11 @@ export function SessionPicker({ onHrefChange, onSizeChange }: SessionPickerProps
       </div>
 
       {/* Secondary controls stay out of the way until asked for. */}
-      <details className="group">
+      <details 
+        className="group" 
+        open={optionsOpen} 
+        onToggle={(e) => setOptionsOpen(e.currentTarget.open)}
+      >
         <summary className="cursor-pointer list-none text-center text-[11px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
           Options
         </summary>

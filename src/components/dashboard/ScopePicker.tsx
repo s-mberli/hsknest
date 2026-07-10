@@ -6,12 +6,6 @@ import { useEffect, useState } from "react";
 import type { StudyScope } from "@/lib/studyScope";
 import { cn } from "@/lib/utils";
 
-interface Language {
-  id: string;
-  name: string;
-  code: string;
-}
-
 interface ListSummary {
   id: string;
   name: string;
@@ -32,7 +26,6 @@ interface ScopePickerProps {
 export function ScopePicker({ value, onChange }: ScopePickerProps) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [languages, setLanguages] = useState<Language[]>([]);
   const [lists, setLists] = useState<ListSummary[]>([]);
 
   // Fetch reference data the first time the panel opens.
@@ -41,14 +34,9 @@ export function ScopePicker({ value, onChange }: ScopePickerProps) {
     let active = true;
     (async () => {
       try {
-        const [langRes, listRes] = await Promise.all([
-          fetch("/api/languages"),
-          fetch("/api/lists"),
-        ]);
-        const langData = langRes.ok ? await langRes.json() : { languages: [] };
+        const listRes = await fetch("/api/lists");
         const listData = listRes.ok ? await listRes.json() : { lists: [] };
         if (!active) return;
-        setLanguages(langData.languages ?? []);
         setLists(listData.lists ?? []);
         setLoaded(true);
       } catch {
@@ -76,31 +64,11 @@ export function ScopePicker({ value, onChange }: ScopePickerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, lists]);
 
-  const selectedLanguage = value.languageId
-    ? languages.find((l) => l.id === value.languageId)
-    : undefined;
-
-  const enrollableForLanguage = lists.filter(
-    (l) =>
-      l.enrolledCount > 0 &&
-      (!selectedLanguage || l.languageCode === selectedLanguage.code)
-  );
-  const hiddenCount =
-    lists.filter(
-      (l) =>
-        l.enrolledCount === 0 &&
-        (!selectedLanguage || l.languageCode === selectedLanguage.code)
-    ).length;
+  const enrollableLists = lists.filter((l) => l.enrolledCount > 0);
+  const hiddenCount = lists.filter((l) => l.enrolledCount === 0).length;
 
   const selectedListCount = value.listIds?.length ?? 0;
-  const summary = selectedLanguage
-    ? `${selectedLanguage.name}${selectedListCount > 0 ? ` · ${selectedListCount} ${selectedListCount === 1 ? "list" : "lists"}` : ""}`
-    : "All words";
-
-  function selectLanguage(languageId: string | undefined) {
-    // Changing language clears list selection (lists are language-scoped).
-    onChange({ languageId, listIds: undefined });
-  }
+  const summary = selectedListCount > 0 ? `${selectedListCount} ${selectedListCount === 1 ? "list" : "lists"}` : "All your words";
 
   function toggleList(id: string) {
     const current = value.listIds ?? [];
@@ -128,30 +96,12 @@ export function ScopePicker({ value, onChange }: ScopePickerProps) {
 
       {open && (
         <div className="mt-2 space-y-3 rounded-lg border p-3">
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Language</p>
-            <div className="flex flex-wrap gap-1.5">
-              <ScopeChip
-                active={!value.languageId}
-                onClick={() => selectLanguage(undefined)}
-                label="All"
-              />
-              {languages.map((l) => (
-                <ScopeChip
-                  key={l.id}
-                  active={value.languageId === l.id}
-                  onClick={() => selectLanguage(l.id)}
-                  label={l.name}
-                />
-              ))}
-            </div>
-          </div>
 
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">Lists</p>
-            {enrollableForLanguage.length > 0 ? (
+            {enrollableLists.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
-                {enrollableForLanguage.map((l) => (
+                {enrollableLists.map((l) => (
                   <ScopeChip
                     key={l.id}
                     active={(value.listIds ?? []).includes(l.id)}

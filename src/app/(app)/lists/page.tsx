@@ -98,39 +98,43 @@ export default async function ListsPage() {
   );
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <main className="mx-auto w-full max-w-5xl px-6 py-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="mb-1 text-2xl font-bold tracking-tight">Word lists</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="mb-1 text-3xl font-extrabold tracking-tight">Word lists</h1>
+          <p className="text-base text-muted-foreground">
             Create your own lists, or add words from a starter set to your queue.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
           <Link href="/lists/new">＋ New list</Link>
         </Button>
       </div>
 
       {studying.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <section className="mb-10">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
             Studying
           </h2>
-          <div className="space-y-3">{studying.map((l) => card(l))}</div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {studying.map((l) => card(l))}
+          </div>
         </section>
       )}
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <section className="mb-10">
+        <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
           Your lists
         </h2>
         {ownLists.length > 0 ? (
-          <div className="space-y-3">{ownLists.map((l) => card(l))}</div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {ownLists.map((l) => card(l))}
+          </div>
         ) : studyingIds.size === 0 || studying.every((l) => l.createdById !== userId) ? (
-          <Card>
-            <CardContent className="py-6 text-center text-sm text-muted-foreground">
+          <Card className="border-dashed shadow-none">
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
               You haven&apos;t created any lists yet.{" "}
-              <Link href="/lists/new" className="text-primary underline-offset-4 hover:underline">
+              <Link href="/lists/new" className="font-semibold text-primary underline-offset-4 hover:underline">
                 Create one
               </Link>{" "}
               to add your own words.
@@ -144,25 +148,34 @@ export default async function ListsPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
           Explore
         </h2>
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {exploreLists.map((l) => card(l))}
           {exploreLists.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              No starter lists available yet.
-            </p>
+            <Card className="col-span-full border-dashed">
+              <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                No starter lists available yet.{" "}
+                <Link href="/lists/new" className="text-primary underline-offset-4 hover:underline">
+                  Create a custom list
+                </Link>{" "}
+                to get started.
+              </CardContent>
+            </Card>
           )}
         </div>
       </section>
 
       {hiddenLists.length > 0 && (
-        <details className="mt-8">
-          <summary className="cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Hidden ({hiddenLists.length})
+        <details className="mt-12 group">
+          <summary className="cursor-pointer list-none text-xs font-bold uppercase tracking-wider text-muted-foreground/80 transition-colors hover:text-foreground">
+            <span className="flex items-center gap-2">
+              <span className="transition-transform group-open:rotate-90">▶</span>
+              Hidden ({hiddenLists.length})
+            </span>
           </summary>
-          <div className="mt-3 space-y-3 opacity-70">
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 opacity-60 transition-opacity hover:opacity-100">
             {hiddenLists.map((l) => card(l, { hidden: true }))}
           </div>
         </details>
@@ -193,44 +206,50 @@ function ListCard({
   hidden?: boolean;
 }) {
   return (
-    <Link href={`/lists/${id}`} className="block">
-      <Card className="transition-colors hover:border-primary/50">
-        <CardContent className="py-4">
+    <Link href={`/lists/${id}`} className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 bg-gradient-to-b from-card to-card/50">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <CardContent className="flex flex-1 flex-col p-5">
           {/* Top row: name + language on the left, hide toggle pinned right. */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="truncate font-medium">{name}</p>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2">
+                <p className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                  {name}
+                </p>
                 {owner && (
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                  <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
                     Yours
                   </span>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">{languageName}</p>
+              <p className="truncate text-sm font-medium text-muted-foreground/80">{languageName}</p>
             </div>
             {hideable && (
-              <div className="shrink-0">
+              <div className="relative z-10 shrink-0 -mt-1 -mr-1">
                 <ListVisibilityButton listId={id} hidden={hidden} />
               </div>
             )}
           </div>
 
-          {/* Stats wrap onto their own line so they never crowd the name. */}
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            {due > 0 && (
-              <span className="rounded-full bg-amber/15 px-2.5 py-1 text-xs font-medium text-amber">
-                {due} due
+          {/* Spacer to push stats to bottom */}
+          <div className="mt-auto pt-4 border-t border-border/40">
+            <div className="flex flex-wrap items-center gap-2">
+              {due > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  {due} due
+                </span>
+              )}
+              {enrolled > 0 && (
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                  {enrolled} learning
+                </span>
+              )}
+              <span className="inline-flex items-center rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+                {wordCount} words
               </span>
-            )}
-            {enrolled > 0 && (
-              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                {enrolled} learning
-              </span>
-            )}
-            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-              {wordCount} words
-            </span>
+            </div>
           </div>
         </CardContent>
       </Card>

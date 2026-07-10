@@ -9,8 +9,13 @@ export async function GET(req: Request) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { targetLanguageId: true },
+  });
+
   const url = new URL(req.url);
-  const languageId = url.searchParams.get("languageId") ?? undefined;
+  const languageId = url.searchParams.get("languageId") ?? user?.targetLanguageId ?? undefined;
 
   const lists = await prisma.wordList.findMany({
     where: {
