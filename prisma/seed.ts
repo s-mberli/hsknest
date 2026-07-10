@@ -222,19 +222,26 @@ async function retireSeededList(name: string) {
   });
   if (!list) return;
 
-  if ((await progressCount(list.id)) === 0) {
+  // Forcefully delete it, ignoring progress (as requested).
+  await deleteSeededList(list.id);
+  console.log(`Forcefully removed retired list: ${name}`);
+}
+
+/** Clean up any lists that were renamed to "(legacy)". */
+async function cleanUpLegacyLists() {
+  const legacyLists = await prisma.wordList.findMany({
+    where: { name: { endsWith: " (legacy)" } },
+    select: { id: true, name: true },
+  });
+  for (const list of legacyLists) {
     await deleteSeededList(list.id);
-    console.log(`Removed retired list: ${name}`);
-  } else {
-    await prisma.wordList.update({
-      where: { id: list.id },
-      data: { name: `${name} (legacy)` },
-    });
-    console.log(`Kept studied retired list as: ${name} (legacy)`);
+    console.log(`Forcefully deleted legacy list: ${list.name}`);
   }
 }
 
 async function main() {
+  await cleanUpLegacyLists();
+
   // Retired test content — drop from any existing DB.
   await retireSeededList("Everyday Mandarin Starter");
   for (const name of RETIRED_ZH_LISTS) {
