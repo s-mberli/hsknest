@@ -57,6 +57,7 @@ export const settingsSchema = z.object({
   cardTextSize: z.enum(["small", "normal", "large"]).optional(),
   showReading: z.boolean().optional(),
   soundEffects: z.boolean().optional(),
+  targetLanguageId: z.string().nullable().optional(),
 });
 
 export const accountResetSchema = z.object({

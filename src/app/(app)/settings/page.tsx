@@ -27,9 +27,15 @@ export default async function SettingsPage() {
       showReading: true,
       soundEffects: true,
       desiredRetention: true,
+      targetLanguageId: true,
     },
   });
   if (!user) redirect("/login");
+
+  const languages = await prisma.language.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
@@ -52,6 +58,8 @@ export default async function SettingsPage() {
         showReading={user.showReading}
         soundEffects={user.soundEffects}
         desiredRetention={user.desiredRetention}
+        targetLanguageId={user.targetLanguageId}
+        languages={languages}
       />
       <p className="mt-8 text-center text-xs text-muted-foreground">
         <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">

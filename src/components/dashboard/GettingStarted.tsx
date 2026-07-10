@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -43,7 +45,10 @@ export function GettingStarted() {
         <ol className="space-y-4">
           {STEPS.map((step, i) => (
             <li key={step.title} className="flex gap-3">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+              <span
+                className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+                aria-hidden="true"
+              >
                 {i + 1}
               </span>
               <div className="space-y-0.5">
@@ -53,6 +58,11 @@ export function GettingStarted() {
             </li>
           ))}
         </ol>
+        <div className="mt-6">
+          <Button asChild>
+            <Link href="/lists">Browse word lists</Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
