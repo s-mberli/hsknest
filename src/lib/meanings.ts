@@ -51,3 +51,24 @@ export function parseMeanings(word: WordLike): Meaning[] {
 export function primaryGloss(word: WordLike): string {
   return parseMeanings(word)[0]?.gloss ?? word.translation;
 }
+
+/**
+ * Short game-surface gloss (quiz options, match tiles): the primary gloss with
+ * a trailing parenthetical stripped — "you (informal…)" → "you" — unless the
+ * whole gloss is parenthetical, which is unwrapped instead: "(completed action
+ * marker)" → "completed action marker". Longer results are cut at a word
+ * boundary with an ellipsis.
+ */
+export function gameGloss(word: WordLike, max = 40): string {
+  let gloss = primaryGloss(word).trim();
+  const wrapped = gloss.match(/^\((.+)\)$/);
+  if (wrapped) {
+    gloss = wrapped[1].trim();
+  } else {
+    gloss = gloss.replace(/\s*\([^()]*\)\s*$/, "").trim() || gloss;
+  }
+  if (gloss.length <= max) return gloss;
+  const cut = gloss.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > max / 2 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}

@@ -99,6 +99,9 @@ export function useStudySession(
   const [lastGrade, setLastGrade] = useState<LastGrade | null>(null);
   const gradeCounter = useRef(0);
   const requeued = useRef<Set<string>>(new Set());
+  // Cards graded below "Good" once already — their repeat reviews are logged
+  // as practice so the schedule isn't advanced/reset twice in one session.
+  const relearning = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let active = true;
@@ -166,6 +169,15 @@ export function useStudySession(
         );
       }
 
+      // SM-2 step 7: repeat every card graded below 4 (Again/Hard) later in
+      // the same session until it scores ≥4. Only the FIRST grade moves the
+      // schedule; repeats are logged as practice (no interval/EF change).
+      const isRepeat = relearning.current.has(card.wordId);
+      if (quality < 4) {
+        relearning.current.add(card.wordId);
+        setCards((prev) => [...prev, card]);
+      }
+
       // Optimistic: advance immediately, post in the background.
       setCursor((c) => c + 1);
       setStage("TERM");
@@ -176,7 +188,7 @@ export function useStudySession(
           wordId: card.wordId,
           quality,
           reviewedAt: new Date().toISOString(),
-          ...(practice ? { practice: true } : {}),
+          ...(practice || isRepeat ? { practice: true } : {}),
         });
 
         const post = () =>

@@ -9,7 +9,7 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
-import { primaryGloss } from "@/lib/meanings";
+import { gameGloss } from "@/lib/meanings";
 import { postReview } from "@/lib/postReview";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ interface SentenceScreenProps {
 /** Self-grade buttons, mirroring the flashcard swipe qualities. */
 const GRADES: { label: string; quality: number; className: string }[] = [
   { label: "Again", quality: 1, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
-  { label: "Hard", quality: 3, className: "text-amber-600 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/10" },
+  { label: "Hard", quality: 3, className: "text-amber border-amber/40 hover:bg-amber/10" },
   { label: "Good", quality: 4, className: "text-success border-success/40 hover:bg-success/10" },
   { label: "Easy", quality: 5, className: "text-sky-600 dark:text-sky-400 border-sky-500/40 hover:bg-sky-500/10" },
 ];
@@ -78,6 +78,9 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   );
   const [skipped, setSkipped] = useState(0);
   const startedAt = useRef(Date.now()).current;
+  // Words graded below Good once — repeats are logged as practice (same
+  // in-session relearn contract as flashcards; SM-2 step 7).
+  const relearning = useRef<Set<string>>(new Set());
   const sizes = CARD_TEXT_CLASSES[textSize];
 
   useEffect(() => {
@@ -127,7 +130,14 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
         );
       }
     }
-    void postReview(current.wordId, quality, practice);
+    // Failed/hard words repeat later in the session until graded ≥ Good; only
+    // the first grade moves the schedule, repeats post as practice.
+    const isRepeat = relearning.current.has(current.wordId);
+    if (quality < 4) {
+      relearning.current.add(current.wordId);
+      setCards((prev) => [...prev, current]);
+    }
+    void postReview(current.wordId, quality, practice || isRepeat);
     setRevealed(false);
     setCursor((c) => c + 1);
   }
@@ -144,6 +154,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
         total={cards.length}
         combo={combo}
         startedAt={startedAt}
+        practice={practice}
       />
 
       <main className="flex flex-1 flex-col justify-center px-6 pb-16">
@@ -174,6 +185,12 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
             bestCombo={bestCombo}
             elapsedMs={Date.now() - startedAt}
             missed={missed}
+            practice={practice}
+            note={
+              skipped > 0
+                ? `${skipped} ${skipped === 1 ? "word" : "words"} in your queue ${skipped === 1 ? "has" : "have"} no example sentence yet — review those as flashcards.`
+                : undefined
+            }
           />
         )}
 
@@ -204,7 +221,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
                       {current.term}
                     </span>
                     {current.phonetic && <> · {current.phonetic}</>} ·{" "}
-                    {primaryGloss(current)}
+                    {gameGloss(current)}
                   </p>
                 </motion.div>
               )}

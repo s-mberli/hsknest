@@ -168,6 +168,10 @@ export function DashboardHero({
       {(hasCards || canPractice) && (
         <div className="w-full max-w-sm space-y-2">
           <SectionLabel>More ways to practice</SectionLabel>
+          <p className="text-xs text-muted-foreground">
+            Pressure-free games with words you&apos;ve already learned — they
+            never change your review schedule.
+          </p>
           {PRACTICE_MODES.map(({ key, label, icon: Icon }) => {
             // The games are pure practice: they always draw from already-learned
             // words and never disturb the review schedule, so they keep working

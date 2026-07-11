@@ -107,8 +107,10 @@ export function HowItWorksModal({ open, onClose }: HowItWorksModalProps) {
             </div>
 
             <p className="mt-5 text-xs text-muted-foreground">
-              Grade honestly and the schedule tunes itself to your memory. You can
-              change the algorithm and daily limits any time in Settings.
+              Words you miss come back later in the same session until you get
+              them — but only your first answer moves the schedule. Practice
+              games never move it at all. Grade honestly and the schedule tunes
+              itself to your memory; algorithm and daily limits live in Settings.
             </p>
 
         <Button className="mt-6 w-full rounded-full" onClick={onClose}>

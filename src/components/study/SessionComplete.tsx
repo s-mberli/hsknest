@@ -19,6 +19,8 @@ interface SessionCompleteProps {
   missed?: { term: string; translation: string }[];
   /** True when this was a practice/refresh session (schedule untouched). */
   practice?: boolean;
+  /** Extra mode-specific footnote, e.g. "3 words without sentences skipped". */
+  note?: string;
 }
 
 function formatElapsed(ms: number): string {
@@ -35,6 +37,7 @@ export function SessionComplete({
   elapsedMs,
   missed = [],
   practice = false,
+  note,
 }: SessionCompleteProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -69,8 +72,13 @@ export function SessionComplete({
       </h2>
       <p className="text-muted-foreground">
         You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}.{" "}
-        {practice ? "Your review schedule is untouched." : "Nice work."}
+        {practice
+          ? "Just practice — nothing here changed your upcoming reviews."
+          : "Nice work."}
       </p>
+      {note && (
+        <p className="max-w-xs text-xs text-muted-foreground">{note}</p>
+      )}
 
       <div className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3">
         <Stat label="Accuracy" value={`${accuracy}%`} valueClassName={accuracyTint} />

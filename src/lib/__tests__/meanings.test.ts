@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseMeanings, primaryGloss } from "../meanings";
+import { gameGloss, parseMeanings, primaryGloss } from "../meanings";
 
 describe("parseMeanings", () => {
   it("prefers structured metadata.meanings", () => {
@@ -45,5 +45,38 @@ describe("parseMeanings", () => {
 describe("primaryGloss", () => {
   it("returns the first sense", () => {
     expect(primaryGloss({ translation: "to yield; to permit" })).toBe("to yield");
+  });
+});
+
+describe("gameGloss", () => {
+  it("strips a trailing parenthetical", () => {
+    expect(
+      gameGloss({ translation: "you (informal, as opposed to courteous 您)" })
+    ).toBe("you");
+  });
+
+  it("unwraps a fully parenthetical gloss instead of deleting it", () => {
+    expect(gameGloss({ translation: "(completed action marker)" })).toBe(
+      "completed action marker"
+    );
+  });
+
+  it("leaves short plain glosses untouched", () => {
+    expect(gameGloss({ translation: "hello" })).toBe("hello");
+  });
+
+  it("truncates long glosses at a word boundary with an ellipsis", () => {
+    const out = gameGloss({
+      translation: "a very long explanation that keeps going and going forever",
+    });
+    expect(out.length).toBeLessThanOrEqual(41);
+    expect(out.endsWith("…")).toBe(true);
+    expect(out).toBe("a very long explanation that keeps…");
+  });
+
+  it("uses only the primary sense", () => {
+    expect(gameGloss({ translation: "of; ~'s (possessive particle); target" })).toBe(
+      "of"
+    );
   });
 });

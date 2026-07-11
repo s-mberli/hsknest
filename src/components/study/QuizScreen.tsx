@@ -9,7 +9,7 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
-import { primaryGloss } from "@/lib/meanings";
+import { gameGloss } from "@/lib/meanings";
 import { postReview } from "@/lib/postReview";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,10 @@ export function QuizScreen({ studyTheme, textSize, mode = "meaning" }: QuizScree
 }
 
 function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps) {
-  const { query, scoped, practice } = useQueueQuery();
+  const { query, scoped } = useQueueQuery();
+  // Games are pure practice by contract: they never move the review schedule,
+  // regardless of how the session was opened.
+  const practice = true;
   const [cards, setCards] = useState<QuizCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState(0);
@@ -49,13 +52,20 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   );
   const [skipped, setSkipped] = useState(0);
   const startedAt = useRef(Date.now()).current;
+  const advanceTimer = useRef<number | null>(null);
   const sizes = CARD_TEXT_CLASSES[textSize];
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`/api/study/queue?${query}&choices=${mode}`);
+        // Force the practice queue: games only ever draw from learned words.
+        const practiceQuery = query.includes("mode=")
+          ? query
+          : `${query}&mode=practice`;
+        const res = await fetch(
+          `/api/study/queue?${practiceQuery}&choices=${mode}`
+        );
         if (!res.ok) throw new Error("queue fetch failed");
         const data = await res.json();
         if (active) {
@@ -78,8 +88,9 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
+  // Must build the same string as the server's choice pool (attachChoices).
   const answerOf = (c: QuizCard) =>
-    mode === "reading" ? c.phonetic ?? "" : primaryGloss(c);
+    mode === "reading" ? c.phonetic ?? "" : gameGloss(c);
 
   function pick(choice: string) {
     if (!current || picked !== null) return;
@@ -101,13 +112,20 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
       );
     }
     void postReview(current.wordId, isRight ? 4 : 1, practice);
-    window.setTimeout(
-      () => {
-        setPicked(null);
-        setCursor((c) => c + 1);
-      },
+    advanceTimer.current = window.setTimeout(
+      advance,
       isRight ? ADVANCE_MS : ADVANCE_WRONG_MS
     );
+  }
+
+  /** Move to the next question — from the auto-timer or an impatient tap. */
+  function advance() {
+    if (advanceTimer.current !== null) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+    setPicked(null);
+    setCursor((c) => c + 1);
   }
 
   return (
@@ -122,9 +140,16 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
         total={cards.length}
         combo={combo}
         startedAt={startedAt}
+        practice
       />
 
-      <main className="flex flex-1 flex-col justify-center px-6 pb-16">
+      {/* After an answer is revealed, a tap anywhere advances immediately. */}
+      <main
+        className="flex flex-1 flex-col justify-center px-6 pb-16"
+        onClick={() => {
+          if (picked !== null) advance();
+        }}
+      >
         {loading && (
           <p className="text-center text-sm text-muted-foreground">
             Loading your quiz…
@@ -152,6 +177,12 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             bestCombo={bestCombo}
             elapsedMs={Date.now() - startedAt}
             missed={missed}
+            practice
+            note={
+              skipped > 0
+                ? `${skipped} ${skipped === 1 ? "card" : "cards"} couldn't be quizzed (not enough answer options) — review those as flashcards.`
+                : undefined
+            }
           />
         )}
 
@@ -210,7 +241,11 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             </div>
 
             <p className="text-center text-xs text-muted-foreground">
-              {mode === "reading" ? "Pick the pronunciation" : "Pick the meaning"}
+              {picked !== null
+                ? "Tap anywhere to continue"
+                : mode === "reading"
+                  ? "Pick the pronunciation"
+                  : "Pick the meaning"}
             </p>
           </motion.div>
         )}
