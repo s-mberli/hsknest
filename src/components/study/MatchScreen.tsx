@@ -43,7 +43,7 @@ export function MatchScreen({ studyTheme }: MatchScreenProps) {
 }
 
 function MatchSession({ studyTheme }: MatchScreenProps) {
-  const { query, scoped } = useQueueQuery();
+  const { query, scoped, practice } = useQueueQuery();
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [round, setRound] = useState(0);
@@ -126,7 +126,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
         );
       }
     }
-    void postReview(wordId, wasMissed ? 1 : 4);
+    void postReview(wordId, wasMissed ? 1 : 4, practice);
   }
 
   function tap(tile: Tile) {
@@ -245,7 +245,9 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
           </p>
         )}
 
-        {done && rounds.length === 0 && <EmptyQueue scoped={scoped} />}
+        {done && rounds.length === 0 && (
+          <EmptyQueue scoped={scoped} practice={practice} />
+        )}
 
         {done && rounds.length > 0 && (
           <SessionComplete

@@ -1,3 +1,8 @@
+import { HelpCircle } from "lucide-react";
+import { useState } from "react";
+
+import { HowItWorksModal } from "@/components/HowItWorksModal";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -74,15 +79,30 @@ export function SchedulingSection({
   onFuzzIntervalsChange,
 }: SchedulingSectionProps) {
   const activeAlgo = ALGORITHMS.find((a) => a.value === algorithm);
+  const [showHelp, setShowHelp] = useState(false);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Scheduling</CardTitle>
-        <CardDescription>
-          How upcoming reviews are timed. Progress carries over when you change these.
-        </CardDescription>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle>Scheduling</CardTitle>
+            <CardDescription>
+              How upcoming reviews are timed. Progress carries over when you change these.
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-1.5"
+            onClick={() => setShowHelp(true)}
+          >
+            <HelpCircle className="size-4" />
+            How it works
+          </Button>
+        </div>
       </CardHeader>
+      <HowItWorksModal open={showHelp} onClose={() => setShowHelp(false)} />
       <CardContent className="space-y-5">
         <div className="space-y-2">
           <SettingRow

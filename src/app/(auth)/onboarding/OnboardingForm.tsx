@@ -8,6 +8,7 @@ import { Check, Globe2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { HowItWorksModal } from "@/components/HowItWorksModal";
 import { cn } from "@/lib/utils";
 
 interface OnboardingFormProps {
@@ -18,6 +19,7 @@ export function OnboardingForm({ languages }: OnboardingFormProps) {
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   async function onSubmit() {
     if (!selected) return;
@@ -29,7 +31,12 @@ export function OnboardingForm({ languages }: OnboardingFormProps) {
         body: JSON.stringify({ targetLanguageId: selected }),
       });
       if (!res.ok) throw new Error();
-      
+
+      // Cue the one-time "How it works" nudge on the first dashboard visit.
+      try {
+        localStorage.removeItem("recall-seen-intro");
+      } catch {}
+
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -134,10 +141,19 @@ export function OnboardingForm({ languages }: OnboardingFormProps) {
                   "Start building flashcards"
                 )}
               </Button>
+              <button
+                type="button"
+                onClick={() => setShowHelp(true)}
+                className="mx-auto mt-4 block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                How does this work?
+              </button>
             </motion.div>
           </CardContent>
         </Card>
       </div>
+
+      <HowItWorksModal open={showHelp} onClose={() => setShowHelp(false)} />
     </motion.div>
   );
 }

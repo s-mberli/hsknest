@@ -167,10 +167,11 @@ export function DashboardHero({
         <div className="w-full max-w-sm space-y-2">
           <SectionLabel>More ways to practice</SectionLabel>
           {PRACTICE_MODES.map(({ key, label, icon: Icon }) => {
+            // The games are pure practice: they always draw from already-learned
+            // words and never disturb the review schedule, so they keep working
+            // after the daily cap is hit.
             let practiceModeHref = href.replace(/^\/study/, `/study/${key}`);
-            if (!hasCards) {
-              practiceModeHref += `${practiceModeHref.includes("?") ? "&" : "?"}mode=practice`;
-            }
+            practiceModeHref += `${practiceModeHref.includes("?") ? "&" : "?"}mode=practice`;
             return (
               <Link
                 key={key}

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AuroraGlow } from "@/components/fx/AuroraGlow";
@@ -35,6 +36,7 @@ export function SessionComplete({
   missed = [],
   practice = false,
 }: SessionCompleteProps) {
+  const router = useRouter();
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
     accuracy >= 80
@@ -110,8 +112,15 @@ export function SessionComplete({
         >
           <Link href="/study?mode=practice&limit=20">Keep practicing</Link>
         </Button>
-        <Button asChild variant="outline">
-          <Link href="/dashboard">Back to dashboard</Link>
+        <Button
+          variant="outline"
+          onClick={() => {
+            // Force fresh dashboard counts after studying (avoid stale ring).
+            router.push("/dashboard");
+            router.refresh();
+          }}
+        >
+          Back to dashboard
         </Button>
         {!practice && (
           <Button asChild variant="outline">

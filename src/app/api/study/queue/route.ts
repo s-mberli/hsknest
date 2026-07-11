@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireUser } from "@/lib/apiRoute";
+import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
 import { buildChoices } from "@/lib/quizChoices";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
@@ -84,11 +85,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const capLangFilter = targetLangFilter(user.targetLanguageId);
   const queueWhere = {
-    AND: [
-      scopeWhere,
-      user.targetLanguageId ? { word: { wordList: { languageId: user.targetLanguageId } } } : {},
-    ],
+    AND: [scopeWhere, capLangFilter],
   };
 
   // Include chain so each card carries its language code for TTS.
@@ -157,10 +156,11 @@ export async function GET(req: Request) {
 
   // Daily-cap counters: new words introduced today, and assumed-known cards
   // checked today (regardless of the state they landed in after the check).
-  // INVARIANT: these two counts are intentionally NOT scoped. Daily caps are
-  // global per day — the review route stamps introducedAt/assumedCheckedAt at
-  // grade time regardless of scope, so counting globally prevents double-spend
-  // across differently-scoped sessions on the same day.
+  // Scoped by target language to match the dashboard (getDashboardStats), which
+  // counts within targetLanguageId. Every queue fetch is already constrained to
+  // the single targetLanguageId (queueWhere), so there is no cross-language
+  // double-spend to guard against — and keeping the cap counts in the same scope
+  // as the ring means the ring never promises a card the session then refuses.
   // NOTE: These counts are approximate under concurrent load (race condition
   // possible where two sessions both read count < cap, then both update).
   // This is acceptable for MVP; production should use atomic batch updates.
@@ -170,10 +170,11 @@ export async function GET(req: Request) {
         userId,
         introducedAt: { gte: dayStart },
         state: { notIn: ["ASSUMED"] },
+        ...capLangFilter,
       },
     }),
     prisma.userProgress.count({
-      where: { userId, assumedCheckedAt: { gte: dayStart } },
+      where: { userId, assumedCheckedAt: { gte: dayStart }, ...capLangFilter },
     }),
   ]);
 

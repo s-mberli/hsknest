@@ -29,6 +29,13 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
     router.push("/dashboard");
   }
 
+  function backToDashboard() {
+    // Force the dashboard server component to recompute counts — otherwise the
+    // client router cache can show the pre-session ring after studying.
+    router.push("/dashboard");
+    router.refresh();
+  }
+
   return (
     <div
       role="status"
@@ -36,11 +43,11 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
     >
       <Moon className="size-14 text-primary" aria-hidden="true" />
       <h2 className="text-2xl font-bold tracking-tight">
-        {practice ? "No flashcards to practice yet!" : "You've crushed all your flashcards!"}
+        {practice ? "Learn a few words first" : "You've crushed all your flashcards!"}
       </h2>
       <p className="max-w-sm text-muted-foreground">
         {practice
-          ? "Practice mode tests you on words you've already learned. Add some flashcards and study them first, then come back."
+          ? "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
           : "Your spaced-repetition queue is empty for now. Add new words to your deck or take a break until your next reviews are due."}
       </p>
 
@@ -56,13 +63,17 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
           <Button onClick={handleClearScope}>
             Clear scope & retry
           </Button>
+        ) : practice ? (
+          <Button asChild>
+            <Link href="/study">Study flashcards</Link>
+          </Button>
         ) : (
           <Button asChild>
             <Link href="/lists">Add more words</Link>
           </Button>
         )}
-        <Button asChild variant="outline">
-          <Link href="/dashboard">Back to dashboard</Link>
+        <Button variant="outline" onClick={backToDashboard}>
+          Back to dashboard
         </Button>
       </div>
     </div>
