@@ -62,8 +62,17 @@ export function WordBrowser() {
       try {
         const res = await fetch("/api/words");
         if (!res.ok) throw new Error("fetch failed");
-        const data: { words: ApiWord[] } = await res.json();
+        const data: { words: ApiWord[]; targetLanguageCode?: string | null } =
+          await res.json();
         if (!active) return;
+        // Default the filter to the user's target language so words from other
+        // languages don't mix in — the "All languages" chip still shows them.
+        if (
+          data.targetLanguageCode &&
+          data.words.some((w) => w.languageCode === data.targetLanguageCode)
+        ) {
+          setLanguage(data.targetLanguageCode);
+        }
         setWords(
           data.words.map((w) => ({
             wordId: w.wordId,

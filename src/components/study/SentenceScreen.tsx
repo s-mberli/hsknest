@@ -28,7 +28,7 @@ const GRADES: { label: string; quality: number; className: string }[] = [
   { label: "Again", quality: 1, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
   { label: "Hard", quality: 3, className: "text-amber-600 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/10" },
   { label: "Good", quality: 4, className: "text-success border-success/40 hover:bg-success/10" },
-  { label: "Easy", quality: 5, className: "text-primary border-primary/40 hover:bg-primary/10" },
+  { label: "Easy", quality: 5, className: "text-sky-600 dark:text-sky-400 border-sky-500/40 hover:bg-sky-500/10" },
 ];
 
 export function SentenceScreen({ studyTheme, textSize }: SentenceScreenProps) {

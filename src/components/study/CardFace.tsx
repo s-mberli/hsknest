@@ -253,8 +253,8 @@ export function CardFace({
               </ul>
             )}
             {extras.length > 0 && (
-              <p className="text-sm text-muted-foreground">
-                {extras.join(" · ")}
+              <p className="text-xs italic text-muted-foreground/70">
+                ({extras.join(" · ")})
               </p>
             )}
           </motion.div>

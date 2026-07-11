@@ -8,6 +8,11 @@ export async function GET() {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { targetLanguage: { select: { code: true } } },
+  });
+
   const rows = await prisma.userProgress.findMany({
     where: { userId },
     orderBy: { word: { position: "asc" } },
@@ -36,5 +41,8 @@ export async function GET() {
     dueAt: p.dueAt,
   }));
 
-  return NextResponse.json({ words });
+  return NextResponse.json({
+    words,
+    targetLanguageCode: user?.targetLanguage?.code ?? null,
+  });
 }

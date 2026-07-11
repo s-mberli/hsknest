@@ -87,7 +87,7 @@ export function CardStack({
     { dir: "left", label: "Again", icon: X, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
     { dir: "down", label: "Hard", icon: Minus, className: "text-amber border-amber/40 hover:bg-amber/10" },
     { dir: "right", label: "Good", icon: Check, className: "text-success border-success/40 hover:bg-success/10" },
-    { dir: "up", label: "Easy", icon: ChevronsUp, className: "text-success border-success/40 hover:bg-success/10" },
+    { dir: "up", label: "Easy", icon: ChevronsUp, className: "text-sky-600 dark:text-sky-400 border-sky-500/40 hover:bg-sky-500/10" },
   ];
 
   return (
