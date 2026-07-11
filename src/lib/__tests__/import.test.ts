@@ -7,15 +7,15 @@ describe("parseDelimited", () => {
     const { words, skipped } = parseDelimited("你好\thello\n谢谢\tthank you");
     expect(skipped).toBe(0);
     expect(words).toEqual([
-      { term: "你好", translation: "hello", phonetic: null },
-      { term: "谢谢", translation: "thank you", phonetic: null },
+      { term: "你好", translation: "hello", phonetic: null, meanings: null },
+      { term: "谢谢", translation: "thank you", phonetic: null, meanings: null },
     ]);
   });
 
   it("auto-detects comma delimiter when no tabs present", () => {
     const { words } = parseDelimited("hola,hello,ˈo.la");
     expect(words).toEqual([
-      { term: "hola", translation: "hello", phonetic: "ˈo.la" },
+      { term: "hola", translation: "hello", phonetic: "ˈo.la", meanings: null },
     ]);
   });
 
@@ -23,13 +23,13 @@ describe("parseDelimited", () => {
     // Comma stays part of the translation because the row is tab-delimited.
     const { words } = parseDelimited("term\ta, b, c");
     expect(words).toEqual([
-      { term: "term", translation: "a, b, c", phonetic: null },
+      { term: "term", translation: "a, b, c", phonetic: null, meanings: null },
     ]);
   });
 
   it("honors an explicit comma delimiter", () => {
     const { words } = parseDelimited("a,b\tc", { delimiter: "comma" });
-    expect(words).toEqual([{ term: "a", translation: "b\tc", phonetic: null }]);
+    expect(words).toEqual([{ term: "a", translation: "b\tc", phonetic: null, meanings: null }]);
   });
 
   it("handles quoted fields with embedded delimiters and newlines", () => {
@@ -39,7 +39,7 @@ describe("parseDelimited", () => {
       {
         term: "hello, world",
         translation: "a greeting\nwith a newline",
-        phonetic: null,
+        phonetic: null, meanings: null,
       },
     ]);
   });
@@ -58,8 +58,8 @@ describe("parseDelimited", () => {
     });
     expect(skipped).toBe(0);
     expect(words).toEqual([
-      { term: "term-only", translation: "", phonetic: null },
-      { term: "full", translation: "meaning", phonetic: "reading" },
+      { term: "term-only", translation: "", phonetic: null, meanings: null },
+      { term: "full", translation: "meaning", phonetic: "reading", meanings: null },
     ]);
   });
 
@@ -85,12 +85,38 @@ describe("parseDelimited", () => {
       columns: ["phonetic", "term", "ignore", "translation"],
     });
     expect(words).toEqual([
-      { term: "你好", translation: "hello", phonetic: "nǐ hǎo" },
+      { term: "你好", translation: "hello", phonetic: "nǐ hǎo", meanings: null },
     ]);
   });
 
   it("trims a trailing newline without emitting an empty row", () => {
     const { words } = parseDelimited("a\tb\n");
     expect(words).toHaveLength(1);
+  });
+});
+
+describe("parseDelimited meanings column", () => {
+  it("splits a meanings column on semicolons", () => {
+    const { words } = parseDelimited("了\tle\t(completed action marker); to finish", {
+      delimiter: "tab",
+      columns: ["term", "phonetic", "meanings"],
+    });
+    expect(words).toEqual([
+      {
+        term: "了",
+        translation: "(completed action marker); to finish",
+        phonetic: "le",
+        meanings: ["(completed action marker)", "to finish"],
+      },
+    ]);
+  });
+
+  it("keeps an explicit translation alongside meanings", () => {
+    const { words } = parseDelimited("好\tgood\tgood; well; fine", {
+      delimiter: "tab",
+      columns: ["term", "translation", "meanings"],
+    });
+    expect(words[0].translation).toBe("good");
+    expect(words[0].meanings).toEqual(["good", "well", "fine"]);
   });
 });

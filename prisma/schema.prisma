@@ -71,6 +71,7 @@ model Language {
 
   createdBy User?      @relation(fields: [createdById], references: [id])
   wordLists WordList[]
+  sentences Sentence[]
   targetedByUsers User[] @relation("UserTargetLanguage")
 
   @@index([createdById])
@@ -103,10 +104,39 @@ model Word {
   wordListId  String
   position    Int     @default(0) // ordering within list
 
-  wordList WordList       @relation(fields: [wordListId], references: [id], onDelete: Cascade)
-  progress UserProgress[]
+  wordList  WordList       @relation(fields: [wordListId], references: [id], onDelete: Cascade)
+  progress  UserProgress[]
+  sentences SentenceWord[]
 
   @@index([wordListId])
+}
+
+model Sentence {
+  id          String  @id @default(cuid())
+  languageId  String
+  text        String // target-language sentence
+  translation String // user-language meaning
+  phonetic    String? // reading / romanization — optional
+  source      String? // attribution, e.g. "tatoeba.org #123 (user) CC-BY 2.0 FR"
+  metadata    Json? // language-specific extras
+
+  language Language       @relation(fields: [languageId], references: [id])
+  words    SentenceWord[]
+
+  @@unique([languageId, text])
+}
+
+// Links a sentence to each seeded/created word it exercises, so sentence
+// practice can credit the word's existing SRS progress.
+model SentenceWord {
+  sentenceId String
+  wordId     String
+
+  sentence Sentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  word     Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@id([sentenceId, wordId])
+  @@index([wordId])
 }
 
 model UserProgress {

@@ -142,11 +142,50 @@ async function deleteSeededList(listId: string) {
   ]);
 }
 
+/** JSON.stringify with sorted object keys, for order-insensitive comparison. */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([k, v]) => `${JSON.stringify(k)}:${stableStringify(v)}`);
+    return `{${entries.join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Cheap content check for an existing seeded list: compare a few sampled
+ * positions against the incoming dataset. Regenerated datasets change most
+ * entries, so sampling first/middle/last reliably detects a refresh without
+ * loading every word.
+ */
+async function sameSeedContent(listId: string, words: SeedWord[]): Promise<boolean> {
+  const positions = [...new Set([0, Math.floor(words.length / 2), words.length - 1])];
+  const sampled = await prisma.word.findMany({
+    where: { wordListId: listId, position: { in: positions } },
+    select: { position: true, term: true, translation: true, phonetic: true, metadata: true },
+  });
+  if (sampled.length !== positions.length) return false;
+  return sampled.every((w) => {
+    const incoming = words[w.position];
+    return (
+      incoming &&
+      w.term === incoming.term &&
+      w.translation === incoming.translation &&
+      (w.phonetic ?? "") === incoming.phonetic &&
+      stableStringify(w.metadata) === stableStringify(incoming.metadata)
+    );
+  });
+}
+
 /**
  * Idempotently seed a word list, refreshing outdated content:
  * - missing → create with words;
- * - exists with the same word count → assumed current, no-op;
- * - exists with a different word count (outdated dataset) → replace when no
+ * - exists with the same word count and same sampled content → current, no-op;
+ * - exists with different content (outdated dataset) → replace when no
  *   user progress references it, otherwise rename the old list to
  *   "… (legacy)" and create the new one — never touch studied content.
  */
@@ -162,7 +201,12 @@ async function seedList(
   });
 
   if (existing) {
-    if (existing._count.words === words.length) return; // current
+    if (
+      existing._count.words === words.length &&
+      (await sameSeedContent(existing.id, words))
+    ) {
+      return; // current
+    }
     if ((await progressCount(existing.id)) === 0) {
       await deleteSeededList(existing.id);
       console.log(`Replacing outdated list: ${name}`);
@@ -191,6 +235,79 @@ async function seedList(
     })),
   });
   console.log(`Seeded: ${name} (${words.length} words)`);
+}
+
+type SeedSentence = {
+  text: string;
+  translation: string;
+  source: string;
+  terms: string[];
+  metadata: Prisma.InputJsonValue;
+};
+
+/**
+ * Idempotently seed example sentences for a language and link each one to
+ * every seeded word matching its terms (SentenceWord powers sentence
+ * practice crediting word progress). Sentences carry no per-user state, so
+ * outdated content is simply wiped and recreated.
+ */
+async function seedSentences(languageId: string, sentences: SeedSentence[]) {
+  const existingCount = await prisma.sentence.count({ where: { languageId } });
+  if (existingCount === sentences.length) {
+    const sample = sentences[Math.floor(sentences.length / 2)];
+    const match = sample
+      ? await prisma.sentence.findUnique({
+          where: { languageId_text: { languageId, text: sample.text } },
+          select: { translation: true },
+        })
+      : null;
+    if (sample && match && match.translation === sample.translation) return; // current
+  }
+
+  await prisma.sentence.deleteMany({ where: { languageId } });
+  await prisma.sentence.createMany({
+    data: sentences.map((s) => ({
+      languageId,
+      text: s.text,
+      translation: s.translation,
+      source: s.source,
+      metadata: s.metadata,
+    })),
+  });
+
+  // term → word ids across all seeded lists in this language.
+  const words = await prisma.word.findMany({
+    where: { wordList: { languageId, createdById: null } },
+    select: { id: true, term: true },
+  });
+  const byTerm = new Map<string, string[]>();
+  for (const w of words) {
+    const ids = byTerm.get(w.term);
+    if (ids) ids.push(w.id);
+    else byTerm.set(w.term, [w.id]);
+  }
+
+  const seeded = await prisma.sentence.findMany({
+    where: { languageId },
+    select: { id: true, text: true },
+  });
+  const idByText = new Map(seeded.map((s) => [s.text, s.id]));
+
+  const links: { sentenceId: string; wordId: string }[] = [];
+  for (const s of sentences) {
+    const sentenceId = idByText.get(s.text);
+    if (!sentenceId) continue;
+    for (const term of s.terms) {
+      for (const wordId of byTerm.get(term) ?? []) {
+        links.push({ sentenceId, wordId });
+      }
+    }
+  }
+  // SQLite variable limit — insert in chunks.
+  for (let i = 0; i < links.length; i += 5000) {
+    await prisma.sentenceWord.createMany({ data: links.slice(i, i + 5000) });
+  }
+  console.log(`Seeded sentences: ${sentences.length} (${links.length} word links)`);
 }
 
 // New HSK 3.0 (2021 standard) levels + general frequency lists. File names
@@ -278,6 +395,11 @@ async function main() {
   for (const { file, name, description } of ZH_THEMATIC_LISTS) {
     await seedList(zh.id, name, description, loadWords("zh", file));
   }
+
+  const zhSentences = JSON.parse(
+    readFileSync(join(__dirname, "data", "hsk", "sentences.json"), "utf8")
+  ) as SeedSentence[];
+  await seedSentences(zh.id, zhSentences);
 
   const es = await upsertLanguage("es", "Spanish");
   await seedList(

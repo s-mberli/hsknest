@@ -3,6 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { primaryGloss } from "@/lib/meanings";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
 
 export interface WordDetail {
@@ -10,6 +11,7 @@ export interface WordDetail {
   term: string;
   phonetic: string | null;
   translation: string;
+  metadata?: unknown;
   strength: Strength;
   intervalDays: number | null;
   lapses: number | null;
@@ -172,7 +174,7 @@ export function WordHoverCard({
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-sm">{word.translation}</p>
+          <p className="mt-0.5 text-sm">{primaryGloss(word)}</p>
 
           <div className="mt-2 border-t pt-2">
             <p className="text-xs font-medium">{meta.label}</p>

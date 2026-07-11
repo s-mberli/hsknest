@@ -27,6 +27,7 @@ export async function GET() {
     term: p.word.term,
     phonetic: p.word.phonetic,
     translation: p.word.translation,
+    metadata: p.word.metadata,
     languageCode: p.word.wordList.language.code,
     languageName: p.word.wordList.language.name,
     state: p.state,

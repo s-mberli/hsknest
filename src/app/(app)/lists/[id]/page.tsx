@@ -59,6 +59,7 @@ export default async function ListDetailPage({
       id: w.id,
       term: w.term,
       translation: w.translation,
+      metadata: w.metadata,
       phonetic: w.phonetic,
       state: p?.state ?? null,
       intervalDays: p?.intervalDays ?? null,

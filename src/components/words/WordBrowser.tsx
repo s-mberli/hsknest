@@ -22,6 +22,7 @@ interface ApiWord {
   term: string;
   phonetic: string | null;
   translation: string;
+  metadata?: unknown;
   languageCode: string;
   languageName: string;
   state: string;
@@ -69,6 +70,7 @@ export function WordBrowser() {
             term: w.term,
             phonetic: w.phonetic,
             translation: w.translation,
+            metadata: w.metadata,
             strength: wordStrength({
               state: w.state,
               intervalDays: w.intervalDays,
@@ -179,6 +181,7 @@ export function WordBrowser() {
       id: w.wordId,
       term: w.term,
       translation: w.translation,
+      metadata: w.metadata,
       phonetic: w.phonetic,
       state: w.state,
       intervalDays: w.intervalDays,

@@ -17,6 +17,7 @@ export interface ListWord {
   id: string;
   term: string;
   translation: string;
+  metadata?: unknown;
   phonetic: string | null;
   state: string | null;
   intervalDays: number | null;
@@ -51,6 +52,7 @@ export function ListWordsView({
         term: w.term,
         phonetic: w.phonetic,
         translation: w.translation,
+        metadata: w.metadata,
         strength: wordStrength({
           state: w.state ?? "NEW",
           intervalDays: w.intervalDays ?? 0,
@@ -72,6 +74,7 @@ export function ListWordsView({
         id: w.id,
         term: w.term,
         translation: w.translation,
+        metadata: w.metadata,
         phonetic: w.phonetic,
         state: w.state,
         intervalDays: w.intervalDays,

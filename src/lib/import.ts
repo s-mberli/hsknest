@@ -5,12 +5,14 @@
  * word fields and dedupe by term.
  */
 
-export type ColumnRole = "term" | "translation" | "phonetic" | "ignore";
+export type ColumnRole = "term" | "translation" | "phonetic" | "meanings" | "ignore";
 
 export interface ParsedWord {
   term: string;
   translation: string;
   phonetic: string | null;
+  /** Individual senses (split on ";") when a "meanings" column is mapped. */
+  meanings: string[] | null;
 }
 
 export interface ParseOptions {
@@ -115,6 +117,7 @@ export function parseDelimited(
   const termIdx = columns.indexOf("term");
   const translationIdx = columns.indexOf("translation");
   const phoneticIdx = columns.indexOf("phonetic");
+  const meaningsIdx = columns.indexOf("meanings");
 
   const rows = tokenize(text, delimiter);
   const words: ParsedWord[] = [];
@@ -144,15 +147,27 @@ export function parseDelimited(
     }
     seen.add(key);
 
-    const translation =
+    let translation =
       translationIdx >= 0 ? (cells[translationIdx] ?? "").trim() : "";
     const phoneticRaw =
       phoneticIdx >= 0 ? (cells[phoneticIdx] ?? "").trim() : "";
+    const meaningsRaw =
+      meaningsIdx >= 0 ? (cells[meaningsIdx] ?? "").trim() : "";
+    const meanings =
+      meaningsRaw.length > 0
+        ? meaningsRaw
+            .split(";")
+            .map((m) => m.trim())
+            .filter((m) => m.length > 0)
+        : null;
+    // A meanings column can stand in for a missing translation.
+    if (!translation && meanings) translation = meanings.slice(0, 3).join("; ");
 
     words.push({
       term,
       translation,
       phonetic: phoneticRaw.length > 0 ? phoneticRaw : null,
+      meanings,
     });
   }
 

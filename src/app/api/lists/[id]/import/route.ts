@@ -83,6 +83,9 @@ export async function POST(
         term: w.term,
         translation: w.translation,
         phonetic: w.phonetic,
+        ...(w.meanings && w.meanings.length > 0
+          ? { metadata: { meanings: w.meanings.map((gloss) => ({ gloss })) } }
+          : {}),
         position: basePosition + i,
       })),
     });
