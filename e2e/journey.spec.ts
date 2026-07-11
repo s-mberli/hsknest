@@ -332,6 +332,42 @@ test("match mode loads a round", async ({ page }) => {
   });
 });
 
+test("failed card repeats in-session until graded Good", async ({ page }) => {
+  await logIn(page);
+
+  await page.goto("/study?limit=1");
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+
+  // Grade Again (←): schedule-moving review posts, card re-queues.
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("ArrowLeft");
+  await page.waitForTimeout(700);
+
+  // Session is NOT complete — the failed card comes back.
+  await expect(page.getByText(/session complete/i)).not.toBeVisible();
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible();
+
+  // Grade Good (→): the repeat is logged as practice and the session ends.
+  const repeatPosted = page.waitForResponse(
+    (res) =>
+      res.url().includes("/api/study/review") &&
+      res.request().method() === "POST"
+  );
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("ArrowRight");
+  const repeatBody = (await repeatPosted).request().postDataJSON();
+  expect(repeatBody.practice).toBe(true);
+  await expect(page.getByText(/session complete/i)).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
 test("account deletion signs out and frees the email", async ({ page }) => {
   // Throwaway signed-up account so the main journey account survives.
   // (Delete account is hidden for guest accounts — they're already disposable.)

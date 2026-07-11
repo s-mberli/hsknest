@@ -16,6 +16,8 @@ interface SessionHudProps {
   startedAt: number;
   /** Bump to trigger a small confetti burst near the HUD (combo milestones). */
   milestoneFire?: number;
+  /** True for practice/game sessions — shows a "doesn't count" pill. */
+  practice?: boolean;
 }
 
 function formatElapsed(ms: number): string {
@@ -32,6 +34,7 @@ export function SessionHud({
   combo,
   startedAt,
   milestoneFire = 0,
+  practice = false,
 }: SessionHudProps) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -63,6 +66,14 @@ export function SessionHud({
         </Button>
 
         <div className="flex items-center gap-4">
+          {practice && (
+            <span
+              className="rounded-full border border-dashed px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+              title="Practice doesn't change when your words come up for review."
+            >
+              Practice — doesn&apos;t count toward reviews
+            </span>
+          )}
           <AnimatePresence>
             {combo >= 2 && (
               <motion.span

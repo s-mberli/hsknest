@@ -151,10 +151,19 @@ export function CardFace({
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
   const meanings = showFull ? parseMeanings(card) : [];
-  const [primary, ...rest] = meanings;
-  const MAX_SECONDARY = 4;
-  const secondary = rest.slice(0, MAX_SECONDARY);
-  const overflowCount = rest.length - secondary.length;
+  // All senses shown are equally valid answers, so they get equal visual
+  // weight. A character budget (not a scrollbar) keeps the answer glanceable:
+  // always ≥2 senses when available, at most 4, fewer when glosses run long.
+  const CHAR_BUDGET = 110;
+  const shown: typeof meanings = [];
+  let used = 0;
+  for (const m of meanings) {
+    if (shown.length >= 4) break;
+    if (shown.length >= 2 && used + m.gloss.length > CHAR_BUDGET) break;
+    shown.push(m);
+    used += m.gloss.length;
+  }
+  const overflowCount = meanings.length - shown.length;
 
   return (
     <div
@@ -214,31 +223,47 @@ export function CardFace({
             key="full"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex max-h-40 flex-col items-center gap-2 overflow-y-auto overscroll-contain px-2"
+            className="flex flex-col items-center gap-2 px-2"
           >
-            <p
-              className={cn(
-                "max-w-full break-words font-semibold tracking-tight [overflow-wrap:anywhere]",
-                sizes.translation
-              )}
-            >
-              {primary?.gloss ?? card.translation}
-            </p>
-            {secondary.length > 0 && (
-              <ul className="flex w-full max-w-full flex-col items-center gap-0.5">
-                {secondary.map((sense, i) => (
+            {shown.length <= 1 ? (
+              // Long single glosses step down a size so they can't outgrow
+              // the card (which clips, not scrolls).
+              <p
+                className={cn(
+                  "max-w-full break-words font-semibold tracking-tight [overflow-wrap:anywhere]",
+                  (shown[0]?.gloss ?? card.translation).length > 40
+                    ? sizes.phonetic
+                    : sizes.translation
+                )}
+              >
+                {shown[0]?.gloss ?? card.translation}
+              </p>
+            ) : (
+              // Multiple senses: same size, numbered — none is "more correct".
+              <ol className="flex w-full max-w-full flex-col items-center gap-1">
+                {shown.map((sense, i) => (
                   <li
                     key={i}
                     className={cn(
-                      "max-w-full break-words text-muted-foreground [overflow-wrap:anywhere]",
-                      sizes.secondaryMeaning
+                      "max-w-full break-words font-medium tracking-tight [overflow-wrap:anywhere]",
+                      sizes.phonetic
                     )}
                   >
-                    <span className="mr-1 text-muted-foreground/60">
-                      {i + 2}.
+                    <span
+                      className={cn(
+                        "mr-1.5 text-muted-foreground/50",
+                        sizes.secondaryMeaning
+                      )}
+                    >
+                      {i + 1}.
                     </span>
                     {sense.reading && sense.reading !== card.phonetic && (
-                      <span className="mr-1 rounded bg-muted px-1 py-0.5 text-muted-foreground/80">
+                      <span
+                        className={cn(
+                          "mr-1 rounded bg-muted px-1 py-0.5 text-muted-foreground/80",
+                          sizes.secondaryMeaning
+                        )}
+                      >
                         {sense.reading}
                       </span>
                     )}
@@ -247,10 +272,10 @@ export function CardFace({
                 ))}
                 {overflowCount > 0 && (
                   <li className="text-xs text-muted-foreground/60">
-                    +{overflowCount} more meanings
+                    +{overflowCount} more {overflowCount === 1 ? "meaning" : "meanings"}
                   </li>
                 )}
-              </ul>
+              </ol>
             )}
             {extras.length > 0 && (
               <p className="text-xs italic text-muted-foreground/70">

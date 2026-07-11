@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/apiRoute";
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
-import { primaryGloss } from "@/lib/meanings";
+import { gameGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
@@ -85,7 +85,9 @@ async function attachChoices(
     });
     const values = pool
       .map((w) =>
-        choiceMode === "reading" ? w.phonetic ?? "" : primaryGloss(w)
+        // gameGloss keeps quiz options short and parenthetical-free; the
+        // client's answerOf() builds the same string.
+        choiceMode === "reading" ? w.phonetic ?? "" : gameGloss(w)
       )
       .filter((v) => v.length > 0);
     byLanguage.set(langCode, [...new Set(values)]);
@@ -93,7 +95,7 @@ async function attachChoices(
   for (const card of cards) {
     // Reading quiz can only test cards that have a reading.
     const correct =
-      choiceMode === "reading" ? card.phonetic : primaryGloss(card);
+      choiceMode === "reading" ? card.phonetic : gameGloss(card);
     if (!correct) continue;
     card.choices = buildChoices(correct, byLanguage.get(card.languageCode) ?? []);
   }

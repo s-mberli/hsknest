@@ -9,7 +9,7 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
-import { primaryGloss } from "@/lib/meanings";
+import { gameGloss } from "@/lib/meanings";
 import { postReview } from "@/lib/postReview";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +44,9 @@ export function MatchScreen({ studyTheme }: MatchScreenProps) {
 }
 
 function MatchSession({ studyTheme }: MatchScreenProps) {
-  const { query, scoped, practice } = useQueueQuery();
+  const { query, scoped } = useQueueQuery();
+  // Games are pure practice by contract: they never move the review schedule.
+  const practice = true;
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [round, setRound] = useState(0);
@@ -64,7 +66,11 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`/api/study/queue?${query}`);
+        // Force the practice queue: games only ever draw from learned words.
+        const practiceQuery = query.includes("mode=")
+          ? query
+          : `${query}&mode=practice`;
+        const res = await fetch(`/api/study/queue?${practiceQuery}`);
         if (!res.ok) throw new Error("queue fetch failed");
         const data = await res.json();
         if (active) setCards(data.cards ?? []);
@@ -104,7 +110,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       translations: shuffle(
         roundCards.map((c) => ({
           wordId: c.wordId,
-          text: primaryGloss(c),
+          text: gameGloss(c),
           side: "translation" as const,
         }))
       ),
@@ -166,13 +172,9 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       gradeWord(tile.wordId, wasMissed);
       setSelected(null);
     } else {
-      // Mismatch: mark both involved words as missed, shake, reset selection.
-      setMissed((prev) => {
-        const next = new Set(prev);
-        next.add(selected.wordId);
-        next.add(tile.wordId);
-        return next;
-      });
+      // Mismatch: only the FIRST-selected word is missed — the user was
+      // hunting for ITS partner. The second tile's word stays innocent.
+      setMissed((prev) => new Set(prev).add(selected.wordId));
       setWrongPair({ a: selected, b: tile });
       setShaking(`${tile.side}:${tile.wordId}`);
       window.setTimeout(() => {
@@ -237,6 +239,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
         total={totalWords}
         combo={0}
         startedAt={startedAt}
+        practice
       />
 
       <main className="flex flex-1 flex-col justify-center px-6 pb-16">
@@ -257,6 +260,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
             bestCombo={0}
             elapsedMs={Date.now() - startedAt}
             missed={missedWords}
+            practice
           />
         )}
 

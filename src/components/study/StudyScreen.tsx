@@ -107,6 +107,7 @@ function StudySession({
         combo={combo}
         startedAt={startedAt}
         milestoneFire={milestoneFire}
+        practice={practice}
       />
       <GradeIsland lastGrade={lastGrade} />
 
