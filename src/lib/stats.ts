@@ -1,3 +1,4 @@
+import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
 import { startOfLocalDay } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export async function getDashboardStats(
   // End of the 7-day window (exclusive) = start of day+7.
   const windowEnd = new Date(dayStart.getTime() + FORECAST_DAYS * DAY_MS);
 
-  const langFilter = targetLanguageId ? { word: { wordList: { languageId: targetLanguageId } } } : {};
+  const langFilter = targetLangFilter(targetLanguageId);
 
   const [
     user,

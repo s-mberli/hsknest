@@ -4,12 +4,20 @@ import { toast } from "sonner";
  * Post one review grade, with a single retry on transient failure.
  * Fire-and-forget for practice modes (quiz/match); the flashcard deck has its
  * own richer requeue logic in useStudySession.
+ *
+ * `practice: true` logs the grade for streak/stats but does NOT advance the SRS
+ * schedule (no interval/dueAt/cap change) — used by the practice-only games.
  */
-export async function postReview(wordId: string, quality: number) {
+export async function postReview(
+  wordId: string,
+  quality: number,
+  practice = false
+) {
   const body = JSON.stringify({
     wordId,
     quality,
     reviewedAt: new Date().toISOString(),
+    ...(practice ? { practice: true } : {}),
   });
   const post = () =>
     fetch("/api/study/review", {
