@@ -121,8 +121,15 @@ export async function GET(req: Request) {
   }
 
   const capLangFilter = targetLangFilter(user.targetLanguageId);
+  // Sentence mode only makes sense for words with a linked example sentence —
+  // narrow the pool so a session fills with usable cards instead of skipping
+  // most of them client-side. Pure narrowing filter; scheduling is untouched.
+  const sentenceFilter =
+    url.searchParams.get("sentences") === "1"
+      ? [{ word: { sentences: { some: {} } } }]
+      : [];
   const queueWhere = {
-    AND: [scopeWhere, capLangFilter],
+    AND: [scopeWhere, capLangFilter, ...sentenceFilter],
   };
 
   // Include chain so each card carries its language code for TTS.

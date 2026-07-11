@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AuroraGlow } from "@/components/fx/AuroraGlow";
@@ -37,6 +37,7 @@ export function SessionComplete({
   practice = false,
 }: SessionCompleteProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
     accuracy >= 80
@@ -110,7 +111,8 @@ export function SessionComplete({
           asChild
           variant={missed.length > 0 ? "outline" : "default"}
         >
-          <Link href="/study?mode=practice&limit=20">Keep practicing</Link>
+          {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
+          <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
         </Button>
         <Button
           variant="outline"

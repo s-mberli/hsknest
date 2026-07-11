@@ -15,8 +15,8 @@ interface HowItWorksModalProps {
 const GRADES: { label: string; effect: string; dot: string }[] = [
   { label: "Again", effect: "Reset — comes back very soon", dot: "bg-destructive" },
   { label: "Hard", effect: "Comes back sooner than last time", dot: "bg-amber" },
-  { label: "Good", effect: "Normal growth — a bit longer each time", dot: "bg-primary" },
-  { label: "Easy", effect: "Big jump — you won't see it for a while", dot: "bg-success" },
+  { label: "Good", effect: "Normal growth — a bit longer each time", dot: "bg-success" },
+  { label: "Easy", effect: "Big jump — you won't see it for a while", dot: "bg-sky-500" },
 ];
 
 /**
@@ -83,8 +83,8 @@ export function HowItWorksModal({ open, onClose }: HowItWorksModalProps) {
               <p>
                 Each day a few <span className="font-medium text-foreground">new
                 words</span> trickle in, mixed with{" "}
-                <span className="font-medium text-foreground">reviews</span> that
-                have come due. Finish the day&apos;s queue and you&apos;re done —
+                <span className="font-medium text-foreground">reviews</span>
+                {" "}that have come due. Finish the day&apos;s queue and you&apos;re done —
                 or keep going with the practice games.
               </p>
             </div>
@@ -95,10 +95,12 @@ export function HowItWorksModal({ open, onClose }: HowItWorksModalProps) {
               </p>
               <ul className="space-y-2">
                 {GRADES.map((g) => (
-                  <li key={g.label} className="flex items-center gap-3 text-sm">
-                    <span className={`size-2.5 shrink-0 rounded-full ${g.dot}`} />
+                  <li key={g.label} className="flex items-baseline gap-3 text-sm">
+                    <span
+                      className={`size-2.5 shrink-0 translate-y-px self-center rounded-full ${g.dot}`}
+                    />
                     <span className="w-14 shrink-0 font-semibold">{g.label}</span>
-                    <span className="text-muted-foreground">{g.effect}</span>
+                    <span className="flex-1 text-muted-foreground">{g.effect}</span>
                   </li>
                 ))}
               </ul>

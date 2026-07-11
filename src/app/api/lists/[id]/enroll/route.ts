@@ -92,3 +92,32 @@ export async function POST(
 
   return NextResponse.json({ enrolled: result.count, alreadyTracked });
 }
+
+/**
+ * Un-enroll: remove this list's words from the user's study queue by deleting
+ * their progress rows. Only affects progress tied to this list's word IDs —
+ * the same term enrolled via another list keeps its own progress.
+ */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const userId = await requireUser();
+  if (userId instanceof NextResponse) return userId;
+
+  const { id } = await params;
+
+  const list = await prisma.wordList.findFirst({
+    where: { id, ...visibleListWhere(userId) },
+    select: { id: true },
+  });
+  if (!list) {
+    return NextResponse.json({ error: "List not found" }, { status: 404 });
+  }
+
+  const result = await prisma.userProgress.deleteMany({
+    where: { userId, word: { wordListId: id } },
+  });
+
+  return NextResponse.json({ removed: result.count });
+}
