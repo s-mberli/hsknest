@@ -14,7 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StrengthCell, type WordRow } from "@/components/lists/WordTable";
+import {
+  MeaningCell,
+  StrengthCell,
+  type WordRow,
+} from "@/components/lists/WordTable";
 
 /** Editable word table for list owners: inline edit + delete per row. */
 export function OwnerWordTable({ words }: { words: WordRow[] }) {
@@ -153,7 +157,9 @@ function OwnerWordRow({ word }: { word: WordRow }) {
       <TableCell className="text-muted-foreground">
         {word.phonetic ?? "—"}
       </TableCell>
-      <TableCell>{word.translation}</TableCell>
+      <TableCell>
+        <MeaningCell word={word} />
+      </TableCell>
       <TableCell>
         <StrengthCell word={word} />
       </TableCell>

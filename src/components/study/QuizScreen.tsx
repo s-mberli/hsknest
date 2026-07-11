@@ -9,6 +9,7 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
+import { primaryGloss } from "@/lib/meanings";
 import { postReview } from "@/lib/postReview";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
@@ -78,7 +79,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
   const answerOf = (c: QuizCard) =>
-    mode === "reading" ? c.phonetic ?? "" : c.translation;
+    mode === "reading" ? c.phonetic ?? "" : primaryGloss(c);
 
   function pick(choice: string) {
     if (!current || picked !== null) return;

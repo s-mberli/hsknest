@@ -14,6 +14,7 @@ import {
 } from "@/lib/speech";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
+import { parseMeanings } from "@/lib/meanings";
 import type { Stage, StudyCard } from "@/hooks/useStudySession";
 
 interface CardFaceProps {
@@ -149,6 +150,11 @@ export function CardFace({
   }
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
+  const meanings = showFull ? parseMeanings(card) : [];
+  const [primary, ...rest] = meanings;
+  const MAX_SECONDARY = 4;
+  const secondary = rest.slice(0, MAX_SECONDARY);
+  const overflowCount = rest.length - secondary.length;
 
   return (
     <div
@@ -216,8 +222,36 @@ export function CardFace({
                 sizes.translation
               )}
             >
-              {card.translation}
+              {primary?.gloss ?? card.translation}
             </p>
+            {secondary.length > 0 && (
+              <ul className="flex w-full max-w-full flex-col items-center gap-0.5">
+                {secondary.map((sense, i) => (
+                  <li
+                    key={i}
+                    className={cn(
+                      "max-w-full break-words text-muted-foreground [overflow-wrap:anywhere]",
+                      sizes.secondaryMeaning
+                    )}
+                  >
+                    <span className="mr-1 text-muted-foreground/60">
+                      {i + 2}.
+                    </span>
+                    {sense.reading && sense.reading !== card.phonetic && (
+                      <span className="mr-1 rounded bg-muted px-1 py-0.5 text-muted-foreground/80">
+                        {sense.reading}
+                      </span>
+                    )}
+                    {sense.gloss}
+                  </li>
+                ))}
+                {overflowCount > 0 && (
+                  <li className="text-xs text-muted-foreground/60">
+                    +{overflowCount} more meanings
+                  </li>
+                )}
+              </ul>
+            )}
             {extras.length > 0 && (
               <p className="text-sm text-muted-foreground">
                 {extras.join(" · ")}

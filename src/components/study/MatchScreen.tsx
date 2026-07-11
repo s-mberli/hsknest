@@ -9,6 +9,7 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
+import { primaryGloss } from "@/lib/meanings";
 import { postReview } from "@/lib/postReview";
 import { cn } from "@/lib/utils";
 
@@ -103,7 +104,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       translations: shuffle(
         roundCards.map((c) => ({
           wordId: c.wordId,
-          text: c.translation,
+          text: primaryGloss(c),
           side: "translation" as const,
         }))
       ),

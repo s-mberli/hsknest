@@ -123,7 +123,9 @@ export const importSchema = z.object({
   // ~100KB cap: guards the parser before the route's 2000-row post-parse limit.
   text: z.string().min(1).max(100_000),
   delimiter: z.enum(["auto", "tab", "comma"]).optional(),
-  columns: z.array(z.enum(["term", "translation", "phonetic", "ignore"])).optional(),
+  columns: z
+    .array(z.enum(["term", "translation", "phonetic", "meanings", "ignore"]))
+    .optional(),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;

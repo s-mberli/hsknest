@@ -22,6 +22,7 @@ const ROLE_OPTIONS: { value: ColumnRole; label: string }[] = [
   { value: "term", label: "Term" },
   { value: "translation", label: "Translation" },
   { value: "phonetic", label: "Reading" },
+  { value: "meanings", label: "Meanings (split on ;)" },
   { value: "ignore", label: "Ignore" },
 ];
 
@@ -140,6 +141,8 @@ export function ImportWords({
           <p className="text-xs text-muted-foreground">
             Paste rows or choose a file. Works with tab-separated exports from
             other flashcard tools — one word per line, e.g. term&lt;tab&gt;meaning.
+            Importing from Anki? Use File → Export → &quot;Notes in Plain
+            Text&quot; and paste the result here, then map the columns below.
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>

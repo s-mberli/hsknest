@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/apiRoute";
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
+import { primaryGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
@@ -18,6 +19,37 @@ interface QueueCard {
   languageCode: string;
   lapses: number;
   choices?: string[];
+  sentence?: { text: string; translation: string; source: string | null };
+}
+
+/**
+ * Sentence mode (?sentences=1) attaches one example sentence per card, drawn
+ * from the seeded Sentence/SentenceWord links. Cards without any linked
+ * sentence are left unchanged (the sentence screen skips them). No-op
+ * without the flag.
+ */
+async function attachSentences(url: URL, cards: QueueCard[]): Promise<QueueCard[]> {
+  if (url.searchParams.get("sentences") !== "1" || cards.length === 0) return cards;
+
+  const links = await prisma.sentenceWord.findMany({
+    where: { wordId: { in: cards.map((c) => c.wordId) } },
+    select: {
+      wordId: true,
+      sentence: { select: { text: true, translation: true, source: true } },
+    },
+  });
+  const byWord = new Map<string, typeof links>();
+  for (const link of links) {
+    const list = byWord.get(link.wordId);
+    if (list) list.push(link);
+    else byWord.set(link.wordId, [link]);
+  }
+  for (const card of cards) {
+    const options = byWord.get(card.wordId);
+    if (!options || options.length === 0) continue;
+    card.sentence = options[Math.floor(Math.random() * options.length)].sentence;
+  }
+  return cards;
 }
 
 /**
@@ -48,17 +80,20 @@ async function attachChoices(
         wordList: { language: { code: langCode } },
         progress: { some: { userId } },
       },
-      select: { translation: true, phonetic: true },
+      select: { translation: true, phonetic: true, metadata: true },
       take: 400,
     });
     const values = pool
-      .map((w) => (choiceMode === "reading" ? w.phonetic ?? "" : w.translation))
+      .map((w) =>
+        choiceMode === "reading" ? w.phonetic ?? "" : primaryGloss(w)
+      )
       .filter((v) => v.length > 0);
     byLanguage.set(langCode, [...new Set(values)]);
   }
   for (const card of cards) {
     // Reading quiz can only test cards that have a reading.
-    const correct = choiceMode === "reading" ? card.phonetic : card.translation;
+    const correct =
+      choiceMode === "reading" ? card.phonetic : primaryGloss(card);
     if (!correct) continue;
     card.choices = buildChoices(correct, byLanguage.get(card.languageCode) ?? []);
   }
@@ -136,7 +171,7 @@ export async function GET(req: Request) {
     });
     const practiceCards: QueueCard[] = practice.map((p) => toCard(p, "practice"));
     return NextResponse.json({
-      cards: await attachChoices(url, practiceCards, userId),
+      cards: await attachSentences(url, await attachChoices(url, practiceCards, userId)),
       counts: { due: 0, newAllowedToday: 0, checksAllowedToday: 0 },
     });
   }
@@ -215,7 +250,7 @@ export async function GET(req: Request) {
   ];
 
   return NextResponse.json({
-    cards: await attachChoices(url, cards, userId),
+    cards: await attachSentences(url, await attachChoices(url, cards, userId)),
     counts: {
       due: due.length,
       newAllowedToday,

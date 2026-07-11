@@ -6,6 +6,7 @@ import {
   GraduationCap,
   LayoutGrid,
   ListChecks,
+  MessageSquareText,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -76,6 +77,7 @@ export function DashboardHero({
     { key: "quiz", label: "Daily Quiz", icon: ListChecks },
     { key: "match", label: "Word Match", icon: LayoutGrid },
     { key: "pronounce", label: "Reading Quiz", icon: BookOpen },
+    { key: "sentences", label: "Sentences", icon: MessageSquareText },
   ] as const;
 
   return (

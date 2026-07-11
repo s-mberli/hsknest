@@ -65,19 +65,37 @@ export default async function ListsPage() {
 
   // Sections, in reading order: what you study, what you made, what you could
   // add, what you tucked away. Hidden wins over studying (so hiding stops study).
-  const studying = lists.filter(
-    (l) => (byList.get(l.id)?.enrolled ?? 0) > 0 && !hiddenIds.has(l.id)
-  );
+  const studying = lists
+    .filter((l) => (byList.get(l.id)?.enrolled ?? 0) > 0 && !hiddenIds.has(l.id))
+    .sort((a, b) => {
+      const sa = byList.get(a.id) ?? { enrolled: 0, due: 0 };
+      const sb = byList.get(b.id) ?? { enrolled: 0, due: 0 };
+      return sb.due - sa.due || sb.enrolled - sa.enrolled || a.name.localeCompare(b.name);
+    });
   const studyingIds = new Set(studying.map((l) => l.id));
-  const ownLists = lists.filter(
-    (l) => l.createdById === userId && !studyingIds.has(l.id)
-  );
+  const ownLists = lists
+    .filter((l) => l.createdById === userId && !studyingIds.has(l.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
   const exploreLists = lists.filter(
     (l) =>
       l.createdById !== userId &&
       !studyingIds.has(l.id) &&
       !hiddenIds.has(l.id)
   );
+
+  // Explore reads as a curriculum: graded exam levels first, then frequency
+  // lists, then topic sets — instead of one undifferentiated grid.
+  const exploreGroups = [
+    { title: "By level", lists: exploreLists.filter((l) => /^HSK\b/i.test(l.name)) },
+    { title: "By frequency", lists: exploreLists.filter((l) => /\bTop \d+/i.test(l.name)) },
+  ];
+  const grouped = new Set(exploreGroups.flatMap((g) => g.lists.map((l) => l.id)));
+  exploreGroups.push({
+    title: "By topic",
+    lists: exploreLists
+      .filter((l) => !grouped.has(l.id))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  });
   const hiddenLists = lists.filter(
     (l) => l.createdById !== userId && hiddenIds.has(l.id)
   );
@@ -151,20 +169,32 @@ export default async function ListsPage() {
         <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
           Explore
         </h2>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {exploreLists.map((l) => card(l))}
-          {exploreLists.length === 0 && (
-            <Card className="col-span-full border-dashed">
-              <CardContent className="py-6 text-center text-sm text-muted-foreground">
-                No starter lists available yet.{" "}
-                <Link href="/lists/new" className="text-primary underline-offset-4 hover:underline">
-                  Create a custom list
-                </Link>{" "}
-                to get started.
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        {exploreLists.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="py-6 text-center text-sm text-muted-foreground">
+              No starter lists available yet.{" "}
+              <Link href="/lists/new" className="text-primary underline-offset-4 hover:underline">
+                Create a custom list
+              </Link>{" "}
+              to get started.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-8">
+            {exploreGroups
+              .filter((g) => g.lists.length > 0)
+              .map((g) => (
+                <div key={g.title}>
+                  <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+                    {g.title}
+                  </h3>
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {g.lists.map((l) => card(l))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
       </section>
 
       {hiddenLists.length > 0 && (

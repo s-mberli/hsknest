@@ -19,9 +19,25 @@ test("sign up and land on the dashboard", async ({ page }) => {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
+  // New accounts pick a target language first, then land on the dashboard.
+  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
-  await expect(page.getByText("Getting started")).toBeVisible();
+  await dismissIntro(page);
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
 });
+
+/** Dismiss the one-time "How Recall works" modal shown on the first dashboard visit. */
+async function dismissIntro(page: import("playwright/test").Page) {
+  const gotIt = page.getByRole("button", { name: "Got it" });
+  try {
+    await gotIt.waitFor({ state: "visible", timeout: 3_000 });
+    await gotIt.click();
+  } catch {
+    // Not shown this time (already seen) — nothing to dismiss.
+  }
+}
 
 async function logIn(page: import("playwright/test").Page) {
   await page.goto("/login");
@@ -34,11 +50,9 @@ async function logIn(page: import("playwright/test").Page) {
 test("enroll a starter list", async ({ page }) => {
   await logIn(page);
   await page.goto("/lists");
-  // Open the first list on the page (excluding the "new list" action link).
-  await page
-    .locator("a[href^='/lists/']:not([href$='/new'])")
-    .first()
-    .click();
+  // Onboarding auto-enrolls the "Foundation" (HSK 1) list, so open a
+  // different one to exercise the manual enroll button.
+  await page.getByRole("link", { name: /HSK 2/i }).first().click();
   await page.waitForURL("**/lists/**");
   const enrolled = page.waitForResponse(
     (res) => res.url().includes("/enroll") && res.request().method() === "POST"
@@ -96,15 +110,8 @@ test("quiz mode loads and grades an answer", async ({ page }) => {
 
 test("pronunciation quiz loads and grades", async ({ page }) => {
   await logIn(page);
-  // Enroll a Chinese list so cards carry a reading for the pronunciation quiz.
-  await page.goto("/lists");
-  await page.getByRole("link", { name: /HSK 1/i }).first().click();
-  await page.waitForURL("**/lists/**");
-  const enrolled = page.waitForResponse(
-    (res) => res.url().includes("/enroll") && res.request().method() === "POST"
-  );
-  await page.getByRole("button", { name: /add all to my queue/i }).click();
-  await enrolled;
+  // HSK 1 is already auto-enrolled from onboarding, which gives cards a
+  // reading for the pronunciation quiz — nothing more to enroll here.
 
   await page.goto("/study/pronounce?limit=2");
   await expect(page.getByText("Pick the pronunciation")).toBeVisible({
@@ -145,7 +152,12 @@ test("guest mode: one click to studying", async ({ page }) => {
   await page
     .getByRole("button", { name: /try it as a guest/i })
     .click();
+  // Guest accounts also pick a target language before landing on the dashboard.
+  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  await dismissIntro(page);
   // A starter list is auto-enrolled, so the Start button is available.
   await expect(page.getByRole("link", { name: /start/i })).toBeVisible({
     timeout: 10_000,
@@ -156,7 +168,11 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
   // Fresh guest session.
   await page.goto("/login");
   await page.getByRole("button", { name: /try it as a guest/i }).click();
+  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  await dismissIntro(page);
 
   // The dashboard nudges guests to save their progress.
   await page.getByRole("button", { name: /save my progress/i }).click();
@@ -317,9 +333,16 @@ test("match mode loads a round", async ({ page }) => {
 });
 
 test("account deletion signs out and frees the email", async ({ page }) => {
-  // Throwaway guest account so the main journey account survives.
-  await page.goto("/login");
-  await page.getByRole("button", { name: /try it as a guest/i }).click();
+  // Throwaway signed-up account so the main journey account survives.
+  // (Delete account is hidden for guest accounts — they're already disposable.)
+  const throwawayEmail = `e2e-throwaway-${Date.now()}@example.com`;
+  await page.goto("/signup");
+  await page.getByLabel("Email").fill(throwawayEmail);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
 
   await page.goto("/settings");
