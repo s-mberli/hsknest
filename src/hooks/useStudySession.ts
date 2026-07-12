@@ -15,6 +15,8 @@ export interface StudyCard {
   lapses?: number;
   /** First-ever exposure of a brand-new word: ungraded blue preview. */
   preview?: boolean;
+  /** One example sentence for the word, when the library has one. */
+  sentence?: { text: string; translation: string; source: string | null };
 }
 
 /** Reveal stages of a card. Phonetic-less words skip PHONETIC. */
@@ -71,27 +73,14 @@ interface UseStudySession {
 /** Cards between a new-word preview and its graded reappearance. */
 const PREVIEW_GAP = 3;
 
-/** Reviews shown between each newly introduced word when interleaving. */
-const NEW_EVERY = 3;
-
 /**
- * Spread brand-new words among the reviews instead of dumping them in a block
- * at the end, and mark each one's first appearance as an ungraded preview.
+ * Keep the server's order (all due reviews first, new words last) and just
+ * flag each brand-new word's first appearance as an ungraded preview. The
+ * preview then re-queues itself a few cards later for real grading (see
+ * continuePreview) — still within the new-word tail, never before the reviews.
  */
-function interleaveNew(fetched: StudyCard[]): StudyCard[] {
-  const news = fetched.filter((c) => c.kind === "new");
-  if (news.length === 0) return fetched;
-  const rest = fetched.filter((c) => c.kind !== "new");
-  const mixed: StudyCard[] = [];
-  let ni = 0;
-  for (let i = 0; i < rest.length; i++) {
-    mixed.push(rest[i]);
-    if ((i + 1) % NEW_EVERY === 0 && ni < news.length) {
-      mixed.push({ ...news[ni++], preview: true });
-    }
-  }
-  while (ni < news.length) mixed.push({ ...news[ni++], preview: true });
-  return mixed;
+function markPreviews(fetched: StudyCard[]): StudyCard[] {
+  return fetched.map((c) => (c.kind === "new" ? { ...c, preview: true } : c));
 }
 
 function nextStage(
@@ -140,7 +129,7 @@ export function useStudySession(
         const res = await fetch(`/api/study/queue?${query}`);
         if (!res.ok) throw new Error("queue fetch failed");
         const data = await res.json();
-        if (active) setCards(interleaveNew(data.cards ?? []));
+        if (active) setCards(markPreviews(data.cards ?? []));
       } catch {
         if (active) toast.error("Could not load your study session.");
       } finally {
