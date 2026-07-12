@@ -1,8 +1,10 @@
+import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { AssumeButton } from "@/components/lists/AssumeButton";
 import { EnrollButton } from "@/components/lists/EnrollButton";
+import { Button } from "@/components/ui/button";
 import { ListManageBar } from "@/components/lists/ListManageBar";
 import { ListWordsView } from "@/components/lists/ListWordsView";
 import { UnenrollButton } from "@/components/lists/UnenrollButton";
@@ -101,6 +103,15 @@ export default async function ListDetailPage({
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <div className="flex flex-wrap items-center justify-end gap-2">
+            {/* Study just this list (the dashboard has no per-list scope). */}
+            {progress.length > 0 && (
+              <Button asChild>
+                <Link href={`/study?listIds=${list.id}&limit=500`}>
+                  <GraduationCap className="size-4" />
+                  Study this list
+                </Link>
+              </Button>
+            )}
             <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
           </div>
           <p className="max-w-xs text-right text-xs text-muted-foreground">

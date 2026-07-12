@@ -48,7 +48,7 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
       <p className="max-w-sm text-muted-foreground">
         {practice
           ? "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
-          : "Your spaced-repetition queue is empty for now. Add new words to your deck or take a break until your next reviews are due."}
+          : "Your spaced-repetition queue is empty for now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
       </p>
 
       {scoped && (
@@ -65,12 +65,19 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
           </Button>
         ) : practice ? (
           <Button asChild>
-            <Link href="/study">Study flashcards</Link>
+            <Link href="/study?limit=500">Study flashcards</Link>
           </Button>
         ) : (
-          <Button asChild>
-            <Link href="/lists">Add more words</Link>
-          </Button>
+          <>
+            {/* Finished the real queue → offer schedule-safe practice, not a
+                dead "nothing here". */}
+            <Button asChild>
+              <Link href="/study?mode=practice&limit=500">Keep practicing</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/lists">Add more words</Link>
+            </Button>
+          </>
         )}
         <Button variant="outline" onClick={backToDashboard}>
           Back to dashboard

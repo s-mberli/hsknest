@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Segmented pill control — same visual pattern as the dashboard SessionPicker
- * (`rounded-full bg-muted p-1` track with a raised active button). Plain
+ * Segmented pill control — a `rounded-full bg-muted p-1` track with a raised
+ * active button. Plain
  * buttons with `aria-pressed`, no Radix radios.
  */
 export function Segmented<T extends string | number | null>({
