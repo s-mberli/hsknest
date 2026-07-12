@@ -4,7 +4,12 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
+import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
+
+type Sentence = { text: string; translation: string; source: string | null };
+/** Word id → its example sentence (or null when none), fetched once per word. */
+const sentenceCache = new Map<string, Sentence | null>();
 
 export interface WordDetail {
   wordId: string;
@@ -118,10 +123,34 @@ export function WordHoverCard({
 }: WordHoverCardProps) {
   const [open, setOpen] = useState(false);
   const [shiftX, setShiftX] = useState(0);
+  const [sentence, setSentence] = useState<Sentence | null>(
+    sentenceCache.get(word.wordId) ?? null
+  );
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const meta = STRENGTH_META[word.strength];
+
+  // Lazy-load one example sentence the first time the card opens; cache it so
+  // reopening (or other cards for the same word) is instant. Absent → nothing.
+  useEffect(() => {
+    if (!open || sentenceCache.has(word.wordId)) return;
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/words/${word.wordId}/sentence`);
+        if (!res.ok) return;
+        const data: { sentence: Sentence | null } = await res.json();
+        sentenceCache.set(word.wordId, data.sentence);
+        if (active) setSentence(data.sentence);
+      } catch {
+        // Best-effort enrichment — silence on failure.
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [open, word.wordId]);
 
   function show() {
     claimOpen(setOpen);
@@ -221,6 +250,19 @@ export function WordHoverCard({
             )}
           </div>
           <Meanings word={word} />
+
+          {sentence && (
+            <div className="mt-2 border-t pt-2">
+              <HighlightedSentence
+                text={sentence.text}
+                term={word.term}
+                className="text-sm text-foreground/90"
+              />
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {sentence.translation}
+              </p>
+            </div>
+          )}
 
           <div className="mt-2 border-t pt-2">
             <p className="text-xs font-medium">{meta.label}</p>

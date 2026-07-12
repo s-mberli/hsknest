@@ -23,13 +23,13 @@ interface QueueCard {
 }
 
 /**
- * Sentence mode (?sentences=1) attaches one example sentence per card, drawn
- * from the seeded Sentence/SentenceWord links. Cards without any linked
- * sentence are left unchanged (the sentence screen skips them). No-op
- * without the flag.
+ * Attach one example sentence per card, drawn from the seeded
+ * Sentence/SentenceWord links, so any study surface can show it (flashcard
+ * reveal, Sentence mode). Cards without a linked sentence are left unchanged.
+ * Runs for every queue — game/practice modes simply ignore card.sentence.
  */
-async function attachSentences(url: URL, cards: QueueCard[]): Promise<QueueCard[]> {
-  if (url.searchParams.get("sentences") !== "1" || cards.length === 0) return cards;
+async function attachSentences(_url: URL, cards: QueueCard[]): Promise<QueueCard[]> {
+  if (cards.length === 0) return cards;
 
   const links = await prisma.sentenceWord.findMany({
     where: { wordId: { in: cards.map((c) => c.wordId) } },

@@ -15,6 +15,7 @@ import {
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
+import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import type { Stage, StudyCard } from "@/hooks/useStudySession";
 
 interface CardFaceProps {
@@ -290,6 +291,20 @@ export function CardFace({
               <p className="text-xs italic text-muted-foreground/70">
                 ({extras.join(" · ")})
               </p>
+            )}
+            {/* Example sentence — supplementary, only on real (non-preview)
+                cards so the first look stays uncluttered. */}
+            {card.sentence && !card.preview && (
+              <div className="mt-1 flex flex-col items-center gap-1 border-t border-border/60 pt-2">
+                <HighlightedSentence
+                  text={card.sentence.text}
+                  term={card.term}
+                  className="text-sm font-medium text-foreground/90"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {card.sentence.translation}
+                </p>
+              </div>
             )}
           </motion.div>
         )}
