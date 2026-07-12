@@ -1,15 +1,16 @@
 "use client";
 
-import { GraduationCap, Home, Layers, ListChecks, Settings } from "lucide-react";
+import { Home, Layers, ListChecks, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
+// No "Study" tab: Home is the launcher (its Start button + practice games),
+// so a study destination would be a redundant door that can dead-end.
 const items = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/lists", label: "Lists", icon: Layers },
-  { href: "/study", label: "Study", icon: GraduationCap },
   { href: "/words", label: "Words", icon: ListChecks },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -17,8 +18,8 @@ const items = [
 export function BottomNav() {
   const pathname = usePathname();
 
-  // Study runs full-screen with no chrome.
-  if (pathname === "/study") return null;
+  // Study (and its game modes) run full-screen with no chrome.
+  if (pathname === "/study" || pathname.startsWith("/study/")) return null;
 
   return (
     <nav className="sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
