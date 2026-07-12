@@ -73,6 +73,52 @@ describe("buildMeanings", () => {
   });
 });
 
+// Dictionary-style entry that leads with the proper-noun reading (real shape
+// of 三 in complete-hsk-vocabulary): the surname form must NOT win the card.
+const SAN: RawEntry = {
+  simplified: "三",
+  level: ["new-1"],
+  frequency: 233,
+  pos: ["m", "t"],
+  forms: [
+    {
+      traditional: "三",
+      transcriptions: { pinyin: "Sān" },
+      meanings: ["surname San"],
+    },
+    {
+      traditional: "三",
+      transcriptions: { pinyin: "sān" },
+      meanings: ["three", "3"],
+    },
+  ],
+};
+
+describe("surname-first entries", () => {
+  it("promotes the ordinary form to primary (phonetic + translation)", () => {
+    const word = transformEntry(SAN, 1);
+    expect(word.phonetic).toBe("sān");
+    expect(word.translation).toBe("three; 3");
+  });
+
+  it("sorts surname senses last in meanings", () => {
+    const meanings = buildMeanings(SAN.forms);
+    expect(meanings.map((m) => m.gloss)).toEqual(["three", "3", "surname San"]);
+    expect(meanings[2].reading).toBe("Sān");
+  });
+
+  it("caps stored meanings at 8", () => {
+    const many: RawEntry["forms"] = [
+      {
+        traditional: "x",
+        transcriptions: { pinyin: "x" },
+        meanings: Array.from({ length: 12 }, (_, i) => `sense ${i}`),
+      },
+    ];
+    expect(buildMeanings(many)).toHaveLength(8);
+  });
+});
+
 describe("transformEntry", () => {
   it("produces a card-friendly seed word with structured meanings", () => {
     const word = transformEntry(LE, 1);

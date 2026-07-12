@@ -62,7 +62,11 @@ function StudySession({
     done,
     advance,
     swipe,
+    continuePreview,
   } = useStudySession(query, { showReading, practice });
+
+  // Preview entries duplicate their graded reappearance — count each word once.
+  const gradeableTotal = cards.filter((c) => !c.preview).length;
 
   const startedAt = useRef(Date.now()).current;
 
@@ -103,7 +107,7 @@ function StudySession({
     >
       <SessionHud
         reviewed={reviewed}
-        total={cards.length}
+        total={gradeableTotal}
         combo={combo}
         startedAt={startedAt}
         milestoneFire={milestoneFire}
@@ -141,11 +145,14 @@ function StudySession({
               stage={stage}
               onAdvance={advance}
               onSwipe={swipe}
+              onContinue={continuePreview}
               textSize={textSize}
             />
 
             <p className="text-center text-xs text-muted-foreground">
-              Tap to reveal · at the answer, swipe or use ← → ↑ ↓ to grade
+              {current.preview
+                ? "First look at a new word — no grading yet"
+                : "Tap to reveal · at the answer, swipe or use ← → ↑ ↓ to grade"}
             </p>
           </div>
         )}

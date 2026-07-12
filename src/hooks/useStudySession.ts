@@ -13,6 +13,8 @@ export interface StudyCard {
   kind?: string;
   languageCode?: string;
   lapses?: number;
+  /** First-ever exposure of a brand-new word: ungraded blue preview. */
+  preview?: boolean;
 }
 
 /** Reveal stages of a card. Phonetic-less words skip PHONETIC. */
@@ -57,6 +59,8 @@ interface UseStudySession {
   advance: () => void;
   /** Grade the current card (only meaningful at FULL). */
   swipe: (direction: SwipeDirection) => void;
+  /** Dismiss a new-word preview: re-queues the card for real grading. */
+  continuePreview: () => void;
 }
 
 /**
@@ -64,6 +68,32 @@ interface UseStudySession {
  * When the reading hint is hidden, TERM also jumps straight to FULL so the
  * learner recalls the pronunciation themselves (it still shows with the answer).
  */
+/** Cards between a new-word preview and its graded reappearance. */
+const PREVIEW_GAP = 3;
+
+/** Reviews shown between each newly introduced word when interleaving. */
+const NEW_EVERY = 3;
+
+/**
+ * Spread brand-new words among the reviews instead of dumping them in a block
+ * at the end, and mark each one's first appearance as an ungraded preview.
+ */
+function interleaveNew(fetched: StudyCard[]): StudyCard[] {
+  const news = fetched.filter((c) => c.kind === "new");
+  if (news.length === 0) return fetched;
+  const rest = fetched.filter((c) => c.kind !== "new");
+  const mixed: StudyCard[] = [];
+  let ni = 0;
+  for (let i = 0; i < rest.length; i++) {
+    mixed.push(rest[i]);
+    if ((i + 1) % NEW_EVERY === 0 && ni < news.length) {
+      mixed.push({ ...news[ni++], preview: true });
+    }
+  }
+  while (ni < news.length) mixed.push({ ...news[ni++], preview: true });
+  return mixed;
+}
+
 function nextStage(
   stage: Stage,
   card: StudyCard | null,
@@ -110,7 +140,7 @@ export function useStudySession(
         const res = await fetch(`/api/study/queue?${query}`);
         if (!res.ok) throw new Error("queue fetch failed");
         const data = await res.json();
-        if (active) setCards(data.cards ?? []);
+        if (active) setCards(interleaveNew(data.cards ?? []));
       } catch {
         if (active) toast.error("Could not load your study session.");
       } finally {
@@ -130,10 +160,29 @@ export function useStudySession(
     setStage((s) => nextStage(s, current, showReading));
   }, [current, showReading]);
 
+  // Preview cards are never graded: dismissing one re-queues the same card a
+  // few positions later, where it appears as a normal card with real grades.
+  const continuePreview = useCallback(() => {
+    const card = cards[cursor];
+    if (!card?.preview) return;
+    setCards((prev) => {
+      const next = [...prev];
+      const insertAt = Math.min(cursor + 1 + PREVIEW_GAP, next.length);
+      next.splice(insertAt, 0, { ...card, preview: false });
+      return next;
+    });
+    setCursor((c) => c + 1);
+    setStage("TERM");
+  }, [cards, cursor]);
+
   const swipe = useCallback(
     (direction: SwipeDirection) => {
       const card = cards[cursor];
       if (!card) return;
+      if (card.preview) {
+        continuePreview();
+        return;
+      }
 
       const quality = QUALITY_BY_DIRECTION[direction];
       const wasCorrect = quality >= 3;
@@ -241,7 +290,7 @@ export function useStudySession(
         }
       })();
     },
-    [cards, cursor, practice]
+    [cards, cursor, practice, continuePreview]
   );
 
   return {
@@ -260,5 +309,6 @@ export function useStudySession(
     done,
     advance,
     swipe,
+    continuePreview,
   };
 }

@@ -101,15 +101,15 @@ export default async function ListDetailPage({
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <AssumeButton listId={list.id} />
             <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
           </div>
           <p className="max-w-xs text-right text-xs text-muted-foreground">
             Add all to my queue puts these words into your daily study rotation.
-            I already know these sets them aside — they&apos;ll be spot-checked
-            occasionally instead.
           </p>
-          <UnenrollButton listId={list.id} enrolledCount={progress.length} />
+          <div className="flex flex-wrap items-center justify-end gap-1">
+            <AssumeButton listId={list.id} />
+            <UnenrollButton listId={list.id} enrolledCount={progress.length} />
+          </div>
         </div>
       </div>
 

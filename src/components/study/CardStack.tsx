@@ -15,6 +15,8 @@ interface CardStackProps {
   stage: Stage;
   onAdvance: () => void;
   onSwipe: (direction: SwipeDirection) => void;
+  /** Dismiss a new-word preview (no grade posted). */
+  onContinue: () => void;
   textSize: CardTextSize;
 }
 
@@ -32,17 +34,22 @@ export function CardStack({
   stage,
   onAdvance,
   onSwipe,
+  onContinue,
   textSize,
 }: CardStackProps) {
   const [exitDirection, setExitDirection] = useState<SwipeDirection | null>(
     null
   );
-  const [glow, setGlow] = useState<SwipeDirection | null>(null);
+  const [glow, setGlow] = useState<string | null>(null);
+  const preview = !!current.preview;
 
   function handleSwipe(direction: SwipeDirection) {
-    setExitDirection(direction);
-    setGlow(direction);
-    onSwipe(direction);
+    // Preview cards aren't graded: any commit gesture just continues.
+    const dir = preview ? "right" : direction;
+    setExitDirection(dir);
+    setGlow(preview ? "#0ea5e9" : GLOW[direction]);
+    if (preview) onContinue();
+    else onSwipe(direction);
     window.setTimeout(() => setGlow(null), 350);
   }
 
@@ -104,7 +111,7 @@ export function CardStack({
             transition={{ duration: 0.15 }}
             className="pointer-events-none absolute -inset-3 z-0 rounded-3xl"
             style={{
-              boxShadow: `0 0 40px 6px ${GLOW[glow]}`,
+              boxShadow: `0 0 40px 6px ${glow}`,
             }}
           />
         )}
@@ -131,7 +138,9 @@ export function CardStack({
         onExitComplete={() => setExitDirection(null)}
       >
         <SwipeCard
-          key={current.wordId}
+          // Distinct key for the preview vs. its graded reappearance so
+          // AnimatePresence still animates when they end up adjacent.
+          key={`${current.wordId}${current.preview ? ":preview" : ""}`}
           card={current}
           stage={stage}
           onSwipe={handleSwipe}
@@ -144,30 +153,51 @@ export function CardStack({
       </AnimatePresence>
     </div>
 
-      {/* Grade buttons: enabled only once the answer is revealed. */}
-      <div
-        className={cn(
-          "grid grid-cols-4 gap-2 transition-opacity",
-          stage === "FULL" ? "opacity-100" : "pointer-events-none opacity-30"
-        )}
-        aria-hidden={stage !== "FULL"}
-      >
-        {GRADES.map(({ dir, label, icon: Icon, className }) => (
+      {/* Grade buttons: enabled only once the answer is revealed. Previews of
+          brand-new words get a single Continue instead — no grading yet. */}
+      {preview ? (
+        <div
+          className={cn(
+            "transition-opacity",
+            stage === "FULL" ? "opacity-100" : "pointer-events-none opacity-30"
+          )}
+          aria-hidden={stage !== "FULL"}
+        >
           <button
-            key={dir}
             type="button"
-            onClick={() => handleSwipe(dir)}
+            onClick={() => handleSwipe("right")}
             disabled={stage !== "FULL"}
-            className={cn(
-              "flex flex-col items-center gap-1 rounded-xl border py-2.5 text-xs font-medium transition-colors",
-              className
-            )}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-sky-500/40 py-3 text-sm font-medium text-sky-600 transition-colors hover:bg-sky-500/10 dark:text-sky-400"
           >
-            <Icon className="size-5" />
-            {label}
+            <Check className="size-5" />
+            Got it — continue
           </button>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div
+          className={cn(
+            "grid grid-cols-4 gap-2 transition-opacity",
+            stage === "FULL" ? "opacity-100" : "pointer-events-none opacity-30"
+          )}
+          aria-hidden={stage !== "FULL"}
+        >
+          {GRADES.map(({ dir, label, icon: Icon, className }) => (
+            <button
+              key={dir}
+              type="button"
+              onClick={() => handleSwipe(dir)}
+              disabled={stage !== "FULL"}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-xl border py-2.5 text-xs font-medium transition-colors",
+                className
+              )}
+            >
+              <Icon className="size-5" />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

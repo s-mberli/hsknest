@@ -40,7 +40,9 @@ export async function POST(
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
-  if (!list.isPublic) {
+  // Public lists are open to everyone; private lists only to their owner
+  // (you can always study your own list).
+  if (!list.isPublic && list.createdById !== userId) {
     return NextResponse.json({ error: "List not public" }, { status: 403 });
   }
 

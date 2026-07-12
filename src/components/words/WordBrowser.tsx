@@ -10,6 +10,7 @@ import { WordTable, type WordRow } from "@/components/lists/WordTable";
 import { WordStrengthGrid } from "@/components/words/WordStrengthGrid";
 import type { WordDetail } from "@/components/words/WordHoverCard";
 import { cn } from "@/lib/utils";
+import { parseMeanings } from "@/lib/meanings";
 import {
   STRENGTH_META,
   STRENGTH_ORDER,
@@ -65,12 +66,10 @@ export function WordBrowser() {
         const data: { words: ApiWord[]; targetLanguageCode?: string | null } =
           await res.json();
         if (!active) return;
-        // Default the filter to the user's target language so words from other
-        // languages don't mix in — the "All languages" chip still shows them.
-        if (
-          data.targetLanguageCode &&
-          data.words.some((w) => w.languageCode === data.targetLanguageCode)
-        ) {
+        // Default the filter to the user's target language so words from
+        // other languages never mix in unasked — even when the user has no
+        // words in the target language yet (they get an empty state instead).
+        if (data.targetLanguageCode) {
           setLanguage(data.targetLanguageCode);
         }
         setWords(
@@ -184,7 +183,8 @@ export function WordBrowser() {
         q === "" ||
         w.term.toLowerCase().includes(q) ||
         (w.phonetic ?? "").toLowerCase().includes(q) ||
-        w.translation.toLowerCase().includes(q)
+        w.translation.toLowerCase().includes(q) ||
+        parseMeanings(w).some((m) => m.gloss.toLowerCase().includes(q))
     )
     .map((w) => ({
       id: w.wordId,
@@ -269,7 +269,21 @@ export function WordBrowser() {
         />
       )}
 
-      {view === "cards" ? (
+      {inLanguage.length === 0 && language !== "all" ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No words in your target language yet — enroll a list to start.
+          </p>
+          <div className="flex gap-2">
+            <Button asChild size="sm">
+              <a href="/lists">Browse lists</a>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setLanguage("all")}>
+              Show all languages
+            </Button>
+          </div>
+        </div>
+      ) : view === "cards" ? (
         <WordStrengthGrid
           words={visibleWords}
           search={search}

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
+import { parseMeanings } from "@/lib/meanings";
 import {
   STRENGTH_META,
   STRENGTH_ORDER,
@@ -40,7 +41,10 @@ function matches(w: WordDetail, q: string): boolean {
   return (
     w.term.toLowerCase().includes(needle) ||
     (w.phonetic?.toLowerCase().includes(needle) ?? false) ||
-    w.translation.toLowerCase().includes(needle)
+    w.translation.toLowerCase().includes(needle) ||
+    // Also match secondary senses ("three" should find 三 even when its
+    // stored translation string leads with another sense).
+    parseMeanings(w).some((m) => m.gloss.toLowerCase().includes(needle))
   );
 }
 

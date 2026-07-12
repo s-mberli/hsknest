@@ -58,6 +58,24 @@ export function cleanGlosses(meanings: string[]): string[] {
 }
 
 /**
+ * Order an entry's forms so the one with ordinary (learnable, non-surname)
+ * senses leads. Some dictionary entries list a proper-noun reading first —
+ * e.g. 三 leads with "Sān / surname San" and hides "three" in the second
+ * form — which would otherwise become the card's primary sense and phonetic.
+ * Stable: forms with equal scores keep their source order.
+ */
+export function rankForms(forms: RawForm[]): RawForm[] {
+  const score = (f: RawForm) => {
+    const kept = f.meanings.map((m) => m.trim()).filter((m) => m && !NOISE_GLOSS.test(m));
+    return kept.some((m) => !SURNAME_GLOSS.test(m)) ? 0 : 1;
+  };
+  return [...forms].sort((a, b) => score(a) - score(b));
+}
+
+/** Hard cap on stored senses per word — beyond this it's dictionary noise. */
+const MAX_MEANINGS = 8;
+
+/**
  * Short, card-friendly primary translation: the first senses of the primary
  * form joined with "; ", stopping once ~60 chars are used (always ≥ 1 sense,
  * at most 3).
@@ -79,10 +97,11 @@ export function buildTranslation(glosses: string[]): string {
  * marked as such. Duplicate glosses are dropped.
  */
 export function buildMeanings(forms: RawForm[]): SeedMeaning[] {
-  const primaryPinyin = forms[0]?.transcriptions.pinyin;
+  const ranked = rankForms(forms);
+  const primaryPinyin = ranked[0]?.transcriptions.pinyin;
   const out: SeedMeaning[] = [];
   const seen = new Set<string>();
-  for (const form of forms) {
+  for (const form of ranked) {
     const reading = form.transcriptions.pinyin;
     for (const gloss of cleanGlosses(form.meanings)) {
       const key = `${reading}|${gloss.toLowerCase()}`;
@@ -91,12 +110,16 @@ export function buildMeanings(forms: RawForm[]): SeedMeaning[] {
       out.push(reading === primaryPinyin ? { gloss } : { gloss, reading });
     }
   }
-  return out;
+  // Ordinary senses first, proper-noun senses last, capped: a learner wants
+  // "three", not "surname San", as the face of 三.
+  const ordinary = out.filter((m) => !SURNAME_GLOSS.test(m.gloss));
+  const surnames = out.filter((m) => SURNAME_GLOSS.test(m.gloss));
+  return [...ordinary, ...surnames].slice(0, MAX_MEANINGS);
 }
 
 /** Transform one raw dataset entry into a seed word for the given HSK level (0 = frequency list). */
 export function transformEntry(entry: RawEntry, level: number): SeedWord {
-  const primary = entry.forms[0];
+  const primary = rankForms(entry.forms)[0];
   const meanings = buildMeanings(entry.forms);
   const primaryGlosses = cleanGlosses(primary.meanings);
   const traditional =
