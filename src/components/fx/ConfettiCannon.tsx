@@ -17,9 +17,9 @@ interface Particle {
 }
 
 const COLOR_VARS = ["--primary", "--amber", "--success"];
-const GRAVITY = 0.12;
-const DRAG = 0.995;
-const TERMINAL_VY = 6;
+const GRAVITY = 0.35;
+const DRAG = 0.98;
+const TERMINAL_VY = 11;
 
 function readThemeColors(): string[] {
   const styles = getComputedStyle(document.documentElement);
@@ -35,7 +35,7 @@ function spawnBurst(
   const particles: Particle[] = [];
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI / 2) + (Math.random() - 0.5) * (Math.PI * 0.9);
-    const speed = 4 + Math.random() * 6;
+    const speed = 7 + Math.random() * 9;
     particles.push({
       x: originX,
       y: originY,
@@ -106,7 +106,7 @@ export function ConfettiCannon({ fire, intensity = 120 }: ConfettiCannonProps) {
         p.x += p.vx;
         p.y += p.vy;
         p.rotation += p.vr;
-        p.life -= 0.006;
+        p.life -= 0.014;
 
         if (p.life > 0 && p.y < canvas.clientHeight + 20) {
           alive.push(p);

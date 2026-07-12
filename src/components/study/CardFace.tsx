@@ -233,6 +233,7 @@ export function CardFace({
             key="full"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
             className="flex flex-col items-center gap-2 px-2"
           >
             {shown.length <= 1 ? (
