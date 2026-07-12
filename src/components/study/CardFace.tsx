@@ -169,9 +169,18 @@ export function CardFace({
     <div
       className={cn(
         "flex h-full w-full select-none flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border bg-card p-8 text-center shadow-sm",
-        interactive && "pb-16"
+        interactive && "pb-16",
+        // Brand-new word previews get a sky-blue treatment so it's obvious
+        // this is a first look, not a test.
+        card.preview &&
+          "border-sky-500/50 shadow-[0_0_36px_-10px_rgba(14,165,233,0.55)]"
       )}
     >
+      {card.preview && (
+        <span className="absolute left-4 top-4 rounded-full bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
+          New word
+        </span>
+      )}
       {/* Speaker — appears once phonetic is revealed. Muted style when no
           voice for this language is installed; tapping then explains why. */}
       {showPhonetic && canSpeak && (
@@ -289,7 +298,13 @@ export function CardFace({
       {/* Prompt + difficult-word hint. */}
       {interactive && (
         <div className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-1 px-6">
-          <p className="text-xs text-muted-foreground">{PROMPTS[stage]}</p>
+          <p className="text-xs text-muted-foreground">
+            {card.preview
+              ? stage === "FULL"
+                ? "Take it in — it comes back for grading in a moment"
+                : "New word — tap to reveal"
+              : PROMPTS[stage]}
+          </p>
           {difficult && (
             <p className="text-xs font-medium text-amber">
               This one&apos;s been tricky — take your time.

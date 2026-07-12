@@ -71,16 +71,20 @@ test("enroll a starter list", async ({ page }) => {
 test("study flashcards with keyboard grading", async ({ page }) => {
   await logIn(page);
   await page.goto("/study?limit=3");
-  // Wait for the first card, then grade 3 cards: Space to reveal, → to grade.
+  // Wait for the first card. Brand-new words show an ungraded blue preview
+  // first and come back for real grading, so a 3-card session takes up to 6
+  // passes: reveal with Space, then either Continue (preview) or → (grade).
   await expect(page.getByText(/tap to reveal/i)).toBeVisible({
     timeout: 15_000,
   });
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 8; i++) {
+    if (await page.getByText("Session complete").isVisible()) break;
     // Advance reveal stages until FULL (term → phonetic → full = 2 presses max).
     await page.keyboard.press("Space");
     await page.waitForTimeout(150);
     await page.keyboard.press("Space");
     await page.waitForTimeout(150);
+    // ArrowRight grades Good on normal cards and dismisses previews.
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(700); // exit animation + optimistic advance
   }
@@ -337,6 +341,25 @@ test("failed card repeats in-session until graded Good", async ({ page }) => {
 
   await page.goto("/study?limit=1");
   await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+
+  // A brand-new word starts as an ungraded preview — dismiss it first so the
+  // next appearance carries the real 4-grade buttons.
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  if (
+    await page.getByRole("button", { name: /got it — continue/i }).isVisible()
+  ) {
+    // ArrowRight dismisses the preview without posting a review.
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(700);
+    await expect(page.getByText(/tap to reveal/i)).toBeVisible();
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+  }
 
   // Grade Again (←): schedule-moving review posts, card re-queues.
   await page.keyboard.press("Space");

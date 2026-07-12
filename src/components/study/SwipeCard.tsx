@@ -110,7 +110,8 @@ export function SwipeCard({
         isTop && stage !== "FULL" && onAdvance ? () => onAdvance() : undefined
       }
     >
-      {isTop && armed && (
+      {/* Previews aren't graded, so the grade-direction hints would mislead. */}
+      {isTop && armed && !card.preview && (
         <SwipeIndicators
           forgotOpacity={forgotOpacity}
           knewOpacity={knewOpacity}
