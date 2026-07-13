@@ -23,6 +23,8 @@ interface SwipeCardProps {
   isTop: boolean;
   exitDirection: SwipeDirection | null;
   textSize: CardTextSize;
+  /** Speak the term automatically when its reading is revealed (top card). */
+  autoPlay?: boolean;
 }
 
 const COMMIT_OFFSET = 120;
@@ -37,6 +39,7 @@ export function SwipeCard({
   isTop,
   exitDirection,
   textSize,
+  autoPlay = false,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -124,6 +127,7 @@ export function SwipeCard({
         stage={isTop ? stage : "TERM"}
         interactive={isTop}
         textSize={textSize}
+        autoPlay={isTop && autoPlay}
       />
     </motion.div>
   );

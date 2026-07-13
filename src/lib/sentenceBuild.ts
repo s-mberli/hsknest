@@ -11,6 +11,8 @@ export type SeedSentence = {
   source: string;
   /** Distinct vocabulary terms the sentence exercises (SentenceWord links). */
   terms: string[];
+  /** Reading/romanization (pinyin for Chinese); filled by the pinyin pass. */
+  phonetic?: string;
   metadata: { level: number };
 };
 

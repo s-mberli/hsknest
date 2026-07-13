@@ -16,7 +16,12 @@ export interface StudyCard {
   /** First-ever exposure of a brand-new word: ungraded blue preview. */
   preview?: boolean;
   /** One example sentence for the word, when the library has one. */
-  sentence?: { text: string; translation: string; source: string | null };
+  sentence?: {
+    text: string;
+    translation: string;
+    phonetic: string | null;
+    source: string | null;
+  };
 }
 
 /** Reveal stages of a card. Phonetic-less words skip PHONETIC. */

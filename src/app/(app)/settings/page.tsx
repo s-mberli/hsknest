@@ -26,6 +26,7 @@ export default async function SettingsPage() {
       cardTextSize: true,
       showReading: true,
       soundEffects: true,
+      autoPlayPronunciation: true,
       desiredRetention: true,
       targetLanguageId: true,
     },
@@ -61,6 +62,7 @@ export default async function SettingsPage() {
         }
         showReading={user.showReading}
         soundEffects={user.soundEffects}
+        autoPlayPronunciation={user.autoPlayPronunciation}
         desiredRetention={user.desiredRetention}
         targetLanguageId={user.targetLanguageId}
         languages={languages}

@@ -20,6 +20,7 @@ interface StudyScreenProps {
   textSize: CardTextSize;
   showReading?: boolean;
   soundEffects?: boolean;
+  autoPlayPronunciation?: boolean;
 }
 
 export function StudyScreen({
@@ -27,6 +28,7 @@ export function StudyScreen({
   textSize,
   showReading = true,
   soundEffects = true,
+  autoPlayPronunciation = true,
 }: StudyScreenProps) {
   return (
     <Suspense fallback={null}>
@@ -35,6 +37,7 @@ export function StudyScreen({
         textSize={textSize}
         showReading={showReading}
         soundEffects={soundEffects}
+        autoPlayPronunciation={autoPlayPronunciation}
       />
     </Suspense>
   );
@@ -45,6 +48,7 @@ function StudySession({
   textSize,
   showReading = true,
   soundEffects = true,
+  autoPlayPronunciation = true,
 }: StudyScreenProps) {
   const { query, scoped, practice } = useQueueQuery();
   const {
@@ -147,6 +151,7 @@ function StudySession({
               onSwipe={swipe}
               onContinue={continuePreview}
               textSize={textSize}
+              autoPlay={autoPlayPronunciation}
             />
 
             <p className="text-center text-xs text-muted-foreground">

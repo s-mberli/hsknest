@@ -40,12 +40,14 @@ export function AppearanceSection({
   initialCardTextSize,
   initialShowReading,
   initialSoundEffects,
+  initialAutoPlayPronunciation,
 }: {
   initialTheme: Theme;
   initialStudyTheme: StudyTheme;
   initialCardTextSize: CardTextSize;
   initialShowReading: boolean;
   initialSoundEffects: boolean;
+  initialAutoPlayPronunciation: boolean;
 }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -55,6 +57,9 @@ export function AppearanceSection({
     useState<CardTextSize>(initialCardTextSize);
   const [showReading, setShowReading] = useState(initialShowReading);
   const [soundEffects, setSoundEffects] = useState(initialSoundEffects);
+  const [autoPlayPronunciation, setAutoPlayPronunciation] = useState(
+    initialAutoPlayPronunciation
+  );
 
   // Avoid hydration mismatch: only reflect the resolved theme after mount.
   useEffect(() => setMounted(true), []);
@@ -149,6 +154,24 @@ export function AppearanceSection({
     toast.success("Setting saved.");
   }
 
+  async function chooseAutoPlayPronunciation(next: boolean) {
+    const prev = autoPlayPronunciation;
+    setAutoPlayPronunciation(next);
+    setSaving(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ autoPlayPronunciation: next }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      toast.error("Could not save that setting.");
+      setAutoPlayPronunciation(prev);
+      return;
+    }
+    toast.success("Setting saved.");
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -216,6 +239,18 @@ export function AppearanceSection({
             disabled={saving}
             onCheckedChange={chooseSoundEffects}
             aria-label="Sound effects"
+          />
+        </SettingRow>
+
+        <SettingRow
+          name="Auto-play pronunciation"
+          description="Speak the word aloud the moment you reveal its reading. Needs a voice for the language installed on your device."
+        >
+          <Switch
+            checked={autoPlayPronunciation}
+            disabled={saving}
+            onCheckedChange={chooseAutoPlayPronunciation}
+            aria-label="Auto-play pronunciation"
           />
         </SettingRow>
       </CardContent>

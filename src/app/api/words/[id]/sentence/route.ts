@@ -24,7 +24,9 @@ export async function GET(
       word: { progress: { some: { userId } } },
     },
     select: {
-      sentence: { select: { text: true, translation: true, source: true } },
+      sentence: {
+        select: { text: true, translation: true, phonetic: true, source: true },
+      },
     },
   });
 

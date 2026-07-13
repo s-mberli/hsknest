@@ -15,7 +15,19 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { pinyin } from "pinyin-pro";
+
 import { selectSentences, type PairInput } from "../src/lib/sentenceBuild";
+
+/** Toned pinyin for a sentence, tidying the stray spaces segmentation leaves
+ * before punctuation. Kept in sync with scripts/add-sentence-pinyin.ts. */
+function toPinyin(text: string): string {
+  return pinyin(text, { toneType: "symbol", type: "string" })
+    .replace(/\s+([，。！？；：、）】」』%…])/g, "$1")
+    .replace(/([（【「『])\s+/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 const inputPath = process.argv[2];
 if (!inputPath) {
@@ -40,7 +52,10 @@ const pairs: PairInput[] = readFileSync(inputPath, "utf8")
   .filter((cols) => cols.length >= 3)
   .map(([translation, text, source]) => ({ translation, text, source }));
 
-const sentences = selectSentences(pairs, vocab);
+const sentences = selectSentences(pairs, vocab).map((s) => ({
+  ...s,
+  phonetic: toPinyin(s.text),
+}));
 writeFileSync(join(dataDir, "sentences.json"), JSON.stringify(sentences), {
   encoding: "utf8",
 });

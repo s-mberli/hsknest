@@ -242,6 +242,7 @@ type SeedSentence = {
   translation: string;
   source: string;
   terms: string[];
+  phonetic?: string;
   metadata: Prisma.InputJsonValue;
 };
 
@@ -258,10 +259,18 @@ async function seedSentences(languageId: string, sentences: SeedSentence[]) {
     const match = sample
       ? await prisma.sentence.findUnique({
           where: { languageId_text: { languageId, text: sample.text } },
-          select: { translation: true },
+          select: { translation: true, phonetic: true },
         })
       : null;
-    if (sample && match && match.translation === sample.translation) return; // current
+    // Re-seed when the reading is missing too, so adding pinyin refreshes an
+    // already-seeded dev DB (production reseeds are gated by the seed marker).
+    if (
+      sample &&
+      match &&
+      match.translation === sample.translation &&
+      (match.phonetic ?? null) === (sample.phonetic ?? null)
+    )
+      return; // current
   }
 
   await prisma.sentence.deleteMany({ where: { languageId } });
@@ -271,6 +280,7 @@ async function seedSentences(languageId: string, sentences: SeedSentence[]) {
       text: s.text,
       translation: s.translation,
       source: s.source,
+      phonetic: s.phonetic,
       metadata: s.metadata,
     })),
   });

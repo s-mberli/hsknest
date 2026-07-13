@@ -18,6 +18,8 @@ interface CardStackProps {
   /** Dismiss a new-word preview (no grade posted). */
   onContinue: () => void;
   textSize: CardTextSize;
+  /** Speak the term automatically when its reading is revealed. */
+  autoPlay?: boolean;
 }
 
 /** Edge-glow color per grade direction. */
@@ -36,6 +38,7 @@ export function CardStack({
   onSwipe,
   onContinue,
   textSize,
+  autoPlay = false,
 }: CardStackProps) {
   const [exitDirection, setExitDirection] = useState<SwipeDirection | null>(
     null
@@ -149,6 +152,7 @@ export function CardStack({
           isTop
           exitDirection={exitDirection}
           textSize={textSize}
+          autoPlay={autoPlay}
         />
       </AnimatePresence>
     </div>
