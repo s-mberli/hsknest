@@ -24,5 +24,9 @@ node_modules/.bin/tsx scripts/prune-guests.ts || true
 echo "→ Merging duplicate progress…"
 node_modules/.bin/tsx scripts/merge-duplicate-progress.ts || true
 
+# Housekeeping: backfill sentence pinyin on DBs seeded before readings existed.
+echo "→ Backfilling sentence pinyin…"
+node_modules/.bin/tsx scripts/backfill-sentence-pinyin.ts || true
+
 # Hand off to the CMD (node server.js).
 exec "$@"

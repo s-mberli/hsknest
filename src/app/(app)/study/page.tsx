@@ -16,6 +16,7 @@ export default async function StudyPage() {
       cardTextSize: true,
       showReading: true,
       soundEffects: true,
+      autoPlayPronunciation: true,
     },
   });
   if (!user) redirect("/login");
@@ -28,6 +29,7 @@ export default async function StudyPage() {
       textSize={normalizeCardTextSize(user.cardTextSize)}
       showReading={user.showReading}
       soundEffects={user.soundEffects}
+      autoPlayPronunciation={user.autoPlayPronunciation}
     />
   );
 }

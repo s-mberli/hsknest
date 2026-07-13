@@ -19,7 +19,12 @@ interface QueueCard {
   languageCode: string;
   lapses: number;
   choices?: string[];
-  sentence?: { text: string; translation: string; source: string | null };
+  sentence?: {
+    text: string;
+    translation: string;
+    phonetic: string | null;
+    source: string | null;
+  };
 }
 
 /**
@@ -35,7 +40,9 @@ async function attachSentences(_url: URL, cards: QueueCard[]): Promise<QueueCard
     where: { wordId: { in: cards.map((c) => c.wordId) } },
     select: {
       wordId: true,
-      sentence: { select: { text: true, translation: true, source: true } },
+      sentence: {
+        select: { text: true, translation: true, phonetic: true, source: true },
+      },
     },
   });
   const byWord = new Map<string, typeof links>();

@@ -204,7 +204,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
               </p>
               {/* In reading mode the reading IS the answer, so keep it hidden. */}
               {mode === "meaning" && current.phonetic && (
-                <p className={cn("text-muted-foreground", sizes.phonetic)}>
+                <p className={cn("text-muted-foreground", sizes.phoneticHint)}>
                   {current.phonetic}
                 </p>
               )}

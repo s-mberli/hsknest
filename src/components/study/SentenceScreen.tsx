@@ -189,7 +189,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex flex-col items-center gap-2"
                 >
-                  <p className={cn("text-muted-foreground", sizes.phonetic)}>
+                  <p className={cn("text-muted-foreground", sizes.phoneticHint)}>
                     {current.sentence.translation}
                   </p>
                   <p className="text-sm text-muted-foreground">

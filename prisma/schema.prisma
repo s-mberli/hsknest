@@ -34,6 +34,7 @@ model User {
   cardTextSize       String           @default("normal") // "small" | "normal" | "large" — study card text scale
   showReading        Boolean          @default(true) // false = flashcards skip the reading hint stage
   soundEffects       Boolean          @default(true) // false = mute study sound effects
+  autoPlayPronunciation Boolean       @default(true) // speak the term when its reading is revealed
 
   // Learning limits
   dailyNewWords      Int @default(10) // new cards introduced per day; 0 = pause learning

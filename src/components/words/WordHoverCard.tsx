@@ -7,7 +7,12 @@ import { parseMeanings } from "@/lib/meanings";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
 
-type Sentence = { text: string; translation: string; source: string | null };
+type Sentence = {
+  text: string;
+  translation: string;
+  phonetic: string | null;
+  source: string | null;
+};
 /** Word id → its example sentence (or null when none), fetched once per word. */
 const sentenceCache = new Map<string, Sentence | null>();
 
@@ -258,6 +263,11 @@ export function WordHoverCard({
                 term={word.term}
                 className="text-sm text-foreground/90"
               />
+              {sentence.phonetic && (
+                <p className="mt-0.5 text-xs text-muted-foreground/80">
+                  {sentence.phonetic}
+                </p>
+              )}
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {sentence.translation}
               </p>

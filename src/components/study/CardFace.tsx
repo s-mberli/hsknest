@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Volume2, VolumeX } from "lucide-react";
-import { useEffect, useState } from "react";
+import { TriangleAlert, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -23,6 +23,8 @@ interface CardFaceProps {
   stage: Stage;
   interactive: boolean;
   textSize?: CardTextSize;
+  /** Speak the term automatically the moment the reading is revealed. */
+  autoPlay?: boolean;
 }
 
 const PROMPTS: Record<Stage, string> = {
@@ -103,12 +105,16 @@ export function CardFace({
   stage,
   interactive,
   textSize = "normal",
+  autoPlay = false,
 }: CardFaceProps) {
   const sizes = CARD_TEXT_CLASSES[textSize];
   const showPhonetic = stage !== "TERM" && !!card.phonetic;
   const showFull = stage === "FULL";
   const canSpeak = speechSupported();
-  const difficult = (card.lapses ?? 0) >= 3;
+  // A word the user keeps forgetting (currently relearning, or lapsed twice+).
+  // Never on a brand-new preview — it can't be "difficult" yet.
+  const struggling =
+    !card.preview && (card.state === "LAPSED" || (card.lapses ?? 0) >= 2);
 
   // Voice availability is device-specific, so resolve it client-side after
   // mount to avoid a hydration mismatch. Mobile browsers load voices late, so
@@ -136,6 +142,18 @@ export function CardFace({
   // try). Only show the muted state once voices are known and none match.
   const speakLive = canSpeak && (voiceReady || !voicesKnown);
 
+  // Auto-play the term once, the moment its reading is revealed. The tap that
+  // advanced the stage is the user gesture that unlocks synthesis. Keyed per
+  // card so re-renders (and voice-list arriving late) don't repeat it.
+  const spokenFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!autoPlay || !showPhonetic || !speakLive) return;
+    if (spokenFor.current === card.wordId) return;
+    spokenFor.current = card.wordId;
+    primeSpeech();
+    speak(card.term, card.languageCode);
+  }, [autoPlay, showPhonetic, speakLive, card.wordId, card.term, card.languageCode]);
+
   function onSpeak(e: React.MouseEvent) {
     e.stopPropagation();
     primeSpeech();
@@ -152,19 +170,22 @@ export function CardFace({
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
   const meanings = showFull ? parseMeanings(card) : [];
-  // All senses shown are equally valid answers, so they get equal visual
-  // weight. A character budget (not a scrollbar) keeps the answer glanceable:
-  // always ≥2 senses when available, at most 4, fewer when glosses run long.
-  const CHAR_BUDGET = 110;
+  // Lead with the top-ranked sense; a couple more collapse into one quiet line.
+  // A tight character budget keeps the answer glanceable and leaves room for
+  // the example sentence below (the card clips, it doesn't scroll).
+  const CHAR_BUDGET = 80;
   const shown: typeof meanings = [];
   let used = 0;
   for (const m of meanings) {
-    if (shown.length >= 4) break;
-    if (shown.length >= 2 && used + m.gloss.length > CHAR_BUDGET) break;
+    if (shown.length >= 3) break;
+    if (shown.length >= 1 && used + m.gloss.length > CHAR_BUDGET) break;
     shown.push(m);
     used += m.gloss.length;
   }
+  const primary = shown[0];
+  const secondary = shown.slice(1);
   const overflowCount = meanings.length - shown.length;
+  const primaryText = primary?.gloss ?? card.translation;
 
   return (
     <div
@@ -182,28 +203,6 @@ export function CardFace({
           New word
         </span>
       )}
-      {/* Speaker — appears once phonetic is revealed. Muted style when no
-          voice for this language is installed; tapping then explains why. */}
-      {showPhonetic && canSpeak && (
-        <button
-          type="button"
-          onClick={onSpeak}
-          aria-label={speakLive ? "Play pronunciation" : "No voice installed"}
-          className={cn(
-            "absolute right-4 top-4 rounded-full p-2 transition-colors hover:bg-accent",
-            speakLive
-              ? "text-muted-foreground hover:text-foreground"
-              : "text-muted-foreground/40 hover:text-muted-foreground"
-          )}
-        >
-          {speakLive ? (
-            <Volume2 className="size-5" />
-          ) : (
-            <VolumeX className="size-5" />
-          )}
-        </button>
-      )}
-
       <p
         className={cn(
           "max-w-full break-words px-2 font-bold leading-tight tracking-tight",
@@ -213,17 +212,47 @@ export function CardFace({
         {card.term}
       </p>
 
+      {/* Reading — a primary recall target, so it reads loud: colored, larger,
+          with an inline speaker (which also auto-plays when enabled). */}
       <AnimatePresence>
         {showPhonetic && (
-          <motion.p
+          <motion.div
             key="phonetic"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className={cn("text-muted-foreground", sizes.phonetic)}
+            className="flex items-center gap-2"
           >
-            {card.phonetic}
-          </motion.p>
+            <span
+              className={cn(
+                "font-medium tracking-wide text-primary",
+                sizes.phonetic
+              )}
+            >
+              {card.phonetic}
+            </span>
+            {canSpeak && (
+              <button
+                type="button"
+                onClick={onSpeak}
+                aria-label={
+                  speakLive ? "Play pronunciation" : "No voice installed"
+                }
+                className={cn(
+                  "rounded-full p-1.5 transition-colors hover:bg-accent",
+                  speakLive
+                    ? "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground/40 hover:text-muted-foreground"
+                )}
+              >
+                {speakLive ? (
+                  <Volume2 className="size-5" />
+                ) : (
+                  <VolumeX className="size-5" />
+                )}
+              </button>
+            )}
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -234,75 +263,67 @@ export function CardFace({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-2 px-2"
+            className="flex w-full flex-col items-center gap-1.5 px-2"
           >
-            {shown.length <= 1 ? (
-              // Long single glosses step down a size so they can't outgrow
-              // the card (which clips, not scrolls).
+            {/* Primary meaning leads; long glosses step down so they can't
+                outgrow the card (which clips, not scrolls). */}
+            <p
+              className={cn(
+                "max-w-full break-words font-semibold tracking-tight [overflow-wrap:anywhere]",
+                primaryText.length > 40 ? sizes.phoneticHint : sizes.translation
+              )}
+            >
+              {primary?.reading && primary.reading !== card.phonetic && (
+                <span
+                  className={cn(
+                    "mr-1.5 rounded bg-muted px-1 py-0.5 align-middle text-muted-foreground/80",
+                    sizes.secondaryMeaning
+                  )}
+                >
+                  {primary.reading}
+                </span>
+              )}
+              {primaryText}
+            </p>
+
+            {/* Remaining senses collapse into one quiet line. */}
+            {(secondary.length > 0 || overflowCount > 0) && (
               <p
                 className={cn(
-                  "max-w-full break-words font-semibold tracking-tight [overflow-wrap:anywhere]",
-                  (shown[0]?.gloss ?? card.translation).length > 40
-                    ? sizes.phonetic
-                    : sizes.translation
+                  "max-w-full break-words text-muted-foreground [overflow-wrap:anywhere]",
+                  sizes.secondaryMeaning
                 )}
               >
-                {shown[0]?.gloss ?? card.translation}
-              </p>
-            ) : (
-              // Multiple senses: same size, numbered — none is "more correct".
-              <ol className="flex w-full max-w-full flex-col items-center gap-1">
-                {shown.map((sense, i) => (
-                  <li
-                    key={i}
-                    className={cn(
-                      "max-w-full break-words font-medium tracking-tight [overflow-wrap:anywhere]",
-                      sizes.phonetic
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "mr-1.5 text-muted-foreground/50",
-                        sizes.secondaryMeaning
-                      )}
-                    >
-                      {i + 1}.
-                    </span>
-                    {sense.reading && sense.reading !== card.phonetic && (
-                      <span
-                        className={cn(
-                          "mr-1 rounded bg-muted px-1 py-0.5 text-muted-foreground/80",
-                          sizes.secondaryMeaning
-                        )}
-                      >
-                        {sense.reading}
-                      </span>
-                    )}
-                    {sense.gloss}
-                  </li>
-                ))}
+                {secondary.map((s) => s.gloss).join(" · ")}
                 {overflowCount > 0 && (
-                  <li className="text-xs text-muted-foreground/60">
-                    +{overflowCount} more {overflowCount === 1 ? "meaning" : "meanings"}
-                  </li>
+                  <span className="text-muted-foreground/60">
+                    {secondary.length > 0 ? " · " : ""}+{overflowCount} more
+                  </span>
                 )}
-              </ol>
-            )}
-            {extras.length > 0 && (
-              <p className="text-xs italic text-muted-foreground/70">
-                ({extras.join(" · ")})
               </p>
             )}
-            {/* Example sentence — supplementary, only on real (non-preview)
-                cards so the first look stays uncluttered. */}
+
+            {extras.length > 0 && (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground/80">
+                {extras.join(" · ")}
+              </span>
+            )}
+
+            {/* Example sentence in its own block: sentence → reading → meaning,
+                on real (non-preview) cards only. */}
             {card.sentence && !card.preview && (
-              <div className="mt-1 flex flex-col items-center gap-1 border-t border-border/60 pt-2">
+              <div className="mt-2 w-full max-w-sm rounded-xl bg-muted/40 px-4 py-3 text-left">
                 <HighlightedSentence
                   text={card.sentence.text}
                   term={card.term}
-                  className="text-sm font-medium text-foreground/90"
+                  className="text-base font-medium leading-relaxed text-foreground/90"
                 />
-                <p className="text-xs text-muted-foreground">
+                {card.sentence.phonetic && (
+                  <p className="mt-1 text-xs text-muted-foreground/80">
+                    {card.sentence.phonetic}
+                  </p>
+                )}
+                <p className="mt-0.5 text-sm text-muted-foreground">
                   {card.sentence.translation}
                 </p>
               </div>
@@ -321,9 +342,10 @@ export function CardFace({
                 : "New word — tap to reveal"
               : PROMPTS[stage]}
           </p>
-          {difficult && (
-            <p className="text-xs font-medium text-amber">
-              This one&apos;s been tricky — take your time.
+          {struggling && (
+            <p className="flex items-center gap-1 text-xs font-medium text-amber">
+              <TriangleAlert className="size-3.5" />
+              You keep missing this one — slow down.
             </p>
           )}
         </div>

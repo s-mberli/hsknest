@@ -48,6 +48,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.10",
+    "pinyin-pro": "^3.28.1",
     "playwright": "^1.61.1",
     "tailwindcss": "^4",
     "typescript": "^5",

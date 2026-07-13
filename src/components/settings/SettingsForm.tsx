@@ -31,6 +31,7 @@ interface SettingsFormProps {
   cardTextSize: CardTextSize;
   showReading: boolean;
   soundEffects: boolean;
+  autoPlayPronunciation: boolean;
   desiredRetention: number;
   targetLanguageId: string;
   languages: { id: string; name: string }[];
@@ -160,6 +161,7 @@ export function SettingsForm(props: SettingsFormProps) {
         initialCardTextSize={props.cardTextSize}
         initialShowReading={props.showReading}
         initialSoundEffects={props.soundEffects}
+        initialAutoPlayPronunciation={props.autoPlayPronunciation}
       />
 
       <AccountSection email={props.email} name={props.name} />
