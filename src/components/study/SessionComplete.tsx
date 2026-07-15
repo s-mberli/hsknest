@@ -112,7 +112,7 @@ export function SessionComplete({
               window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
             }}
           >
-            Study them again
+            Redo the {missed.length} you missed
           </Button>
         )}
         <Button
@@ -132,11 +132,6 @@ export function SessionComplete({
         >
           Back to dashboard
         </Button>
-        {!practice && (
-          <Button asChild variant="outline">
-            <Link href="/lists">Add more words</Link>
-          </Button>
-        )}
       </div>
     </div>
   );
