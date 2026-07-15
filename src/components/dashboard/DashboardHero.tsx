@@ -25,7 +25,16 @@ interface DashboardHeroProps {
   dailyNewWords?: number;
   /** New words enrolled but held back today by the daily cap (0 = none). */
   newBacklog?: number;
+  /** Target language code — gates modes that only make sense per language. */
+  languageCode?: string;
+  /** Whether the target language has example sentences (gates Sentences mode). */
+  hasSentences?: boolean;
 }
+
+// Languages whose reading is a learnable romanization (e.g. pinyin), where a
+// "pick the reading" quiz is meaningful. For IPA-based readings (de/en/es) it
+// would just be "pick the phonetic spelling" — not worth quizzing, so hidden.
+const ROMANIZED_READING_LANGS = new Set(["zh"]);
 
 /** One breakdown chip: color-matched to its ring segment. */
 const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string }[] = [
@@ -52,17 +61,27 @@ export function DashboardHero({
   learnedCount = 0,
   dailyNewWords = 0,
   newBacklog = 0,
+  languageCode,
+  hasSentences = false,
 }: DashboardHeroProps) {
   const total = due + checks + fresh;
   const hasCards = total > 0;
   const canPractice = learnedCount > 0;
   const counts = { due, fresh, checks };
 
+  const showReadingQuiz = languageCode
+    ? ROMANIZED_READING_LANGS.has(languageCode)
+    : false;
+
   const PRACTICE_MODES = [
-    { key: "quiz", label: "Daily Quiz", icon: ListChecks },
+    { key: "quiz", label: "Meaning Quiz", icon: ListChecks },
     { key: "match", label: "Word Match", icon: LayoutGrid },
-    { key: "pronounce", label: "Reading Quiz", icon: BookOpen },
-    { key: "sentences", label: "Sentences", icon: MessageSquareText },
+    ...(showReadingQuiz
+      ? [{ key: "pronounce", label: "Reading Quiz", icon: BookOpen } as const]
+      : []),
+    ...(hasSentences
+      ? [{ key: "sentences", label: "Sentences", icon: MessageSquareText } as const]
+      : []),
   ] as const;
 
   return (

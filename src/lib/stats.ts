@@ -17,6 +17,8 @@ export interface DashboardStats {
   enrolledTotal: number;
   /** Reviews coming due over the next 7 days (index 0 = today). */
   forecast: number[];
+  /** True when the target language has any example sentences (gates that mode). */
+  hasSentences: boolean;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -46,6 +48,7 @@ export async function getDashboardStats(
     enrolledTotal,
     logs,
     forecastRows,
+    sentenceCount,
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -99,6 +102,11 @@ export async function getDashboardStats(
       },
       select: { dueAt: true },
     }),
+    // Does the target language ship any example sentences? Gates the Sentences
+    // practice mode so languages without them don't offer an always-empty game.
+    targetLanguageId
+      ? prisma.sentence.count({ where: { languageId: targetLanguageId } })
+      : Promise.resolve(0),
   ]);
 
   // Bucket reviews into 7 day-slots; anything overdue lumps into today (0).
@@ -130,6 +138,7 @@ export async function getDashboardStats(
     newIntroducedToday,
     enrolledTotal,
     forecast,
+    hasSentences: sentenceCount > 0,
   };
 }
 

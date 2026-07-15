@@ -20,7 +20,12 @@ export default async function DashboardPage() {
   const [user] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, emailVerified: true, targetLanguageId: true },
+      select: {
+        email: true,
+        emailVerified: true,
+        targetLanguageId: true,
+        targetLanguage: { select: { code: true } },
+      },
     }),
   ]);
   
@@ -69,6 +74,8 @@ export default async function DashboardPage() {
         learnedCount={stats.learnedTotal + stats.masteredTotal}
         dailyNewWords={stats.dailyNewWords}
         newBacklog={Math.max(0, stats.newCount - fresh)}
+        languageCode={user.targetLanguage?.code}
+        hasSentences={stats.hasSentences}
       />
 
       <Card className="mb-6 mt-6">
