@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Data Credits & Licenses | Recall",
+  title: "Data Credits & Licenses | HSK Nest",
   description:
-    "Attribution for the open datasets that power Recall's vocabulary decks, dictionary lookups, and example sentences.",
+    "Attribution for the open datasets that power HSK Nest's vocabulary decks, dictionary lookups, and example sentences.",
 };
 
 /**
@@ -18,7 +18,7 @@ export default function CreditsPage() {
 
       <div className="prose prose-slate dark:prose-invert">
         <p className="lead">
-          Recall is built on outstanding open datasets. This page credits
+          HSK Nest is built on outstanding open datasets. This page credits
           them as their licenses require — and because they deserve it.
         </p>
 
@@ -106,7 +106,7 @@ export default function CreditsPage() {
 
         <h2>Application code</h2>
         <p>
-          Recall itself is open source under the{" "}
+          HSK Nest itself is open source under the{" "}
           <a
             href="https://www.gnu.org/licenses/agpl-3.0.en.html"
             target="_blank"

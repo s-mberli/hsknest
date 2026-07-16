@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Recall",
-  description: "Terms of Service for Recall app.",
+  title: "Terms of Service | HSK Nest",
+  description: "Terms of Service for HSK Nest app.",
 };
 
 export default function TermsPage() {
@@ -17,12 +17,12 @@ export default function TermsPage() {
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using the hosted Recall service, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service. (Self-hosted installations of the open-source software are governed by the AGPL-3.0 license, not these Terms.)
+          By accessing or using the hosted HSK Nest service, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service. (Self-hosted installations of the open-source software are governed by the AGPL-3.0 license, not these Terms.)
         </p>
 
         <h2>2. Description of Service</h2>
         <p>
-          Recall is a language learning spaced-repetition application designed to help users memorize vocabulary efficiently. We reserve the right to modify or discontinue, temporarily or permanently, the service with or without notice. The service is provided &quot;as is&quot; without an uptime guarantee or service-level agreement, though we work hard to keep it fast and available.
+          HSK Nest is a language learning spaced-repetition application designed to help users memorize vocabulary efficiently. We reserve the right to modify or discontinue, temporarily or permanently, the service with or without notice. The service is provided &quot;as is&quot; without an uptime guarantee or service-level agreement, though we work hard to keep it fast and available.
         </p>
 
         <h2>3. User Accounts</h2>
@@ -52,7 +52,7 @@ export default function TermsPage() {
 
         <h2>8. Refunds</h2>
         <p>
-          If Recall isn&apos;t for you, we offer a no-questions-asked full refund within 14 days of your first payment — just contact us. This sits alongside, and does not limit, any rights you have under applicable consumer law (including the EU right of withdrawal and the Australian Consumer Law).
+          If HSK Nest isn&apos;t for you, we offer a no-questions-asked full refund within 14 days of your first payment — just contact us. This sits alongside, and does not limit, any rights you have under applicable consumer law (including the EU right of withdrawal and the Australian Consumer Law).
         </p>
 
         <h2>9. Consumer Guarantees</h2>
@@ -62,7 +62,7 @@ export default function TermsPage() {
 
         <h2>10. Limitation of Liability</h2>
         <p>
-          To the maximum extent permitted by law, and subject to Section 9, in no event shall Recall, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+          To the maximum extent permitted by law, and subject to Section 9, in no event shall HSK Nest, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
         </p>
       </div>
     </div>

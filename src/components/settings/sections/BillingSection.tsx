@@ -34,7 +34,7 @@ export function BillingSection({
   const active = status === "active";
 
   const statusLabel = active
-    ? "Recall Hosted — €5/month"
+    ? "HSK Nest Hosted — €5/month"
     : trialing
       ? daysLeft !== null
         ? `Free trial — ${daysLeft} ${daysLeft === 1 ? "day" : "days"} left`

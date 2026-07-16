@@ -51,7 +51,7 @@ export function HowItWorksModal({ open, onClose }: HowItWorksModalProps) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="How Recall works"
+      aria-label="How HSK Nest works"
     >
       <motion.div
         className="relative w-full max-w-md rounded-t-3xl border bg-card p-6 text-left shadow-xl sm:rounded-3xl"
@@ -70,12 +70,12 @@ export function HowItWorksModal({ open, onClose }: HowItWorksModalProps) {
             </button>
 
             <h2 className="pr-8 text-xl font-bold tracking-tight">
-              How Recall works
+              How HSK Nest works
             </h2>
 
             <div className="mt-4 space-y-3 text-sm text-muted-foreground">
               <p>
-                Recall uses <span className="font-medium text-foreground">spaced
+                HSK Nest uses <span className="font-medium text-foreground">spaced
                 repetition</span>: instead of cramming, it brings each word back
                 right before you&apos;d forget it. Every review pushes the next
                 one further out, so words you know well barely take any time.

@@ -74,13 +74,13 @@ const STEPS = [
   {
     n: "3",
     title: "Review daily",
-    body: "Recall tells you exactly what to study and when. A few minutes a day is enough.",
+    body: "HSK Nest tells you exactly what to study and when. A few minutes a day is enough.",
   },
 ];
 
 const FAQ = [
   {
-    q: "Is Recall really free?",
+    q: "Is HSK Nest really free?",
     a: "Self-hosted, yes — forever, under the AGPL license. The hosted version is €5/month after a 14-day free trial: we handle updates, backups, and hosting.",
   },
   {
@@ -89,10 +89,10 @@ const FAQ = [
   },
   {
     q: "Can I import my existing Anki decks?",
-    a: "Yes — export them from Anki as CSV/TSV and paste or upload; you map the columns and Recall does the rest.",
+    a: "Yes — export them from Anki as CSV/TSV and paste or upload; you map the columns and HSK Nest does the rest.",
   },
   {
-    q: "What languages does Recall support?",
+    q: "What languages does HSK Nest support?",
     a: "Mandarin is the flagship: full HSK 1–9 plus 3,000 example sentences with pinyin. German and Spanish starter decks are included, and you can create decks for any language.",
   },
   {
@@ -126,7 +126,7 @@ export function LandingSections() {
         </h2>
         <p className="text-lg text-muted-foreground">
           Hours of setup before the first review, words with no context, and
-          apps that stop halfway through the HSK levels. Recall starts you
+          apps that stop halfway through the HSK levels. HSK Nest starts you
           with everything already in place — so all that&apos;s left is the
           studying.
         </p>
@@ -202,7 +202,7 @@ export function LandingSections() {
           Self-host it forever, free
         </h2>
         <p className="text-muted-foreground">
-          Recall is AGPL open source. Run it on your own server with zero
+          HSK Nest is AGPL open source. Run it on your own server with zero
           limits and zero subscription — or let us handle hosting, updates,
           and backups for you.
         </p>
@@ -221,7 +221,7 @@ export function LandingSections() {
         </h2>
         <div className="mx-auto max-w-sm rounded-3xl border-2 border-primary/30 bg-card p-8 text-center shadow-card">
           <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Recall Hosted
+            HSK Nest Hosted
           </p>
           <p className="mt-2 text-5xl font-extrabold tracking-tight">
             €5

@@ -1,6 +1,6 @@
 # Deployment
 
-A guide to self-hosting Recall on a small VPS with Docker Compose, HTTPS via a
+A guide to self-hosting HSK Nest on a small VPS with Docker Compose, HTTPS via a
 reverse proxy, and nightly backups. The default stack is a single container
 with a SQLite database on a mounted volume — plenty for a personal or
 small-group instance.

@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Recall — Spaced Repetition",
+  title: "HSK Nest — Spaced Repetition",
   description:
     "Open-source, self-hostable spaced repetition for learning any language.",
 };

@@ -1,8 +1,8 @@
-# Recall
+# HSK Nest
 
 **A self-hostable spaced-repetition study app for learning any language.**
 
-Recall helps you remember vocabulary the efficient way: a research-backed
+HSK Nest helps you remember vocabulary the efficient way: a research-backed
 schedule brings each word back right before you'd forget it, so you spend your
 time on the words that need it. Build your own lists (or start from included
 graded content), study a gesture-first swipe deck, and tune the schedule to how
