@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "HSK Nest Hosted is €5/month with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
 };
 
-const GITHUB_URL = "https://github.com/s-mberli/recall";
+const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
 const ROWS: { label: string; selfHost: string; hosted: string }[] = [
   { label: "Price", selfHost: "Free forever (AGPL)", hosted: "€5/month" },

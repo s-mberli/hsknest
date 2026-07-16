@@ -24,7 +24,7 @@ Set at minimum:
 | Variable          | Notes                                                          |
 | ----------------- | -------------------------------------------------------------- |
 | `NEXTAUTH_SECRET` | Generate a strong value: `openssl rand -base64 32`.            |
-| `NEXTAUTH_URL`    | The public URL, e.g. `https://recall.example.com`.             |
+| `NEXTAUTH_URL`    | The public URL, e.g. `https://hsknest.example.com`.             |
 | `DATABASE_URL`    | Leave as `file:/data/recall.db` for the Docker/SQLite default. |
 
 > **Rotate any secret that was ever in a working copy before publishing the
@@ -59,7 +59,7 @@ Referrer-Policy, Permissions-Policy) but **does not** set HSTS or terminate TLS 
 that belongs at the proxy. Caddy handles both with almost no config:
 
 ```caddy
-recall.example.com {
+hsknest.example.com {
     encode zstd gzip
     reverse_proxy localhost:3000
     header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"

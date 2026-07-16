@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { trackEventOnce } from "@/lib/analytics";
+
 export interface StudyCard {
   wordId: string;
   term: string;
@@ -252,7 +254,12 @@ export function useStudySession(
 
         try {
           const res = await post();
-          if (res.ok) return;
+          if (res.ok) {
+            // Launch-funnel activation signal: first saved review ever on
+            // this browser (no-op when analytics isn't configured).
+            trackEventOnce("first_review_complete");
+            return;
+          }
 
           // Stale card (progress wiped elsewhere): drop silently.
           if (res.status === 404) return;

@@ -22,6 +22,8 @@ test("sign up and land on the dashboard", async ({ page }) => {
   // New accounts pick a target language first, then land on the dashboard.
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  // Level step: HSK 1 is preselected; confirming enrolls the deck.
   await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
@@ -159,6 +161,8 @@ test("guest mode: one click to studying", async ({ page }) => {
   // Guest accounts also pick a target language before landing on the dashboard.
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  // Level step: HSK 1 is preselected; confirming enrolls the deck.
   await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
@@ -174,6 +178,8 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
   await page.getByRole("button", { name: /try it as a guest/i }).click();
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  // Level step: HSK 1 is preselected; confirming enrolls the deck.
   await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
@@ -401,6 +407,8 @@ test("account deletion signs out and frees the email", async ({ page }) => {
   await page.getByRole("button", { name: "Create account" }).click();
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   await page.getByRole("button", { name: "Mandarin Chinese" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  // Level step: HSK 1 is preselected; confirming enrolls the deck.
   await page.getByRole("button", { name: "Start building flashcards" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
 

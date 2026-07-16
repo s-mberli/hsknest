@@ -13,6 +13,7 @@ export default async function StudyPage() {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
+      email: true,
       studyTheme: true,
       cardTextSize: true,
       showReading: true,
@@ -35,6 +36,7 @@ export default async function StudyPage() {
       showReading={user.showReading}
       soundEffects={user.soundEffects}
       autoPlayPronunciation={user.autoPlayPronunciation}
+      isGuest={user.email.endsWith("@guest.local")}
     />
   );
 }

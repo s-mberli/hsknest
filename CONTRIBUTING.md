@@ -6,8 +6,8 @@ of every size are welcome — bug reports, docs fixes, features.
 ## Quick start
 
 ```bash
-git clone https://github.com/s-mberli/recall.git
-cd recall
+git clone https://github.com/s-mberli/hsknest.git
+cd hsknest
 npm install
 cp .env.example .env   # fill in NEXTAUTH_SECRET (openssl rand -base64 32)
 npm run db:migrate

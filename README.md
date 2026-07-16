@@ -144,6 +144,12 @@ cp .env.example .env      # set NEXTAUTH_SECRET and NEXTAUTH_URL
 docker compose up -d --build
 ```
 
+Or skip the build and pull the prebuilt image from GHCR:
+
+```bash
+docker pull ghcr.io/s-mberli/hsknest:latest
+```
+
 The container applies migrations and seeds starter content on first boot, then
 serves the standalone Next build.
 

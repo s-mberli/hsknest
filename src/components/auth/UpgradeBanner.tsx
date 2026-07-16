@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * Guest-only nudge: expand into a one-screen form that turns the throwaway
@@ -47,6 +48,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
         return;
       }
       toast.success("Account saved — your progress is yours now.");
+      trackEvent("guest_upgrade_complete");
       router.refresh();
     } finally {
       setLoading(false);
