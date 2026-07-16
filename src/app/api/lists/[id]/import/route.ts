@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { parseDelimited } from "@/lib/import";
+import { rateLimit } from "@/lib/rateLimit";
 import { importSchema } from "@/lib/validation";
 
 const MAX_ROWS = 2000;
@@ -18,6 +19,12 @@ export async function POST(
 ) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Imports are heavy (up to 2000 rows each): 20/hour is generous for a
+  // human and a wall for a script hammering the DB.
+  if (!rateLimit(`import:${userId}`, 20, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+  }
 
   const { id } = await params;
 

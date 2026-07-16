@@ -9,9 +9,11 @@ import { FirstVisitIntro } from "@/components/dashboard/FirstVisitIntro";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getDashboardStats } from "@/lib/stats";
+import { getSubscriptionInfo } from "@/lib/subscription";
 
 export default async function DashboardPage() {
   const userId = await getCurrentUserId();
@@ -33,7 +35,10 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const stats = await getDashboardStats(userId, user.targetLanguageId);
+  const [stats, sub] = await Promise.all([
+    getDashboardStats(userId, user.targetLanguageId),
+    getSubscriptionInfo(userId),
+  ]);
 
   const isGuest = user?.email.endsWith("@guest.local") ?? false;
   const showVerifyBanner = !isGuest && user && !user.emailVerified;
@@ -67,6 +72,9 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {!sub.access ? (
+        <ExpiredCard />
+      ) : (
       <DashboardHero
         due={stats.dueCount}
         checks={stats.checkCount}
@@ -77,6 +85,7 @@ export default async function DashboardPage() {
         languageCode={user.targetLanguage?.code}
         hasSentences={stats.hasSentences}
       />
+      )}
 
       <Card className="mb-6 mt-6">
         <CardContent className="pt-6">

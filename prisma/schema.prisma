@@ -51,6 +51,12 @@ model User {
   updatedAt     DateTime  @updatedAt
   emailVerified DateTime?
 
+  // Hosted billing (ignored entirely when SELF_HOSTED=true)
+  stripeCustomerId   String?   @unique
+  subscriptionStatus String    @default("trialing") // "trialing" | "active" | "canceled" | "past_due"
+  trialEndsAt        DateTime? // null = no trial clock (self-host / legacy)
+  billingConsentAt   DateTime? // EU withdrawal-right acknowledgment timestamp
+
   progress            UserProgress[]
   reviewLogs          ReviewLog[]
   wordLists           WordList[]
@@ -59,6 +65,7 @@ model User {
   hiddenLists         HiddenList[]
   passwordResetTokens PasswordResetToken[]
   verificationTokens  VerificationToken[]
+  emailLogs           EmailLog[]
   
   targetLanguageId    String?
   targetLanguage      Language?  @relation("UserTargetLanguage", fields: [targetLanguageId], references: [id])
@@ -203,6 +210,19 @@ model Feedback {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+// One row per lifecycle email actually sent — the idempotency guard for
+// the daily trial-email cron (never email the same user+kind twice).
+model EmailLog {
+  id     String   @id @default(cuid())
+  userId String
+  kind   String // "trial_welcome" | "trial_ending" | "trial_ended"
+  sentAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind])
 }
 
 model PasswordResetToken {
