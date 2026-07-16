@@ -125,6 +125,19 @@ For continuous, near-zero-RPO backups, consider
 [Litestream](https://litestream.io/), which streams SQLite's WAL to S3-style
 storage.
 
+### Hosted-instance extras (self-hosters: skip)
+
+If you run the managed/paid variant (`SELF_HOSTED=false` + `STRIPE_*` env
+vars), also schedule the daily trial-lifecycle email job:
+
+```
+# /etc/cron.d/recall-trial-emails — 9am daily
+0 9 * * * root docker compose -f /path/to/docker-compose.yml exec -T app npx tsx scripts/send-trial-emails.ts
+```
+
+The job is idempotent (EmailLog table) and exits immediately when
+`SELF_HOSTED` isn't `false`, so it is harmless everywhere else.
+
 ## File permissions
 
 - Keep the database file readable only by the app user: `chmod 0600 recall.db`.
