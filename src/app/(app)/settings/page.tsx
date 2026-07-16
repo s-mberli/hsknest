@@ -88,6 +88,10 @@ export default async function SettingsPage() {
         ·{" "}
         <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
           Privacy Policy
+        </Link>{" "}
+        ·{" "}
+        <Link href="/credits" className="underline underline-offset-2 hover:text-foreground">
+          Data Credits
         </Link>
       </p>
     </main>

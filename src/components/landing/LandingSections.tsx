@@ -304,6 +304,36 @@ export function LandingSections() {
           </Button>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t pt-8 text-center text-xs text-muted-foreground">
+        <p>
+          <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+            Terms
+          </Link>{" "}
+          ·{" "}
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+            Privacy
+          </Link>{" "}
+          ·{" "}
+          <Link href="/pricing" className="underline underline-offset-2 hover:text-foreground">
+            Pricing
+          </Link>{" "}
+          ·{" "}
+          <Link href="/credits" className="underline underline-offset-2 hover:text-foreground">
+            Data Credits
+          </Link>{" "}
+          ·{" "}
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            GitHub
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
