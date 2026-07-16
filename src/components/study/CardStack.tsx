@@ -124,7 +124,9 @@ export function CardStack({
         const depth = behind.length - idx;
         return (
           <SwipeCard
-            key={card.wordId}
+            // Same compound key as the top card: a new word appears twice in
+            // the deck (preview + graded reappearance), so wordId alone dupes.
+            key={`${card.wordId}${card.preview ? ":preview" : ""}`}
             card={card}
             stage="TERM"
             onSwipe={handleSwipe}
