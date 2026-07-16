@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Check, ChevronsUp, Minus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { SwipeCard } from "@/components/study/SwipeCard";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
@@ -40,16 +40,25 @@ export function CardStack({
   textSize,
   autoPlay = false,
 }: CardStackProps) {
-  const [exitDirection, setExitDirection] = useState<SwipeDirection | null>(
-    null
-  );
+  // Committed cards fly off under our own timer instead of AnimatePresence:
+  // its exit tracking silently breaks under the current React/framer pairing
+  // and dismissed cards pile up frozen on screen.
+  const [flying, setFlying] = useState<
+    { key: string; card: StudyCard; dir: SwipeDirection }[]
+  >([]);
+  const flyCounter = useRef(0);
   const [glow, setGlow] = useState<string | null>(null);
   const preview = !!current.preview;
 
   function handleSwipe(direction: SwipeDirection) {
     // Preview cards aren't graded: any commit gesture just continues.
     const dir = preview ? "right" : direction;
-    setExitDirection(dir);
+    const key = `fly-${flyCounter.current++}`;
+    setFlying((f) => [...f, { key, card: current, dir }]);
+    window.setTimeout(
+      () => setFlying((f) => f.filter((x) => x.key !== key)),
+      450
+    );
     setGlow(preview ? "#0ea5e9" : GLOW[direction]);
     if (preview) onContinue();
     else onSwipe(direction);
@@ -103,22 +112,19 @@ export function CardStack({
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
     <div className="relative mx-auto aspect-[3/4] w-full max-w-sm">
-      {/* Edge glow flash on commit. */}
-      <AnimatePresence>
-        {glow && (
-          <motion.div
-            key={glow}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.9 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="pointer-events-none absolute -inset-3 z-0 rounded-3xl"
-            style={{
-              boxShadow: `0 0 40px 6px ${glow}`,
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {/* Edge glow flash on commit — fades itself out before removal. */}
+      {glow && (
+        <motion.div
+          key={glow}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.9, 0] }}
+          transition={{ duration: 0.35, times: [0, 0.4, 1] }}
+          className="pointer-events-none absolute -inset-3 z-0 rounded-3xl"
+          style={{
+            boxShadow: `0 0 40px 6px ${glow}`,
+          }}
+        />
+      )}
 
       {behind.map((card, idx) => {
         const depth = behind.length - idx;
@@ -132,31 +138,38 @@ export function CardStack({
             onSwipe={handleSwipe}
             depth={depth}
             isTop={false}
-            exitDirection={null}
             textSize={textSize}
           />
         );
       })}
 
-      <AnimatePresence
-        initial={false}
-        onExitComplete={() => setExitDirection(null)}
-      >
+      <SwipeCard
+        // Distinct key for the preview vs. its graded reappearance so the
+        // top card remounts (and re-animates) when they end up adjacent.
+        key={`${current.wordId}${current.preview ? ":preview" : ""}`}
+        card={current}
+        stage={stage}
+        onSwipe={handleSwipe}
+        onAdvance={onAdvance}
+        depth={0}
+        isTop
+        textSize={textSize}
+        autoPlay={autoPlay}
+      />
+
+      {/* Committed cards mid-flight (self-removed after the animation). */}
+      {flying.map((f) => (
         <SwipeCard
-          // Distinct key for the preview vs. its graded reappearance so
-          // AnimatePresence still animates when they end up adjacent.
-          key={`${current.wordId}${current.preview ? ":preview" : ""}`}
-          card={current}
-          stage={stage}
+          key={f.key}
+          card={f.card}
+          stage="FULL"
           onSwipe={handleSwipe}
-          onAdvance={onAdvance}
           depth={0}
-          isTop
-          exitDirection={exitDirection}
+          isTop={false}
+          flyOut={f.dir}
           textSize={textSize}
-          autoPlay={autoPlay}
         />
-      </AnimatePresence>
+      ))}
     </div>
 
       {/* Grade buttons: enabled only once the answer is revealed. Previews of

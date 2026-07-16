@@ -25,13 +25,18 @@ function splitListName(name: string): { level: string; detail: string } {
 
 export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
   const router = useRouter();
-  // With a single launch language it's preselected; the picker still renders
-  // so the choice stays visible (and the grid grows back when we re-open
-  // more languages).
+  // With a single launch language there's nothing to choose — preselect it
+  // and skip straight to the level step (language stays switchable in
+  // Settings). The picker grid returns when more languages re-open at signup.
+  const singleLanguage = languages.length === 1;
   const [selected, setSelected] = useState<string | null>(
-    languages.length === 1 ? languages[0].id : null
+    singleLanguage ? languages[0].id : null
   );
-  const [step, setStep] = useState<"language" | "level">("language");
+  const [step, setStep] = useState<"language" | "level">(
+    singleLanguage && languages[0].code === "zh" && hskLists.length > 0
+      ? "level"
+      : "language"
+  );
   const [listId, setListId] = useState<string | null>(hskLists[0]?.id ?? null);
   const [saving, setSaving] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -233,7 +238,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                   "Continue"
                 )}
               </Button>
-              {isLevelStep ? (
+              {isLevelStep && !singleLanguage ? (
                 <button
                   type="button"
                   onClick={() => setStep("language")}

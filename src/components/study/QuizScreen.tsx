@@ -11,7 +11,11 @@ import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { gameGloss } from "@/lib/meanings";
 import { postReview } from "@/lib/postReview";
-import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
+import {
+  CARD_TEXT_CLASSES,
+  termSizeClass,
+  type CardTextSize,
+} from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 
 type QuizCard = StudyCard & { choices?: string[] };
@@ -196,8 +200,8 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             <div className="flex flex-col items-center gap-2 text-center">
               <p
                 className={cn(
-                  "max-w-full break-words font-bold leading-tight tracking-tight",
-                  sizes.term
+                  "max-w-full break-normal font-bold leading-tight tracking-tight",
+                  termSizeClass(current.term, textSize)
                 )}
               >
                 {current.term}
