@@ -210,7 +210,8 @@ migration.
 Bug reports and ideas are welcome — file them right from the app
 (**Settings → Feedback**) or open an issue. Pull requests should keep the
 existing style and pass `npm test`, `npm run lint`, and `npm run build`
-(the same checks CI runs).
+(the same checks CI runs). See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+full guide (project rules, migration safety, scheduler proof requirements).
 
 ## License
 
