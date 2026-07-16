@@ -9,6 +9,7 @@ import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useStudySession } from "@/hooks/useStudySession";
+import { trackEventOnce } from "@/lib/analytics";
 import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,8 @@ interface StudyScreenProps {
   showReading?: boolean;
   soundEffects?: boolean;
   autoPlayPronunciation?: boolean;
+  /** Guest account — fires the launch-funnel event on first study screen. */
+  isGuest?: boolean;
 }
 
 export function StudyScreen({
@@ -29,6 +32,7 @@ export function StudyScreen({
   showReading = true,
   soundEffects = true,
   autoPlayPronunciation = true,
+  isGuest = false,
 }: StudyScreenProps) {
   return (
     <Suspense fallback={null}>
@@ -38,6 +42,7 @@ export function StudyScreen({
         showReading={showReading}
         soundEffects={soundEffects}
         autoPlayPronunciation={autoPlayPronunciation}
+        isGuest={isGuest}
       />
     </Suspense>
   );
@@ -49,6 +54,7 @@ function StudySession({
   showReading = true,
   soundEffects = true,
   autoPlayPronunciation = true,
+  isGuest = false,
 }: StudyScreenProps) {
   const { query, scoped, practice } = useQueueQuery();
   const {
@@ -78,6 +84,12 @@ function StudySession({
   useEffect(() => {
     setSoundEnabled(soundEffects);
   }, [soundEffects]);
+
+  // Launch-funnel: guest reached the study screen (per metrics.md this fires
+  // here, not on the landing page). Once per browser; no-op without Umami.
+  useEffect(() => {
+    if (isGuest) trackEventOnce("guest_session_start");
+  }, [isGuest]);
 
   // Play a blip per grade, keyed off lastGrade.id so each grade fires once.
   useEffect(() => {

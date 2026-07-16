@@ -15,7 +15,7 @@ import Link from "next/link";
 import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 
-const GITHUB_URL = "https://github.com/s-mberli/recall";
+const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
 const STACK = [
   {
@@ -40,8 +40,8 @@ const STACK = [
   },
   {
     icon: Timer,
-    title: "Reviews at the right moment",
-    body: "A research-backed schedule brings each word back just before you'd forget it.",
+    title: "Modern scheduling, by default",
+    body: "FSRS — the algorithm Anki users install by choice — is the default here, with SM-2 and Leitner switchable anytime.",
   },
   {
     icon: Import,
@@ -69,7 +69,7 @@ const STEPS = [
   {
     n: "2",
     title: "Pick a deck",
-    body: "HSK level, frequency list, German or Spanish starters — or import your own.",
+    body: "Tell us your HSK level and the right deck is waiting — or import your own lists.",
   },
   {
     n: "3",
@@ -93,7 +93,7 @@ const FAQ = [
   },
   {
     q: "What languages does HSK Nest support?",
-    a: "Mandarin is the flagship: full HSK 1–9 plus 3,000 example sentences with pinyin. German and Spanish starter decks are included, and you can create decks for any language.",
+    a: "HSK Nest is built for Mandarin: full HSK 1–9 (the 2021 standard) plus 3,000 example sentences with pinyin. The engine underneath is language-agnostic, so you can import your own CSV decks for anything else you're memorizing.",
   },
   {
     q: "What happens to my progress if I stop paying?",

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 
 import { HowItWorksModal } from "@/components/HowItWorksModal";
 
-const SEEN_KEY = "recall-seen-intro";
+const SEEN_KEY = "hsknest-seen-intro";
+// Pre-rename key: honored so existing users don't see the intro again.
+const LEGACY_SEEN_KEY = "recall-seen-intro";
 
 /**
  * Opens the "How it works" modal exactly once — on the first dashboard visit
@@ -16,7 +18,11 @@ export function FirstVisitIntro() {
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(SEEN_KEY)) return;
+      if (
+        localStorage.getItem(SEEN_KEY) ||
+        localStorage.getItem(LEGACY_SEEN_KEY)
+      )
+        return;
       localStorage.setItem(SEEN_KEY, "1");
       setOpen(true);
     } catch {

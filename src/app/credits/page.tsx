@@ -64,7 +64,7 @@ export default function CreditsPage() {
           (CC BY-SA 4.0). Our trimmed build of the dictionary data is shared
           under the same license in the{" "}
           <a
-            href="https://github.com/s-mberli/recall"
+            href="https://github.com/s-mberli/hsknest"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -116,7 +116,7 @@ export default function CreditsPage() {
           </a>{" "}
           license —{" "}
           <a
-            href="https://github.com/s-mberli/recall"
+            href="https://github.com/s-mberli/hsknest"
             target="_blank"
             rel="noopener noreferrer"
           >

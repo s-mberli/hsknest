@@ -20,7 +20,7 @@ services:
       # verification via Resend (https://resend.com). Without it, links are
       # logged to the container's stdout instead of emailed.
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-noreply@recall-app.com}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@hsknest.com}
       # Self-hosted stays "true" (the default): no trials, no paywall, no
       # Stripe. Only the managed hosted instance ever sets this to "false".
       SELF_HOSTED: ${SELF_HOSTED:-true}

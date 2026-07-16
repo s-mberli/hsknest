@@ -66,9 +66,9 @@ export function LandingHero() {
           transition={{ delay: 0.2 }}
           className="text-5xl font-extrabold tracking-tight sm:text-7xl"
         >
-          Vocabulary you&apos;ll <br className="hidden sm:block" />
+          All of HSK 1–9, ready <br className="hidden sm:block" />
           <span className="bg-gradient-to-br from-primary via-primary/80 to-primary/40 bg-clip-text text-transparent drop-shadow-sm">
-            actually remember.
+            before you finish your coffee.
           </span>
         </motion.h1>
 
@@ -79,9 +79,10 @@ export function LandingHero() {
           transition={{ delay: 0.3 }}
           className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
         >
-          Spaced repetition with real example sentences and audio — every HSK
-          word pre-loaded, plus decks for German, Spanish, and your own. Free
-          for 14 days, no card required.
+          11,000+ words pre-loaded with real example sentences and audio,
+          scheduled by FSRS — modern spaced-repetition science, minus the
+          plugin archaeology. Swipe to grade, quiz yourself, match pairs.
+          Free for 14 days, no card required.
         </motion.p>
 
         <motion.div
@@ -106,7 +107,7 @@ export function LandingHero() {
         >
           No signup to try ·{" "}
           <a
-            href="https://github.com/s-mberli/recall"
+            href="https://github.com/s-mberli/hsknest"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-2 hover:text-foreground"

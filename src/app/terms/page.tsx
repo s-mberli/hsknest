@@ -37,7 +37,7 @@ export default function TermsPage() {
 
         <h2>5. Content Ownership</h2>
         <p>
-          The original starter lists provided (e.g., German, Chinese, Spanish essentials) are provided as part of the service. You retain ownership of any custom lists you create. By making a custom list public, you grant us a license to distribute it to other users.
+          The pre-loaded vocabulary lists (e.g., the HSK decks and example sentences) are provided as part of the service. You retain ownership of any custom lists you create. By making a custom list public, you grant us a license to distribute it to other users.
         </p>
 
         <h2>6. Free Trial</h2>
