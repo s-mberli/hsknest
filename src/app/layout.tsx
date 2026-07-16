@@ -26,12 +26,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Cookieless, self-hosted Umami analytics — only loads when both env vars
+  // are set (hosted instance); self-hosters stay analytics-free by default.
+  const umamiUrl = process.env.NEXT_PUBLIC_UMAMI_URL;
+  const umamiSiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+
   return (
     <html
       lang="en"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      {umamiUrl && umamiSiteId && (
+        <head>
+          <script
+            defer
+            src={`${umamiUrl}/script.js`}
+            data-website-id={umamiSiteId}
+          />
+        </head>
+      )}
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>{children}</Providers>
         <Toaster position="top-center" />
