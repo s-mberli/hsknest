@@ -1,7 +1,7 @@
 ---
 name: recall-change-control
 description: >-
-  Change classification, gating, and review rules for the Recall SRS app. Load
+  Change classification, gating, and review rules for the HSK Nest SRS app. Load
   this skill BEFORE making any change to this repo — especially before editing
   the Prisma schema or migrations, anything in src/lib/srs/*, the study
   queue/cap logic, API routes, or UI components. Also load it when asked "can I
@@ -12,9 +12,9 @@ description: >-
   recall-architecture-contract for invariants.
 ---
 
-# Recall change control
+# HSK Nest change control
 
-How changes to Recall are classified, gated, and reviewed. Recall is a
+How changes to HSK Nest are classified, gated, and reviewed. HSK Nest is a
 self-hostable spaced-repetition (SRS — "spaced repetition system", software
 that schedules flashcard reviews at growing intervals) vocabulary trainer:
 Next.js App Router + TypeScript, Prisma ORM + SQLite, NextAuth credentials

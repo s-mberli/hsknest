@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Recall",
-  description: "Privacy Policy for Recall app.",
+  title: "Privacy Policy | HSK Nest",
+  description: "Privacy Policy for HSK Nest app.",
 };
 
 export default function PrivacyPage() {
@@ -17,7 +17,7 @@ export default function PrivacyPage() {
 
         <h2>1. Information We Collect</h2>
         <p>
-          We only collect the information necessary to provide you with the Recall spaced-repetition service. This includes:
+          We only collect the information necessary to provide you with the HSK Nest spaced-repetition service. This includes:
         </p>
         <ul>
           <li><strong>Account Data:</strong> Email address and encrypted password.</li>

@@ -1,9 +1,9 @@
 ---
 name: recall-diagnostics-toolkit
-description: Measurement and inspection tools for the Recall SRS app. Use when you need to MEASURE scheduler behavior instead of eyeballing it — inspecting a user's study-queue composition (due reviews, new-word budget, assumed-check budget), verifying SM-2/Leitner intervals and ease-factor trajectories numerically, simulating a grade sequence through the real scheduler code, checking DB health (users, words, progress rows by state, review logs), or answering "what is currently in this user's queue and why?" / "what interval SHOULD this card have gotten?". Use to REPRODUCE or MEASURE an interval/queue numerically with scripts (for theory explanations use srs-theory-reference; for suspected bugs use recall-debugging-playbook). Ships runnable read-only tsx scripts.
+description: Measurement and inspection tools for the HSK Nest SRS app. Use when you need to MEASURE scheduler behavior instead of eyeballing it — inspecting a user's study-queue composition (due reviews, new-word budget, assumed-check budget), verifying SM-2/Leitner intervals and ease-factor trajectories numerically, simulating a grade sequence through the real scheduler code, checking DB health (users, words, progress rows by state, review logs), or answering "what is currently in this user's queue and why?" / "what interval SHOULD this card have gotten?". Use to REPRODUCE or MEASURE an interval/queue numerically with scripts (for theory explanations use srs-theory-reference; for suspected bugs use recall-debugging-playbook). Ships runnable read-only tsx scripts.
 ---
 
-# Recall Diagnostics Toolkit
+# HSK Nest Diagnostics Toolkit
 
 Measure, don't eyeball. This skill ships three read-only diagnostic scripts in
 `.claude/skills/recall-diagnostics-toolkit/scripts/` plus an interpretation

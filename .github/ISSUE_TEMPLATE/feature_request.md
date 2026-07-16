@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: An idea that would make Recall better
+about: An idea that would make HSK Nest better
 title: ""
 labels: enhancement
 ---

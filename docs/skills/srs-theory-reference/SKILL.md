@@ -1,9 +1,9 @@
 ---
 name: srs-theory-reference
-description: Domain-theory knowledge pack for spaced repetition as implemented in Recall. Load when working on or reasoning about SM-2, Leitner, ease factor, intervals, review quality grades, the forgetting curve, lapses, card states (NEW/LEARNING/REVIEW/LAPSED/MASTERED/ASSUMED), user scheduling modifiers (intervalModifier, lapseModifier, masteryThresholdDays, fuzzIntervals), FSRS background, or any code in src/lib/srs/ and the review API. Load to EXPLAIN the math/theory behind an interval or grade — "why did this card get scheduled X days out?", "what does quality 3 mean?", "how does the scheduler work?". (To measure/reproduce numbers with scripts use recall-diagnostics-toolkit; if you believe the result is a bug use recall-debugging-playbook.)
+description: Domain-theory knowledge pack for spaced repetition as implemented in HSK Nest. Load when working on or reasoning about SM-2, Leitner, ease factor, intervals, review quality grades, the forgetting curve, lapses, card states (NEW/LEARNING/REVIEW/LAPSED/MASTERED/ASSUMED), user scheduling modifiers (intervalModifier, lapseModifier, masteryThresholdDays, fuzzIntervals), FSRS background, or any code in src/lib/srs/ and the review API. Load to EXPLAIN the math/theory behind an interval or grade — "why did this card get scheduled X days out?", "what does quality 3 mean?", "how does the scheduler work?". (To measure/reproduce numbers with scripts use recall-diagnostics-toolkit; if you believe the result is a bug use recall-debugging-playbook.)
 ---
 
-# SRS Theory Reference (Recall)
+# SRS Theory Reference (HSK Nest)
 
 Ground truth verified against repo code on 2026-07-07. Every formula below is read from `src/lib/srs/` and the review API, not from memory. Where external spaced-repetition canon is cited, it is labeled **[external background]**.
 

@@ -58,7 +58,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
       {!open ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm">
-            <span className="font-medium">You&apos;re trying Recall as a guest.</span>{" "}
+            <span className="font-medium">You&apos;re trying HSK Nest as a guest.</span>{" "}
             <span className="text-muted-foreground">
               Add an email and password to keep your progress.
             </span>

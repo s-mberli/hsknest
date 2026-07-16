@@ -1,7 +1,7 @@
 ---
 name: recall-build-and-env
 description: >
-  Recreate the Recall dev environment from scratch and fix environment/install
+  Recreate the HSK Nest dev environment from scratch and fix environment/install
   problems. Use when: setting up a fresh clone; npm install fails; .env is
   missing or wrong (DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL); prisma
   migrate/seed fails locally; SQLite "database is locked" or Prisma engine
@@ -10,7 +10,7 @@ description: >
   healthy before other work.
 ---
 
-# Recall — Build & Environment Runbook
+# HSK Nest — Build & Environment Runbook
 
 Facts verified against the repo on **2026-07-07**. The repo directory name contains a **space** — always quote paths in commands and scripts. Commands below use relative paths from the repo root. (Original dev machine root: `C:\Users\mrks\Documents\claude project`, informational only.)
 

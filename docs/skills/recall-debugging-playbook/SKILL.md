@@ -1,9 +1,9 @@
 ---
 name: recall-debugging-playbook
-description: Symptom-first triage playbook for any bug, error message, test failure, or unexpected behavior in the Recall SRS app — 401s or login/session failures, NextAuth/NEXTAUTH_SECRET misconfig, Prisma/SQLite errors on Windows (locked database, migrate drift, EPERM, seed issues), scheduler/queue surprises — an interval or queue result you believe is a BUG (word not appearing, daily caps, wrong intervals, timezone/calendar-day confusion) — and Playwright/Vitest failures. Load whenever something is broken, failing, or behaving unexpectedly and you need to figure out why. (To merely measure/reproduce intervals numerically use recall-diagnostics-toolkit; for the theory behind an interval use srs-theory-reference.)
+description: Symptom-first triage playbook for any bug, error message, test failure, or unexpected behavior in the HSK Nest SRS app — 401s or login/session failures, NextAuth/NEXTAUTH_SECRET misconfig, Prisma/SQLite errors on Windows (locked database, migrate drift, EPERM, seed issues), scheduler/queue surprises — an interval or queue result you believe is a BUG (word not appearing, daily caps, wrong intervals, timezone/calendar-day confusion) — and Playwright/Vitest failures. Load whenever something is broken, failing, or behaving unexpectedly and you need to figure out why. (To merely measure/reproduce intervals numerically use recall-diagnostics-toolkit; for the theory behind an interval use srs-theory-reference.)
 ---
 
-# Recall Debugging Playbook
+# HSK Nest Debugging Playbook
 
 Symptom → cause → discriminating experiment, grounded in this repo's actual code. Facts verified against source on 2026-07-07.
 

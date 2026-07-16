@@ -1,9 +1,9 @@
 ---
 name: recall-architecture-contract
-description: The load-bearing architecture contract for the Recall SRS vocabulary trainer. Load when touching the Prisma schema, src/lib/srs/* (SM-2, Leitner, modifiers), ownership/visibility rules, the study queue and daily caps, auth/validation/request flow — or when asking "why is the data model shaped this way?", "what invariants must hold?", "can I add a language-specific field?", "how does algorithm switching work?", or "what are the known weak points?". Pairs with recall-change-control for gating.
+description: The load-bearing architecture contract for the HSK Nest SRS vocabulary trainer. Load when touching the Prisma schema, src/lib/srs/* (SM-2, Leitner, modifiers), ownership/visibility rules, the study queue and daily caps, auth/validation/request flow — or when asking "why is the data model shaped this way?", "what invariants must hold?", "can I add a language-specific field?", "how does algorithm switching work?", or "what are the known weak points?". Pairs with recall-change-control for gating.
 ---
 
-# Recall Architecture Contract
+# HSK Nest Architecture Contract
 
 The design decisions this app depends on, why they exist, and the invariants any change must preserve. Verified against source on **2026-07-07**. Ground-truth files: `prisma/schema.prisma`, `src/lib/`, `docs/ARCHITECTURE.md`, `CLAUDE.md`.
 

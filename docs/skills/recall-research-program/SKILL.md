@@ -1,11 +1,11 @@
 ---
 name: recall-research-program
-description: The research program for Recall's scheduling science. Load when generating or evaluating research ideas, retention analytics, algorithm comparison (SM-2 vs Leitner vs future FSRS), retention studies on ReviewLog data, evaluating a scheduling hypothesis, designing an offline experiment or simulation, asking "is this SRS idea worth pursuing?", "what open problems could this project attack?", or "what's the evidence bar for accepting a scheduling claim?".
+description: The research program for HSK Nest's scheduling science. Load when generating or evaluating research ideas, retention analytics, algorithm comparison (SM-2 vs Leitner vs future FSRS), retention studies on ReviewLog data, evaluating a scheduling hypothesis, designing an offline experiment or simulation, asking "is this SRS idea worth pursuing?", "what open problems could this project attack?", or "what's the evidence bar for accepting a scheduling claim?".
 ---
 
-# Recall Research Program
+# HSK Nest Research Program
 
-Recall is not just an app; it owns a rare dataset: an append-only `ReviewLog` of every grade, per user, per algorithm, on a platform where users can switch algorithms. This skill defines (A) the research FRONTIER — open problems where this repo could advance the state of the art — and (B) the METHODOLOGY — the discipline that turns a hunch into an accepted result here.
+HSK Nest is not just an app; it owns a rare dataset: an append-only `ReviewLog` of every grade, per user, per algorithm, on a platform where users can switch algorithms. This skill defines (A) the research FRONTIER — open problems where this repo could advance the state of the art — and (B) the METHODOLOGY — the discipline that turns a hunch into an accepted result here.
 
 Everything below labeled **open** or **candidate** is unproven. Do not present it as a capability of the app.
 
@@ -62,7 +62,7 @@ Everything below labeled **open** or **candidate** is unproven. Do not present i
 
 **Ground truth (verified 2026-07-07).** Quiz and matching feed the SAME scheduler as flashcards with the SAME grade values: `QuizScreen.tsx` posts `quality = isRight ? 4 : 1` and `MatchScreen.tsx` posts `wasMissed ? 1 : 4` via `src/lib/postReview.ts` → `POST /api/study/review` — identical to swipe-right = 4 / swipe-left = 1 on flashcards (canonical mapping: `srs-theory-reference` §3). Critically, `ReviewLog` has **no mode/source column**: a multiple-choice success is currently indistinguishable from a free-recall success in the log.
 
-**Open question.** Recognition (4-choice quiz, ~25% guess floor; matching, even easier) is a weaker memory signal than free recall. Should it earn the same interval growth? Nobody has a per-user answer because no platform logs both signals against one scheduler — Recall does, except it doesn't *label* them yet.
+**Open question.** Recognition (4-choice quiz, ~25% guess floor; matching, even easier) is a weaker memory signal than free recall. Should it earn the same interval growth? Nobody has a per-user answer because no platform logs both signals against one scheduler — HSK Nest does, except it doesn't *label* them yet.
 
 **First three steps in this repo.**
 1. Via `recall-change-control`: propose adding a nullable `mode` column ("flashcard" | "quiz" | "match") to `ReviewLog` and threading it through `postReview.ts`, the flashcard submit path, and `reviewSchema` in `src/lib/validation.ts`. Nullable = backward-compatible; old rows stay unlabeled.

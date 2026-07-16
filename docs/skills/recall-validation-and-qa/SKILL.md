@@ -1,9 +1,9 @@
 ---
 name: recall-validation-and-qa
-description: Testing and evidence rules for the Recall SRS app. Use when writing or running tests (unit or E2E), proving that a change works, deciding what evidence a PR needs before merge, adding a new test file, extending the E2E journey, or verifying a scheduler (SM-2/Leitner/modifiers) change. Covers npm test, vitest usage, Playwright E2E, the evidence bar per change class, and the fixed-clock pattern for SRS tests.
+description: Testing and evidence rules for the HSK Nest SRS app. Use when writing or running tests (unit or E2E), proving that a change works, deciding what evidence a PR needs before merge, adding a new test file, extending the E2E journey, or verifying a scheduler (SM-2/Leitner/modifiers) change. Covers npm test, vitest usage, Playwright E2E, the evidence bar per change class, and the fixed-clock pattern for SRS tests.
 ---
 
-# Recall: Validation and QA
+# HSK Nest: Validation and QA
 
 What counts as evidence in this repo, what tests exist, and how to add more.
 

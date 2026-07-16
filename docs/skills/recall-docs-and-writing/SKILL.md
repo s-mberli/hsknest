@@ -1,18 +1,18 @@
 ---
 name: recall-docs-and-writing
 description: >
-  Writing and maintaining Recall's docs of record and external positioning.
+  Writing and maintaining HSK Nest's docs of record and external positioning.
   Use when updating README.md or anything in docs/ (ARCHITECTURE.md,
   CONFIGURATION.md, DEPLOYMENT.md), writing release notes or roadmap entries,
   regenerating README screenshots (scripts/screenshots.mjs), answering
-  licensing questions (AGPL-3.0, HSK MIT attribution), or deciding what Recall
+  licensing questions (AGPL-3.0, HSK MIT attribution), or deciding what HSK Nest
   may claim vs competitors (Anki, HackChinese). Covers house style, doc
   templates, the change→doc matrix, and claims discipline.
 ---
 
-# Recall: Docs and Writing
+# HSK Nest: Docs and Writing
 
-Recall is a self-hostable, AGPL-3.0 spaced-repetition vocabulary trainer
+HSK Nest is a self-hostable, AGPL-3.0 spaced-repetition vocabulary trainer
 (Next.js + Prisma/SQLite), positioned as a privacy-first alternative to
 Anki/HackChinese. This skill governs its documentation of record and every
 externally visible claim.
@@ -187,7 +187,7 @@ Rules:
 ## License duties
 
 - **AGPL-3.0** (`LICENSE`): self-hosting is free; anyone offering a modified
-  Recall as a network service must share their modifications. State this
+  HSK Nest as a network service must share their modifications. State this
   plainly wherever licensing comes up; never soften it to "MIT-like".
 - **HSK data attribution** (`prisma/data/hsk/README.md`): the HSK 1–6 JSON is
   derived from `complete-hsk-vocabulary` by Yanis Zafirópulos, MIT License.

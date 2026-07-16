@@ -1,9 +1,9 @@
 ---
 name: recall-fsrs-campaign
-description: Executable, decision-gated campaign to add FSRS (Free Spaced Repetition Scheduler) as Recall's third scheduling strategy. Load when implementing FSRS, adding any new scheduling algorithm/strategy to src/lib/srs/, extending the SRSAlgorithmType enum, deciding how to use the UserProgress.srsData JSON field or the ReviewLog history, mapping the 0-5 review quality scale to FSRS grades, wiring difficulty/stability/retrievability state, fitting FSRS parameters from review logs, or answering "how would FSRS fit into this codebase?".
+description: Executable, decision-gated campaign to add FSRS (Free Spaced Repetition Scheduler) as HSK Nest's third scheduling strategy. Load when implementing FSRS, adding any new scheduling algorithm/strategy to src/lib/srs/, extending the SRSAlgorithmType enum, deciding how to use the UserProgress.srsData JSON field or the ReviewLog history, mapping the 0-5 review quality scale to FSRS grades, wiring difficulty/stability/retrievability state, fitting FSRS parameters from review logs, or answering "how would FSRS fit into this codebase?".
 ---
 
-# Recall FSRS Campaign
+# HSK Nest FSRS Campaign
 
 A phased, gated runbook for adding **FSRS** as a third strategy alongside SM-2 and Leitner. Every phase ends in a GATE with an expected observation. Do not proceed past a failed gate — follow its branch note instead.
 

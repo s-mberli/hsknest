@@ -1,6 +1,6 @@
-# Contributing to Recall
+# Contributing to HSK Nest
 
-Thanks for your interest! Recall is AGPL-3.0 open source and contributions
+Thanks for your interest! HSK Nest is AGPL-3.0 open source and contributions
 of every size are welcome — bug reports, docs fixes, features.
 
 ## Quick start

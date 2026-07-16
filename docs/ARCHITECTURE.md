@@ -1,6 +1,6 @@
 # Architecture
 
-A concise tour of how Recall is put together: the data model, the spaced-repetition strategy pattern, the queue/cap logic, and how a request flows through the app.
+A concise tour of how HSK Nest is put together: the data model, the spaced-repetition strategy pattern, the queue/cap logic, and how a request flows through the app.
 
 ## Data model (`prisma/schema.prisma`)
 

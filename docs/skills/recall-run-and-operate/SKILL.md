@@ -1,9 +1,9 @@
 ---
 name: recall-run-and-operate
-description: Run, deploy, and operate the Recall SRS app — local dev server (npm run dev on :3000), production build/start, Docker image and compose stack, the migrate→seed→serve boot sequence, Coolify/VPS deployment, Caddy reverse proxy and HTTPS, nightly SQLite backups, reading feedback, CSV export, progress reset, secret rotation, and post-deploy checks. Use for "how do I run this", "deploy to the VPS", "where does the database live", "backup the db", or operating a live instance.
+description: Run, deploy, and operate the HSK Nest SRS app — local dev server (npm run dev on :3000), production build/start, Docker image and compose stack, the migrate→seed→serve boot sequence, Coolify/VPS deployment, Caddy reverse proxy and HTTPS, nightly SQLite backups, reading feedback, CSV export, progress reset, secret rotation, and post-deploy checks. Use for "how do I run this", "deploy to the VPS", "where does the database live", "backup the db", or operating a live instance.
 ---
 
-# Recall — Run and Operate
+# HSK Nest — Run and Operate
 
 Runbook for running the app locally (Windows dev machine), building for production, and operating the Dockerized instance on a Linux VPS. All commands verified against `package.json`, `Dockerfile`, `docker-compose.yml`, `docker-entrypoint.sh`, `next.config.ts`, and `docs/DEPLOYMENT.md` as of 2026-07-07 (Next.js 16.2.10, Prisma 6, Node 22-alpine images).
 

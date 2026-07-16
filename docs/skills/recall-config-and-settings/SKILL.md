@@ -1,9 +1,9 @@
 ---
 name: recall-config-and-settings
-description: Catalog of every configuration axis in Recall — environment variables (DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL), per-account user settings (preferredAlgorithm, theme, studyTheme, cardTextSize, dailyNewWords, assumedCheckPerDay, intervalModifier, lapseModifier, masteryThresholdDays, fuzzIntervals), session-scope choices, valid ranges and defaults, tuning knobs, and the step-by-step checklist for ADDING a new setting (schema → Zod → API → UI → consumer → tests). Use when configuring the app, changing a default, tuning SRS behavior, or wiring a new setting end-to-end.
+description: Catalog of every configuration axis in HSK Nest — environment variables (DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL), per-account user settings (preferredAlgorithm, theme, studyTheme, cardTextSize, dailyNewWords, assumedCheckPerDay, intervalModifier, lapseModifier, masteryThresholdDays, fuzzIntervals), session-scope choices, valid ranges and defaults, tuning knobs, and the step-by-step checklist for ADDING a new setting (schema → Zod → API → UI → consumer → tests). Use when configuring the app, changing a default, tuning SRS behavior, or wiring a new setting end-to-end.
 ---
 
-# Recall: Configuration & Settings Catalog
+# HSK Nest: Configuration & Settings Catalog
 
 Ground truth verified against the code on **2026-07-07**. When in doubt, the code wins over docs — re-verify with the commands at the bottom.
 

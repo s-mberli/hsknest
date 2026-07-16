@@ -28,7 +28,7 @@ test("sign up and land on the dashboard", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
 });
 
-/** Dismiss the one-time "How Recall works" modal shown on the first dashboard visit. */
+/** Dismiss the one-time "How HSK Nest works" modal shown on the first dashboard visit. */
 async function dismissIntro(page: import("playwright/test").Page) {
   const gotIt = page.getByRole("button", { name: "Got it" });
   try {

@@ -6,9 +6,9 @@ import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Pricing | Recall",
+  title: "Pricing | HSK Nest",
   description:
-    "Recall Hosted is €5/month with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
+    "HSK Nest Hosted is €5/month with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
 };
 
 const GITHUB_URL = "https://github.com/s-mberli/recall";
