@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { TriangleAlert, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -12,7 +12,11 @@ import {
   speechSupported,
   voicesLoaded,
 } from "@/lib/speech";
-import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
+import {
+  CARD_TEXT_CLASSES,
+  termSizeClass,
+  type CardTextSize,
+} from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
@@ -205,8 +209,10 @@ export function CardFace({
       )}
       <p
         className={cn(
-          "max-w-full break-words px-2 font-bold leading-tight tracking-tight",
-          sizes.term
+          // break-normal: wrap between words only — long terms shrink via
+          // termSizeClass instead of ever breaking mid-word.
+          "max-w-full break-normal px-2 font-bold leading-tight tracking-tight",
+          termSizeClass(card.term, textSize)
         )}
       >
         {card.term}
@@ -214,13 +220,16 @@ export function CardFace({
 
       {/* Reading — a primary recall target, so it reads loud: colored, larger,
           with an inline speaker (which also auto-plays when enabled). */}
-      <AnimatePresence>
-        {showPhonetic && (
+      {/* No nested AnimatePresence here: one inside an exiting card blocks
+          the parent presence (CardStack) from ever unmounting it — swiped
+          cards pile up frozen on screen (`propagate` did not resolve it with
+          our stage-driven children). Stages only ever advance within a card,
+          so an enter animation is all that's needed. */}
+      {showPhonetic && (
           <motion.div
             key="phonetic"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
             className="flex items-center gap-2"
           >
             <span
@@ -254,15 +263,12 @@ export function CardFace({
             )}
           </motion.div>
         )}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {showFull && (
+      {showFull && (
           <motion.div
             key="full"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
             className="flex w-full flex-col items-center gap-1.5 px-2"
           >
             {/* Primary meaning leads; long glosses step down so they can't
@@ -330,7 +336,6 @@ export function CardFace({
             )}
           </motion.div>
         )}
-      </AnimatePresence>
 
       {/* Prompt + difficult-word hint. */}
       {interactive && (

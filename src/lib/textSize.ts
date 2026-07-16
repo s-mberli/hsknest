@@ -42,3 +42,33 @@ export const CARD_TEXT_CLASSES: Record<
 export function normalizeCardTextSize(value: unknown): CardTextSize {
   return value === "small" || value === "large" ? value : "normal";
 }
+
+// Term size ladder from smallest to largest; each CardTextSize starts at a
+// base rung and long terms step down so a single word never has to break
+// mid-word ("die Schwester" must wrap as words, not as "Schweste|r").
+const TERM_SIZE_LADDER = [
+  "text-2xl sm:text-3xl",
+  "text-3xl sm:text-4xl",
+  "text-4xl sm:text-5xl",
+  "text-5xl sm:text-6xl",
+  "text-6xl sm:text-7xl",
+] as const;
+
+const TERM_BASE_RUNG: Record<CardTextSize, number> = {
+  small: 2,
+  normal: 3,
+  large: 4,
+};
+
+/**
+ * Size class for a card's term, stepped down when its longest word is long
+ * (alphabetic vocab — German compounds, phrases). CJK terms are short and
+ * keep the base size.
+ */
+export function termSizeClass(term: string, size: CardTextSize): string {
+  const longestWord = term
+    .split(/\s+/)
+    .reduce((max, w) => Math.max(max, w.length), 0);
+  const stepDown = longestWord > 12 ? 2 : longestWord > 7 ? 1 : 0;
+  return TERM_SIZE_LADDER[Math.max(0, TERM_BASE_RUNG[size] - stepDown)];
+}

@@ -21,7 +21,13 @@ interface SwipeCardProps {
   /** Depth offset for stacked cards behind the top card. */
   depth: number;
   isTop: boolean;
-  exitDirection: SwipeDirection | null;
+  /**
+   * Non-null → this is a committed card flying off screen. The parent keeps
+   * it mounted briefly and animates it out here (deliberately NOT
+   * AnimatePresence: its exit tracking silently breaks under the current
+   * React/framer pairing, leaving dismissed cards frozen on screen).
+   */
+  flyOut?: SwipeDirection | null;
   textSize: CardTextSize;
   /** Speak the term automatically when its reading is revealed (top card). */
   autoPlay?: boolean;
@@ -37,7 +43,7 @@ export function SwipeCard({
   onAdvance,
   depth,
   isTop,
-  exitDirection,
+  flyOut = null,
   textSize,
   autoPlay = false,
 }: SwipeCardProps) {
@@ -50,7 +56,7 @@ export function SwipeCard({
   const easyOpacity = useTransform(y, [-150, -40], [1, 0]);
   const hardOpacity = useTransform(y, [40, 150], [0, 1]);
 
-  const armed = isTop && stage === "FULL";
+  const armed = isTop && stage === "FULL" && !flyOut;
 
   const vw = typeof window !== "undefined" ? window.innerWidth : 800;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -73,48 +79,54 @@ export function SwipeCard({
     }
   }
 
-  // Direction-specific exit target.
-  const exit =
-    exitDirection === "right"
+  // Direction-specific fly-off target.
+  const flyTarget =
+    flyOut === "right"
       ? { x: vw * 1.3, rotate: 30, opacity: 0 }
-      : exitDirection === "left"
+      : flyOut === "left"
         ? { x: -vw * 1.3, rotate: -30, opacity: 0 }
-        : exitDirection === "up"
+        : flyOut === "up"
           ? { y: -vh * 1.1, scale: 1.05, opacity: 0 }
-          : exitDirection === "down"
+          : flyOut === "down"
             ? { y: vh * 0.5, opacity: 0 }
-            : { opacity: 0 };
+            : undefined;
 
   return (
     <motion.div
       className="absolute inset-0"
       style={
-        isTop
-          ? { x, y, rotate, zIndex: 10 }
-          : {
-              scale: 1 - depth * 0.05,
-              y: depth * 12,
-              zIndex: 10 - depth,
-            }
+        flyOut
+          ? { x, y, rotate, zIndex: 20, pointerEvents: "none" }
+          : isTop
+            ? { x, y, rotate, zIndex: 10 }
+            : {
+                scale: 1 - depth * 0.05,
+                y: depth * 12,
+                zIndex: 10 - depth,
+              }
       }
-      initial={isTop ? false : { scale: 1 - depth * 0.05, y: depth * 12 }}
+      initial={isTop || flyOut ? false : { scale: 1 - depth * 0.05, y: depth * 12 }}
       animate={
-        isTop ? undefined : { scale: 1 - depth * 0.05, y: depth * 12 }
+        flyTarget ??
+        (isTop ? undefined : { scale: 1 - depth * 0.05, y: depth * 12 })
       }
-      exit={{
-        ...exit,
-        transition: { type: "spring", stiffness: 200, damping: 25 },
-      }}
+      transition={
+        flyTarget
+          ? { type: "spring", stiffness: 200, damping: 25 }
+          : undefined
+      }
       drag={armed}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={0.9}
       onDragEnd={handleDragEnd}
       onTap={
-        isTop && stage !== "FULL" && onAdvance ? () => onAdvance() : undefined
+        isTop && !flyOut && stage !== "FULL" && onAdvance
+          ? () => onAdvance()
+          : undefined
       }
     >
       {/* Previews aren't graded, so the grade-direction hints would mislead. */}
-      {isTop && armed && !card.preview && (
+      {armed && !card.preview && (
         <SwipeIndicators
           forgotOpacity={forgotOpacity}
           knewOpacity={knewOpacity}
@@ -124,10 +136,12 @@ export function SwipeCard({
       )}
       <CardFace
         card={card}
-        stage={isTop ? stage : "TERM"}
-        interactive={isTop}
+        stage={isTop || flyOut ? stage : "TERM"}
+        // Flying cards keep the interactive layout so nothing reflows
+        // mid-flight; pointer events are already off on the wrapper.
+        interactive={isTop || !!flyOut}
         textSize={textSize}
-        autoPlay={isTop && autoPlay}
+        autoPlay={isTop && !flyOut && autoPlay}
       />
     </motion.div>
   );
