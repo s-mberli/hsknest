@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 import { AuroraGlow } from "@/components/fx/AuroraGlow";
+import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
@@ -34,7 +35,7 @@ export function LandingHero() {
     : fadeUp;
 
   return (
-    <main className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-24 text-center">
+    <main className="relative flex min-h-[85svh] flex-1 flex-col items-center justify-center overflow-hidden px-6 py-24 text-center">
       {/* Dynamic Background Glow */}
       <div aria-hidden="true" className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
       <div aria-hidden="true">
@@ -65,9 +66,9 @@ export function LandingHero() {
           transition={{ delay: 0.2 }}
           className="text-5xl font-extrabold tracking-tight sm:text-7xl"
         >
-          Remember more, <br className="hidden sm:block" />
+          Vocabulary you&apos;ll <br className="hidden sm:block" />
           <span className="bg-gradient-to-br from-primary via-primary/80 to-primary/40 bg-clip-text text-transparent drop-shadow-sm">
-            review less.
+            actually remember.
           </span>
         </motion.h1>
 
@@ -78,9 +79,9 @@ export function LandingHero() {
           transition={{ delay: 0.3 }}
           className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
         >
-          A spaced-repetition study app for any language. Swipe through cards,
-          and a research-backed schedule brings each word back at just the
-          right moment.
+          Spaced repetition with real example sentences and audio — every HSK
+          word pre-loaded, plus decks for German, Spanish, and your own. Free
+          for 14 days, no card required.
         </motion.p>
 
         <motion.div
@@ -90,13 +91,29 @@ export function LandingHero() {
           transition={{ delay: 0.4 }}
           className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row"
         >
-          <Button asChild size="lg" className="h-14 w-full rounded-full px-8 text-base transition-all hover:scale-105 hover:shadow-[0_0_2rem_-0.5rem_#3b82f6] sm:w-auto">
-            <Link href="/signup">Get started</Link>
-          </Button>
+          <TryFreeButton className="w-full sm:w-auto" />
           <Button asChild variant="outline" size="lg" className="h-14 w-full rounded-full border-primary/20 bg-background/50 px-8 text-base backdrop-blur-md transition-all hover:scale-105 hover:bg-accent sm:w-auto">
             <Link href="/login">Sign in</Link>
           </Button>
         </motion.div>
+
+        <motion.p
+          initial={reducedMotion ? undefined : "hidden"}
+          animate={reducedMotion ? undefined : "visible"}
+          variants={safeFadeUp}
+          transition={{ delay: 0.5 }}
+          className="text-sm text-muted-foreground"
+        >
+          No signup to try ·{" "}
+          <a
+            href="https://github.com/s-mberli/recall"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            or self-host it free, forever
+          </a>
+        </motion.p>
       </div>
     </main>
   );

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { LandingHero } from "@/components/landing/LandingHero";
+import { LandingSections } from "@/components/landing/LandingSections";
 import { getCurrentUserId } from "@/lib/session";
 
 export default async function LandingPage() {
@@ -9,5 +10,10 @@ export default async function LandingPage() {
     redirect("/dashboard");
   }
 
-  return <LandingHero />;
+  return (
+    <>
+      <LandingHero />
+      <LandingSections />
+    </>
+  );
 }
