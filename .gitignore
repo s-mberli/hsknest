@@ -52,3 +52,6 @@ next-env.d.ts
 /CLAUDE.md
 /.claude/
 /.opencode/
+
+# private launch/ops notes
+/LAUNCH-CHECKLIST.md
