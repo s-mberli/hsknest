@@ -16,7 +16,14 @@ export async function POST(req: Request) {
   // Same limiter pattern as signup: 5 guest accounts per hour per IP.
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`guest:${ip}`, 5, 60 * 60 * 1000)) {
+  // Global fallback cap: X-Forwarded-For is client-controlled unless a
+  // trusted proxy overwrites it, so per-IP limits alone can be rotated
+  // around. 100/hour bounds worst-case abuse while staying far above any
+  // legitimate launch-day burst.
+  if (
+    !rateLimit(`guest:${ip}`, 5, 60 * 60 * 1000) ||
+    !rateLimit("guest:global", 100, 60 * 60 * 1000)
+  ) {
     return NextResponse.json(
       { error: "Too many guest sessions from this network — please try again later." },
       { status: 429 }

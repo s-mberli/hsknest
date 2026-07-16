@@ -18,7 +18,13 @@ export async function POST(req: Request) {
   // behind a trusted proxy; fall back to "unknown" when the header is absent.
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`signup:${ip}`, 5, 60 * 60 * 1000)) {
+  // Global fallback cap on top of per-IP: X-Forwarded-For can be spoofed if
+  // the container is ever reached without the trusted proxy in front, so
+  // bound total signup volume too (generous vs. any real launch spike).
+  if (
+    !rateLimit(`signup:${ip}`, 5, 60 * 60 * 1000) ||
+    !rateLimit("signup:global", 200, 60 * 60 * 1000)
+  ) {
     return NextResponse.json(
       { error: "Too many signups from this network — please try again later." },
       { status: 429 }

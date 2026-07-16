@@ -13,6 +13,22 @@ function warnNoEmailOnce() {
   );
 }
 
+/**
+ * Console fallback is a dev/self-host convenience. On the managed hosted
+ * instance (SELF_HOSTED=false) stdout is an aggregated log stream, so live
+ * reset/verification links must never be printed there — a missing key is
+ * an ops misconfiguration, reported loudly without the secret.
+ */
+function consoleFallbackAllowed(kind: string): boolean {
+  // Same predicate as isSelfHosted() in subscription.ts, inlined so this
+  // module stays importable from standalone scripts (no next/server).
+  if (process.env.SELF_HOSTED !== "false") return true;
+  console.error(
+    `[email] MISCONFIGURATION: RESEND_API_KEY is unset on the hosted instance — ${kind} email NOT sent and its link NOT logged. Set RESEND_API_KEY.`
+  );
+  return false;
+}
+
 export async function sendPasswordResetEmail(email: string, token: string) {
   // Use a placeholder base URL if NEXT_PUBLIC_APP_URL is not set
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -20,6 +36,9 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 
   if (!resend) {
     warnNoEmailOnce();
+    if (!consoleFallbackAllowed("password reset")) {
+      return { success: false, error: new Error("email not configured") };
+    }
     console.log(`[email] Password reset link for ${email}: ${resetLink}`);
     return { success: true, data: null };
   }
@@ -141,6 +160,9 @@ export async function sendVerificationEmail(email: string, token: string) {
 
   if (!resend) {
     warnNoEmailOnce();
+    if (!consoleFallbackAllowed("verification")) {
+      return { success: false, error: new Error("email not configured") };
+    }
     console.log(`[email] Verification link for ${email}: ${verifyLink}`);
     return { success: true, data: null };
   }

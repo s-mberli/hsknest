@@ -8,6 +8,13 @@ import { importSchema } from "@/lib/validation";
 
 const MAX_ROWS = 2000;
 
+// Same caps as wordInputSchema (manual add). Term is the word's identity, so
+// an oversized term drops the row; other fields are truncated best-effort.
+const MAX_TERM = 200;
+const MAX_TRANSLATION = 500;
+const MAX_PHONETIC = 200;
+const MAX_MEANINGS = 20;
+
 /**
  * Parse pasted/CSV text into words for an owned list. Skips blank/duplicate
  * terms (both within the paste and against words already in the list), caps at
@@ -59,8 +66,16 @@ export async function POST(
   let skipped = parseSkipped;
   let skippedAlreadyInList = 0;
   let skippedOverCap = 0;
+  let skippedInvalid = 0;
   const toAdd: typeof words = [];
   for (const w of words) {
+    // Enforce the same field caps as manual add: a raw CSV cell must not
+    // smuggle in oversized values that wordInputSchema would reject.
+    if (w.term.length > MAX_TERM) {
+      skipped += 1;
+      skippedInvalid += 1;
+      continue;
+    }
     if (existingTerms.has(w.term.toLowerCase())) {
       skipped += 1;
       skippedAlreadyInList += 1;
@@ -71,8 +86,17 @@ export async function POST(
       skippedOverCap += 1;
       continue;
     }
-    // A word needs a translation; treat term-only imports as needing a blank.
-    toAdd.push(w);
+    // Non-identity fields are truncated best-effort rather than dropped.
+    toAdd.push({
+      ...w,
+      translation: w.translation.slice(0, MAX_TRANSLATION),
+      phonetic: w.phonetic ? w.phonetic.slice(0, MAX_PHONETIC) : w.phonetic,
+      meanings: w.meanings
+        ? w.meanings
+            .slice(0, MAX_MEANINGS)
+            .map((m) => m.slice(0, MAX_TRANSLATION))
+        : w.meanings,
+    });
   }
 
   let added = 0;
@@ -107,6 +131,7 @@ export async function POST(
       duplicateInPaste: skippedDuplicate,
       alreadyInList: skippedAlreadyInList,
       overCap: skippedOverCap,
+      invalid: skippedInvalid,
     },
   });
 }
