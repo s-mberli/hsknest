@@ -21,6 +21,13 @@ services:
       # logged to the container's stdout instead of emailed.
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-noreply@recall-app.com}
+      # Self-hosted stays "true" (the default): no trials, no paywall, no
+      # Stripe. Only the managed hosted instance ever sets this to "false".
+      SELF_HOSTED: ${SELF_HOSTED:-true}
+      # Hosted instance only — ignored while SELF_HOSTED=true.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PRICE_ID: ${STRIPE_PRICE_ID:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     volumes:
       - recall-data:/data
 

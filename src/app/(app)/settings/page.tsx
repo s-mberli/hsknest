@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { SettingsForm } from "@/components/settings/SettingsForm";
+import { BillingSection } from "@/components/settings/sections/BillingSection";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
+import { getSubscriptionInfo } from "@/lib/subscription";
 
 export default async function SettingsPage() {
   const userId = await getCurrentUserId();
@@ -37,10 +39,13 @@ export default async function SettingsPage() {
     redirect("/onboarding");
   }
 
-  const languages = await prisma.language.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, name: true },
-  });
+  const [languages, sub] = await Promise.all([
+    prisma.language.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    getSubscriptionInfo(userId),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
@@ -67,6 +72,15 @@ export default async function SettingsPage() {
         targetLanguageId={user.targetLanguageId}
         languages={languages}
       />
+      {!sub.selfHosted && (
+        <div className="mt-6">
+          <BillingSection
+            status={sub.status}
+            daysLeft={sub.daysLeft}
+            hasStripeCustomer={sub.hasStripeCustomer}
+          />
+        </div>
+      )}
       <p className="mt-8 text-center text-xs text-muted-foreground">
         <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
           Terms

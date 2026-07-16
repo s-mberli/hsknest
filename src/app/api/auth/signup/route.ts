@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { signupSchema } from "@/lib/validation";
 import { sendVerificationEmail } from "@/lib/email";
+import { TRIAL_DAYS } from "@/lib/subscription";
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -42,7 +43,14 @@ export async function POST(req: Request) {
 
   const passwordHash = await hash(password, 12);
   const user = await prisma.user.create({
-    data: { email: normalizedEmail, passwordHash, name },
+    data: {
+      email: normalizedEmail,
+      passwordHash,
+      name,
+      // Hosted trial clock starts at signup (no card collected). Ignored
+      // entirely on self-hosted deployments.
+      trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86_400_000),
+    },
     select: { id: true },
   });
 

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
+import { TRIAL_DAYS } from "@/lib/subscription";
 
 /**
  * One-click guest accounts: a real User row with throwaway credentials so the
@@ -28,7 +29,14 @@ export async function POST(req: Request) {
   const passwordHash = await hash(password, 12);
 
   const user = await prisma.user.create({
-    data: { email, passwordHash, name: "Guest" },
+    data: {
+      email,
+      passwordHash,
+      name: "Guest",
+      // Guests share the trial clock so guest mode can't sidestep the trial;
+      // upgrading to a real account keeps the same clock. Self-hosted ignores.
+      trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86_400_000),
+    },
     select: { id: true },
   });
 
