@@ -58,28 +58,35 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
         </p>
       )}
 
-      <div className="mt-4 flex gap-3">
+      {/* Stack full-width on phones; a wrapping centered row on wider
+          screens. Three buttons crammed on one line was unreadable on
+          mobile. */}
+      <div className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center">
         {scoped ? (
-          <Button onClick={handleClearScope}>
+          <Button className="w-full sm:w-auto" onClick={handleClearScope}>
             Clear scope & retry
           </Button>
         ) : practice ? (
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/study?limit=500">Study flashcards</Link>
           </Button>
         ) : (
           <>
             {/* Finished the real queue → offer schedule-safe practice, not a
                 dead "nothing here". */}
-            <Button asChild>
+            <Button asChild className="w-full sm:w-auto">
               <Link href="/study?mode=practice&limit=500">Keep practicing</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/lists">Add more words</Link>
             </Button>
           </>
         )}
-        <Button variant="outline" onClick={backToDashboard}>
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto"
+          onClick={backToDashboard}
+        >
           Back to dashboard
         </Button>
       </div>
