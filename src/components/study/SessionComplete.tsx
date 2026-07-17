@@ -102,9 +102,10 @@ export function SessionComplete({
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap justify-center gap-3">
+      <div className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center">
         {missed.length > 0 && (
           <Button
+            className="w-full sm:w-auto"
             onClick={() => {
               const searchParams = new URLSearchParams(window.location.search);
               searchParams.set("mode", "practice");
@@ -118,12 +119,14 @@ export function SessionComplete({
         <Button
           asChild
           variant={missed.length > 0 ? "outline" : "default"}
+          className="w-full sm:w-auto"
         >
           {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
           <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
         </Button>
         <Button
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => {
             // Force fresh dashboard counts after studying (avoid stale ring).
             router.push("/dashboard");
