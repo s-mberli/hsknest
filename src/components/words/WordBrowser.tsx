@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WordTable, type WordRow } from "@/components/lists/WordTable";
 import { WordStrengthGrid } from "@/components/words/WordStrengthGrid";
+import { WordTimeline } from "@/components/words/WordTimeline";
 import type { WordDetail } from "@/components/words/WordHoverCard";
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
+import { isDueNow } from "@/lib/horizon";
 import {
   STRENGTH_META,
   STRENGTH_ORDER,
@@ -33,17 +35,7 @@ interface ApiWord {
 }
 
 type Filter = "all" | Strength;
-
-/** States that can be due for review right now (excludes NEW/ASSUMED/MASTERED). */
-const DUE_STATES = new Set(["LEARNING", "REVIEW", "LAPSED"]);
-
-/** True when a word is due for review as of `now`. */
-function isDueNow(w: WordDetail, now: number): boolean {
-  if (!DUE_STATES.has(w.state)) return false;
-  if (!w.dueAt) return false;
-  const due = new Date(w.dueAt).getTime();
-  return !Number.isNaN(due) && due <= now;
-}
+type View = "timeline" | "cards" | "table";
 
 export function WordBrowser() {
   const router = useRouter();
@@ -54,8 +46,8 @@ export function WordBrowser() {
   // Language filter ("all" = every language) and the due-only queue toggle.
   const [language, setLanguage] = useState<string>("all");
   const [dueOnly, setDueOnly] = useState(false);
-  // View mode — card grid (default) or a dense table like the Lists page.
-  const [view, setView] = useState<"cards" | "table">("cards");
+  // View mode — Timeline (default), Strength grid, or a dense Table.
+  const [view, setView] = useState<View>("timeline");
 
   useEffect(() => {
     let active = true;
@@ -201,8 +193,14 @@ export function WordBrowser() {
     <div className="space-y-4">
       <div className="flex justify-end">
         <div className="inline-flex rounded-lg border p-0.5">
+          <ToggleBtn
+            active={view === "timeline"}
+            onClick={() => setView("timeline")}
+          >
+            Timeline
+          </ToggleBtn>
           <ToggleBtn active={view === "cards"} onClick={() => setView("cards")}>
-            Cards
+            Strength
           </ToggleBtn>
           <ToggleBtn active={view === "table"} onClick={() => setView("table")}>
             Table
@@ -283,6 +281,13 @@ export function WordBrowser() {
             </Button>
           </div>
         </div>
+      ) : view === "timeline" ? (
+        <WordTimeline
+          words={visibleWords}
+          search={search}
+          bands={bands}
+          emptyLabel="No words match this filter."
+        />
       ) : view === "cards" ? (
         <WordStrengthGrid
           words={visibleWords}

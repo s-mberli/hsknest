@@ -62,7 +62,7 @@ export const STRENGTH_META: Record<
     blurb: "Learning in progress — still on a short schedule.",
   },
   shaky: {
-    label: "Shaky",
+    label: "Trouble",
     blurb: "Forgotten repeatedly. Needs extra attention.",
   },
   known: {

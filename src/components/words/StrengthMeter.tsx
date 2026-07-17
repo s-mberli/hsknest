@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Strength } from "@/lib/strength";
+import { STRENGTH_META, type Strength } from "@/lib/strength";
 
 /** Fill fraction + color per band — one glance says "how well do I know this". */
 const METER: Record<Strength, { fill: number; className: string }> = {
@@ -27,7 +27,7 @@ export function StrengthMeter({
         className
       )}
       role="img"
-      aria-label={`Strength: ${strength}`}
+      aria-label={`Strength: ${STRENGTH_META[strength].label}`}
     >
       <span
         className={cn("block h-full rounded-full", m.className)}

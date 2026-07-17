@@ -323,6 +323,16 @@ test("practice mode reviews without moving the schedule", async ({ page }) => {
   expect(after).toBe(before!.dueAt);
 });
 
+test("words tab defaults to timeline view with a lane heading", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/words");
+  await expect(
+    page.getByRole("heading", {
+      name: /due now|this week|this month|long-term memory|not started|resting/i,
+    })
+  ).toBeVisible({ timeout: 10_000 });
+});
+
 test("words tab toggles to table view", async ({ page }) => {
   await logIn(page);
   await page.goto("/words");
