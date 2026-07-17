@@ -1,13 +1,18 @@
 # HSK Nest
 
-**A self-hostable spaced-repetition study app for learning any language.**
+**A self-hostable spaced-repetition trainer for Mandarin — all of HSK 1–9
+pre-loaded, scheduled by FSRS.**
 
-HSK Nest helps you remember vocabulary the efficient way: a research-backed
-schedule brings each word back right before you'd forget it, so you spend your
-time on the words that need it. Build your own lists (or start from included
-graded content), study a gesture-first swipe deck, and tune the schedule to how
-you learn. The data model is language-agnostic — anything with a term, a
-meaning, and an optional reading fits, no schema changes required.
+HSK Nest helps you remember vocabulary the efficient way: a modern
+memory-model schedule (FSRS) brings each word back right before you'd forget
+it. The full New HSK 3.0 (2021) vocabulary — levels 1–9 — ships pre-loaded,
+with 3,000 real example sentences (with pinyin) and on-device pronunciation.
+Study a gesture-first swipe deck, quiz yourself four different ways, and tune
+the schedule to how you learn.
+
+Under the hood the data model is language-agnostic — anything with a term, a
+meaning, and an optional reading fits — so you can import CSV decks for any
+language you're memorizing.
 
 Own your data: run it on your own server, keep everything on-device (even the
 pronunciation audio), and never depend on a cloud service.
@@ -43,10 +48,16 @@ pronunciation audio), and never depend on a cloud service.
   to reveal (staged), then swipe to grade. Keyboard fallback on desktop
   (← → ↑ ↓ to grade).
 - **Practice modes** — beyond flashcards: a meaning quiz (pick the meaning
-  from four options), a **pronunciation quiz** (see the character, pick how
-  it's read — trains symbol → sound, ideal for Chinese), and matching rounds
-  (pair up words and meanings from a five-word pool). All feed the same
-  scheduler.
+  from four options), a **reading quiz** (see the character, pick how it's
+  read — trains symbol → sound, ideal for Chinese), matching rounds (pair up
+  words and meanings from a five-word pool), and **sentence practice**
+  (recognize your words inside real sentences). All pressure-free — they
+  never move the review schedule.
+- **Real example sentences** — 3,000 curated sentences (Tatoeba, CC-BY) with
+  pinyin and translation appear on the flashcard answer and in the word
+  browser, so every word is seen in context, not isolation.
+- **HSK-level onboarding** — pick your level at signup and the matching deck
+  is enrolled before your first review.
 - **Hide-the-reading mode** — an optional per-account setting: flashcards skip
   the reading hint so you recall the pronunciation yourself; it still appears
   with the answer to check against.
@@ -56,8 +67,9 @@ pronunciation audio), and never depend on a cloud service.
   combo streaks (Web Audio, no asset files), on by default and toggleable in
   Settings.
 - **On-device pronunciation** — a speaker button reads the word using your
-  browser's built-in voices. No cloud, no API key; it tells you how to add a
-  system voice if one is missing.
+  browser's built-in voices, and an optional auto-play setting speaks each
+  word the moment its reading is revealed. No cloud, no API key; it tells you
+  how to add a system voice if one is missing.
 - **Word-strength browser** — see every word banded by recall strength, in a
   searchable table view.
 - **Focus-ring dashboard** — due counts, words learned, streak, and a 7-day
@@ -67,13 +79,14 @@ pronunciation audio), and never depend on a cloud service.
   screen.
 - **Study scope** — narrow a session to one language and/or specific lists; the
   choice is remembered.
-- **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–6
-  plus the 7–9 band, frequency lists (Top 100 / Top 1000 words), original
-  everyday-conversation and news-reading sets, plus themed starter lists
-  (greetings, numbers, family, food, colors).
-- **German starter content** — A1 essentials, a Top 100 frequency list, and the
-  same themed starter lists (greetings, numbers, family, food, colors). A
-  starter Spanish list is included too.
+- **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–9,
+  frequency lists (Top 100 / Top 1000 words), original everyday-conversation
+  and news-reading sets, plus themed starter lists (greetings, numbers,
+  family, food, colors).
+- **Other languages (bonus)** — the engine is language-agnostic, so German
+  (A1 essentials, a Top 100 frequency list, themed starters) and a Spanish
+  starter list ship too, and you can import CSV decks for anything else. New
+  accounts onboard into Mandarin; switch or add a language anytime in Settings.
 - **One word, one card** — the same word appearing in several lists shares a
   single progress record: enrolling a second list skips what you already
   track, so stats and reviews never double.
@@ -114,7 +127,7 @@ Requires Node.js 18+ (Node 22 recommended).
 
 ```bash
 # 1. Clone and install
-git clone <your-fork-url> recall && cd recall
+git clone https://github.com/s-mberli/hsknest.git && cd hsknest
 npm install
 
 # 2. Configure environment
@@ -180,7 +193,7 @@ src/
   components/     # UI primitives + study/dashboard/list components
   hooks/          # useStudySession (session + optimistic reviews)
   lib/
-    srs/          # spaced-repetition strategies (SM-2, Leitner) + registry
+    srs/          # spaced-repetition strategies (FSRS, SM-2, Leitner) + registry
     import.ts     # dependency-free delimited-text parser for imports
     ownership.ts  # per-user list/language visibility rules
     validation.ts # Zod schemas for every API input
@@ -229,7 +242,10 @@ The included HSK vocabulary data is MIT-licensed; see
 [prisma/data/hsk/README.md](prisma/data/hsk/README.md) for attribution.
 The bundled Chinese dictionary data is a trimmed build of
 [CC-CEDICT](https://cc-cedict.org/wiki/) (CC BY-SA 4.0); see
-[prisma/data/cedict/README.md](prisma/data/cedict/README.md).
+[prisma/data/cedict/README.md](prisma/data/cedict/README.md). Example
+sentences come from [Tatoeba](https://tatoeba.org) (CC-BY 2.0 FR), with
+per-sentence attribution stored alongside each entry. The app also shows
+these credits at `/credits`.
 
 ## Roadmap
 
@@ -239,7 +255,7 @@ session sizing · algorithm tuning (interval/lapse modifiers, mastery, fuzz) ·
 assumed-known + daily checks · weak-word triage · word-strength browser ·
 focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists &
 words · Light/Dark/System theme + study-screen focus setting · study-scope
-filtering · graded HSK 1–6 + original Chinese lists · CSV export · progress
+filtering · graded HSK + original Chinese lists · CSV export · progress
 reset · on-device pronunciation · security hardening (rate limits, input caps,
 headers) · in-app feedback · Docker + compose self-host packaging ·
 multiple-choice quiz + matching-pairs practice modes · card text sizing ·
@@ -247,7 +263,12 @@ Playwright end-to-end suite · guest mode with account upgrade + stale-guest
 pruning · account deletion · per-list progress chips · CC-CEDICT
 dictionary-assisted word entry (Chinese) · session summary with toughest
 words + re-study · FSRS as a third scheduling strategy · email verification +
-password reset / account recovery flow.
+password reset / account recovery flow · full HSK 1–9 (2021) decks ·
+3,000 Tatoeba example sentences with pinyin · sentence-practice mode ·
+new-word preview flow (see it once before it's graded) · HSK-level
+onboarding with deck auto-enroll · auto-play pronunciation setting ·
+hosted-plan billing (Stripe, fully bypassed when self-hosting via
+`SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env).
 
 **Next (v0.2):**
 

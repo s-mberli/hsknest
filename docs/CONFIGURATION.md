@@ -11,8 +11,12 @@ Set these in a `.env` file at the project root.
 | `NEXTAUTH_URL`    | yes\*    | `http://localhost:3000`       | The canonical base URL of the app. Required in most non-local deployments.                  |
 | `NEXT_PUBLIC_APP_URL` | no   | `http://localhost:3000`       | Used to build links inside emails (password reset / verification). Usually same as `NEXTAUTH_URL`. |
 | `AUTO_SEED`       | no       | `true`                        | Seed/refresh starter word lists on container boot. Idempotent — safe to leave on. Default in `docker-compose.yml` is `true`. |
-| `RESEND_API_KEY`  | no       | `re_...`                      | Enables real email delivery (password reset, verification) via [Resend](https://resend.com). Without it, links are logged to the server console instead — fine for local dev/self-hosting without email set up. |
+| `RESEND_API_KEY`  | no       | `re_...`                      | Enables real email delivery (password reset, verification, trial lifecycle) via [Resend](https://resend.com). Without it, links are logged to the server console instead — fine for local dev/self-hosting. (On a hosted instance with `SELF_HOSTED=false`, secret links are never logged; a missing key is reported as a misconfiguration instead.) |
 | `EMAIL_FROM`      | no       | `noreply@myapp.com`           | Sender address for outgoing email. Only matters if `RESEND_API_KEY` is set.                 |
+| `SELF_HOSTED`     | no       | `true`                        | **Keep the default `true` when self-hosting.** Anything other than an explicit `"false"` disables all billing: no trials, no paywall, no Stripe. Only the managed hosted instance sets `false`. A missing value can never paywall your own server. |
+| `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` / `STRIPE_WEBHOOK_SECRET` | no | `sk_live_...` / `price_...` / `whsec_...` | Hosted instance only — ignored entirely when `SELF_HOSTED` isn't `"false"`. Checkout, subscription price, and webhook signature verification. |
+| `ADMIN_EMAIL`     | no       | `you@example.com`             | Unlocks the read-only operator page at `/mb-admin` for the account with this email. Unset → the page 404s for everyone. |
+| `NEXT_PUBLIC_UMAMI_URL` / `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | no | `https://cloud.umami.is` / `uuid` | Optional cookieless [Umami](https://umami.is) analytics. Both must be set for the script to load; leave empty to ship no analytics at all (the default — funnel events become no-ops). The Content-Security-Policy allow-lists exactly this origin. |
 
 \* Optional in some local setups but recommended everywhere.
 
