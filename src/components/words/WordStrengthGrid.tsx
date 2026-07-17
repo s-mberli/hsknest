@@ -9,21 +9,8 @@ import {
   STRENGTH_ORDER,
   type Strength,
 } from "@/lib/strength";
-import { WordHoverCard, type WordDetail } from "@/components/words/WordHoverCard";
-
-/**
- * Single-hue intensity ramp: memory strength read as tile darkness on the
- * primary hue, not six different colors. "known" sits aside on muted; "shaky"
- * keeps its ramp intensity but wears a trouble marker (dot + ring).
- */
-const TILE: Record<Strength, string> = {
-  mastered: "bg-primary text-primary-foreground border-transparent",
-  solid: "bg-primary/50 border-transparent",
-  growing: "bg-primary/15 border-transparent",
-  shaky: "bg-primary/15 border-transparent ring-1 ring-destructive/40",
-  known: "bg-muted text-muted-foreground border-transparent",
-  new: "bg-transparent border-border",
-};
+import { type WordDetail } from "@/components/words/WordHoverCard";
+import { TILE, WordTile } from "@/components/words/WordTile";
 
 /** Legend swatches — five buckets ("shaky" folds into the Trouble marker). */
 const LEGEND: { label: string; band: Strength; extra?: string }[] = [
@@ -94,6 +81,7 @@ export function WordStrengthGrid({
             title={STRENGTH_META[l.band].blurb}
           >
             <span
+              aria-hidden
               className={cn(
                 "size-3 shrink-0 rounded-sm border",
                 TILE[l.band],
@@ -109,25 +97,16 @@ export function WordStrengthGrid({
         ))}
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5">
+      <ul
+        role="list"
+        className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5"
+      >
         {sorted.map((w) => (
-          <div key={w.wordId} className="min-w-0 [&>div]:block [&>div]:w-full">
-            <WordHoverCard word={w} className="block w-full">
-              <span
-                className={cn(
-                  "relative flex h-12 w-full items-center justify-center rounded-md border px-1.5 text-sm leading-tight",
-                  TILE[w.strength]
-                )}
-              >
-                <span className="max-w-full truncate">{w.term}</span>
-                {w.strength === "shaky" && (
-                  <span className="absolute right-1 top-1 size-1.5 rounded-full bg-destructive" />
-                )}
-              </span>
-            </WordHoverCard>
-          </div>
+          <li key={w.wordId} className="min-w-0">
+            <WordTile word={w} />
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

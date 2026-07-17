@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
+import { usePrefersReducedMotion } from "@/lib/motion";
 
 type Sentence = {
   text: string;
@@ -114,6 +116,12 @@ interface WordHoverCardProps {
   word: WordDetail;
   children: React.ReactNode;
   className?: string;
+  /** Accessible name for the trigger — overrides the visible term text. */
+  ariaLabel?: string;
+  /** Pass-throughs for roving-tabindex arrow-key navigation across a tile grid. */
+  tabIndex?: number;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
+  triggerRef?: (el: HTMLButtonElement | null) => void;
 }
 
 /**
@@ -125,6 +133,10 @@ export function WordHoverCard({
   word,
   children,
   className,
+  ariaLabel,
+  tabIndex,
+  onKeyDown,
+  triggerRef,
 }: WordHoverCardProps) {
   const [open, setOpen] = useState(false);
   const [shiftX, setShiftX] = useState(0);
@@ -135,6 +147,7 @@ export function WordHoverCard({
   const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const meta = STRENGTH_META[word.strength];
+  const reducedMotion = usePrefersReducedMotion();
 
   // Lazy-load one example sentence the first time the card opens; cache it so
   // reopening (or other cards for the same word) is instant. Absent → nothing.
@@ -228,23 +241,39 @@ export function WordHoverCard({
     >
       <button
         type="button"
+        ref={triggerRef}
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
+        aria-label={ariaLabel}
+        tabIndex={tabIndex}
         onFocus={show}
         onBlur={hide}
         onClick={toggle}
+        onKeyDown={onKeyDown}
         className={cn("cursor-default", className)}
       >
         {children}
       </button>
 
+      <AnimatePresence>
       {open && (
         <div
-          id={panelId}
           ref={panelRef}
-          role="dialog"
           style={{ transform: `translateX(calc(-50% + ${shiftX}px))` }}
-          className="absolute left-1/2 top-full z-50 mt-2 w-64 max-w-[calc(100vw-1rem)] rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
+          className="absolute left-1/2 top-full z-50 mt-2 w-64 max-w-[calc(100vw-1rem)]"
+        >
+        <motion.div
+          id={panelId}
+          role="dialog"
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.9, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={reducedMotion ? undefined : { opacity: 0, scale: 0.9, y: -4 }}
+          transition={
+            reducedMotion
+              ? { duration: 0 }
+              : { type: "spring", stiffness: 500, damping: 30 }
+          }
+          className="rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
         >
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-lg font-semibold">{word.term}</span>
@@ -297,8 +326,10 @@ export function WordHoverCard({
               </dd>
             </div>
           </dl>
+        </motion.div>
         </div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
