@@ -2,7 +2,6 @@ import {
   AudioLines,
   BookOpenCheck,
   Check,
-  Download,
   GitBranch,
   Import,
   Layers,
@@ -11,52 +10,73 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
 
 import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 
 const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
-const STACK = [
+type BentoCell =
+  | {
+      kind: "copy";
+      icon: LucideIcon;
+      title: string;
+      body: string;
+      span?: string;
+    }
+  | {
+      kind: "shot";
+      src: string;
+      alt: string;
+      caption: string;
+      span?: string;
+    };
+
+const BENTO: BentoCell[] = [
   {
+    kind: "copy",
     icon: BookOpenCheck,
     title: "Every HSK word, ready to study",
     body: "HSK 1–9 and top-frequency decks are pre-loaded — no deck building, no downloads.",
+    span: "sm:col-span-2",
   },
   {
+    kind: "shot",
+    src: "/screenshots/dashboard.png",
+    alt: "Dashboard with today's review queue and forecast",
+    caption: "Today's queue at a glance",
+  },
+  {
+    kind: "copy",
     icon: MessageSquareText,
     title: "3,000 real example sentences",
     body: "See each word in context with pinyin and translation, not as an isolated flashcard.",
   },
   {
+    kind: "copy",
     icon: AudioLines,
     title: "Pronunciation built in",
     body: "Hear every word and sentence spoken — auto-plays as you reveal the reading.",
   },
   {
+    kind: "copy",
     icon: Layers,
     title: "Five ways to review",
     body: "Flashcards, meaning quiz, reading quiz, word match, and sentence practice keep it fresh.",
   },
   {
+    kind: "copy",
     icon: Timer,
     title: "Modern scheduling, by default",
     body: "FSRS — the algorithm Anki users install by choice — is the default here, with SM-2 and Leitner switchable anytime.",
+    span: "sm:col-span-2",
   },
   {
+    kind: "copy",
     icon: Import,
-    title: "Bring your Anki decks",
-    body: "Import via CSV/TSV export with column mapping, in under a minute.",
-  },
-  {
-    icon: Download,
-    title: "Your data stays yours",
-    body: "Full CSV export of your progress, anytime — no lock-in.",
-  },
-  {
-    icon: GitBranch,
-    title: "Fully open source",
-    body: "The entire codebase is public. Audit it, contribute, or run your own.",
+    title: "Bring your decks, own your data",
+    body: "Import CSV/TSV from Anki in under a minute. Full progress export anytime — no lock-in.",
   },
 ];
 
@@ -106,10 +126,26 @@ const FAQ = [
 ];
 
 const SHOTS = [
-  { src: "/screenshots/study.png", alt: "Studying a flashcard with pinyin, meaning, and an example sentence" },
-  { src: "/screenshots/dashboard.png", alt: "Dashboard with today's review queue and forecast" },
-  { src: "/screenshots/words.png", alt: "Words overview with per-word strength" },
-  { src: "/screenshots/lists.png", alt: "Word lists including all HSK levels" },
+  {
+    src: "/screenshots/study.png",
+    alt: "Studying a flashcard with pinyin, meaning, and an example sentence",
+    caption: "Study",
+  },
+  {
+    src: "/screenshots/dashboard.png",
+    alt: "Dashboard with today's review queue and forecast",
+    caption: "Today",
+  },
+  {
+    src: "/screenshots/words.png",
+    alt: "Words overview with per-word strength",
+    caption: "Words",
+  },
+  {
+    src: "/screenshots/lists.png",
+    alt: "Word lists including all HSK levels",
+    caption: "Lists",
+  },
 ];
 
 /**
@@ -132,26 +168,42 @@ export function LandingSections() {
         </p>
       </section>
 
-      {/* Value stack */}
+      {/* Value stack — asymmetric bento */}
       <section className="space-y-8">
         <h2 className="text-center text-3xl font-bold tracking-tight">
           Everything you need to master vocabulary
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {STACK.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="flex gap-4 rounded-2xl border bg-card p-5"
-            >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon className="size-5" />
-              </span>
-              <div>
-                <h3 className="font-semibold">{title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+          {BENTO.map((cell) =>
+            cell.kind === "shot" ? (
+              <div
+                key={cell.src}
+                className={`flex flex-col overflow-hidden rounded-2xl border bg-card ${cell.span ?? ""}`}
+              >
+                <Image
+                  src={cell.src}
+                  alt={cell.alt}
+                  width={1280}
+                  height={800}
+                  className="h-auto w-full"
+                />
+                <p className="border-t px-4 py-3 text-sm text-muted-foreground">
+                  {cell.caption}
+                </p>
               </div>
-            </div>
-          ))}
+            ) : (
+              <div
+                key={cell.title}
+                className={`flex gap-4 rounded-2xl border bg-card p-5 ${cell.span ?? ""}`}
+              >
+                <cell.icon className="mt-0.5 size-5 shrink-0 text-primary" />
+                <div>
+                  <h3 className="font-semibold">{cell.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{cell.body}</p>
+                </div>
+              </div>
+            )
+          )}
         </div>
       </section>
 
@@ -161,10 +213,12 @@ export function LandingSections() {
           Study without the clutter
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          {SHOTS.map(({ src, alt }) => (
-            <div
+          {SHOTS.map(({ src, alt, caption }, i) => (
+            <figure
               key={src}
-              className="overflow-hidden rounded-2xl border bg-card shadow-card"
+              className={`overflow-hidden rounded-2xl border bg-card shadow-card ${
+                i === 0 ? "sm:col-span-2" : ""
+              }`}
             >
               <Image
                 src={src}
@@ -173,7 +227,10 @@ export function LandingSections() {
                 height={800}
                 className="h-auto w-full"
               />
-            </div>
+              <figcaption className="border-t px-4 py-2.5 text-sm text-muted-foreground">
+                {caption}
+              </figcaption>
+            </figure>
           ))}
         </div>
       </section>
@@ -183,10 +240,14 @@ export function LandingSections() {
         <h2 className="text-center text-3xl font-bold tracking-tight">
           How it works
         </h2>
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="relative grid gap-8 sm:grid-cols-3 sm:gap-6">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-[16.6%] right-[16.6%] top-5 hidden border-t border-border/60 sm:block"
+          />
           {STEPS.map(({ n, title, body }) => (
-            <div key={n} className="space-y-2 text-center">
-              <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
+            <div key={n} className="relative space-y-2 text-center">
+              <span className="mx-auto flex size-10 items-center justify-center rounded-full border border-primary/20 bg-background text-2xl font-bold text-primary">
                 {n}
               </span>
               <h3 className="font-semibold">{title}</h3>
@@ -197,7 +258,7 @@ export function LandingSections() {
       </section>
 
       {/* Open source trust */}
-      <section className="mx-auto max-w-2xl space-y-4 rounded-3xl border bg-card p-8 text-center">
+      <section className="mx-auto max-w-2xl space-y-4 border-y py-10 text-center">
         <h2 className="text-2xl font-bold tracking-tight">
           Self-host it forever, free
         </h2>
@@ -219,7 +280,7 @@ export function LandingSections() {
         <h2 className="text-center text-3xl font-bold tracking-tight">
           Simple pricing, no lock-in
         </h2>
-        <div className="mx-auto max-w-sm rounded-3xl border-2 border-primary/30 bg-card p-8 text-center shadow-card">
+        <div className="mx-auto max-w-sm rounded-3xl border border-primary/30 bg-card p-8 text-center shadow-card">
           <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             HSK Nest Hosted
           </p>
@@ -257,7 +318,13 @@ export function LandingSections() {
             >
               Self-host free on GitHub
             </a>{" "}
-            · <Link href="/pricing" className="underline underline-offset-2 hover:text-foreground">Compare options</Link>
+            ·{" "}
+            <Link
+              href="/pricing"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Compare options
+            </Link>
           </p>
         </div>
       </section>
@@ -305,34 +372,86 @@ export function LandingSections() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t pt-8 text-center text-xs text-muted-foreground">
-        <p>
-          <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
-            Terms
-          </Link>{" "}
-          ·{" "}
-          <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
-            Privacy
-          </Link>{" "}
-          ·{" "}
-          <Link href="/pricing" className="underline underline-offset-2 hover:text-foreground">
-            Pricing
-          </Link>{" "}
-          ·{" "}
-          <Link href="/credits" className="underline underline-offset-2 hover:text-foreground">
-            Data Credits
-          </Link>{" "}
-          ·{" "}
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-foreground"
-          >
-            GitHub
-          </a>
-        </p>
+      {/* Footer — 3 columns */}
+      <footer className="border-t pt-10 text-sm text-muted-foreground">
+        <div className="grid gap-8 sm:grid-cols-3">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Product
+            </p>
+            <ul className="space-y-1.5">
+              <li>
+                <Link href="/dashboard" className="hover:text-foreground">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link href="/lists" className="hover:text-foreground">
+                  Lists
+                </Link>
+              </li>
+              <li>
+                <Link href="/words" className="hover:text-foreground">
+                  Words
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-foreground">
+                  Pricing
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Legal
+            </p>
+            <ul className="space-y-1.5">
+              <li>
+                <Link href="/terms" className="hover:text-foreground">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="hover:text-foreground">
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link href="/credits" className="hover:text-foreground">
+                  Data Credits
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Open source
+            </p>
+            <ul className="space-y-1.5">
+              <li>
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground"
+                >
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`${GITHUB_URL}#deploy`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground"
+                >
+                  Self-host guide
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
       </footer>
     </div>
   );
