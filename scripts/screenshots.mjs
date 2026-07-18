@@ -120,15 +120,38 @@ async function main() {
   });
   const page = await context.newPage();
 
-  // Log in through the credentials form.
+  // Log in through the credentials form. A click that fires before React
+  // hydration falls back to a native form submit and silently fails, so
+  // verify we actually left /login and retry once.
   console.log("Logging in…");
-  await page.goto(`${BASE_URL}/login`, { waitUntil: "networkidle" });
-  await page.fill('input[name="email"], input[type="email"]', EMAIL);
-  await page.fill('input[name="password"], input[type="password"]', PASSWORD);
-  await Promise.all([
-    page.waitForURL(/\/dashboard/, { timeout: 15000 }).catch(() => {}),
-    page.click('button[type="submit"]'),
-  ]);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    await page.goto(`${BASE_URL}/login`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(1000); // let hydration attach the submit handler
+    await page.fill('input[name="email"], input[type="email"]', EMAIL);
+    await page.fill('input[name="password"], input[type="password"]', PASSWORD);
+    await Promise.all([
+      page.waitForURL(/\/dashboard/, { timeout: 15000 }).catch(() => {}),
+      page.click('button[type="submit"]'),
+    ]);
+    if (page.url().includes("/dashboard")) break;
+    if (attempt === 2) throw new Error(`Login failed — still on ${page.url()}`);
+    console.log("  Login did not land on /dashboard, retrying…");
+  }
+
+  // Dismiss the "How HSK Nest works" intro modal (animates in shortly after
+  // the first dashboard load), then the cookie banner — both would otherwise
+  // overlay every capture.
+  const gotIt = page.getByRole("button", { name: "Got it" });
+  try {
+    await gotIt.waitFor({ state: "visible", timeout: 5000 });
+    await gotIt.click();
+  } catch {
+    // Not shown (already dismissed for this account) — nothing to do.
+  }
+  const decline = page.getByRole("button", { name: /decline non-essential/i });
+  if (await decline.isVisible().catch(() => false)) {
+    await decline.click();
+  }
 
   // Seed study content so pages aren't empty.
   console.log("Seeding study content…");
