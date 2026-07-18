@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
@@ -31,6 +32,9 @@ export async function POST(req: Request) {
   const { wordId, quality, reviewedAt, practice } = parsed;
   const now = reviewedAt ?? new Date();
   const submittedAt = new Date();
+
+  const cookieStore = await cookies();
+  const guestId = cookieStore.get("guestId")?.value || null;
 
   const [user, progress] = await Promise.all([
     prisma.user.findUnique({
@@ -65,6 +69,7 @@ export async function POST(req: Request) {
     await prisma.reviewLog.create({
       data: {
         userId,
+        guestId,
         wordId,
         quality,
         algorithm: user.preferredAlgorithm,
@@ -180,6 +185,7 @@ export async function POST(req: Request) {
     prisma.reviewLog.create({
       data: {
         userId,
+        guestId,
         wordId,
         quality,
         algorithm: user.preferredAlgorithm,
