@@ -10,7 +10,10 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { targetLanguage: { select: { code: true } } },
+    select: {
+      targetLanguage: { select: { code: true } },
+      masteryThresholdDays: true,
+    },
   });
 
   const rows = await prisma.userProgress.findMany({
@@ -39,10 +42,13 @@ export async function GET() {
     intervalDays: p.intervalDays,
     lapses: p.lapses,
     dueAt: p.dueAt,
+    easeFactor: p.easeFactor,
+    repetitions: p.repetitions,
   }));
 
   return NextResponse.json({
     words,
     targetLanguageCode: user?.targetLanguage?.code ?? null,
+    masteryThresholdDays: user?.masteryThresholdDays ?? null,
   });
 }

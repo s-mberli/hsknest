@@ -31,6 +31,8 @@ export interface WordDetail {
   languageCode: string;
   languageName: string;
   state: string;
+  easeFactor: number | null;
+  repetitions: number | null;
 }
 
 /**
@@ -116,6 +118,8 @@ interface WordHoverCardProps {
   word: WordDetail;
   children: React.ReactNode;
   className?: string;
+  /** Extra classes for the positioning wrapper (e.g. "size-full" for bubbles). */
+  wrapperClassName?: string;
   /** Accessible name for the trigger — overrides the visible term text. */
   ariaLabel?: string;
   /** Pass-throughs for roving-tabindex arrow-key navigation across a tile grid. */
@@ -133,6 +137,7 @@ export function WordHoverCard({
   word,
   children,
   className,
+  wrapperClassName,
   ariaLabel,
   tabIndex,
   onKeyDown,
@@ -235,7 +240,7 @@ export function WordHoverCard({
   return (
     <div
       ref={rootRef}
-      className="relative inline-block"
+      className={cn("relative inline-block", wrapperClassName)}
       onMouseEnter={show}
       onMouseLeave={hide}
     >

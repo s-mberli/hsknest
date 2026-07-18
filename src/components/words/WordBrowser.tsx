@@ -6,12 +6,11 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WordTable, type WordRow } from "@/components/lists/WordTable";
 import { WordStrengthGrid } from "@/components/words/WordStrengthGrid";
 import { WordTimeline } from "@/components/words/WordTimeline";
+import { WordRetentionList } from "@/components/words/WordRetentionList";
 import type { WordDetail } from "@/components/words/WordHoverCard";
 import { cn } from "@/lib/utils";
-import { parseMeanings } from "@/lib/meanings";
 import { isDueNow } from "@/lib/horizon";
 import {
   STRENGTH_META,
@@ -32,10 +31,12 @@ interface ApiWord {
   intervalDays: number;
   lapses: number;
   dueAt: string | null;
+  easeFactor: number | null;
+  repetitions: number | null;
 }
 
 type Filter = "all" | Strength;
-type View = "timeline" | "cards" | "table";
+type View = "timeline" | "cards" | "list";
 
 export function WordBrowser() {
   const router = useRouter();
@@ -46,8 +47,11 @@ export function WordBrowser() {
   // Language filter ("all" = every language) and the due-only queue toggle.
   const [language, setLanguage] = useState<string>("all");
   const [dueOnly, setDueOnly] = useState(false);
-  // View mode — Timeline (default), Strength grid, or a dense Table.
+  // View mode — Timeline (default), Strength grid, or a retention-sparkline list.
   const [view, setView] = useState<View>("timeline");
+  const [masteryThresholdDays, setMasteryThresholdDays] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     let active = true;
@@ -55,9 +59,13 @@ export function WordBrowser() {
       try {
         const res = await fetch("/api/words");
         if (!res.ok) throw new Error("fetch failed");
-        const data: { words: ApiWord[]; targetLanguageCode?: string | null } =
-          await res.json();
+        const data: {
+          words: ApiWord[];
+          targetLanguageCode?: string | null;
+          masteryThresholdDays?: number | null;
+        } = await res.json();
         if (!active) return;
+        setMasteryThresholdDays(data.masteryThresholdDays ?? null);
         // Default the filter to the user's target language so words from
         // other languages never mix in unasked — even when the user has no
         // words in the target language yet (they get an empty state instead).
@@ -82,6 +90,8 @@ export function WordBrowser() {
             languageCode: w.languageCode,
             languageName: w.languageName,
             state: w.state,
+            easeFactor: w.easeFactor,
+            repetitions: w.repetitions,
           }))
         );
       } catch {
@@ -165,30 +175,6 @@ export function WordBrowser() {
   const bands: Strength[] | undefined =
     filter === "all" ? undefined : [filter];
 
-  // Table rows mirror the grid's filtering (band + search), since WordTable
-  // renders a flat list rather than applying filters itself.
-  const q = search.trim().toLowerCase();
-  const tableRows: WordRow[] = visibleWords
-    .filter((w) => !bands || bands.includes(w.strength))
-    .filter(
-      (w) =>
-        q === "" ||
-        w.term.toLowerCase().includes(q) ||
-        (w.phonetic ?? "").toLowerCase().includes(q) ||
-        w.translation.toLowerCase().includes(q) ||
-        parseMeanings(w).some((m) => m.gloss.toLowerCase().includes(q))
-    )
-    .map((w) => ({
-      id: w.wordId,
-      term: w.term,
-      translation: w.translation,
-      metadata: w.metadata,
-      phonetic: w.phonetic,
-      state: w.state,
-      intervalDays: w.intervalDays,
-      lapses: w.lapses,
-    }));
-
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
@@ -202,8 +188,8 @@ export function WordBrowser() {
           <ToggleBtn active={view === "cards"} onClick={() => setView("cards")}>
             Strength
           </ToggleBtn>
-          <ToggleBtn active={view === "table"} onClick={() => setView("table")}>
-            Table
+          <ToggleBtn active={view === "list"} onClick={() => setView("list")}>
+            Words
           </ToggleBtn>
         </div>
       </div>
@@ -287,6 +273,7 @@ export function WordBrowser() {
           search={search}
           bands={bands}
           emptyLabel="No words match this filter."
+          masteryThresholdDays={masteryThresholdDays}
         />
       ) : view === "cards" ? (
         <WordStrengthGrid
@@ -295,12 +282,14 @@ export function WordBrowser() {
           bands={bands}
           emptyLabel="No words match this filter."
         />
-      ) : tableRows.length > 0 ? (
-        <WordTable words={tableRows} />
       ) : (
-        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-          No words match this filter.
-        </p>
+        <WordRetentionList
+          words={visibleWords}
+          search={search}
+          bands={bands}
+          emptyLabel="No words match this filter."
+          masteryThresholdDays={masteryThresholdDays}
+        />
       )}
     </div>
   );

@@ -64,6 +64,8 @@ export function ListWordsView({
         languageCode: languageCode ?? "",
         languageName: languageName ?? "",
         state: w.state ?? "NEW",
+        easeFactor: null,
+        repetitions: null,
       })),
     [words, languageCode, languageName]
   );

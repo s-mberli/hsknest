@@ -3,12 +3,15 @@
 import { useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
-import { HORIZON_META, HORIZON_ORDER, wordHorizon, type Horizon } from "@/lib/horizon";
-import { type WordDetail } from "@/components/words/WordHoverCard";
+import { DUE_STATES, HORIZON_META, HORIZON_ORDER, isDueNow, wordHorizon, type Horizon } from "@/lib/horizon";
+import { type WordDetail, WordHoverCard } from "@/components/words/WordHoverCard";
 import { WordTile } from "@/components/words/WordTile";
 import { usePrefersReducedMotion } from "@/lib/motion";
-import type { Strength } from "@/lib/strength";
+import { STRENGTH_META, type Strength } from "@/lib/strength";
+import { mastery, streak } from "@/lib/wordStats";
 
 /** Above this many visible tiles, skip layout animation for perf (~5000-tile scale). */
 const MOTION_PERF_GUARD = 400;
@@ -31,6 +34,171 @@ interface WordTimelineProps {
   /** Limit to these strength bands (e.g. when a strength filter is active). */
   bands?: Strength[];
   emptyLabel?: string;
+  /** User's mastery threshold (days); defaults inside wordStats when absent. */
+  masteryThresholdDays?: number | null;
+}
+
+function relativeFromNow(dateMs: number, now: number): string {
+  const diffDays = Math.round((dateMs - now) / (24 * 60 * 60 * 1000));
+  if (diffDays <= 0) return "today";
+  if (diffDays === 1) return "in 1 day";
+  if (diffDays < 30) return `in ${diffDays} days`;
+  const months = Math.round(diffDays / 30);
+  return months === 1 ? "in 1 month" : `in ${months} months`;
+}
+
+
+/** Hero "Due now" card + horizontally scrollable "Coming soon" strip. */
+function FocusHeader({
+  words,
+  masteryThresholdDays,
+  reducedMotion,
+}: {
+  words: WordDetail[];
+  masteryThresholdDays?: number | null;
+  reducedMotion: boolean;
+}) {
+  const now = Date.now();
+
+  const { nextDue, upcoming } = useMemo(() => {
+    const due = words
+      .filter((w) => isDueNow(w, now))
+      .sort(
+        (a, b) =>
+          new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime()
+      );
+    // Only schedulable states — MASTERED/ASSUMED keep a stale dueAt but never
+    // resurface, so they must not appear as "coming soon" (matches the lanes).
+    const notDue = words
+      .filter((w) => DUE_STATES.has(w.state) && !isDueNow(w, now) && w.dueAt)
+      .sort(
+        (a, b) =>
+          new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime()
+      );
+    return { nextDue: due[0] ?? null, upcoming: notDue.slice(0, 8) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words]);
+
+  if (!nextDue) {
+    const soonest = words
+      .filter((w) => DUE_STATES.has(w.state) && w.dueAt)
+      .sort(
+        (a, b) =>
+          new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime()
+      )[0];
+    const soonestMs = soonest?.dueAt ? new Date(soonest.dueAt).getTime() : null;
+    return (
+      <div className="rounded-lg border bg-card p-6 text-center">
+        <p className="text-sm font-medium">All caught up</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {soonestMs
+            ? `Next word surfaces ${relativeFromNow(soonestMs, now)}.`
+            : "Nothing scheduled yet — enroll a list to begin."}
+        </p>
+      </div>
+    );
+  }
+
+  const meta = STRENGTH_META[nextDue.strength];
+  const masteryPct = mastery(nextDue, masteryThresholdDays);
+  const streakCount = streak(nextDue);
+
+  return (
+    <div className="space-y-3">
+      <motion.div
+        initial={reducedMotion ? false : { opacity: 0, y: -6, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 500, damping: 34 }
+        }
+        className="rounded-lg border bg-card p-4"
+      >
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Due now
+        </p>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-2xl font-semibold">{nextDue.term}</span>
+          {nextDue.phonetic && (
+            <span className="text-base text-muted-foreground">
+              {nextDue.phonetic}
+            </span>
+          )}
+        </div>
+        <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <div>
+            <dt className="text-xs text-muted-foreground">Strength</dt>
+            <dd className="font-medium">{meta.label}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Next review</dt>
+            <dd className="font-medium">now</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Streak</dt>
+            <dd className="font-medium tabular-nums">{streakCount}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Mastery</dt>
+            <dd className="font-medium tabular-nums">{masteryPct}%</dd>
+          </div>
+        </dl>
+        <Button asChild size="sm" className="mt-4">
+          <a href="/study">Quick review</a>
+        </Button>
+      </motion.div>
+
+      {upcoming.length > 0 && (
+        <section aria-labelledby="coming-soon-heading">
+          <h3
+            id="coming-soon-heading"
+            className="mb-1.5 text-sm font-semibold"
+          >
+            Coming soon
+          </h3>
+          <ul
+            role="list"
+            className="flex snap-x gap-2 overflow-x-auto pb-1"
+          >
+            {upcoming.map((w, i) => (
+              <motion.li
+                key={w.wordId}
+                initial={reducedMotion ? false : { opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: reducedMotion ? 0 : i * 0.03 }}
+                className="shrink-0 snap-start"
+              >
+                <WordHoverCard
+                  word={w}
+                  ariaLabel={`${w.term}, ${STRENGTH_META[w.strength].label}, due ${relativeFromNow(
+                    new Date(w.dueAt ?? 0).getTime(),
+                    now
+                  )}`}
+                  className={cn(
+                    "flex min-h-11 w-28 flex-col items-start gap-0.5 rounded-md border bg-card px-2.5 py-2 text-left",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  )}
+                >
+                  <span className="max-w-full truncate text-sm font-medium">
+                    {w.term}
+                  </span>
+                  {w.phonetic && (
+                    <span className="max-w-full truncate text-xs text-muted-foreground">
+                      {w.phonetic}
+                    </span>
+                  )}
+                  <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">
+                    {relativeFromNow(new Date(w.dueAt ?? 0).getTime(), now)}
+                  </span>
+                </WordHoverCard>
+              </motion.li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -44,6 +212,7 @@ export function WordTimeline({
   search = "",
   bands,
   emptyLabel = "No words to show.",
+  masteryThresholdDays,
 }: WordTimelineProps) {
   const reducedMotion = usePrefersReducedMotion();
   const allowed = bands ? new Set(bands) : null;
@@ -79,6 +248,11 @@ export function WordTimeline({
 
   return (
     <div className="space-y-5">
+      <FocusHeader
+        words={filtered}
+        masteryThresholdDays={masteryThresholdDays}
+        reducedMotion={reducedMotion}
+      />
       {lanes.map((lane) => (
         <Lane
           key={lane.horizon}
