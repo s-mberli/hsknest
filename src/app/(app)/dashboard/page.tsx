@@ -31,6 +31,7 @@ export default async function DashboardPage({
   const { billing } = await searchParams;
   if (billing === "success") {
     await syncSubscriptionFromStripe(userId);
+    redirect("/dashboard");
   }
 
   const [user] = await Promise.all([

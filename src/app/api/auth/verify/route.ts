@@ -15,12 +15,11 @@ function hashToken(token: string): string {
  * gating would break the one-click demo.
  */
 export async function GET(request: Request) {
+  const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!rateLimit(`verify:${ip}`, 20, 60 * 1000)) {
-    return NextResponse.redirect(
-      new URL("/login?verify=error", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?verify=error", base));
   }
 
   const { searchParams } = new URL(request.url);
@@ -28,7 +27,7 @@ export async function GET(request: Request) {
     token: searchParams.get("token"),
   });
   if (!parsed.success) {
-    return NextResponse.redirect(new URL("/login?verify=error", request.url));
+    return NextResponse.redirect(new URL("/login?verify=error", base));
   }
 
   const tokenHash = hashToken(parsed.data.token);
@@ -40,7 +39,7 @@ export async function GET(request: Request) {
     if (record) {
       await prisma.verificationToken.delete({ where: { id: record.id } });
     }
-    return NextResponse.redirect(new URL("/login?verify=error", request.url));
+    return NextResponse.redirect(new URL("/login?verify=error", base));
   }
 
   await prisma.$transaction([
@@ -52,5 +51,5 @@ export async function GET(request: Request) {
     prisma.verificationToken.deleteMany({ where: { email: record.email } }),
   ]);
 
-  return NextResponse.redirect(new URL("/login?verify=success", request.url));
+  return NextResponse.redirect(new URL("/login?verify=success", base));
 }
