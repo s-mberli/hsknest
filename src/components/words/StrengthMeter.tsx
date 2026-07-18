@@ -8,7 +8,8 @@ const METER: Record<Strength, { fill: number; className: string }> = {
   growing: { fill: 0.5, className: "bg-primary" },
   shaky: { fill: 0.25, className: "bg-destructive" },
   known: { fill: 0.9, className: "bg-muted-foreground/60" },
-  new: { fill: 0.08, className: "bg-muted-foreground/40" },
+  // Floor high enough to read as "empty strength", not a missing bar.
+  new: { fill: 0.22, className: "bg-muted-foreground/50" },
 };
 
 /** Slim horizontal strength bar shown next to words anywhere progress exists. */

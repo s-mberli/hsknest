@@ -15,7 +15,8 @@ export const TILE: Record<Strength, string> = {
   growing: "bg-primary/15 border-transparent",
   shaky: "bg-primary/15 border-transparent ring-1 ring-destructive/40",
   known: "bg-muted text-muted-foreground border-transparent",
-  new: "bg-transparent border-border",
+  // Solid fill on cream paper — transparent ghosts looked empty until hover.
+  new: "bg-card text-foreground border-border",
 };
 
 /** Underline fill fraction per band — the non-color cue for strength. */
