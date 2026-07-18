@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,10 +23,13 @@ export function BillingSection({
   status,
   daysLeft,
   hasStripeCustomer,
+  isGuest,
 }: {
   status: string;
   daysLeft: number | null;
   hasStripeCustomer: boolean;
+  /** Guest (throwaway @guest.local login) — must claim a real account first. */
+  isGuest: boolean;
 }) {
   const [consented, setConsented] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -80,29 +84,42 @@ export function BillingSection({
           ) : null}
         </SettingRow>
 
-        {!active && (
-          <div className="space-y-3">
-            <label className="flex items-start gap-2 text-xs text-muted-foreground">
-              <input
-                type="checkbox"
-                className="mt-0.5"
-                checked={consented}
-                onChange={(e) => setConsented(e.target.checked)}
-              />
-              I agree to immediate provision of the service and acknowledge
-              that my right of withdrawal ends when billing starts. 14-day
-              no-questions refund still applies.
-            </label>
-            <Button
-              disabled={!consented || loading}
-              onClick={() =>
-                post("/api/billing/checkout", "Could not start checkout.")
-              }
-            >
-              {loading ? "Opening checkout…" : "Upgrade — €5/mo"}
-            </Button>
-          </div>
-        )}
+        {!active &&
+          (isGuest ? (
+            // Paying requires a real, loginable account first — otherwise the
+            // subscription attaches to a throwaway guest login. Claiming keeps
+            // the same userId, so all progress carries over, then the pay
+            // button appears.
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Create your account first — then you can subscribe, and
+                everything you&apos;ve studied stays with it.
+              </p>
+              <UpgradeBanner compact />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={consented}
+                  onChange={(e) => setConsented(e.target.checked)}
+                />
+                I agree to immediate provision of the service and acknowledge
+                that my right of withdrawal ends when billing starts. 14-day
+                no-questions refund still applies.
+              </label>
+              <Button
+                disabled={!consented || loading}
+                onClick={() =>
+                  post("/api/billing/checkout", "Could not start checkout.")
+                }
+              >
+                {loading ? "Opening checkout…" : "Upgrade — €5/mo"}
+              </Button>
+            </div>
+          ))}
       </CardContent>
     </Card>
   );

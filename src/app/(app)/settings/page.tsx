@@ -78,6 +78,7 @@ export default async function SettingsPage() {
             status={sub.status}
             daysLeft={sub.daysLeft}
             hasStripeCustomer={sub.hasStripeCustomer}
+            isGuest={user.email.endsWith("@guest.local")}
           />
         </div>
       )}

@@ -13,11 +13,25 @@ import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getDashboardStats } from "@/lib/stats";
-import { getSubscriptionInfo } from "@/lib/subscription";
+import {
+  getSubscriptionInfo,
+  syncSubscriptionFromStripe,
+} from "@/lib/subscription";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ billing?: string }>;
+}) {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
+
+  // Returning from Stripe Checkout: pull the fresh status now so the plan
+  // reflects immediately, without waiting on (or depending on) the webhook.
+  const { billing } = await searchParams;
+  if (billing === "success") {
+    await syncSubscriptionFromStripe(userId);
+  }
 
   const [user] = await Promise.all([
     prisma.user.findUnique({

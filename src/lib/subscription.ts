@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { getStripe } from "@/lib/stripe";
 
 /**
  * Hosted-plan access control. The entire module is a no-op when the
@@ -99,6 +100,42 @@ export async function getSubscriptionInfo(
     access: hasAccess(user),
     hasStripeCustomer: user.stripeCustomerId !== null,
   };
+}
+
+/**
+ * Pull the caller's subscription straight from Stripe and update our DB — a
+ * fallback for the webhook so returning from Checkout reflects the new status
+ * immediately even if the webhook is delayed or misconfigured. Best-effort:
+ * the webhook stays the source of truth for later changes (cancel, past_due).
+ * No-op when self-hosted or the user has no Stripe customer / subscription.
+ */
+export async function syncSubscriptionFromStripe(userId: string): Promise<void> {
+  if (isSelfHosted()) return;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stripeCustomerId: true },
+  });
+  if (!user?.stripeCustomerId) return;
+  try {
+    const subs = await getStripe().subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: "all",
+      limit: 3,
+    });
+    if (subs.data.length === 0) return;
+    const statuses = subs.data.map((s) => s.status);
+    const status = statuses.some((s) => s === "active" || s === "trialing")
+      ? "active"
+      : statuses.some((s) => s === "past_due" || s === "unpaid")
+        ? "past_due"
+        : "canceled";
+    await prisma.user.updateMany({
+      where: { id: userId },
+      data: { subscriptionStatus: status },
+    });
+  } catch {
+    // Sync is best-effort; never block the page render on a Stripe hiccup.
+  }
 }
 
 /**
