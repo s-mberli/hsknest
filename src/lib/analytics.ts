@@ -9,7 +9,7 @@
 
 declare global {
   interface Window {
-    umami?: { track: (event: string) => void };
+    umami?: { track: (event: string, data?: Record<string, string>) => void };
   }
 }
 
@@ -20,7 +20,18 @@ export type FunnelEvent =
 
 export function trackEvent(event: FunnelEvent): void {
   try {
-    window.umami?.track(event);
+    const source = typeof window !== "undefined" ? localStorage.getItem("hsknest-utm-source") : null;
+    const campaign = typeof window !== "undefined" ? localStorage.getItem("hsknest-utm-campaign") : null;
+    
+    const props: Record<string, string> = {};
+    if (source) props.utm_source = source;
+    if (campaign) props.utm_campaign = campaign;
+
+    if (Object.keys(props).length > 0) {
+      window.umami?.track(event, props);
+    } else {
+      window.umami?.track(event);
+    }
   } catch {
     // Analytics must never break the app.
   }

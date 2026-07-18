@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
@@ -46,6 +47,19 @@ export async function POST(req: Request) {
     },
     select: { id: true },
   });
+
+  // Ensure a stable guestId cookie exists for analytics attribution
+  const cookieStore = await cookies();
+  let guestId = cookieStore.get("guestId")?.value;
+  if (!guestId) {
+    guestId = randomBytes(16).toString("hex");
+    cookieStore.set("guestId", guestId, {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      httpOnly: false, // Accessible to client-side analytics
+      path: "/",
+      sameSite: "lax",
+    });
+  }
 
   return NextResponse.json({ email, password }, { status: 201 });
 }
