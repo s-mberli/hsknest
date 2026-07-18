@@ -59,37 +59,42 @@ export function PriorityControls({
   }
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span
-        className={
-          "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold " +
-          (rank === 1
-            ? "bg-primary text-primary-foreground"
-            : "bg-secondary text-secondary-foreground")
-        }
-      >
-        {rank}
+    <div className="flex items-center justify-between gap-2">
+      <span className="flex items-center gap-2">
+        <span
+          className={
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums " +
+            (rank === 1
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground")
+          }
+        >
+          {rank}
+        </span>
+        <span className="text-xs font-medium text-muted-foreground">
+          {rank === 1 ? "Next up" : "in queue"}
+        </span>
       </span>
-      <div className="flex flex-col">
+      <span className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={(e) => move(-1, e)}
           disabled={busy || atTop}
-          aria-label="Move up"
-          className="flex h-[22px] w-11 items-center justify-center rounded-t-md text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+          aria-label="Move up in queue"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-card"
         >
-          <ChevronUp className="size-3.5" />
+          <ChevronUp className="size-4" />
         </button>
         <button
           type="button"
           onClick={(e) => move(1, e)}
           disabled={busy || atBottom}
-          aria-label="Move down"
-          className="flex h-[22px] w-11 items-center justify-center rounded-b-md text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+          aria-label="Move down in queue"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-card"
         >
-          <ChevronDown className="size-3.5" />
+          <ChevronDown className="size-4" />
         </button>
-      </div>
+      </span>
     </div>
   );
 }

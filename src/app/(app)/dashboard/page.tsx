@@ -116,36 +116,12 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <p className="text-3xl font-bold tabular-nums">
-              {stats.learnedTotal}
-            </p>
-            <p className="text-sm text-muted-foreground">Learned</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <p className="text-3xl font-bold tabular-nums">
-              {stats.masteredTotal}
-            </p>
-            <p className="text-sm text-muted-foreground">Mastered</p>
-          </CardContent>
-        </Card>
-        <Link href="/words" className="block">
-          <Card className="h-full transition-colors hover:bg-accent">
-            <CardContent className="pt-6 text-center">
-              <p className="text-3xl font-bold tabular-nums text-primary">
-                {stats.weakCount}
-              </p>
-              <p className="text-sm text-muted-foreground">Weak words</p>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
+      {lifetimeStats && (
+        <div className="mt-6">
+          <LifetimeStats stats={lifetimeStats} weakCount={stats.weakCount} />
+        </div>
+      )}
 
-      {lifetimeStats && <div className="mt-6"><LifetimeStats stats={lifetimeStats} /></div>}
 
       {isNewUser && <div className="mt-6"><GettingStarted /></div>}
 
