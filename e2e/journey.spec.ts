@@ -337,12 +337,28 @@ test("words tab defaults to timeline view with a lane heading", async ({ page })
   ).toBeVisible({ timeout: 10_000 });
 });
 
-test("words tab toggles to table view", async ({ page }) => {
+test("words tab toggles to the Words list with retention sparklines", async ({ page }) => {
   await logIn(page);
   await page.goto("/words");
-  await page.getByRole("button", { name: /^Table$/ }).click();
-  await expect(page.getByRole("table")).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByRole("columnheader", { name: /strength/i })).toBeVisible();
+  await page.getByRole("button", { name: /^Words$/ }).click();
+  // List rows render inside a <ul role="list"> with a retention sparkline SVG.
+  await expect(page.getByRole("list").first()).toBeVisible({ timeout: 10_000 });
+  await expect(
+    page.getByRole("img", { name: /retention/i }).first()
+  ).toBeVisible();
+});
+
+test("words tab toggles to the Strength bubble view", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/words");
+  await page.getByRole("button", { name: /^Strength$/ }).click();
+  // At least one bubble trigger (word button with the shared aria-label
+  // pattern "term, band, relative due") is visible.
+  await expect(
+    page
+      .getByRole("button", { name: /, (Mastered|Solid|Growing|Trouble|Known|New), / })
+      .first()
+  ).toBeVisible({ timeout: 10_000 });
 });
 
 test("match mode loads a round", async ({ page }) => {
