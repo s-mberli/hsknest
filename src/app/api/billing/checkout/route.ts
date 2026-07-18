@@ -41,6 +41,20 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // A guest has throwaway @guest.local credentials and no way to log back
+    // in. Paying now would orphan the subscription on an unreachable account,
+    // so require a real account (email + password) first — same userId, so
+    // all their progress carries straight over.
+    if (user.email.endsWith("@guest.local")) {
+      return NextResponse.json(
+        {
+          error: "Create your account before subscribing.",
+          code: "GUEST_MUST_UPGRADE",
+        },
+        { status: 400 }
+      );
+    }
+
     const stripe = getStripe();
 
     // Reuse the Stripe customer across checkout attempts.

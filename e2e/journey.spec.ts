@@ -326,10 +326,14 @@ test("practice mode reviews without moving the schedule", async ({ page }) => {
 test("words tab defaults to timeline view with a lane heading", async ({ page }) => {
   await logIn(page);
   await page.goto("/words");
+  // Timeline view renders several memory-horizon lanes; assert at least one
+  // heading shows (.first() — matching multiple would violate strict mode).
   await expect(
-    page.getByRole("heading", {
-      name: /due now|this week|this month|long-term memory|not started|resting/i,
-    })
+    page
+      .getByRole("heading", {
+        name: /due now|this week|this month|long-term memory|not started|resting/i,
+      })
+      .first()
   ).toBeVisible({ timeout: 10_000 });
 });
 
