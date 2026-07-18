@@ -81,7 +81,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "Is HSK Nest really free?",
-    a: "Self-hosted, yes — forever, under the AGPL license. The hosted version is €5/month after a 14-day free trial: we handle updates, backups, and hosting.",
+    a: "Self-hosted, yes — forever, under the AGPL license. The hosted version is €10/month after a 14-day free trial: we handle updates, backups, and hosting.",
   },
   {
     q: "Do I need a credit card to try it?",
@@ -224,7 +224,7 @@ export function LandingSections() {
             HSK Nest Hosted
           </p>
           <p className="mt-2 text-5xl font-extrabold tracking-tight">
-            €5
+            €10
             <span className="text-lg font-medium text-muted-foreground">
               /month
             </span>

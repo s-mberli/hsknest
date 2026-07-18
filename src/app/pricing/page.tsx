@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Pricing | HSK Nest",
   description:
-    "HSK Nest Hosted is €5/month with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
+    "HSK Nest Hosted is €10/month with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
 };
 
 const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
 const ROWS: { label: string; selfHost: string; hosted: string }[] = [
-  { label: "Price", selfHost: "Free forever (AGPL)", hosted: "€5/month" },
+  { label: "Price", selfHost: "Free forever (AGPL)", hosted: "€10/month" },
   { label: "Setup", selfHost: "Your server, Docker, DNS", hosted: "None — sign up and study" },
   { label: "Updates", selfHost: "You pull and redeploy", hosted: "Automatic" },
   { label: "Backups", selfHost: "You configure them", hosted: "Nightly, managed" },
@@ -67,7 +67,7 @@ export default function PricingPage() {
           {[
             "14 days, full access, no credit card collected — so there is no surprise charge when it ends.",
             "When the trial ends, studying pauses but nothing is deleted: your decks, progress, and CSV export stay available.",
-            "Upgrade any time for €5/month. Cancel any time in one click — no retention flows, no guilt emails.",
+            "Upgrade any time for €10/month. Cancel any time in one click — no retention flows, no guilt emails.",
             "14-day no-questions refund on your first payment.",
           ].map((line) => (
             <li key={line} className="flex items-start gap-2">
@@ -84,7 +84,7 @@ export default function PricingPage() {
           Why isn&apos;t hosting free too?
         </h2>
         <p>
-          Servers, backups, and updates cost real money and time. €5/month
+          Servers, backups, and updates cost real money and time. €10/month
           keeps the hosted service fast and maintained — and funds continued
           development of the open-source project everyone gets for free.
         </p>

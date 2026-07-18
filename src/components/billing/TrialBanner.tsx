@@ -32,7 +32,7 @@ export function TrialBanner({ daysLeft }: { daysLeft: number }) {
   const label = urgent
     ? `Trial ends in ${daysLeft === 0 ? "less than a day" : `${daysLeft} ${daysLeft === 1 ? "day" : "days"}`}. Your progress stays saved either way.`
     : warning
-      ? `${daysLeft} days left — keep your streak going for €5/mo.`
+      ? `${daysLeft} days left — keep your streak going for €10/mo.`
       : `${daysLeft} days left in your trial.`;
 
   return (
