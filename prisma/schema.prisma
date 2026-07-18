@@ -66,7 +66,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   verificationTokens  VerificationToken[]
   emailLogs           EmailLog[]
-  
+  listPriorities      ListPriority[]
+
   targetLanguageId    String?
   targetLanguage      Language?  @relation("UserTargetLanguage", fields: [targetLanguageId], references: [id])
 }
@@ -98,6 +99,7 @@ model WordList {
   createdBy User?        @relation(fields: [createdById], references: [id])
   words     Word[]
   hiddenBy  HiddenList[]
+  priorities ListPriority[]
 
   @@index([languageId])
   @@index([createdById])
@@ -197,6 +199,21 @@ model HiddenList {
   list WordList @relation(fields: [listId], references: [id], onDelete: Cascade)
 
   @@unique([userId, listId])
+}
+
+// Per-user ordering of their "Studying" lists. rank is 0-based, lower = higher
+// priority; feeds the study queue's new-card selection (src/lib/listPriority.ts).
+model ListPriority {
+  id         String   @id @default(cuid())
+  userId     String
+  wordListId String
+  rank       Int
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wordList WordList @relation(fields: [wordListId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordListId])
+  @@index([userId])
 }
 
 model Feedback {

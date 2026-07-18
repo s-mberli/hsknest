@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ListVisibilityButton } from "@/components/lists/ListVisibilityButton";
+import { PriorityControls } from "@/components/lists/PriorityControls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +23,7 @@ export default async function ListsPage() {
     redirect("/onboarding");
   }
 
-  const [lists, progress, hiddenRows] = await Promise.all([
+  const [lists, progress, hiddenRows, priorityRows] = await Promise.all([
     prisma.wordList.findMany({
       where: {
         ...visibleListWhere(userId),
@@ -46,6 +47,11 @@ export default async function ListsPage() {
       where: { userId },
       select: { listId: true },
     }),
+    prisma.listPriority.findMany({
+      where: { userId },
+      orderBy: { rank: "asc" },
+      select: { wordListId: true },
+    }),
   ]);
 
   // Per-list rollup: how many of its words are in the queue, how many due.
@@ -65,13 +71,28 @@ export default async function ListsPage() {
 
   // Sections, in reading order: what you study, what you made, what you could
   // add, what you tucked away. Hidden wins over studying (so hiding stops study).
-  const studying = lists
+  const defaultSortedStudying = lists
     .filter((l) => (byList.get(l.id)?.enrolled ?? 0) > 0 && !hiddenIds.has(l.id))
     .sort((a, b) => {
       const sa = byList.get(a.id) ?? { enrolled: 0, due: 0 };
       const sb = byList.get(b.id) ?? { enrolled: 0, due: 0 };
       return sb.due - sa.due || sb.enrolled - sa.enrolled || a.name.localeCompare(b.name);
     });
+
+  // Ranked lists first (in rank order), unranked after (keeping their default
+  // sort). This is the same ordering rule the study queue applies via
+  // prioritize()/rankListIds() in src/lib/listPriority.ts.
+  const rankOrder = priorityRows.map((p) => p.wordListId);
+  const rankIndex = new Map(rankOrder.map((id, i) => [id, i]));
+  const studying = [...defaultSortedStudying].sort((a, b) => {
+    const ra = rankIndex.get(a.id);
+    const rb = rankIndex.get(b.id);
+    if (ra !== undefined && rb !== undefined) return ra - rb;
+    if (ra !== undefined) return -1;
+    if (rb !== undefined) return 1;
+    return 0; // keep defaultSortedStudying's relative order (stable sort)
+  });
+  const studyingOrder = studying.map((l) => l.id);
   const studyingIds = new Set(studying.map((l) => l.id));
   const ownLists = lists
     .filter((l) => l.createdById === userId && !studyingIds.has(l.id))
@@ -100,7 +121,10 @@ export default async function ListsPage() {
     (l) => l.createdById !== userId && hiddenIds.has(l.id)
   );
 
-  const card = (list: (typeof lists)[number], opts?: { hidden?: boolean }) => (
+  const card = (
+    list: (typeof lists)[number],
+    opts?: { hidden?: boolean; studying?: boolean }
+  ) => (
     <ListCard
       key={list.id}
       id={list.id}
@@ -112,6 +136,10 @@ export default async function ListsPage() {
       owner={list.createdById === userId}
       hideable={list.createdById !== userId}
       hidden={opts?.hidden ?? false}
+      studying={opts?.studying ?? false}
+      rank={opts?.studying ? studyingOrder.indexOf(list.id) + 1 : undefined}
+      studyingOrder={opts?.studying ? studyingOrder : undefined}
+      showRankControls={opts?.studying && studying.length > 1}
     />
   );
 
@@ -131,11 +159,15 @@ export default async function ListsPage() {
 
       {studying.length > 0 && (
         <section className="mb-10">
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+          <h2 className="mb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
             Studying
           </h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            The top of this stack feeds your new words. Reviews always come
+            first, wherever they live.
+          </p>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {studying.map((l) => card(l))}
+            {studying.map((l) => card(l, { studying: true }))}
           </div>
         </section>
       )}
@@ -224,6 +256,10 @@ function ListCard({
   owner = false,
   hideable = false,
   hidden = false,
+  studying = false,
+  rank,
+  studyingOrder,
+  showRankControls = false,
 }: {
   id: string;
   name: string;
@@ -234,6 +270,10 @@ function ListCard({
   owner?: boolean;
   hideable?: boolean;
   hidden?: boolean;
+  studying?: boolean;
+  rank?: number;
+  studyingOrder?: string[];
+  showRankControls?: boolean;
 }) {
   return (
     <Link href={`/lists/${id}`} className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
@@ -261,24 +301,42 @@ function ListCard({
             )}
           </div>
 
+          {studying && showRankControls && rank !== undefined && studyingOrder && (
+            <div className="relative z-10 mb-3">
+              <PriorityControls listId={id} rank={rank} order={studyingOrder} />
+            </div>
+          )}
+
           {/* Spacer to push stats to bottom */}
           <div className="mt-auto pt-4 border-t border-border/40">
-            <div className="flex flex-wrap items-center gap-2">
-              {due > 0 && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                  {due} due
+            {studying ? (
+              <p className="text-xs font-medium text-muted-foreground">
+                {due > 0 && (
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">
+                    {due} due
+                  </span>
+                )}
+                {due > 0 && " · "}
+                {enrolled}/{wordCount}
+              </p>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                {due > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    {due} due
+                  </span>
+                )}
+                {enrolled > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    {enrolled} learning
+                  </span>
+                )}
+                <span className="inline-flex items-center rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+                  {wordCount} words
                 </span>
-              )}
-              {enrolled > 0 && (
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                  {enrolled} learning
-                </span>
-              )}
-              <span className="inline-flex items-center rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
-                {wordCount} words
-              </span>
-            </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

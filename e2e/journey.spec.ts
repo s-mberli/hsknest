@@ -219,9 +219,9 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
 test("per-list progress chips show after enrolling", async ({ page }) => {
   await logIn(page);
   await page.goto("/lists");
-  // The list enrolled earlier shows a "learning" rollup chip, and enrolled
-  // lists are grouped under a Studying section.
-  await expect(page.getByText(/\d+ learning/).first()).toBeVisible({
+  // The list enrolled earlier shows the slim "enrolled/total" rollup, and
+  // enrolled lists are grouped under a Studying section.
+  await expect(page.getByText(/\d+\/\d+/).first()).toBeVisible({
     timeout: 10_000,
   });
   await expect(
