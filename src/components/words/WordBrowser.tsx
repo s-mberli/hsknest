@@ -47,8 +47,8 @@ export function WordBrowser() {
   // Language filter ("all" = every language) and the due-only queue toggle.
   const [language, setLanguage] = useState<string>("all");
   const [dueOnly, setDueOnly] = useState(false);
-  // View mode — Timeline (default), Strength grid, or a retention-sparkline list.
-  const [view, setView] = useState<View>("timeline");
+  // View mode — Strength bubbles (default), retention-sparkline list, or Timeline.
+  const [view, setView] = useState<View>("cards");
   const [masteryThresholdDays, setMasteryThresholdDays] = useState<
     number | null
   >(null);
@@ -179,17 +179,17 @@ export function WordBrowser() {
     <div className="space-y-4">
       <div className="flex justify-end">
         <div className="inline-flex rounded-lg border p-0.5">
-          <ToggleBtn
-            active={view === "timeline"}
-            onClick={() => setView("timeline")}
-          >
-            Timeline
-          </ToggleBtn>
           <ToggleBtn active={view === "cards"} onClick={() => setView("cards")}>
             Strength
           </ToggleBtn>
           <ToggleBtn active={view === "list"} onClick={() => setView("list")}>
             Words
+          </ToggleBtn>
+          <ToggleBtn
+            active={view === "timeline"}
+            onClick={() => setView("timeline")}
+          >
+            Timeline
           </ToggleBtn>
         </div>
       </div>
