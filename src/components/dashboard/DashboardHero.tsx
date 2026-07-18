@@ -2,17 +2,18 @@
 
 import {
   BookOpen,
-  ChevronRight,
   GraduationCap,
   LayoutGrid,
   ListChecks,
   MessageSquareText,
 } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
+import { usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeroProps {
@@ -64,6 +65,7 @@ export function DashboardHero({
   languageCode,
   hasSentences = false,
 }: DashboardHeroProps) {
+  const reducedMotion = usePrefersReducedMotion();
   const total = due + checks + fresh;
   const hasCards = total > 0;
   const canPractice = learnedCount > 0;
@@ -165,25 +167,48 @@ export function DashboardHero({
 
       {/* Specialized practice — pure practice, never moves the schedule. */}
       {(hasCards || canPractice) && (
-        <div className="w-full max-w-sm space-y-2">
+        <div className="w-full max-w-xl space-y-2">
           <SectionLabel>More ways to practice</SectionLabel>
           <p className="text-xs text-muted-foreground">
             Pressure-free games with words you&apos;ve already learned — they
             never change your review schedule.
           </p>
-          {PRACTICE_MODES.map(({ key, label, icon: Icon }) => (
-            <Link
-              key={key}
-              href={`/study/${key}?mode=practice`}
-              className="flex items-center gap-3 rounded-2xl border border-dashed bg-card px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
-            >
-              <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon className="size-4" />
-              </span>
-              <span className="flex-1">{label}</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
-          ))}
+          <div
+            className={cn(
+              "grid grid-cols-2 justify-center gap-3 sm:grid-cols-4",
+              // With fewer than 4 modes, center the row from sm up instead of
+              // leaving empty trailing cells.
+              PRACTICE_MODES.length < 4 &&
+                "sm:flex sm:flex-wrap sm:justify-center"
+            )}
+          >
+            {PRACTICE_MODES.map(({ key, label, icon: Icon }, i) => (
+              <motion.div
+                key={key}
+                initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.2,
+                  delay: reducedMotion ? 0 : i * 0.05,
+                }}
+                className="sm:w-32"
+              >
+                <Link
+                  href={`/study/${key}?mode=practice`}
+                  className={cn(
+                    "flex aspect-square min-h-11 flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-3 text-center text-sm font-medium",
+                    "transition-transform hover:-translate-y-0.5 hover:bg-accent motion-reduce:hover:translate-y-0",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  )}
+                >
+                  <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="leading-tight">{label}</span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
     </div>

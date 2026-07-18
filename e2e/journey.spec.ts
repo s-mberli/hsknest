@@ -23,7 +23,7 @@ test("sign up and land on the dashboard", async ({ page }) => {
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
-  await page.getByRole("button", { name: "Start building flashcards" }).click();
+  await page.getByRole("button", { name: "Start studying" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
   await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
@@ -137,6 +137,8 @@ test("pronunciation quiz loads and grades", async ({ page }) => {
 test("hide-reading toggle persists", async ({ page }) => {
   await logIn(page);
   await page.goto("/settings");
+  // The appearance card lives on the Interface tab.
+  await page.getByRole("tab", { name: /^Interface$/ }).click();
   const saved = page.waitForResponse(
     (res) =>
       res.url().includes("/api/settings") &&
@@ -161,7 +163,7 @@ test("guest mode: one click to studying", async ({ page }) => {
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
-  await page.getByRole("button", { name: "Start building flashcards" }).click();
+  await page.getByRole("button", { name: "Start studying" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
   // A starter list is auto-enrolled, so the Start button is available.
@@ -177,7 +179,7 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
-  await page.getByRole("button", { name: "Start building flashcards" }).click();
+  await page.getByRole("button", { name: "Start studying" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
 
@@ -201,6 +203,8 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
 
   // Log out and back in with the new credentials.
   await page.goto("/settings");
+  // Sign out lives on the Account tab.
+  await page.getByRole("tab", { name: /^Account$/ }).click();
   await page.getByRole("button", { name: /sign out/i }).click();
   await page.waitForURL("**/login", { timeout: 15_000 });
   await page.getByLabel("Email").fill(upgradeEmail);
@@ -323,9 +327,22 @@ test("practice mode reviews without moving the schedule", async ({ page }) => {
   expect(after).toBe(before!.dueAt);
 });
 
-test("words tab defaults to timeline view with a lane heading", async ({ page }) => {
+test("words tab defaults to the Strength bubble view", async ({ page }) => {
   await logIn(page);
   await page.goto("/words");
+  // Default view: at least one bubble trigger (word button with the shared
+  // aria-label pattern "term, band, relative due") loads without toggling.
+  await expect(
+    page
+      .getByRole("button", { name: /, (Mastered|Solid|Growing|Trouble|Known|New), / })
+      .first()
+  ).toBeVisible({ timeout: 10_000 });
+});
+
+test("words tab toggles to timeline view with a lane heading", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/words");
+  await page.getByRole("button", { name: /^Timeline$/ }).click();
   // Timeline view renders several memory-horizon lanes; assert at least one
   // heading shows (.first() — matching multiple would violate strict mode).
   await expect(
@@ -435,10 +452,12 @@ test("account deletion signs out and frees the email", async ({ page }) => {
   await page.waitForURL("**/onboarding", { timeout: 15_000 });
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
-  await page.getByRole("button", { name: "Start building flashcards" }).click();
+  await page.getByRole("button", { name: "Start studying" }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
 
   await page.goto("/settings");
+  // Delete account lives on the Account tab.
+  await page.getByRole("tab", { name: /^Account$/ }).click();
   await page.getByRole("button", { name: /^delete account$/i }).click();
   const deleted = page.waitForResponse(
     (res) =>

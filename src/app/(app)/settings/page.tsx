@@ -71,17 +71,17 @@ export default async function SettingsPage() {
         desiredRetention={user.desiredRetention}
         targetLanguageId={user.targetLanguageId}
         languages={languages}
+        billing={
+          !sub.selfHosted ? (
+            <BillingSection
+              status={sub.status}
+              daysLeft={sub.daysLeft}
+              hasStripeCustomer={sub.hasStripeCustomer}
+              isGuest={user.email.endsWith("@guest.local")}
+            />
+          ) : undefined
+        }
       />
-      {!sub.selfHosted && (
-        <div className="mt-6">
-          <BillingSection
-            status={sub.status}
-            daysLeft={sub.daysLeft}
-            hasStripeCustomer={sub.hasStripeCustomer}
-            isGuest={user.email.endsWith("@guest.local")}
-          />
-        </div>
-      )}
       <p className="mt-8 text-center text-xs text-muted-foreground">
         <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
           Terms

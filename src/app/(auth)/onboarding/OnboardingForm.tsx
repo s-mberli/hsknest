@@ -233,7 +233,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                     Saving...
                   </span>
                 ) : isLevelStep || !hasLevelStep ? (
-                  "Start building flashcards"
+                  "Start studying"
                 ) : (
                   "Continue"
                 )}

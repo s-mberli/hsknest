@@ -11,8 +11,9 @@ export default async function WordsPage() {
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <h1 className="mb-1 text-2xl font-bold tracking-tight">Your words</h1>
       <p className="mb-6 text-sm text-muted-foreground">
-        Every word you&apos;ve started, on a memory timeline — from due-now to
-        long-term. Switch to By strength or Table anytime.
+        Every word you&apos;ve started as strength bubbles — the deeper a word
+        sits in memory, the bigger its bubble. Switch to the Words list or the
+        Timeline anytime.
       </p>
       <WordBrowser />
     </main>

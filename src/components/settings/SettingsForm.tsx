@@ -10,6 +10,7 @@ import { FeedbackSection } from "@/components/settings/sections/FeedbackSection"
 import { LanguageSection } from "@/components/settings/sections/LanguageSection";
 import { SchedulingSection } from "@/components/settings/sections/SchedulingSection";
 import { WorkloadSection } from "@/components/settings/sections/WorkloadSection";
+import { SettingsTabs } from "@/components/settings/SettingsTabs";
 
 type Algorithm = "SM2" | "LEITNER" | "FSRS";
 type Theme = "light" | "dark" | "system";
@@ -35,6 +36,8 @@ interface SettingsFormProps {
   desiredRetention: number;
   targetLanguageId: string;
   languages: { id: string; name: string }[];
+  /** Billing card (hosted deployments only) — shown on the Account tab. */
+  billing?: React.ReactNode;
 }
 
 export function SettingsForm(props: SettingsFormProps) {
@@ -82,8 +85,8 @@ export function SettingsForm(props: SettingsFormProps) {
     }
   }
 
-  return (
-    <div className="space-y-6">
+  const learning = (
+    <>
       <LanguageSection
         targetLanguageId={targetLanguageId}
         languages={props.languages}
@@ -154,19 +157,31 @@ export function SettingsForm(props: SettingsFormProps) {
           patch({ fuzzIntervals: next }, () => setFuzzIntervals(prev));
         }}
       />
+    </>
+  );
 
-      <AppearanceSection
-        initialTheme={props.theme}
-        initialStudyTheme={props.studyTheme}
-        initialCardTextSize={props.cardTextSize}
-        initialShowReading={props.showReading}
-        initialSoundEffects={props.soundEffects}
-        initialAutoPlayPronunciation={props.autoPlayPronunciation}
-      />
-
-      <AccountSection email={props.email} name={props.name} />
-
-      <FeedbackSection />
-    </div>
+  return (
+    <SettingsTabs
+      panels={{
+        learning,
+        interface: (
+          <AppearanceSection
+            initialTheme={props.theme}
+            initialStudyTheme={props.studyTheme}
+            initialCardTextSize={props.cardTextSize}
+            initialShowReading={props.showReading}
+            initialSoundEffects={props.soundEffects}
+            initialAutoPlayPronunciation={props.autoPlayPronunciation}
+          />
+        ),
+        account: (
+          <>
+            <AccountSection email={props.email} name={props.name} />
+            {props.billing}
+          </>
+        ),
+        support: <FeedbackSection />,
+      }}
+    />
   );
 }
