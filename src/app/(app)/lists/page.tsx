@@ -237,8 +237,7 @@ function ListCard({
 }) {
   return (
     <Link href={`/lists/${id}`} className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
-      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 bg-gradient-to-b from-card to-card/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <Card className="relative flex h-full flex-col overflow-hidden bg-card transition-colors duration-200 hover:border-primary/30 hover:bg-accent/40">
         <CardContent className="flex flex-1 flex-col p-5">
           {/* Top row: name + language on the left, hide toggle pinned right. */}
           <div className="mb-4 flex items-start justify-between gap-3">
@@ -267,7 +266,7 @@ function ListCard({
             <div className="flex flex-wrap items-center gap-2">
               {due > 0 && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
                   {due} due
                 </span>
               )}
