@@ -8,11 +8,12 @@ import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { FirstVisitIntro } from "@/components/dashboard/FirstVisitIntro";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
+import { LifetimeStats } from "@/components/dashboard/LifetimeStats";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
-import { getDashboardStats } from "@/lib/stats";
+import { getDashboardStats, getLifetimeStats } from "@/lib/stats";
 import {
   getSubscriptionInfo,
   syncSubscriptionFromStripe,
@@ -50,9 +51,10 @@ export default async function DashboardPage({
     redirect("/onboarding");
   }
 
-  const [stats, sub] = await Promise.all([
+  const [stats, sub, lifetimeStats] = await Promise.all([
     getDashboardStats(userId, user.targetLanguageId),
     getSubscriptionInfo(userId),
+    getLifetimeStats(userId, user.targetLanguageId),
   ]);
 
   const isGuest = user?.email.endsWith("@guest.local") ?? false;
@@ -142,6 +144,8 @@ export default async function DashboardPage({
           </Card>
         </Link>
       </div>
+
+      {lifetimeStats && <div className="mt-6"><LifetimeStats stats={lifetimeStats} /></div>}
 
       {isNewUser && <div className="mt-6"><GettingStarted /></div>}
 

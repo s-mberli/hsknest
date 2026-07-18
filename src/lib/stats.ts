@@ -142,6 +142,70 @@ export async function getDashboardStats(
   };
 }
 
+export interface LifetimeStats {
+  reviews: number;
+  daysStudied: number;
+  recallRate: number;
+  wordsPerDay: number;
+}
+
+/**
+ * "All time" stats for the dashboard lifetime-stats card. Returns null when the
+ * user has never logged a review (nothing meaningful to show yet).
+ *
+ * NOTE: ReviewLog has no relation to Word in the schema (only a bare `wordId`
+ * column), so it can't be joined to word -> wordList -> language in Prisma.
+ * `reviews`, `daysStudied`, and `recallRate` are therefore computed across ALL
+ * of the user's review history, not scoped to `languageId` — the `languageId`
+ * parameter only scopes `wordsPerDay`'s progress-count numerator, which reads
+ * UserProgress (joinable via targetLangFilter). If/when ReviewLog grows a
+ * `word` relation, these can be scoped too.
+ */
+export async function getLifetimeStats(
+  userId: string,
+  languageId: string | null = null
+): Promise<LifetimeStats | null> {
+  const langFilter = targetLangFilter(languageId);
+
+  const [reviewRows, learnedCount, firstLog] = await Promise.all([
+    prisma.reviewLog.findMany({
+      where: { userId },
+      select: { reviewedAt: true, quality: true },
+    }),
+    prisma.userProgress.count({
+      where: { userId, state: { in: ["LEARNING", "REVIEW", "MASTERED"] }, ...langFilter },
+    }),
+    prisma.reviewLog.findFirst({
+      where: { userId },
+      orderBy: { reviewedAt: "asc" },
+      select: { reviewedAt: true },
+    }),
+  ]);
+
+  if (reviewRows.length === 0 || !firstLog) return null;
+
+  const reviews = reviewRows.length;
+  const recalled = reviewRows.filter((r) => r.quality >= 3).length;
+  const recallRate = Math.round((recalled / reviews) * 100);
+
+  const dayKeys = new Set(
+    reviewRows.map((r) => startOfLocalDay(r.reviewedAt).getTime())
+  );
+  const daysStudied = dayKeys.size;
+
+  const daysSinceFirst = Math.max(
+    1,
+    Math.ceil(
+      (startOfLocalDay(new Date()).getTime() -
+        startOfLocalDay(firstLog.reviewedAt).getTime()) /
+        DAY_MS
+    )
+  );
+  const wordsPerDay = Math.round((learnedCount / daysSinceFirst) * 10) / 10;
+
+  return { reviews, daysStudied, recallRate, wordsPerDay };
+}
+
 /** Count consecutive days (ending today or yesterday) with at least one review. */
 export function computeStreak(dates: Date[]): number {
   if (dates.length === 0) return 0;

@@ -129,6 +129,10 @@ export const importSchema = z.object({
     .optional(),
 });
 
+export const listPrioritySchema = z.object({
+  order: z.array(z.string().cuid()).min(1).max(100),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
@@ -144,3 +148,4 @@ export type WordInput = z.infer<typeof wordInputSchema>;
 export type BulkWordsInput = z.infer<typeof bulkWordsSchema>;
 export type UpdateWordInput = z.infer<typeof updateWordSchema>;
 export type ImportInput = z.infer<typeof importSchema>;
+export type ListPriorityInput = z.infer<typeof listPrioritySchema>;

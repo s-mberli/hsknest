@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/apiRoute";
 import { requireAccess } from "@/lib/subscription";
 import { targetLangFilter } from "@/lib/langScope";
+import { prioritize } from "@/lib/listPriority";
 import { prisma } from "@/lib/prisma";
 import { gameGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
@@ -240,28 +241,47 @@ export async function GET(req: Request) {
   );
   const newAllowedToday = Math.max(0, user.dailyNewWords - newIntroducedToday);
 
+  // Per-user "Studying" list priority order. Prisma can't orderBy a per-user
+  // rank stored in a separate table, so we over-fetch a window of candidates
+  // (already ordered by word.position asc) and re-sort in JS — see
+  // src/lib/listPriority.ts for the rationale and the pure sort helper.
+  const priorityRows = await prisma.listPriority.findMany({
+    where: { userId },
+    orderBy: { rank: "asc" },
+    select: { wordListId: true, rank: true },
+  });
+  const rankByListId = new Map(priorityRows.map((p) => [p.wordListId, p.rank]));
+
   // 2. Assumed checks.
   let remaining = limit - due.length;
+  const checksTake = Math.min(remaining, checksAllowedToday);
   const checks =
     remaining > 0 && checksAllowedToday > 0
-      ? await prisma.userProgress.findMany({
-          where: { userId, state: "ASSUMED", ...queueWhere },
-          orderBy: { word: { position: "asc" } },
-          take: Math.min(remaining, checksAllowedToday),
-          include: wordInclude,
-        })
+      ? prioritize(
+          await prisma.userProgress.findMany({
+            where: { userId, state: "ASSUMED", ...queueWhere },
+            orderBy: { word: { position: "asc" } },
+            take: Math.max(checksTake * 5, 50),
+            include: wordInclude,
+          }),
+          rankByListId
+        ).slice(0, checksTake)
       : [];
 
   // 3. New cards.
   remaining = limit - due.length - checks.length;
+  const freshTake = Math.min(remaining, newAllowedToday);
   const fresh =
     remaining > 0 && newAllowedToday > 0
-      ? await prisma.userProgress.findMany({
-          where: { userId, state: "NEW", ...queueWhere },
-          orderBy: { word: { position: "asc" } },
-          take: Math.min(remaining, newAllowedToday),
-          include: wordInclude,
-        })
+      ? prioritize(
+          await prisma.userProgress.findMany({
+            where: { userId, state: "NEW", ...queueWhere },
+            orderBy: { word: { position: "asc" } },
+            take: Math.max(freshTake * 5, 50),
+            include: wordInclude,
+          }),
+          rankByListId
+        ).slice(0, freshTake)
       : [];
 
   const cards: QueueCard[] = [
