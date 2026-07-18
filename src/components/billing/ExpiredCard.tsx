@@ -40,7 +40,7 @@ export function ExpiredCard() {
             Your trial has ended — your progress hasn&apos;t
           </h2>
           <p className="text-sm text-muted-foreground">
-            All your decks and review history are saved. Upgrade for €5/month
+            All your decks and review history are saved. Upgrade for €10/month
             to keep studying, or export your data anytime.
           </p>
         </div>
@@ -59,7 +59,7 @@ export function ExpiredCard() {
 
         <div className="flex flex-wrap justify-center gap-3">
           <Button disabled={!consented || loading} onClick={upgrade}>
-            {loading ? "Opening checkout…" : "Upgrade — €5/mo"}
+            {loading ? "Opening checkout…" : "Upgrade — €10/mo"}
           </Button>
           <Button asChild variant="outline">
             <a href="/api/account/export" download>

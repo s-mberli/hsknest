@@ -38,7 +38,7 @@ export function BillingSection({
   const active = status === "active";
 
   const statusLabel = active
-    ? "HSK Nest Hosted — €5/month"
+    ? "HSK Nest Hosted — €10/month"
     : trialing
       ? daysLeft !== null
         ? `Free trial — ${daysLeft} ${daysLeft === 1 ? "day" : "days"} left`
@@ -116,7 +116,7 @@ export function BillingSection({
                   post("/api/billing/checkout", "Could not start checkout.")
                 }
               >
-                {loading ? "Opening checkout…" : "Upgrade — €5/mo"}
+                {loading ? "Opening checkout…" : "Upgrade — €10/mo"}
               </Button>
             </div>
           ))}
