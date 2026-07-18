@@ -303,7 +303,14 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
 
           const w = b.word;
           const meta = STRENGTH_META[w.strength];
-          const showTerm = pos.r >= 26;
+          // Always show the term — new words sit at MIN_R (22) and used to
+          // hide glyphs until hover (r >= 26). Scale type with radius instead.
+          const termClass =
+            pos.r >= 36
+              ? "text-sm"
+              : pos.r >= 28
+                ? "text-xs"
+                : "text-[10px] leading-tight";
           return (
             <motion.div
               key={w.wordId}
@@ -325,14 +332,13 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
                   bubbleRefs.current[i] = el;
                 }}
                 className={cn(
-                  "relative flex size-full items-center justify-center rounded-full border text-sm leading-none",
+                  "relative flex size-full items-center justify-center rounded-full border leading-none",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  termClass,
                   TILE[w.strength]
                 )}
               >
-                {showTerm && (
-                  <span className="max-w-[85%] truncate px-0.5">{w.term}</span>
-                )}
+                <span className="max-w-[85%] truncate px-0.5">{w.term}</span>
                 {w.strength === "shaky" && (
                   <span
                     aria-hidden
