@@ -63,3 +63,7 @@ next-env.d.ts
 # private ops runbook
 /LAUNCH-RUNBOOK.md
 /LAUNCH-RUNBOOK.html
+
+# python bytecode cache
+__pycache__/
+*.pyc
