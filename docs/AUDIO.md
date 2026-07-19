@@ -39,27 +39,49 @@ expected hash, for coverage checks). Total is ~300–500 MB.
 
 ## 2. Serve the clips from the VPS
 
-The clips live on a persistent volume mounted into the app container at
-`/app/public/audio`, so Next serves them at `https://<host>/audio/...` with no
-extra container.
+The clips live on the named volume `recall-audio`, declared in
+`docker-compose.yml` and mounted at `/app/public/audio` in the app container,
+so Next serves them at `https://<host>/audio/...` with no extra container.
 
-1. **Add the mount** (Coolify → the app → Storage, or `docker-compose.yml`):
-   mount a named volume `recall-audio` at `/app/public/audio` (read-only is
-   fine for the app).
-2. **Copy the files up** to the VPS, then into the volume:
+**Important — this is a compose-managed volume, not a Coolify UI storage
+mount.** Coolify's Storage tab is read-only for compose-based apps ("to add,
+modify, or manage volumes, edit your Docker Compose file"). The volume is
+already declared in the repo's `docker-compose.yml`; you don't add it in the
+UI.
+
+**Two env vars are involved, and they're not the same:**
+- `NEXT_PUBLIC_AUDIO_BASE_URL` — a **build-time** var (Next.js inlines
+  `NEXT_PUBLIC_*` vars into the client bundle at build). It must be set
+  *before* the image is built — it's passed through as a Docker build arg
+  (see `docker-compose.yml`'s `build.args` and the `Dockerfile`'s `ARG`).
+  Setting only a runtime `environment:` entry for it is a no-op.
+- Everything else in `environment:` is runtime and takes effect on container
+  start.
+
+Steps:
+
+1. **Set the env var** in Coolify (or `.env` next to `docker-compose.yml`):
+   `NEXT_PUBLIC_AUDIO_BASE_URL=/audio`.
+2. **Redeploy** — this rebuilds the image (baking in the var) *and* creates
+   the `recall-audio` volume on first run if it doesn't exist yet.
+3. **Copy the files onto the volume.** The volume is empty after a fresh
+   deploy — a redeploy replaces the container, so anything copied into the
+   *old* container's filesystem (rather than the volume) is gone. Find the
+   volume's host path and copy the generated tree onto it directly, or copy
+   into the freshly-deployed container (which now has the volume mounted):
    ```bash
-   rsync -av audio-out/zh/  your-user@your-vps:/tmp/audio-zh/
-   # on the VPS, into the running app container:
-   docker cp /tmp/audio-zh/. <app-container>:/app/public/audio/zh/
+   # from the VPS, find the volume mount and copy the generated audio tree in
+   docker volume inspect <project>_recall-audio --format '{{.Mountpoint}}'
+   # copy audio-out/zh/{w,s}/*.mp3 into <mountpoint>/zh/
    ```
-   (Or rsync straight into the volume's host path from `docker volume inspect`.)
-3. **Enable it**: set `NEXT_PUBLIC_AUDIO_BASE_URL=/audio` in the app's
-   environment and redeploy. (It's a build-time public var, so a rebuild/redeploy
-   is required — not just a restart.)
+   or, into the running container (same effect, since it's the mounted volume):
+   ```bash
+   docker cp audio-out/zh/. <app-container>:/app/public/audio/zh/
+   ```
 
 Verify: open a Mandarin flashcard and reveal the reading — the Network tab shows
-a `200` for `…/audio/zh/w/<hash>.mp3` and the voice is natural. Unset the env to
-return to Web Speech.
+a `200` for `…/audio/zh/w/<hash>.mp3` and the voice is natural. Unset the env
+(and redeploy) to return to Web Speech.
 
 ## Self-hosting
 
