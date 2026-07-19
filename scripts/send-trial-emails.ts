@@ -11,6 +11,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 
+import { isSelfHosted } from "../src/lib/selfHosted";
 import { sendTrialEmail, type TrialEmailKind } from "../src/lib/email";
 
 const prisma = new PrismaClient();
@@ -19,7 +20,7 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const DAY_MS = 86_400_000;
 
 async function main() {
-  if (process.env.SELF_HOSTED !== "false") {
+  if (isSelfHosted()) {
     console.log("[trial-emails] SELF_HOSTED != false — nothing to do.");
     return;
   }

@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
+// Re-exported for historical import sites; the pure helper lives in its own
+// module so standalone scripts (no Next.js server context) can import it too.
+export { isSelfHosted } from "@/lib/selfHosted";
+import { isSelfHosted } from "@/lib/selfHosted";
+
 /**
  * Hosted-plan access control. The entire module is a no-op when the
  * deployment is self-hosted: SELF_HOSTED=true (the default shipped in
@@ -12,13 +17,6 @@ import { getStripe } from "@/lib/stripe";
  */
 
 export const TRIAL_DAYS = 14;
-
-/** True when this deployment is a self-hosted install (no billing at all). */
-export function isSelfHosted(): boolean {
-  // Opt-in billing: anything other than an explicit "false" means self-hosted,
-  // so a missing env var can never paywall someone's own server.
-  return process.env.SELF_HOSTED !== "false";
-}
 
 export interface SubscriptionFields {
   subscriptionStatus: string;
