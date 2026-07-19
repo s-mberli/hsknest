@@ -10,6 +10,10 @@ RUN npm ci
 # ── build: generate prisma client + compile the standalone next server ──────
 FROM node:22-alpine AS build
 WORKDIR /app
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so they
+# must arrive as build args (a runtime `environment:` entry alone is too late).
+ARG NEXT_PUBLIC_AUDIO_BASE_URL=""
+ENV NEXT_PUBLIC_AUDIO_BASE_URL=$NEXT_PUBLIC_AUDIO_BASE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

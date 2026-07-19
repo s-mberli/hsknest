@@ -1,6 +1,11 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        # NEXT_PUBLIC_* vars must be passed as a build arg (see Dockerfile) —
+        # the `environment:` block below is runtime-only, too late for these.
+        NEXT_PUBLIC_AUDIO_BASE_URL: ${NEXT_PUBLIC_AUDIO_BASE_URL:-}
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -34,6 +39,7 @@ services:
       NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     volumes:
       - recall-data:/data
+      - recall-audio:/app/public/audio
 
   sqlite-backup:
     image: alpine:latest
@@ -54,3 +60,7 @@ services:
 
 volumes:
   recall-data:
+  # Pre-generated pronunciation MP3s (see docs/AUDIO.md) — a named volume so
+  # they survive redeploys instead of living in the container's writable
+  # layer, which Coolify replaces on every deploy.
+  recall-audio:
