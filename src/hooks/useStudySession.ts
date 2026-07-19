@@ -232,7 +232,6 @@ export function useStudySession(
         const body = JSON.stringify({
           wordId: card.wordId,
           quality,
-          reviewedAt: new Date().toISOString(),
           ...(practice || isRepeat ? { practice: true } : {}),
         });
 

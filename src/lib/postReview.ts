@@ -16,7 +16,6 @@ export async function postReview(
   const body = JSON.stringify({
     wordId,
     quality,
-    reviewedAt: new Date().toISOString(),
     ...(practice ? { practice: true } : {}),
   });
   const post = () =>

@@ -29,8 +29,8 @@ export async function POST(req: Request) {
   const parsed = await parseBody(req, reviewSchema);
   if (parsed instanceof NextResponse) return parsed;
 
-  const { wordId, quality, reviewedAt, practice } = parsed;
-  const now = reviewedAt ?? new Date();
+  const { wordId, quality, practice } = parsed;
+  const now = new Date();
   const submittedAt = new Date();
 
   const cookieStore = await cookies();
