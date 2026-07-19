@@ -11,6 +11,7 @@ import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { gameGloss } from "@/lib/meanings";
+import { primeSpeech, speak } from "@/lib/speech";
 import {
   CARD_TEXT_CLASSES,
   termSizeClass,
@@ -74,6 +75,10 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
     setPicked(choice);
     const isRight = choice === answerOf(current);
     grade(current.wordId, isRight ? 4 : 1, current.term, current.translation);
+    // Hear the word at the moment of feedback — the tap is the user gesture
+    // that unlocks synthesis on mobile. Best-effort: no-ops without a voice.
+    primeSpeech();
+    speak(current.term, current.languageCode);
     advanceTimer.current = window.setTimeout(
       advance,
       isRight ? ADVANCE_MS : ADVANCE_WRONG_MS

@@ -56,6 +56,24 @@ export function SessionComplete({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // "What now?" orientation for new users: surface tomorrow's review count so
+  // finishing a session ends with a concrete next step, not a dead end.
+  const [tomorrowDue, setTomorrowDue] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/dashboard")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((stats) => {
+        if (!cancelled && stats && Array.isArray(stats.forecast)) {
+          setTomorrowDue(stats.forecast[1] ?? 0);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-4 overflow-hidden px-6 text-center">
       <AuroraGlow />
@@ -78,6 +96,13 @@ export function SessionComplete({
       </p>
       {note && (
         <p className="max-w-xs text-xs text-muted-foreground">{note}</p>
+      )}
+      {tomorrowDue !== null && (
+        <p className="max-w-xs text-sm text-muted-foreground">
+          {tomorrowDue > 0
+            ? `Come back tomorrow — ${tomorrowDue} ${tomorrowDue === 1 ? "review" : "reviews"} will be waiting.`
+            : "Nothing due tomorrow — the schedule brings words back right before you'd forget them."}
+        </p>
       )}
 
       <div className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3">

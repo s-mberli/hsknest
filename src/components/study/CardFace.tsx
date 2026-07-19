@@ -31,6 +31,11 @@ interface CardFaceProps {
   autoPlay?: boolean;
 }
 
+// Common single-character polyphones whose bare-character TTS reading often
+// mismatches the taught one (user-test: 了 was spoken "liǎo" while the card
+// showed "le"). For these, speech falls back to the example sentence.
+const ZH_POLYPHONES = new Set(["了", "得", "着", "地", "还", "行", "长", "只", "都"]);
+
 const PROMPTS: Record<Stage, string> = {
   TERM: "Say it first",
   PHONETIC: "What does it mean?",
@@ -115,6 +120,17 @@ export function CardFace({
   const showPhonetic = stage !== "TERM" && !!card.phonetic;
   const showFull = stage === "FULL";
   const canSpeak = speechSupported();
+  // For multi-reading words (e.g. 了 le/liǎo) the bare term gives TTS no
+  // context, so it may pick the wrong reading. When the reading is ambiguous
+  // and we have an example sentence, speak the sentence instead — context
+  // forces the right pronunciation. Ambiguity = the top sense carries its own
+  // reading, or the term is a known common Chinese polyphone.
+  const topReading = parseMeanings(card)[0]?.reading;
+  const readingAmbiguous =
+    (!!topReading && !!card.phonetic && topReading !== card.phonetic) ||
+    ZH_POLYPHONES.has(card.term);
+  const speakText =
+    readingAmbiguous && card.sentence ? card.sentence.text : card.term;
   // A word the user keeps forgetting (currently relearning, or lapsed twice+).
   // Never on a brand-new preview — it can't be "difficult" yet.
   const struggling =
@@ -155,8 +171,8 @@ export function CardFace({
     if (spokenFor.current === card.wordId) return;
     spokenFor.current = card.wordId;
     primeSpeech();
-    speak(card.term, card.languageCode);
-  }, [autoPlay, showPhonetic, speakLive, card.wordId, card.term, card.languageCode]);
+    speak(speakText, card.languageCode);
+  }, [autoPlay, showPhonetic, speakLive, card.wordId, speakText, card.languageCode]);
 
   function onSpeak(e: React.MouseEvent) {
     e.stopPropagation();
@@ -169,7 +185,14 @@ export function CardFace({
       );
       return;
     }
-    speak(card.term, card.languageCode);
+    speak(speakText, card.languageCode);
+  }
+
+  function onSpeakSentence(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!card.sentence) return;
+    primeSpeech();
+    speak(card.sentence.text, card.languageCode);
   }
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
@@ -319,11 +342,23 @@ export function CardFace({
                 on real (non-preview) cards only. */}
             {card.sentence && !card.preview && (
               <div className="mt-2 w-full max-w-sm rounded-xl bg-muted/40 px-4 py-3 text-left">
-                <HighlightedSentence
-                  text={card.sentence.text}
-                  term={card.term}
-                  className="text-base font-medium leading-relaxed text-foreground/90"
-                />
+                <div className="flex items-start justify-between gap-2">
+                  <HighlightedSentence
+                    text={card.sentence.text}
+                    term={card.term}
+                    className="text-base font-medium leading-relaxed text-foreground/90"
+                  />
+                  {canSpeak && speakLive && (
+                    <button
+                      type="button"
+                      onClick={onSpeakSentence}
+                      aria-label="Play sentence"
+                      className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    >
+                      <Volume2 className="size-4" />
+                    </button>
+                  )}
+                </div>
                 {card.sentence.phonetic && (
                   <p className="mt-1 text-xs text-muted-foreground/80">
                     {card.sentence.phonetic}

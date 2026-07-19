@@ -3,6 +3,7 @@
 import { Moon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,25 @@ interface EmptyQueueProps {
 
 export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
   const router = useRouter();
+
+  // Time-orientation for new users: an empty queue reads as a dead end
+  // without knowing when the next reviews arrive.
+  const [tomorrowDue, setTomorrowDue] = useState<number | null>(null);
+  useEffect(() => {
+    if (practice) return;
+    let cancelled = false;
+    fetch("/api/dashboard")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((stats) => {
+        if (!cancelled && stats && Array.isArray(stats.forecast)) {
+          setTomorrowDue(stats.forecast[1] ?? 0);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [practice]);
 
   function handleClearScope() {
     try {
@@ -50,6 +70,14 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
           ? "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
           : "Your spaced-repetition queue is empty for now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
       </p>
+
+      {!practice && tomorrowDue !== null && (
+        <p className="max-w-sm text-sm text-muted-foreground">
+          {tomorrowDue > 0
+            ? `Come back tomorrow — ${tomorrowDue} ${tomorrowDue === 1 ? "review" : "reviews"} will be waiting.`
+            : "Nothing due tomorrow — the schedule brings words back right before you'd forget them."}
+        </p>
+      )}
 
       {scoped && (
         <p className="max-w-sm text-sm text-muted-foreground">

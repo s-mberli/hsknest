@@ -42,12 +42,6 @@ const BENTO: BentoCell[] = [
     span: "sm:col-span-2",
   },
   {
-    kind: "shot",
-    src: "/screenshots/dashboard.png",
-    alt: "Dashboard with today's review queue and forecast",
-    caption: "Today's queue at a glance",
-  },
-  {
     kind: "copy",
     icon: MessageSquareText,
     title: "3,000 real example sentences",

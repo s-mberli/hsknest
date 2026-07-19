@@ -123,8 +123,8 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
             </CardTitle>
             <CardDescription className="text-base mt-3 px-4 leading-relaxed">
               {isLevelStep
-                ? "Pick your HSK level and the right deck is ready before your first review. Not sure? HSK 1 is the safe start — you can add or switch decks anytime."
-                : "Choose your target language to start building your custom flashcard deck. You can always switch languages anytime in settings."}
+                ? "Not sure? HSK 1 is the safe start. You can switch anytime."
+                : "You can switch languages anytime in Settings."}
             </CardDescription>
           </CardHeader>
 
