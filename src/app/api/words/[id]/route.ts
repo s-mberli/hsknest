@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { parseBody, requireUser } from "@/lib/apiRoute";
+import { ownedWordWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
 import { updateWordSchema } from "@/lib/validation";
 
 /** Confirm the word exists and its parent list is owned by the caller. */
 async function ownedWord(wordId: string, userId: string) {
   return prisma.word.findFirst({
-    where: { id: wordId, wordList: { createdById: userId } },
+    where: ownedWordWhere(wordId, userId),
     select: { id: true },
   });
 }

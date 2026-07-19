@@ -1,17 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { usePracticeSession } from "@/hooks/usePracticeSession";
+import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { gameGloss } from "@/lib/meanings";
-import { postReview } from "@/lib/postReview";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,6 @@ interface SentenceScreenProps {
   textSize: CardTextSize;
 }
 
-/** Self-grade buttons, mirroring the flashcard swipe qualities. */
 const GRADES: { label: string; quality: number; className: string }[] = [
   { label: "Again", quality: 1, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
   { label: "Hard", quality: 3, className: "text-amber border-amber/40 hover:bg-amber/10" },
@@ -42,78 +41,36 @@ export function SentenceScreen({ studyTheme, textSize }: SentenceScreenProps) {
 
 function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   const { query, scoped, practice } = useQueueQuery();
-  const [cards, setCards] = useState<SentenceCard[]>([]);
-  const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const [correct, setCorrect] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const [bestCombo, setBestCombo] = useState(0);
-  const [missed, setMissed] = useState<{ term: string; translation: string }[]>(
-    []
-  );
   const [skipped, setSkipped] = useState(0);
   const startedAt = useRef(Date.now()).current;
-  // Words graded below Good once — repeats are logged as practice (same
-  // in-session relearn contract as flashcards; SM-2 step 7).
-  const relearning = useRef<Set<string>>(new Set());
   const sizes = CARD_TEXT_CLASSES[textSize];
 
+  const { grade, combo, bestCombo, correct, missed, isRelearning, markRelearned } = usePracticeSession({ practice });
+
+  const fetchUrl = useMemo(() => `/api/study/queue?${query}&sentences=1`, [query]);
+
+  const { cards: rawCards, loading } = useQueueFetcher(fetchUrl);
+
+  const [cards, setCards] = useState<SentenceCard[]>([]);
+
   useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const res = await fetch(`/api/study/queue?${query}&sentences=1`);
-        if (!res.ok) throw new Error("queue fetch failed");
-        const data = await res.json();
-        if (active) {
-          // Sentence practice needs an example sentence; skip cards without one.
-          const all: SentenceCard[] = data.cards ?? [];
-          const usable = all.filter((c) => c.sentence);
-          setCards(usable);
-          setSkipped(all.length - usable.length);
-        }
-      } catch {
-        if (active) toast.error("Could not load your sentences.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [query]);
+    const all = rawCards as SentenceCard[];
+    const usable = all.filter((c) => c.sentence);
+    setCards(usable);
+    setSkipped(all.length - usable.length);
+  }, [rawCards]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
 
-  function grade(quality: number) {
+  function handleGrade(quality: number) {
     if (!current || !revealed) return;
-    if (quality >= 4) {
-      setCorrect((n) => n + 1);
-      setCombo((c) => {
-        const next = c + 1;
-        setBestCombo((b) => Math.max(b, next));
-        return next;
-      });
-    } else {
-      setCombo(0);
-      if (quality <= 1) {
-        setMissed((m) =>
-          m.some((w) => w.term === current.term)
-            ? m
-            : [...m, { term: current.term, translation: current.translation }]
-        );
-      }
-    }
-    // Failed/hard words repeat later in the session until graded ≥ Good; only
-    // the first grade moves the schedule, repeats post as practice.
-    const isRepeat = relearning.current.has(current.wordId);
     if (quality < 4) {
-      relearning.current.add(current.wordId);
       setCards((prev) => [...prev, current]);
     }
-    void postReview(current.wordId, quality, practice || isRepeat);
+    grade(current.wordId, quality, current.term, current.translation);
     setRevealed(false);
     setCursor((c) => c + 1);
   }
@@ -209,7 +166,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
                   <button
                     key={g.label}
                     type="button"
-                    onClick={() => grade(g.quality)}
+                    onClick={() => handleGrade(g.quality)}
                     className={cn(
                       "rounded-xl border bg-card px-2 py-3 text-sm font-semibold transition-colors",
                       g.className

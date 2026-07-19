@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { weakProgressWhere } from "@/lib/strength";
 
 /** Weak words: lapsed >= 3 times and not yet mastered or assumed-known. */
 export async function GET() {
@@ -9,11 +10,7 @@ export async function GET() {
   if (userId instanceof NextResponse) return userId;
 
   const rows = await prisma.userProgress.findMany({
-    where: {
-      userId,
-      lapses: { gte: 3 },
-      state: { notIn: ["MASTERED", "ASSUMED"] },
-    },
+    where: weakProgressWhere(userId),
     orderBy: { lapses: "desc" },
     include: { word: true },
   });

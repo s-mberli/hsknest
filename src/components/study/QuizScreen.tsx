@@ -1,16 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { Suspense, useMemo, useRef, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { usePracticeSession } from "@/hooks/usePracticeSession";
+import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { gameGloss } from "@/lib/meanings";
-import { postReview } from "@/lib/postReview";
 import {
   CARD_TEXT_CLASSES,
   termSizeClass,
@@ -23,11 +23,9 @@ type QuizCard = StudyCard & { choices?: string[] };
 interface QuizScreenProps {
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
-  /** "meaning" = pick the translation; "reading" = pick the pronunciation. */
   mode?: "meaning" | "reading";
 }
 
-/** Delay before auto-advancing after an answer, long enough to read feedback. */
 const ADVANCE_MS = 900;
 const ADVANCE_WRONG_MS = 1600;
 
@@ -41,58 +39,33 @@ export function QuizScreen({ studyTheme, textSize, mode = "meaning" }: QuizScree
 
 function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps) {
   const { query, scoped } = useQueueQuery();
-  // Games are pure practice by contract: they never move the review schedule,
-  // regardless of how the session was opened.
   const practice = true;
-  const [cards, setCards] = useState<QuizCard[]>([]);
-  const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
-  const [correct, setCorrect] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const [bestCombo, setBestCombo] = useState(0);
-  const [missed, setMissed] = useState<{ term: string; translation: string }[]>(
-    []
-  );
-  const [skipped, setSkipped] = useState(0);
   const startedAt = useRef(Date.now()).current;
   const advanceTimer = useRef<number | null>(null);
   const sizes = CARD_TEXT_CLASSES[textSize];
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        // Force the practice queue: games only ever draw from learned words.
-        const practiceQuery = query.includes("mode=")
-          ? query
-          : `${query}&mode=practice`;
-        const res = await fetch(
-          `/api/study/queue?${practiceQuery}&choices=${mode}`
-        );
-        if (!res.ok) throw new Error("queue fetch failed");
-        const data = await res.json();
-        if (active) {
-          // Quiz needs real options; skip cards with fewer than 2 choices.
-          const all: QuizCard[] = data.cards ?? [];
-          const usable = all.filter((c) => (c.choices?.length ?? 0) >= 2);
-          setCards(usable);
-          setSkipped(all.length - usable.length);
-        }
-      } catch {
-        if (active) toast.error("Could not load your quiz.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
+  const { grade, combo, bestCombo, correct, missed } = usePracticeSession({ practice: true });
+
+  const fetchUrl = useMemo(() => {
+    const practiceQuery = query.includes("mode=")
+      ? query
+      : `${query}&mode=practice`;
+    return `/api/study/queue?${practiceQuery}&choices=${mode}`;
   }, [query, mode]);
+
+  const { cards: rawCards, loading } = useQueueFetcher(fetchUrl);
+
+  const { cards, skipped } = useMemo(() => {
+    const all = rawCards as QuizCard[];
+    const usable = all.filter((c) => (c.choices?.length ?? 0) >= 2);
+    return { cards: usable, skipped: all.length - usable.length };
+  }, [rawCards]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
-  // Must build the same string as the server's choice pool (attachChoices).
+
   const answerOf = (c: QuizCard) =>
     mode === "reading" ? c.phonetic ?? "" : gameGloss(c);
 
@@ -100,29 +73,13 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
     if (!current || picked !== null) return;
     setPicked(choice);
     const isRight = choice === answerOf(current);
-    if (isRight) {
-      setCorrect((n) => n + 1);
-      setCombo((c) => {
-        const next = c + 1;
-        setBestCombo((b) => Math.max(b, next));
-        return next;
-      });
-    } else {
-      setCombo(0);
-      setMissed((m) =>
-        m.some((w) => w.term === current.term)
-          ? m
-          : [...m, { term: current.term, translation: current.translation }]
-      );
-    }
-    void postReview(current.wordId, isRight ? 4 : 1, practice);
+    grade(current.wordId, isRight ? 4 : 1, current.term, current.translation);
     advanceTimer.current = window.setTimeout(
       advance,
       isRight ? ADVANCE_MS : ADVANCE_WRONG_MS
     );
   }
 
-  /** Move to the next question — from the auto-timer or an impatient tap. */
   function advance() {
     if (advanceTimer.current !== null) {
       window.clearTimeout(advanceTimer.current);
@@ -147,7 +104,6 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
         practice
       />
 
-      {/* After an answer is revealed, a tap anywhere advances immediately. */}
       <main
         className="flex flex-1 flex-col justify-center px-6 pb-16"
         onClick={() => {
@@ -206,7 +162,6 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
               >
                 {current.term}
               </p>
-              {/* In reading mode the reading IS the answer, so keep it hidden. */}
               {mode === "meaning" && current.phonetic && (
                 <p className={cn("text-muted-foreground", sizes.phoneticHint)}>
                   {current.phonetic}
@@ -227,7 +182,6 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
                     className={cn(
                       "w-full rounded-xl border bg-card px-4 py-3 text-left text-sm font-medium transition-colors",
                       picked === null && "hover:border-primary/50 hover:bg-accent",
-                      // After picking: reveal right/wrong.
                       picked !== null &&
                         isAnswer &&
                         "border-success bg-success/10 text-success",

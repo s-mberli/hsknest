@@ -4,16 +4,14 @@ import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { parseDelimited } from "@/lib/import";
 import { rateLimit } from "@/lib/rateLimit";
-import { importSchema } from "@/lib/validation";
+import { importSchema, WORD_LIMITS } from "@/lib/validation";
 
-const MAX_ROWS = 2000;
-
-// Same caps as wordInputSchema (manual add). Term is the word's identity, so
-// an oversized term drops the row; other fields are truncated best-effort.
-const MAX_TERM = 200;
-const MAX_TRANSLATION = 500;
-const MAX_PHONETIC = 200;
-const MAX_MEANINGS = 20;
+// Local aliases for readability in the row-processing loop below.
+const MAX_ROWS = WORD_LIMITS.importRows;
+const MAX_TERM = WORD_LIMITS.term;
+const MAX_TRANSLATION = WORD_LIMITS.translation;
+const MAX_PHONETIC = WORD_LIMITS.phonetic;
+const MAX_MEANINGS = WORD_LIMITS.meanings;
 
 /**
  * Parse pasted/CSV text into words for an owned list. Skips blank/duplicate

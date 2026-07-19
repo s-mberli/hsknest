@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { parseDelimited, type ColumnRole } from "@/lib/import";
+import { WORD_LIMITS } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 type Delimiter = "auto" | "tab" | "comma";
@@ -122,7 +123,7 @@ export function ImportWords({
     if (data.reasons?.noTerm)
       reasons.push(`${data.reasons.noTerm} missing a term`);
     if (data.reasons?.overCap)
-      reasons.push(`${data.reasons.overCap} over the 2000-row cap`);
+      reasons.push(`${data.reasons.overCap} over the ${WORD_LIMITS.importRows}-row cap`);
     toast.success(
       data.skipped > 0
         ? `Imported ${data.added} words — skipped ${reasons.join(", ")}.`

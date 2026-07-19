@@ -4,6 +4,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import { relativeDueLabel } from "@/lib/horizon";
 import { parseMeanings } from "@/lib/meanings";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
@@ -46,19 +47,6 @@ function claimOpen(setter: (open: boolean) => void) {
 }
 function releaseOpen(setter: (open: boolean) => void) {
   if (openSetter === setter) openSetter = null;
-}
-
-function relativeDue(dueAt: string | null): string {
-  if (!dueAt) return "—";
-  const due = new Date(dueAt).getTime();
-  if (Number.isNaN(due)) return "—";
-  const diffMs = due - Date.now();
-  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays <= 0) return diffDays < 0 ? "overdue" : "due today";
-  if (diffDays === 1) return "in 1 day";
-  if (diffDays < 30) return `in ${diffDays} days`;
-  const months = Math.round(diffDays / 30);
-  return months === 1 ? "in 1 month" : `in ${months} months`;
 }
 
 function formatInterval(intervalDays: number | null): string {
@@ -322,7 +310,7 @@ export function WordHoverCard({
             </div>
             <div>
               <dt className="text-muted-foreground">Due</dt>
-              <dd className="font-medium">{relativeDue(word.dueAt)}</dd>
+              <dd className="font-medium">{relativeDueLabel(word.dueAt, "in")}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Lapses</dt>

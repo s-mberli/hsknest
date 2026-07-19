@@ -114,6 +114,20 @@ export const updateWordSchema = z.object({
   phonetic: z.string().trim().max(200).nullable().optional(),
 });
 
+/**
+ * Shared cap constants for word/import limits. Kept alongside the Zod
+ * schemas so the route and the UI both read from the same definition.
+ */
+export const WORD_LIMITS = {
+  term: 200,
+  translation: 500,
+  phonetic: 200,
+  /** Max rows a single import request may add. */
+  importRows: 2000,
+  /** Max alternative-meaning entries per word. */
+  meanings: 20,
+} as const;
+
 export const dictionaryQuerySchema = z.object({
   term: z.string().trim().min(1).max(50),
   languageCode: z.string().trim().min(2).max(10),

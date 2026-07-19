@@ -4,6 +4,9 @@
  * snapshot, classify it into one of six memory-strength bands.
  */
 
+// Prisma enum values imported for type-safe `where` clauses in weakProgressWhere.
+import type { CardState } from "@prisma/client";
+
 export type Strength =
   | "mastered"
   | "solid"
@@ -22,6 +25,17 @@ export interface StrengthInput {
 export const SOLID_INTERVAL_DAYS = 21;
 /** Lapse count at which any card is dragged down to "shaky". */
 export const SHAKY_LAPSES = 3;
+/**
+ * Weak-word threshold: cards with this many lapses (and not yet mastered
+ * or assumed-known) are surfaced on the Weak Words tab. Kept in one place
+ * so every reader agrees on "what does weak mean."
+ */
+export const WEAK_LAPSE_THRESHOLD = 3;
+
+/** Prisma `where` clause shared by the three weak-word API routes & stats. */
+export function weakProgressWhere(userId: string) {
+  return { userId, lapses: { gte: WEAK_LAPSE_THRESHOLD }, state: { notIn: ["MASTERED", "ASSUMED"] as CardState[] } };
+}
 
 /**
  * Map an SRS progress snapshot to a strength band.

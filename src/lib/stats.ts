@@ -1,5 +1,7 @@
+import { computeDailyCaps } from "@/lib/buildQueue";
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
+import { weakProgressWhere } from "@/lib/strength";
 import { startOfLocalDay } from "@/lib/utils";
 
 export interface DashboardStats {
@@ -35,6 +37,12 @@ export async function getDashboardStats(
 
   const langFilter = targetLangFilter(targetLanguageId);
 
+  const { newIntroducedToday, assumedCheckedToday } = await computeDailyCaps(
+    userId,
+    dayStart,
+    langFilter
+  );
+
   const [
     user,
     dueCount,
@@ -42,9 +50,7 @@ export async function getDashboardStats(
     learnedTotal,
     masteredTotal,
     weakCount,
-    newIntroducedToday,
     assumedTotal,
-    assumedCheckedToday,
     enrolledTotal,
     logs,
     forecastRows,
@@ -66,25 +72,9 @@ export async function getDashboardStats(
     prisma.userProgress.count({ where: { userId, state: "REVIEW", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: "MASTERED", ...langFilter } }),
     prisma.userProgress.count({
-      where: {
-        userId,
-        lapses: { gte: 3 },
-        state: { notIn: ["MASTERED", "ASSUMED"] },
-        ...langFilter,
-      },
-    }),
-    prisma.userProgress.count({
-      where: {
-        userId,
-        introducedAt: { gte: dayStart },
-        state: { notIn: ["ASSUMED"] },
-        ...langFilter,
-      },
+      where: { ...weakProgressWhere(userId), ...langFilter },
     }),
     prisma.userProgress.count({ where: { userId, state: "ASSUMED", ...langFilter } }),
-    prisma.userProgress.count({
-      where: { userId, assumedCheckedAt: { gte: dayStart }, ...langFilter },
-    }),
     prisma.userProgress.count({ where: { userId, ...langFilter } }),
     prisma.reviewLog.findMany({
       where: { userId },

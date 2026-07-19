@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { parseMeanings } from "@/lib/meanings";
+import { matches, relativeDueLabel } from "@/lib/horizon";
 import { packCircles, packedHeight } from "@/lib/pack";
 import {
   STRENGTH_META,
@@ -31,32 +31,6 @@ const MAX_R = 56;
 const BUBBLE_CAP = 150;
 /** Above this many bubbles, skip enter animation for perf. */
 const MOTION_PERF_GUARD = 400;
-
-function matches(w: WordDetail, q: string): boolean {
-  if (!q) return true;
-  const needle = q.trim().toLowerCase();
-  if (!needle) return true;
-  return (
-    w.term.toLowerCase().includes(needle) ||
-    (w.phonetic?.toLowerCase().includes(needle) ?? false) ||
-    w.translation.toLowerCase().includes(needle) ||
-    // Also match secondary senses ("three" should find 三 even when its
-    // stored translation string leads with another sense).
-    parseMeanings(w).some((m) => m.gloss.toLowerCase().includes(needle))
-  );
-}
-
-function relativeDueLabel(dueAt: string | null): string {
-  if (!dueAt) return "not scheduled";
-  const due = new Date(dueAt).getTime();
-  if (Number.isNaN(due)) return "not scheduled";
-  const diffDays = Math.round((due - Date.now()) / (1000 * 60 * 60 * 24));
-  if (diffDays <= 0) return diffDays < 0 ? "overdue" : "due today";
-  if (diffDays === 1) return "due in 1 day";
-  if (diffDays < 30) return `due in ${diffDays} days`;
-  const months = Math.round(diffDays / 30);
-  return months === 1 ? "due in 1 month" : `due in ${months} months`;
-}
 
 /** sqrt-scaled interval → bubble radius, clamped so terms stay legible. */
 function bubbleRadius(intervalDays: number | null): number {

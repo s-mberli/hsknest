@@ -5,8 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { parseMeanings } from "@/lib/meanings";
-import { DUE_STATES, HORIZON_META, HORIZON_ORDER, isDueNow, wordHorizon, type Horizon } from "@/lib/horizon";
+import { DUE_STATES, HORIZON_META, HORIZON_ORDER, isDueNow, matches, relativeDueLabel, wordHorizon, type Horizon } from "@/lib/horizon";
 import { type WordDetail, WordHoverCard } from "@/components/words/WordHoverCard";
 import { WordTile } from "@/components/words/WordTile";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -15,18 +14,6 @@ import { mastery, streak } from "@/lib/wordStats";
 
 /** Above this many visible tiles, skip layout animation for perf (~5000-tile scale). */
 const MOTION_PERF_GUARD = 400;
-
-function matches(w: WordDetail, q: string): boolean {
-  if (!q) return true;
-  const needle = q.trim().toLowerCase();
-  if (!needle) return true;
-  return (
-    w.term.toLowerCase().includes(needle) ||
-    (w.phonetic?.toLowerCase().includes(needle) ?? false) ||
-    w.translation.toLowerCase().includes(needle) ||
-    parseMeanings(w).some((m) => m.gloss.toLowerCase().includes(needle))
-  );
-}
 
 interface WordTimelineProps {
   words: WordDetail[];
@@ -37,16 +24,6 @@ interface WordTimelineProps {
   /** User's mastery threshold (days); defaults inside wordStats when absent. */
   masteryThresholdDays?: number | null;
 }
-
-function relativeFromNow(dateMs: number, now: number): string {
-  const diffDays = Math.round((dateMs - now) / (24 * 60 * 60 * 1000));
-  if (diffDays <= 0) return "today";
-  if (diffDays === 1) return "in 1 day";
-  if (diffDays < 30) return `in ${diffDays} days`;
-  const months = Math.round(diffDays / 30);
-  return months === 1 ? "in 1 month" : `in ${months} months`;
-}
-
 
 /** Hero "Due now" card + horizontally scrollable "Coming soon" strip. */
 function FocusHeader({
@@ -86,14 +63,13 @@ function FocusHeader({
         (a, b) =>
           new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime()
       )[0];
-    const soonestMs = soonest?.dueAt ? new Date(soonest.dueAt).getTime() : null;
     return (
       <div className="rounded-lg border bg-card p-6 text-center">
         <p className="text-sm font-medium">All caught up</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {soonestMs
-            ? `Next word surfaces ${relativeFromNow(soonestMs, now)}.`
-            : "Nothing scheduled yet — enroll a list to begin."}
+          {soonest
+            ? `Next word surfaces ${relativeDueLabel(soonest.dueAt, "in")}.`
+            : "Nothing scheduled yet \u2014 enroll a list to begin."}
         </p>
       </div>
     );
@@ -171,10 +147,7 @@ function FocusHeader({
               >
                 <WordHoverCard
                   word={w}
-                  ariaLabel={`${w.term}, ${STRENGTH_META[w.strength].label}, due ${relativeFromNow(
-                    new Date(w.dueAt ?? 0).getTime(),
-                    now
-                  )}`}
+                  ariaLabel={`${w.term}, ${STRENGTH_META[w.strength].label}, ${relativeDueLabel(w.dueAt, "in")}`}
                   className={cn(
                     "flex min-h-11 w-28 flex-col items-start gap-0.5 rounded-md border bg-card px-2.5 py-2 text-left",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -189,7 +162,7 @@ function FocusHeader({
                     </span>
                   )}
                   <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">
-                    {relativeFromNow(new Date(w.dueAt ?? 0).getTime(), now)}
+                    {relativeDueLabel(w.dueAt, "in")}
                   </span>
                 </WordHoverCard>
               </motion.li>
