@@ -9,6 +9,8 @@
  * metadata.meanings as [{ gloss, reading? }].
  */
 
+import { pinyin as pinyinPro } from "pinyin-pro";
+
 export type RawForm = {
   traditional: string;
   transcriptions: { pinyin: string };
@@ -58,18 +60,81 @@ export function cleanGlosses(meanings: string[]): string[] {
 }
 
 /**
- * Order an entry's forms so the one with ordinary (learnable, non-surname)
- * senses leads. Some dictionary entries list a proper-noun reading first —
- * e.g. 三 leads with "Sān / surname San" and hides "three" in the second
- * form — which would otherwise become the card's primary sense and phonetic.
- * Stable: forms with equal scores keep their source order.
+ * Characters where the pinyin tiebreak (`preferredReading`) would pick the
+ * wrong sense, so the dataset's own relative order among ORDINARY forms is
+ * trusted instead. Two distinct reasons a character lands here — both
+ * verified by hand against the raw dataset; extend only after checking the
+ * specific forms:
+ *   - Genuine dual-reading words where both sides are common (地 de "-ly" vs
+ *     dì "earth"; 教 jiāo "to teach" vs jiào "religion") — pinyin-pro's
+ *     dictionary-frequency default disagrees with the HSK-taught sense.
+ *   - Same reading, wrong sense (只 has a common zhī "classifier for birds…"
+ *     form AND a marginal zhī "grain that has begun to ripen" form — the
+ *     tiebreak can't distinguish them since both match the preferred
+ *     reading; it's a coincidence of the dataset's form order, not a ranking
+ *     bug per se).
+ * Surname/marginal demotion below still applies — this only skips the
+ * pinyin-preference nudge among forms that survive it.
  */
-export function rankForms(forms: RawForm[]): RawForm[] {
+const PRESERVE_DATASET_ORDER = new Set(["地", "教", "只"]);
+
+/**
+ * A form's glosses are "marginal" when its most common gloss markers signal
+ * archaic, dialectal, regional, or loanword usage — the kind of sense an HSK
+ * learner never needs, as opposed to a second common reading (地, 教).
+ */
+const MARGINAL_GLOSS =
+  /\((archaic|dialect|literary|loanword[^)]*|Tw\)|Taiwan pr\.[^)]*)\)/i;
+
+function isMarginalForm(glosses: string[]): boolean {
+  return glosses.length > 0 && glosses.every((g) => MARGINAL_GLOSS.test(g));
+}
+
+/**
+ * Order an entry's forms so the one with ordinary (learnable, non-surname)
+ * senses — and the commonly-taught reading — leads. Two failure modes this
+ * guards against, both seen in complete-hsk-vocabulary:
+ *   1. Proper-noun-first entries (三 leads with "Sān / surname San", hiding
+ *      "three" in the second form).
+ *   2. Rare-reading-first entries (说 leads with "shuì / to persuade" ahead
+ *      of the everyday "shuō / to speak" — a lone archaic/marginal sense
+ *      that happened to sort first in the source data).
+ * Both would otherwise become the card's primary sense and audio reading.
+ * Genuine dual-reading words where both sides are common (PRESERVE_DATASET_
+ * ORDER) are left exactly as the dataset has them. Stable: forms tied on
+ * every score keep their source order.
+ */
+export function rankForms(forms: RawForm[], term?: string): RawForm[] {
+  const skipPinyinTiebreak = !!term && PRESERVE_DATASET_ORDER.has(term);
+  const preferred = term && !skipPinyinTiebreak ? preferredReading(term) : null;
   const score = (f: RawForm) => {
     const kept = f.meanings.map((m) => m.trim()).filter((m) => m && !NOISE_GLOSS.test(m));
-    return kept.some((m) => !SURNAME_GLOSS.test(m)) ? 0 : 1;
+    if (!kept.some((m) => !SURNAME_GLOSS.test(m))) return 2; // surname-only
+    const ordinary = kept.filter((m) => !SURNAME_GLOSS.test(m));
+    if (isMarginalForm(ordinary)) return 1; // real but marginal sense
+    if (preferred && normReading(f.transcriptions.pinyin) !== preferred) return 0.5;
+    return 0;
   };
   return [...forms].sort((a, b) => score(a) - score(b));
+}
+
+function normReading(s: string): string {
+  return s.trim().toLowerCase();
+}
+
+/**
+ * The commonly-taught reading for `term`, via pinyin-pro. Single characters:
+ * take the first of pinyin-pro's ranked alternatives (its "best single guess"
+ * mode disagrees with the ranked list for at least one common case, 了 →
+ * "liǎo" instead of "le" — the ranked list gets it right). Multi-character
+ * terms: pinyin-pro resolves polyphones from dictionary/context (银行 → háng,
+ * not xíng), so its single-answer mode is already correct there.
+ */
+function preferredReading(term: string): string {
+  if ([...term].length === 1) {
+    return normReading(pinyinPro(term, { toneType: "symbol", multiple: true }).split(" ")[0]);
+  }
+  return normReading(pinyinPro(term, { toneType: "symbol", multiple: false }));
 }
 
 /** Hard cap on stored senses per word — beyond this it's dictionary noise. */
@@ -96,8 +161,8 @@ export function buildTranslation(glosses: string[]): string {
  * with their reading so e.g. 了 shows "le" senses first and "liǎo" senses
  * marked as such. Duplicate glosses are dropped.
  */
-export function buildMeanings(forms: RawForm[]): SeedMeaning[] {
-  const ranked = rankForms(forms);
+export function buildMeanings(forms: RawForm[], term?: string): SeedMeaning[] {
+  const ranked = rankForms(forms, term);
   const primaryPinyin = ranked[0]?.transcriptions.pinyin;
   const out: SeedMeaning[] = [];
   const seen = new Set<string>();
@@ -119,8 +184,8 @@ export function buildMeanings(forms: RawForm[]): SeedMeaning[] {
 
 /** Transform one raw dataset entry into a seed word for the given HSK level (0 = frequency list). */
 export function transformEntry(entry: RawEntry, level: number): SeedWord {
-  const primary = rankForms(entry.forms)[0];
-  const meanings = buildMeanings(entry.forms);
+  const primary = rankForms(entry.forms, entry.simplified)[0];
+  const meanings = buildMeanings(entry.forms, entry.simplified);
   const primaryGlosses = cleanGlosses(primary.meanings);
   const traditional =
     primary.traditional && primary.traditional !== entry.simplified
