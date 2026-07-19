@@ -4,6 +4,39 @@
  * known. Pure/derivation only: no I/O, no Prisma types.
  */
 
+import { parseMeanings } from "./meanings";
+
+export function matches(
+  word: { term: string; translation: string; phonetic: string | null; metadata?: unknown },
+  query: string
+): boolean {
+  if (!query) return true;
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return (
+    word.term.toLowerCase().includes(needle) ||
+    (word.phonetic?.toLowerCase().includes(needle) ?? false) ||
+    word.translation.toLowerCase().includes(needle) ||
+    parseMeanings(word).some((m) => m.gloss.toLowerCase().includes(needle))
+  );
+}
+
+export function relativeDueLabel(
+  dueAt: Date | string | null,
+  prefix?: "due in" | "in"
+): string {
+  if (!dueAt) return prefix === "in" ? "\u2014" : "not scheduled";
+  const due = typeof dueAt === "string" ? new Date(dueAt).getTime() : dueAt.getTime();
+  if (Number.isNaN(due)) return prefix === "in" ? "\u2014" : "not scheduled";
+  const diffDays = Math.round((due - Date.now()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return diffDays < 0 ? "overdue" : "due today";
+  const pfx = prefix ?? "due in";
+  if (diffDays === 1) return `${pfx} 1 day`;
+  if (diffDays < 30) return `${pfx} ${diffDays} days`;
+  const months = Math.round(diffDays / 30);
+  return months === 1 ? `${pfx} 1 month` : `${pfx} ${months} months`;
+}
+
 export type Horizon = "due" | "week" | "month" | "later" | "new" | "resting";
 
 export interface HorizonInput {

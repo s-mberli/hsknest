@@ -72,6 +72,12 @@ pronunciation audio), and never depend on a cloud service.
   how to add a system voice if one is missing.
 - **Word-strength browser** — see every word banded by recall strength, in a
   searchable table view.
+- **List priority queue** — reorder your studying lists to control where new
+  words come from. Top of the stack feeds first; reviews still come from
+  everywhere. Up/down controls on the lists page, no drag required.
+- **Lifetime stats** — an "All time" card on the dashboard: total reviews,
+  days studied, recall rate, and words-per-day pace, visible after your first
+  review.
 - **Focus-ring dashboard** — due counts, words learned, streak, and a 7-day
   review forecast.
 - **Light / Dark / System theme** — a real account setting that follows you
@@ -268,7 +274,9 @@ password reset / account recovery flow · full HSK 1–9 (2021) decks ·
 new-word preview flow (see it once before it's graded) · HSK-level
 onboarding with deck auto-enroll · auto-play pronunciation setting ·
 hosted-plan billing (Stripe, fully bypassed when self-hosting via
-`SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env).
+`SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env) ·
+list priority queue (reorder studying lists to control new-word source) ·
+lifetime stats card (reviews, days studied, recall rate, pace).
 
 **Next (v0.2):**
 
@@ -285,9 +293,7 @@ hosted-plan billing (Stripe, fully bypassed when self-hosting via
   set global keys; features hide when no provider is configured)
 - 4-click response mode (separate pronunciation vs meaning grading) as a setting
 - Suspend/block words (never schedule)
-- Drag-to-reorder list learning queue
-- Review heatmap / streak calendar; learner analytics (retention rate, per-list
-  success, learning curve)
+- Review heatmap / streak calendar; per-list success and learning curve
 
 **Later (v1.0+):**
 

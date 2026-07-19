@@ -67,8 +67,8 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push("/login?reset=success");
       }, 2000);
-    } catch (error: any) {
-      setErrorMessage(error.message || "An unexpected error occurred");
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred");
       setStatus("error");
     }
   }

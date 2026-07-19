@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requirePaidUser } from "@/lib/apiRoute";
+import { computeDailyCaps, toCards, type QueueCard } from "@/lib/buildQueue";
 import { targetLangFilter } from "@/lib/langScope";
 import { prioritize } from "@/lib/listPriority";
 import { prisma } from "@/lib/prisma";
@@ -8,25 +9,6 @@ import { gameGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
-
-interface QueueCard {
-  wordId: string;
-  term: string;
-  translation: string;
-  phonetic: string | null;
-  metadata: unknown;
-  state: string;
-  kind: "review" | "check" | "new" | "practice";
-  languageCode: string;
-  lapses: number;
-  choices?: string[];
-  sentence?: {
-    text: string;
-    translation: string;
-    phonetic: string | null;
-    source: string | null;
-  };
-}
 
 /**
  * Attach one example sentence per card, drawn from the seeded
@@ -147,32 +129,6 @@ export async function GET(req: Request) {
     word: { include: { wordList: { include: { language: true } } } },
   } as const;
 
-  const toCard = (
-    p: {
-      wordId: string;
-      state: string;
-      lapses: number;
-      word: {
-        term: string;
-        translation: string;
-        phonetic: string | null;
-        metadata: unknown;
-        wordList: { language: { code: string } };
-      };
-    },
-    kind: "review" | "check" | "new" | "practice"
-  ) => ({
-    wordId: p.wordId,
-    term: p.word.term,
-    translation: p.word.translation,
-    phonetic: p.word.phonetic,
-    metadata: p.word.metadata,
-    state: p.state,
-    kind,
-    languageCode: p.word.wordList.language.code,
-    lapses: p.lapses,
-  });
-
   // Practice/refresh mode: study already-learned words beyond the daily quota
   // without touching the schedule. Ignores caps entirely; excludes NEW/ASSUMED.
   if (url.searchParams.get("mode") === "practice") {
@@ -186,7 +142,7 @@ export async function GET(req: Request) {
       take: limit,
       include: wordInclude,
     });
-    const practiceCards: QueueCard[] = practice.map((p) => toCard(p, "practice"));
+    const practiceCards = toCards(practice, "practice");
     return NextResponse.json({
       cards: await attachSentences(url, await attachChoices(url, practiceCards, userId)),
       counts: { due: 0, newAllowedToday: 0, checksAllowedToday: 0 },
@@ -206,29 +162,11 @@ export async function GET(req: Request) {
     include: wordInclude,
   });
 
-  // Daily-cap counters: new words introduced today, and assumed-known cards
-  // checked today (regardless of the state they landed in after the check).
-  // Scoped by target language to match the dashboard (getDashboardStats), which
-  // counts within targetLanguageId. Every queue fetch is already constrained to
-  // the single targetLanguageId (queueWhere), so there is no cross-language
-  // double-spend to guard against — and keeping the cap counts in the same scope
-  // as the ring means the ring never promises a card the session then refuses.
-  // NOTE: These counts are approximate under concurrent load (race condition
-  // possible where two sessions both read count < cap, then both update).
-  // This is acceptable for MVP; production should use atomic batch updates.
-  const [newIntroducedToday, assumedCheckedToday] = await Promise.all([
-    prisma.userProgress.count({
-      where: {
-        userId,
-        introducedAt: { gte: dayStart },
-        state: { notIn: ["ASSUMED"] },
-        ...capLangFilter,
-      },
-    }),
-    prisma.userProgress.count({
-      where: { userId, assumedCheckedAt: { gte: dayStart }, ...capLangFilter },
-    }),
-  ]);
+  const { newIntroducedToday, assumedCheckedToday } = await computeDailyCaps(
+    userId,
+    dayStart,
+    capLangFilter
+  );
 
   const checksAllowedToday = Math.max(
     0,
@@ -280,9 +218,9 @@ export async function GET(req: Request) {
       : [];
 
   const cards: QueueCard[] = [
-    ...due.map((p) => toCard(p, "review")),
-    ...checks.map((p) => toCard(p, "check")),
-    ...fresh.map((p) => toCard(p, "new")),
+    ...toCards(due, "review"),
+    ...toCards(checks, "check"),
+    ...toCards(fresh, "new"),
   ];
 
   return NextResponse.json({

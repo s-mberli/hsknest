@@ -82,94 +82,26 @@ export function AppearanceSection({
     toast.success("Theme saved.");
   }
 
-  async function chooseStudyTheme(next: StudyTheme) {
-    const prev = studyTheme;
-    setStudyTheme(next);
+  async function patch<T>(field: string, value: T, revert: () => void) {
     setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studyTheme: next }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not save that setting.");
-      setStudyTheme(prev);
-      return;
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value }),
+      });
+      if (!res.ok) {
+        toast.error("Could not save that setting.");
+        revert();
+        return;
+      }
+      toast.success("Setting saved.");
+    } catch {
+      toast.error("Could not save — check your connection.");
+      revert();
+    } finally {
+      setSaving(false);
     }
-    toast.success("Setting saved.");
-  }
-
-  async function chooseCardTextSize(next: CardTextSize) {
-    const prev = cardTextSize;
-    setCardTextSize(next);
-    setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cardTextSize: next }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not save that setting.");
-      setCardTextSize(prev);
-      return;
-    }
-    toast.success("Setting saved.");
-  }
-
-  async function chooseShowReading(next: boolean) {
-    const prev = showReading;
-    setShowReading(next);
-    setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ showReading: next }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not save that setting.");
-      setShowReading(prev);
-      return;
-    }
-    toast.success("Setting saved.");
-  }
-
-  async function chooseSoundEffects(next: boolean) {
-    const prev = soundEffects;
-    setSoundEffects(next);
-    setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ soundEffects: next }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not save that setting.");
-      setSoundEffects(prev);
-      return;
-    }
-    toast.success("Setting saved.");
-  }
-
-  async function chooseAutoPlayPronunciation(next: boolean) {
-    const prev = autoPlayPronunciation;
-    setAutoPlayPronunciation(next);
-    setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ autoPlayPronunciation: next }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      toast.error("Could not save that setting.");
-      setAutoPlayPronunciation(prev);
-      return;
-    }
-    toast.success("Setting saved.");
   }
 
   return (
@@ -201,7 +133,11 @@ export function AppearanceSection({
             value={studyTheme}
             disabled={saving}
             options={STUDY_THEME_OPTIONS}
-            onChange={chooseStudyTheme}
+            onChange={(next) => {
+              const prev = studyTheme;
+              setStudyTheme(next);
+              patch("studyTheme", next, () => setStudyTheme(prev));
+            }}
           />
         </SettingRow>
 
@@ -214,7 +150,11 @@ export function AppearanceSection({
             value={cardTextSize}
             disabled={saving}
             options={CARD_TEXT_SIZE_OPTIONS}
-            onChange={chooseCardTextSize}
+            onChange={(next) => {
+              const prev = cardTextSize;
+              setCardTextSize(next);
+              patch("cardTextSize", next, () => setCardTextSize(prev));
+            }}
           />
         </SettingRow>
 
@@ -225,7 +165,11 @@ export function AppearanceSection({
           <Switch
             checked={showReading}
             disabled={saving}
-            onCheckedChange={chooseShowReading}
+            onCheckedChange={(next) => {
+              const prev = showReading;
+              setShowReading(next);
+              patch("showReading", next, () => setShowReading(prev));
+            }}
             aria-label="Show reading on cards"
           />
         </SettingRow>
@@ -237,7 +181,11 @@ export function AppearanceSection({
           <Switch
             checked={soundEffects}
             disabled={saving}
-            onCheckedChange={chooseSoundEffects}
+            onCheckedChange={(next) => {
+              const prev = soundEffects;
+              setSoundEffects(next);
+              patch("soundEffects", next, () => setSoundEffects(prev));
+            }}
             aria-label="Sound effects"
           />
         </SettingRow>
@@ -249,7 +197,11 @@ export function AppearanceSection({
           <Switch
             checked={autoPlayPronunciation}
             disabled={saving}
-            onCheckedChange={chooseAutoPlayPronunciation}
+            onCheckedChange={(next) => {
+              const prev = autoPlayPronunciation;
+              setAutoPlayPronunciation(next);
+              patch("autoPlayPronunciation", next, () => setAutoPlayPronunciation(prev));
+            }}
             aria-label="Auto-play pronunciation"
           />
         </SettingRow>

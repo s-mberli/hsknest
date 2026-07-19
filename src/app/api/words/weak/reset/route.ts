@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { weakProgressWhere } from "@/lib/strength";
 
 /** Reset all current weak words back to a fresh NEW state (zeroed fields). */
 export async function POST() {
@@ -10,11 +11,7 @@ export async function POST() {
 
   const now = new Date();
   const result = await prisma.userProgress.updateMany({
-    where: {
-      userId,
-      lapses: { gte: 3 },
-      state: { notIn: ["MASTERED", "ASSUMED"] },
-    },
+    where: weakProgressWhere(userId),
     data: {
       state: "NEW",
       easeFactor: 2.5,
