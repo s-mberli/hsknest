@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
+import { buildListSections } from "@/lib/listSections";
 import { visibleListWhere } from "@/lib/ownership";
 
 export default async function ListsPage() {
@@ -54,72 +55,22 @@ export default async function ListsPage() {
     }),
   ]);
 
-  // Per-list rollup: how many of its words are in the queue, how many due.
-  const now = new Date();
-  const byList = new Map<string, { enrolled: number; due: number }>();
-  for (const p of progress) {
-    const key = p.word.wordListId;
-    const entry = byList.get(key) ?? { enrolled: 0, due: 0 };
-    entry.enrolled += 1;
-    if (p.state !== "NEW" && p.state !== "ASSUMED" && p.dueAt <= now) {
-      entry.due += 1;
-    }
-    byList.set(key, entry);
-  }
-
-  const hiddenIds = new Set(hiddenRows.map((h) => h.listId));
-
-  // Sections, in reading order: what you study, what you made, what you could
-  // add, what you tucked away. Hidden wins over studying (so hiding stops study).
-  const defaultSortedStudying = lists
-    .filter((l) => (byList.get(l.id)?.enrolled ?? 0) > 0 && !hiddenIds.has(l.id))
-    .sort((a, b) => {
-      const sa = byList.get(a.id) ?? { enrolled: 0, due: 0 };
-      const sb = byList.get(b.id) ?? { enrolled: 0, due: 0 };
-      return sb.due - sa.due || sb.enrolled - sa.enrolled || a.name.localeCompare(b.name);
-    });
-
-  // Ranked lists first (in rank order), unranked after (keeping their default
-  // sort). This is the same ordering rule the study queue applies via
-  // prioritize()/rankListIds() in src/lib/listPriority.ts.
-  const rankOrder = priorityRows.map((p) => p.wordListId);
-  const rankIndex = new Map(rankOrder.map((id, i) => [id, i]));
-  const studying = [...defaultSortedStudying].sort((a, b) => {
-    const ra = rankIndex.get(a.id);
-    const rb = rankIndex.get(b.id);
-    if (ra !== undefined && rb !== undefined) return ra - rb;
-    if (ra !== undefined) return -1;
-    if (rb !== undefined) return 1;
-    return 0; // keep defaultSortedStudying's relative order (stable sort)
+  const {
+    studying,
+    studyingOrder,
+    ownLists,
+    exploreGroups,
+    hiddenLists,
+    byList,
+    studyingIds,
+  } = buildListSections({
+    lists,
+    progress,
+    hiddenListIds: hiddenRows.map((h) => h.listId),
+    priorityListIds: priorityRows.map((p) => p.wordListId),
+    userId,
+    now: new Date(),
   });
-  const studyingOrder = studying.map((l) => l.id);
-  const studyingIds = new Set(studying.map((l) => l.id));
-  const ownLists = lists
-    .filter((l) => l.createdById === userId && !studyingIds.has(l.id))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const exploreLists = lists.filter(
-    (l) =>
-      l.createdById !== userId &&
-      !studyingIds.has(l.id) &&
-      !hiddenIds.has(l.id)
-  );
-
-  // Explore reads as a curriculum: graded exam levels first, then frequency
-  // lists, then topic sets — instead of one undifferentiated grid.
-  const exploreGroups = [
-    { title: "By level", lists: exploreLists.filter((l) => /^HSK\b/i.test(l.name)) },
-    { title: "By frequency", lists: exploreLists.filter((l) => /\bTop \d+/i.test(l.name)) },
-  ];
-  const grouped = new Set(exploreGroups.flatMap((g) => g.lists.map((l) => l.id)));
-  exploreGroups.push({
-    title: "By topic",
-    lists: exploreLists
-      .filter((l) => !grouped.has(l.id))
-      .sort((a, b) => a.name.localeCompare(b.name)),
-  });
-  const hiddenLists = lists.filter(
-    (l) => l.createdById !== userId && hiddenIds.has(l.id)
-  );
 
   const card = (
     list: (typeof lists)[number],
@@ -201,7 +152,7 @@ export default async function ListsPage() {
         <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
           Explore
         </h2>
-        {exploreLists.length === 0 ? (
+        {exploreGroups.every((g) => g.lists.length === 0) ? (
           <Card className="border-dashed">
             <CardContent className="py-6 text-center text-sm text-muted-foreground">
               No starter lists available yet.{" "}
