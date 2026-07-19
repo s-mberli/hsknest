@@ -1,9 +1,17 @@
 # Natural pronunciation audio
 
 HSKNest can play natural Mandarin audio for every HSK word and example sentence,
-pre-generated once with [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh)
-(Apache-2.0) and served as static MP3s. When no audio is configured it falls
-back to the browser's built-in Web Speech voice — so this is entirely optional.
+pre-generated once with [edge-tts](https://github.com/rany2/edge-tts) (Microsoft
+Edge's free TTS — the Azure neural voices, no API key) and served as static
+MP3s. When no audio is configured it falls back to the browser's built-in Web
+Speech voice — so this is entirely optional.
+
+> Why edge-tts: small local models (we first tried Kokoro-82M) hallucinate on
+> ultra-short input — a lone character like 个 can synthesize as a whole wrong
+> phrase. Azure's neural voices read single characters correctly, the way Google
+> does. edge-tts needs internet **only during the one-time generation batch**;
+> the resulting MP3s are served entirely from your own server, no runtime
+> dependency.
 
 ## How it works
 
@@ -22,20 +30,23 @@ Layout:
 /audio/zh/s/<hash>.mp3   # sentences
 ```
 
-## 1. Generate the clips (one-time, offline)
+## 1. Generate the clips (one-time)
 
-Do this on a machine with a GPU (a free Colab GPU does ~14k clips in ~15 min) or
-locally on CPU (slower but fine). It is resumable — re-running skips existing
-files.
+Runs anywhere with internet — no GPU, no ffmpeg. Synthesis happens on
+Microsoft's servers; you just receive the MP3s. It is resumable — re-running
+skips existing files.
 
 ```bash
-pip install kokoro "misaki[zh]" soundfile   # plus ffmpeg on PATH
-python scripts/generate-audio.py            # → ./audio-out/
-# options: --voice zf_xiaoni   --out /path/to/audio   --limit 50 (smoke test)
+pip install edge-tts
+python scripts/generate-audio.py               # all words + sentences → ./audio-out/
+# pilot one level first (recommended): ~1k clips, a few minutes
+python scripts/generate-audio.py --level 1
+# options: --voice zh-CN-YunxiNeural (male)   --out /path/to/audio   --limit 20 (smoke test)
 ```
 
 Output lands in `audio-out/zh/{w,s}/*.mp3` plus a `manifest.json` (every
-expected hash, for coverage checks). Total is ~300–500 MB.
+expected hash, for coverage checks). Total is ~300–500 MB. The full run is
+~14k short clips; with the default concurrency expect roughly 20–40 minutes.
 
 ## 2. Serve the clips from the VPS
 
