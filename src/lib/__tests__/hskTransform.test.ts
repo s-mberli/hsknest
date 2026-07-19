@@ -106,7 +106,97 @@ describe("surname-first entries", () => {
     expect(meanings.map((m) => m.gloss)).toEqual(["three", "3", "surname San"]);
     expect(meanings[2].reading).toBe("Sān");
   });
+});
 
+// Real complete-hsk-vocabulary shape: a lone marginal/archaic-tagged sense
+// sorts first in the source data, ahead of the everyday reading — the bug
+// found live (说 spoke as "shuì" — "to persuade" — instead of "shuō").
+const SHUO: RawEntry = {
+  simplified: "说",
+  level: ["new-1"],
+  frequency: 60,
+  pos: ["v"],
+  forms: [
+    { traditional: "說", transcriptions: { pinyin: "shuì" }, meanings: ["to persuade"] },
+    {
+      traditional: "說",
+      transcriptions: { pinyin: "shuō" },
+      meanings: ["to speak", "to talk", "to say"],
+    },
+  ],
+};
+
+// 教: BOTH readings are ordinary, commonly-taught senses (jiāo "to teach" vs
+// jiào "religion"/"teaching") — must NOT be reordered by the pinyin tiebreak,
+// and the surname form (present in the real dataset) must still demote.
+const JIAO: RawEntry = {
+  simplified: "教",
+  level: ["new-1"],
+  frequency: 100,
+  pos: ["v", "n"],
+  forms: [
+    { traditional: "教", transcriptions: { pinyin: "Jiào" }, meanings: ["surname Jiao"] },
+    { traditional: "教", transcriptions: { pinyin: "jiāo" }, meanings: ["to teach"] },
+    {
+      traditional: "教",
+      transcriptions: { pinyin: "jiào" },
+      meanings: ["religion", "teaching", "to make"],
+    },
+  ],
+};
+
+// 只: two forms SHARE a reading (zhī) but one is the common classifier sense
+// and the other is an obscure botanical sense — the pinyin tiebreak can't
+// distinguish them by reading alone, so the dataset's own order must hold.
+const ZHI: RawEntry = {
+  simplified: "只",
+  level: ["new-2"],
+  frequency: 50,
+  pos: ["d", "q"],
+  forms: [
+    { traditional: "只", transcriptions: { pinyin: "zhǐ" }, meanings: ["only", "merely", "just"] },
+    {
+      traditional: "只",
+      transcriptions: { pinyin: "zhī" },
+      meanings: ["grain that has begun to ripen"],
+    },
+    {
+      traditional: "隻",
+      transcriptions: { pinyin: "zhī" },
+      meanings: ["classifier for birds and certain animals"],
+    },
+  ],
+};
+
+describe("rare-reading-first entries (pinyin tiebreak)", () => {
+  it("promotes the everyday reading over a lone marginal-sense form", () => {
+    const word = transformEntry(SHUO, 1);
+    expect(word.phonetic).toBe("shuō");
+    expect(word.translation).toBe("to speak; to talk; to say");
+  });
+
+  it("still demotes a surname form even when the term is on the preserve list", () => {
+    const word = transformEntry(JIAO, 1);
+    expect(word.phonetic).toBe("jiāo");
+    expect(word.translation).toBe("to teach");
+  });
+
+  it("does not reorder genuine dual-reading words toward the dictionary default", () => {
+    const word = transformEntry(JIAO, 1);
+    const meanings = buildMeanings(JIAO.forms, "教");
+    expect(meanings[0]).toEqual({ gloss: "to teach" });
+    expect(meanings.some((m) => m.gloss === "religion" && m.reading === "jiào")).toBe(true);
+    expect(word.metadata.meanings.at(-1)?.gloss).toBe("surname Jiao");
+  });
+
+  it("preserves dataset order when forms share a reading but differ in commonness", () => {
+    const word = transformEntry(ZHI, 2);
+    expect(word.phonetic).toBe("zhǐ");
+    expect(word.translation).toBe("only; merely; just");
+  });
+});
+
+describe("surname-first entries", () => {
   it("caps stored meanings at 8", () => {
     const many: RawEntry["forms"] = [
       {
