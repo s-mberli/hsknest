@@ -40,12 +40,31 @@ async function dismissIntro(page: import("playwright/test").Page) {
   }
 }
 
+/**
+ * Dismiss the cookie banner. Each test gets a fresh browser context, so the
+ * banner reappears every login; left open it sits above the bottom nav and
+ * intercepts clicks on content near the page bottom.
+ */
+async function dismissCookies(page: import("playwright/test").Page) {
+  const accept = page.getByRole("button", { name: /accept all/i });
+  try {
+    await accept.waitFor({ state: "visible", timeout: 3_000 });
+    await accept.click();
+  } catch {
+    // Already dismissed in this context.
+  }
+}
+
 async function logIn(page: import("playwright/test").Page) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: /sign in/i }).click();
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  // Fresh context per test → the one-time intro modal and cookie banner both
+  // reappear; either one left open intercepts clicks later in the test.
+  await dismissIntro(page);
+  await dismissCookies(page);
 }
 
 test("enroll a starter list", async ({ page }) => {

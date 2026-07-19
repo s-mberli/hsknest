@@ -2,10 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+// Routes where the BottomNav is rendered (see src/app/(app)/layout.tsx) —
+// on these the banner must sit above the nav instead of covering it.
+const NAV_ROUTES = ["/dashboard", "/lists", "/words", "/settings"];
 
 export function CookieBanner() {
   const [show, setShow] = useState(false);
+  const pathname = usePathname();
+  const aboveNav = NAV_ROUTES.some(
+    (r) => pathname === r || pathname.startsWith(r + "/")
+  );
 
   useEffect(() => {
     // Check if the user has already consented
@@ -28,7 +38,12 @@ export function CookieBanner() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 p-4 shadow-lg backdrop-blur sm:p-6">
+    <div
+      className={cn(
+        "fixed left-0 right-0 z-50 border-t bg-background/95 p-4 shadow-lg backdrop-blur sm:p-6",
+        aboveNav ? "bottom-[3.75rem]" : "bottom-0"
+      )}
+    >
       <div className="container mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
           <p>

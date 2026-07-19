@@ -23,13 +23,16 @@ export const authOptions: NextAuthOptions = {
 
         const email = credentials.email.toLowerCase();
 
-        // Brute-force guard: 10 attempts/minute. NextAuth v4's authorize()
-        // signature exposes no reliable request IP, so we key on the
-        // normalized email only — this throttles per account rather than per
-        // source. Returning null makes NextAuth surface a generic failure.
+        // Brute-force guard: 30 attempts/minute per account. NextAuth v4's
+        // authorize() signature exposes no reliable request IP, so we key on
+        // the normalized email only — this throttles per account rather than
+        // per source (the global cap backstops volume attacks). 30/min keeps
+        // brute force impractical while not tripping legit bursts — the e2e
+        // suite's ~17 logins in 3 minutes hit the old 10/min limit.
+        // Returning null makes NextAuth surface a generic failure.
         if (
           !rateLimit("login:global", 1000, 60 * 1000) ||
-          !rateLimit(`login:${email}`, 10, 60 * 1000)
+          !rateLimit(`login:${email}`, 30, 60 * 1000)
         )
           return null;
 

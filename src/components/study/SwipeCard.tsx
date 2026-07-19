@@ -51,10 +51,17 @@ export function SwipeCard({
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-250, 250], [-18, 18]);
 
-  const knewOpacity = useTransform(x, [40, 150], [0, 1]);
-  const forgotOpacity = useTransform(x, [-150, -40], [1, 0]);
-  const easyOpacity = useTransform(y, [-150, -40], [1, 0]);
-  const hardOpacity = useTransform(y, [40, 150], [0, 1]);
+  const knewOpacity = useTransform(x, [15, 90], [0, 1]);
+  const forgotOpacity = useTransform(x, [-90, -15], [1, 0]);
+  const easyOpacity = useTransform(y, [-90, -15], [1, 0]);
+  const hardOpacity = useTransform(y, [15, 90], [0, 1]);
+
+  // Card-wide color wash while dragging, so the grade color reads well
+  // before the commit threshold (user-test feedback: colors came too late).
+  const knewTint = useTransform(x, [15, 110], [0, 0.16]);
+  const forgotTint = useTransform(x, [-110, -15], [0.16, 0]);
+  const easyTint = useTransform(y, [-110, -15], [0.16, 0]);
+  const hardTint = useTransform(y, [15, 110], [0, 0.16]);
 
   const armed = isTop && stage === "FULL" && !flyOut;
 
@@ -126,6 +133,26 @@ export function SwipeCard({
       }
     >
       {/* Previews aren't graded, so the grade-direction hints would mislead. */}
+      {armed && !card.preview && (
+        <>
+          <motion.div
+            style={{ opacity: knewTint }}
+            className="pointer-events-none absolute inset-0 z-10 rounded-2xl bg-success"
+          />
+          <motion.div
+            style={{ opacity: forgotTint }}
+            className="pointer-events-none absolute inset-0 z-10 rounded-2xl bg-destructive"
+          />
+          <motion.div
+            style={{ opacity: easyTint }}
+            className="pointer-events-none absolute inset-0 z-10 rounded-2xl bg-success"
+          />
+          <motion.div
+            style={{ opacity: hardTint }}
+            className="pointer-events-none absolute inset-0 z-10 rounded-2xl bg-amber"
+          />
+        </>
+      )}
       {armed && !card.preview && (
         <SwipeIndicators
           forgotOpacity={forgotOpacity}
