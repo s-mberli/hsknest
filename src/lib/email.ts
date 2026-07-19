@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 
+import { isSelfHosted } from "@/lib/selfHosted";
+
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const fromEmail = process.env.EMAIL_FROM || "noreply@hsknest.com";
@@ -20,9 +22,7 @@ function warnNoEmailOnce() {
  * an ops misconfiguration, reported loudly without the secret.
  */
 function consoleFallbackAllowed(kind: string): boolean {
-  // Same predicate as isSelfHosted() in subscription.ts, inlined so this
-  // module stays importable from standalone scripts (no next/server).
-  if (process.env.SELF_HOSTED !== "false") return true;
+  if (isSelfHosted()) return true;
   console.error(
     `[email] MISCONFIGURATION: RESEND_API_KEY is unset on the hosted instance — ${kind} email NOT sent and its link NOT logged. Set RESEND_API_KEY.`
   );

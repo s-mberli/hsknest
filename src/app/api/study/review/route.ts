@@ -2,29 +2,24 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-import { parseBody, requireUser } from "@/lib/apiRoute";
+import { parseBody, requirePaidUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { applyUserModifiers, getAlgorithm } from "@/lib/srs";
 import type { CardState, SRSResult, SRSState, UserSRSPrefs } from "@/lib/srs";
 import { addDays } from "@/lib/srs";
 import { reviewSchema } from "@/lib/validation";
-import { requireAccess } from "@/lib/subscription";
 
 /** Interval granted when an ASSUMED card is confirmed known (before modifiers). */
 const ASSUMED_CONFIRMED_INTERVAL_DAYS = 30;
 
 export async function POST(req: Request) {
-  const userId = await requireUser();
+  const userId = await requirePaidUser();
   if (userId instanceof NextResponse) return userId;
 
   if (!rateLimit(`review:${userId}`, 1000, 60 * 60 * 1000)) {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
-
-  // Hosted plan: expired trial blocks grading (402); export/account stay open.
-  const denied = await requireAccess(userId);
-  if (denied) return denied;
 
   const parsed = await parseBody(req, reviewSchema);
   if (parsed instanceof NextResponse) return parsed;

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireUser } from "@/lib/apiRoute";
-import { requireAccess } from "@/lib/subscription";
+import { requirePaidUser } from "@/lib/apiRoute";
 import { targetLangFilter } from "@/lib/langScope";
 import { prioritize } from "@/lib/listPriority";
 import { prisma } from "@/lib/prisma";
@@ -112,12 +111,8 @@ async function attachChoices(
 }
 
 export async function GET(req: Request) {
-  const userId = await requireUser();
+  const userId = await requirePaidUser();
   if (userId instanceof NextResponse) return userId;
-
-  // Hosted plan: expired trial blocks studying (402); export/account stay open.
-  const denied = await requireAccess(userId);
-  if (denied) return denied;
 
   const url = new URL(req.url);
   const { limit, scope } = parseQueueQuery(url.searchParams);

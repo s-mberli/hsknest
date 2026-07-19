@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { isSelfHosted } from "@/lib/selfHosted";
 import { hasAccess, trialDaysLeft } from "@/lib/subscription";
 
 const NOW = new Date("2026-07-15T12:00:00Z");
@@ -91,5 +92,31 @@ describe("hasAccess (self-hosted)", () => {
         NOW
       )
     ).toBe(null);
+  });
+});
+
+describe("isSelfHosted (case-insensitive)", () => {
+  const original = process.env.SELF_HOSTED;
+  afterEach(() => {
+    process.env.SELF_HOSTED = original;
+  });
+
+  it("treats any casing of 'false' as hosted (paid) mode", () => {
+    for (const v of ["false", "False", "FALSE", "  false  ", "fAlSe"]) {
+      process.env.SELF_HOSTED = v;
+      expect(isSelfHosted(), `for SELF_HOSTED=${JSON.stringify(v)}`).toBe(false);
+    }
+  });
+
+  it("treats 'true', unset, and nonsense as self-hosted", () => {
+    for (const v of ["true", "True", "", "no", "0", "1", " disabled "]) {
+      process.env.SELF_HOSTED = v;
+      // Only the exact (trimmed, case-insensitive) literal "false" flips to
+      // hosted; every other value stays self-hosted so a typo can never
+      // accidentally turn off billing on someone's own server.
+      expect(isSelfHosted(), `for SELF_HOSTED=${JSON.stringify(v)}`).toBe(true);
+    }
+    delete process.env.SELF_HOSTED;
+    expect(isSelfHosted()).toBe(true);
   });
 });
