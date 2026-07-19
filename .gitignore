@@ -56,3 +56,6 @@ next-env.d.ts
 # private launch/ops notes
 /LAUNCH-CHECKLIST.md
 /docs/marketing/
+
+# private ops runbook
+/LAUNCH-RUNBOOK.md
