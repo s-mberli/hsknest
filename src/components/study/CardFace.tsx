@@ -30,11 +30,6 @@ interface CardFaceProps {
   autoPlay?: boolean;
 }
 
-// Common single-character polyphones whose bare-character TTS reading often
-// mismatches the taught one (user-test: 了 was spoken "liǎo" while the card
-// showed "le"). For these, speech falls back to the example sentence.
-const ZH_POLYPHONES = new Set(["了", "得", "着", "地", "还", "行", "长", "只", "都"]);
-
 const PROMPTS: Record<Stage, string> = {
   TERM: "Say it first",
   PHONETIC: "What does it mean?",
@@ -119,15 +114,14 @@ export function CardFace({
   const showPhonetic = stage !== "TERM" && !!card.phonetic;
   const showFull = stage === "FULL";
   const canSpeak = speechSupported();
-  // For multi-reading words (e.g. 了 le/liǎo) the bare term gives TTS no
-  // context, so it may pick the wrong reading. When the reading is ambiguous
-  // and we have an example sentence, speak the sentence instead — context
-  // forces the right pronunciation. Ambiguity = the top sense carries its own
-  // reading, or the term is a known common Chinese polyphone.
+  // Rare case: the taught sense's reading differs from the card's displayed
+  // phonetic (e.g. a word whose top-ranked meaning uses an alternate
+  // pronunciation). The bare term alone can't convey which sense is meant, so
+  // prefer the example sentence when one exists — it disambiguates by
+  // context. Plain audio synthesis (edge-tts) otherwise reads bare terms
+  // correctly, so this is the only remaining case that needs the fallback.
   const topReading = parseMeanings(card)[0]?.reading;
-  const readingAmbiguous =
-    (!!topReading && !!card.phonetic && topReading !== card.phonetic) ||
-    ZH_POLYPHONES.has(card.term);
+  const readingAmbiguous = !!topReading && !!card.phonetic && topReading !== card.phonetic;
   const speakSentence = readingAmbiguous && !!card.sentence;
   const speakText = speakSentence ? card.sentence!.text : card.term;
   const speakKind: "word" | "sentence" = speakSentence ? "sentence" : "word";
