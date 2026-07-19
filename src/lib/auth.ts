@@ -27,7 +27,11 @@ export const authOptions: NextAuthOptions = {
         // signature exposes no reliable request IP, so we key on the
         // normalized email only — this throttles per account rather than per
         // source. Returning null makes NextAuth surface a generic failure.
-        if (!rateLimit(`login:${email}`, 10, 60 * 1000)) return null;
+        if (
+          !rateLimit("login:global", 1000, 60 * 1000) ||
+          !rateLimit(`login:${email}`, 10, 60 * 1000)
+        )
+          return null;
 
         const user = await prisma.user.findUnique({
           where: { email },

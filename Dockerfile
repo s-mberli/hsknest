@@ -40,7 +40,11 @@ COPY --from=build /app/node_modules ./node_modules
 RUN npm prune --production
 
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh && \
+    mkdir -p /data && \
+    chown -R node:node /app /data
+
+USER node
 
 EXPOSE 3000
 ENTRYPOINT ["./docker-entrypoint.sh"]

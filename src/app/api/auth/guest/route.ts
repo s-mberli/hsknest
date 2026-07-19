@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       httpOnly: false, // Accessible to client-side analytics
       path: "/",
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     });
   }
 
