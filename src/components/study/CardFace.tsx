@@ -5,10 +5,9 @@ import { TriangleAlert, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { audioAvailableFor, playAudio } from "@/lib/audio";
 import {
   hasVoiceFor,
-  primeSpeech,
-  speak,
   speechSupported,
   voicesLoaded,
 } from "@/lib/speech";
@@ -129,8 +128,9 @@ export function CardFace({
   const readingAmbiguous =
     (!!topReading && !!card.phonetic && topReading !== card.phonetic) ||
     ZH_POLYPHONES.has(card.term);
-  const speakText =
-    readingAmbiguous && card.sentence ? card.sentence.text : card.term;
+  const speakSentence = readingAmbiguous && !!card.sentence;
+  const speakText = speakSentence ? card.sentence!.text : card.term;
+  const speakKind: "word" | "sentence" = speakSentence ? "sentence" : "word";
   // A word the user keeps forgetting (currently relearning, or lapsed twice+).
   // Never on a brand-new preview — it can't be "difficult" yet.
   const struggling =
@@ -158,26 +158,29 @@ export function CardFace({
     };
   }, [card.languageCode]);
 
-  // Live when a voice matches, or when the list hasn't loaded yet (let mobile
-  // try). Only show the muted state once voices are known and none match.
-  const speakLive = canSpeak && (voiceReady || !voicesKnown);
+  // Pre-generated clips play even with no installed voice, so audio is "live"
+  // whenever a clip is available OR a Web Speech voice matches (or the voice
+  // list hasn't loaded yet — let mobile try).
+  const hasClips = audioAvailableFor(card.languageCode);
+  const speakLive =
+    hasClips || (canSpeak && (voiceReady || !voicesKnown));
 
   // Auto-play the term once, the moment its reading is revealed. The tap that
-  // advanced the stage is the user gesture that unlocks synthesis. Keyed per
+  // advanced the stage is the user gesture that unlocks playback. Keyed per
   // card so re-renders (and voice-list arriving late) don't repeat it.
   const spokenFor = useRef<string | null>(null);
   useEffect(() => {
     if (!autoPlay || !showPhonetic || !speakLive) return;
     if (spokenFor.current === card.wordId) return;
     spokenFor.current = card.wordId;
-    primeSpeech();
-    speak(speakText, card.languageCode);
-  }, [autoPlay, showPhonetic, speakLive, card.wordId, speakText, card.languageCode]);
+    void playAudio(speakText, speakKind, card.languageCode);
+  }, [autoPlay, showPhonetic, speakLive, card.wordId, speakText, speakKind, card.languageCode]);
 
   function onSpeak(e: React.MouseEvent) {
     e.stopPropagation();
-    primeSpeech();
-    const trulyNoVoice = voicesKnown && !voiceReady && !!card.languageCode;
+    // No clip and no installed voice → nothing will be audible; hint the user.
+    const trulyNoVoice =
+      !hasClips && voicesKnown && !voiceReady && !!card.languageCode;
     if (trulyNoVoice) {
       const lang = card.languageCode ?? "this language";
       toast(
@@ -185,14 +188,13 @@ export function CardFace({
       );
       return;
     }
-    speak(speakText, card.languageCode);
+    void playAudio(speakText, speakKind, card.languageCode);
   }
 
   function onSpeakSentence(e: React.MouseEvent) {
     e.stopPropagation();
     if (!card.sentence) return;
-    primeSpeech();
-    speak(card.sentence.text, card.languageCode);
+    void playAudio(card.sentence.text, "sentence", card.languageCode);
   }
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
@@ -263,7 +265,7 @@ export function CardFace({
             >
               {card.phonetic}
             </span>
-            {canSpeak && (
+            {(canSpeak || hasClips) && (
               <button
                 type="button"
                 onClick={onSpeak}
@@ -348,7 +350,7 @@ export function CardFace({
                     term={card.term}
                     className="text-base font-medium leading-relaxed text-foreground/90"
                   />
-                  {canSpeak && speakLive && (
+                  {(canSpeak || hasClips) && speakLive && (
                     <button
                       type="button"
                       onClick={onSpeakSentence}

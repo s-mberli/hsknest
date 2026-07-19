@@ -10,8 +10,8 @@ import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
+import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
-import { primeSpeech, speak } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 
 interface MatchScreenProps {
@@ -167,8 +167,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       // Hear the word on a successful match (tap = unlock gesture on mobile).
       const matchedCard = cards.find((c) => c.wordId === tile.wordId);
       if (matchedCard) {
-        primeSpeech();
-        speak(matchedCard.term, matchedCard.languageCode);
+        void playAudio(matchedCard.term, "word", matchedCard.languageCode);
       }
       setMatched((prev) => {
         const next = new Set(prev).add(tile.wordId);

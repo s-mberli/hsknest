@@ -20,6 +20,9 @@
 /.next/
 /out/
 
+# generated pronunciation audio (see docs/AUDIO.md) — mounted on the VPS, not committed
+/audio-out/
+
 # production
 /build
 

@@ -11,8 +11,8 @@ import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
+import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
-import { primeSpeech, speak } from "@/lib/speech";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
 
@@ -184,8 +184,11 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
                   setRevealed(true);
                   // Hear the sentence read aloud on reveal (user-test ask).
                   if (current.sentence) {
-                    primeSpeech();
-                    speak(current.sentence.text, current.languageCode);
+                    void playAudio(
+                      current.sentence.text,
+                      "sentence",
+                      current.languageCode
+                    );
                   }
                 }}
                 className="w-full rounded-xl border bg-card px-4 py-3 text-sm font-medium transition-colors hover:border-primary/50 hover:bg-accent"
