@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Volume2 } from "lucide-react";
 import { Suspense, useMemo, useRef, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
@@ -10,8 +11,9 @@ import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import type { StudyCard } from "@/hooks/useStudySession";
-import { playAudio } from "@/lib/audio";
+import { audioAvailableFor, playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
+import { speechSupported } from "@/lib/speech";
 import {
   CARD_TEXT_CLASSES,
   termSizeClass,
@@ -69,6 +71,12 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
 
   const answerOf = (c: QuizCard) =>
     mode === "reading" ? c.phonetic ?? "" : gameGloss(c);
+
+  // Reading-mode quiz tests recognizing the pronunciation, so a speaker button
+  // there would hand over the answer — only offer it in meaning mode, and
+  // only before picking (after that it already auto-plays as feedback).
+  const canOfferSpeaker =
+    mode === "meaning" && (speechSupported() || audioAvailableFor(current?.languageCode));
 
   function pick(choice: string) {
     if (!current || picked !== null) return;
@@ -158,14 +166,28 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             className="mx-auto flex w-full max-w-sm flex-col items-center gap-8"
           >
             <div className="flex flex-col items-center gap-2 text-center">
-              <p
-                className={cn(
-                  "max-w-full break-normal font-bold leading-tight tracking-tight",
-                  termSizeClass(current.term, textSize)
+              <div className="flex items-center gap-2">
+                <p
+                  className={cn(
+                    "max-w-full break-normal font-bold leading-tight tracking-tight",
+                    termSizeClass(current.term, textSize)
+                  )}
+                >
+                  {current.term}
+                </p>
+                {picked === null && canOfferSpeaker && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void playAudio(current.term, "word", current.languageCode)
+                    }
+                    aria-label="Play pronunciation"
+                    className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <Volume2 className="size-5" />
+                  </button>
                 )}
-              >
-                {current.term}
-              </p>
+              </div>
               {mode === "meaning" && current.phonetic && (
                 <p className={cn("text-muted-foreground", sizes.phoneticHint)}>
                   {current.phonetic}

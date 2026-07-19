@@ -319,7 +319,15 @@ export function CardFace({
                   sizes.secondaryMeaning
                 )}
               >
-                {secondary.map((s) => s.gloss).join(" · ")}
+                {secondary.map((s, i) => (
+                  <span key={s.gloss}>
+                    {i > 0 && " · "}
+                    {s.gloss}
+                    {s.reading && s.reading !== card.phonetic && (
+                      <span className="text-muted-foreground/60"> ({s.reading})</span>
+                    )}
+                  </span>
+                ))}
                 {overflowCount > 0 && (
                   <span className="text-muted-foreground/60">
                     {secondary.length > 0 ? " · " : ""}+{overflowCount} more
