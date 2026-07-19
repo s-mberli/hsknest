@@ -79,6 +79,11 @@ Steps:
    docker cp audio-out/zh/. <app-container>:/app/public/audio/zh/
    ```
 
+**Restart the app container after copying files in** — the Next.js standalone
+server caches its `public/` directory listing at process startup, so files
+added via `docker cp` while it's already running 404 until the process
+restarts (`docker restart <app-container>`; no rebuild needed, just a restart).
+
 Verify: open a Mandarin flashcard and reveal the reading — the Network tab shows
 a `200` for `…/audio/zh/w/<hash>.mp3` and the voice is natural. Unset the env
 (and redeploy) to return to Web Speech.
