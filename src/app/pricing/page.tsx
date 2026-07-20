@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Pricing | HSK Nest",
   description:
-    "HSK Nest Hosted is €10/month with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
+    "HSK Nest Hosted is €10/mo or €99/yr with a 14-day free trial — no credit card to start. Or self-host it free, forever.",
 };
 
 const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
 const ROWS: { label: string; selfHost: string; hosted: string }[] = [
-  { label: "Price", selfHost: "Free forever (AGPL)", hosted: "€10/month" },
+  { label: "Price", selfHost: "Free forever (AGPL)", hosted: "€10/mo or €99/yr" },
   { label: "Setup", selfHost: "Your server, Docker, DNS", hosted: "None — sign up and study" },
   { label: "Updates", selfHost: "You pull and redeploy", hosted: "Automatic" },
   { label: "Backups", selfHost: "You configure them", hosted: "Nightly, managed" },
@@ -27,12 +27,14 @@ export default function PricingPage() {
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-16">
       <header className="space-y-3 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 mb-2">
+          <span>🔥</span> Founder&apos;s Rate: Limited to the first 50 users.
+        </div>
         <h1 className="text-4xl font-bold tracking-tight">
           Simple pricing, no lock-in
         </h1>
         <p className="text-lg text-muted-foreground">
-          One plan. 14 days free, no credit card to start, cancel in one
-          click.
+          Lock in this price forever. 14 days free, no credit card to start, cancel in one click.
         </p>
       </header>
 
@@ -67,7 +69,7 @@ export default function PricingPage() {
           {[
             "14 days, full access, no credit card collected — so there is no surprise charge when it ends.",
             "When the trial ends, studying pauses but nothing is deleted: your decks, progress, and CSV export stay available.",
-            "Upgrade any time for €10/month. Cancel any time in one click — no retention flows, no guilt emails.",
+            "Upgrade any time for €10/month or €99/year. Cancel any time in one click — no retention flows, no guilt emails.",
             "14-day no-questions refund on your first payment.",
           ].map((line) => (
             <li key={line} className="flex items-start gap-2">

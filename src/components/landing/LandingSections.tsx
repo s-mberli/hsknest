@@ -270,7 +270,7 @@ export function LandingSections() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="space-y-8">
+      <section id="pricing" className="mx-auto max-w-5xl space-y-8 px-4">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight">
             Simple pricing, no lock-in
@@ -280,53 +280,100 @@ export function LandingSections() {
             pipeline so you don't have to.
           </p>
         </div>
-        <div className="mx-auto max-w-sm rounded-3xl border border-primary/30 bg-card p-8 text-center shadow-card">
-          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            HSK Nest Hosted
-          </p>
-          <p className="mt-2 text-5xl font-extrabold tracking-tight">
-            €10
-            <span className="text-lg font-medium text-muted-foreground">
-              /month
-            </span>
-          </p>
-          <ul className="mt-6 space-y-2 text-left text-sm">
-            {[
-              "14 days free — no credit card to start",
-              "All features and decks included",
-              "Cancel anytime, in one click",
-              "14-day no-questions refund",
-            ].map((line) => (
-              <li key={line} className="flex items-start gap-2">
-                <Check className="mt-0.5 size-4 shrink-0 text-success" />
-                {line}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-6">
-            <TryFreeButton className="w-full">
-              Start your free trial
-            </TryFreeButton>
+
+        <div className="mx-auto max-w-3xl text-center space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400">
+            <span>🔥</span> Founder&apos;s Rate: Limited to the first 50 users.
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Prefer to run it yourself?{" "}
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              Self-host free on GitHub
-            </a>{" "}
-            ·{" "}
-            <Link
-              href="/pricing"
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              Compare options
-            </Link>
+          <p className="mx-auto max-w-xl text-sm text-muted-foreground">
+            Lock in this price forever. As we add features, the public price will increase to €15/month, but early adopters keep this rate for life.
           </p>
         </div>
+
+        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 items-start pt-4">
+          {/* Monthly Card */}
+          <div className="rounded-3xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
+            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Monthly
+            </p>
+            <p className="mt-2 text-5xl font-extrabold tracking-tight">
+              €10
+              <span className="text-lg font-medium text-muted-foreground">
+                /month
+              </span>
+            </p>
+            <ul className="mt-6 space-y-3 text-left text-sm text-muted-foreground">
+              {[
+                "14 days free (no credit card to start)",
+                "All features & pre-loaded HSK decks",
+                "Cancel anytime, in one click",
+              ].map((line) => (
+                <li key={line} className="flex items-start gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-success" />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <TryFreeButton className="w-full">
+                Start your free trial
+              </TryFreeButton>
+            </div>
+          </div>
+
+          {/* Yearly Card */}
+          <div className="relative rounded-3xl border-2 border-primary bg-card p-8 shadow-card">
+            <div className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium uppercase tracking-wider text-primary-foreground">
+              Best Value
+            </div>
+            <p className="text-sm font-medium uppercase tracking-wide text-primary">
+              Yearly
+            </p>
+            <p className="mt-2 text-5xl font-extrabold tracking-tight">
+              €99
+              <span className="text-lg font-medium text-muted-foreground">
+                /year
+              </span>
+            </p>
+            <ul className="mt-6 space-y-3 text-left text-sm text-muted-foreground">
+              {[
+                "Two months free",
+                "14 days free (no credit card to start)",
+                "All features & pre-loaded HSK decks",
+                "14-day no-questions-asked refund",
+              ].map((line) => (
+                <li key={line} className="flex items-start gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-success" />
+                  <span className={line === "Two months free" ? "font-medium text-foreground" : ""}>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <TryFreeButton className="w-full">
+                Start your free trial
+              </TryFreeButton>
+            </div>
+          </div>
+        </div>
+        
+        <p className="text-center text-sm text-muted-foreground pt-4">
+          Prefer to run it yourself?{" "}
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            Self-host free on GitHub
+          </a>{" "}
+          ·{" "}
+          <Link
+            href="/pricing"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            Compare options
+          </Link>
+        </p>
       </section>
 
       {/* FAQ */}

@@ -47,10 +47,16 @@ export function BillingSection({
         ? "Payment problem — please update your card"
         : "No active plan";
 
-  async function post(path: string, failMessage: string) {
+  async function post(path: string, bodyObj: Record<string, any> | undefined, failMessage: string) {
     setLoading(true);
     try {
-      const res = await fetch(path, { method: "POST" });
+      const res = await fetch(path, {
+        method: "POST",
+        ...(bodyObj && {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyObj),
+        }),
+      });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error ?? "failed");
       window.location.href = data.url;
@@ -76,7 +82,7 @@ export function BillingSection({
               variant="outline"
               disabled={loading}
               onClick={() =>
-                post("/api/billing/portal", "Could not open the billing portal.")
+                post("/api/billing/portal", undefined, "Could not open portal.")
               }
             >
               Manage
@@ -110,14 +116,26 @@ export function BillingSection({
                 that my right of withdrawal ends when billing starts. 14-day
                 no-questions refund still applies.
               </label>
-              <Button
-                disabled={!consented || loading}
-                onClick={() =>
-                  post("/api/billing/checkout", "Could not start checkout.")
-                }
-              >
-                {loading ? "Opening checkout…" : "Upgrade — €10/mo"}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  disabled={!consented || loading}
+                  onClick={() =>
+                    post("/api/billing/checkout", { interval: "monthly" }, "Could not start checkout.")
+                  }
+                >
+                  {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary"
+                  disabled={!consented || loading}
+                  onClick={() =>
+                    post("/api/billing/checkout", { interval: "yearly" }, "Could not start checkout.")
+                  }
+                >
+                  {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
+                </Button>
+              </div>
             </div>
           ))}
       </CardContent>
