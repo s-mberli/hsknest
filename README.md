@@ -25,98 +25,62 @@ Study using a gesture-first swipe deck, quiz yourself across four different prac
 | :------------------------------------------: | :------------------------------------: |
 | ![Word browser](docs/screenshots/words.png)  | ![Lists](docs/screenshots/lists.png)   |
 
-## Features
+## 🚀 Features
 
-- **Multi-language by design** — every word carries a `term`, `translation`,
-  optional `phonetic`, and a free-form `metadata` JSON blob (tones, gender, part
-  of speech, audio URLs, etc.), so any language fits without schema changes.
-- **Your own content** — create lists, add words one at a time, or paste / CSV
-  import a whole batch. Add a language inline when none fits. Edit and delete
-  your own lists and words; starter lists stay read-only.
-- **Paste / CSV import** — bring vocabulary in from a spreadsheet or a
-  tab-separated export from other flashcard tools. Auto-detects tab vs comma,
-  maps columns to term / meaning / reading, and skips blank or duplicate entries.
-- **Selectable scheduling algorithms** — **FSRS** (modern memory-model
-  scheduler, the default for new accounts), **SM-2** (adaptive SuperMemo 2), or
-  **Leitner** (5 fixed boxes), chosen per account. Progress is stored as a
-  superset, so switching never loses state.
-- **Tunable schedule** — daily new-word and known-word-check caps, interval and
-  lapse modifiers, a mastery cut-off, and optional interval fuzz.
-- **Gesture-first study** — a full-screen card stack in a dark focus mode. Tap
-  to reveal (staged), then swipe to grade. Keyboard fallback on desktop
-  (← → ↑ ↓ to grade).
-- **Practice modes** — beyond flashcards: a meaning quiz (pick the meaning
-  from four options), a **reading quiz** (see the character, pick how it's
-  read — trains symbol → sound, ideal for Chinese), matching rounds (pair up
-  words and meanings from a five-word pool), and **sentence practice**
-  (recognize your words inside real sentences). All pressure-free — they
-  never move the review schedule.
-- **Real example sentences** — 3,000 curated sentences (Tatoeba, CC-BY) with
-  pinyin and translation appear on the flashcard answer and in the word
-  browser, so every word is seen in context, not isolation.
-- **HSK-level onboarding** — pick your level at signup and the matching deck
-  is enrolled before your first review.
-- **Hide-the-reading mode** — an optional per-account setting: flashcards skip
-  the reading hint so you recall the pronunciation yourself; it still appears
-  with the answer to check against.
-- **Adjustable card text size** — small / normal / large study text, a
-  per-account setting.
-- **Sound effects** — subtle, dependency-free audio cues on correct grades and
-  combo streaks (Web Audio, no asset files), on by default and toggleable in
-  Settings.
-- **Hybrid pronunciation (Pre-generated Natural TTS + Web Speech)** — plays
-  high-quality, pre-generated natural audio clips (utilizing Microsoft Edge's
-  Azure neural voices) served entirely from your VPS (no runtime dependencies or
-  costs). Seamlessly falls back to the browser's built-in Web Speech API for custom
-  words or unsupported languages. Mandarin (words + sentences) and German (words) are
-  supported out of the box. An optional auto-play setting speaks each word the moment
-  its reading is revealed.
-- **Word-strength browser** — see every word banded by recall strength, in a
-  searchable table view.
-- **List priority queue** — reorder your studying lists to control where new
-  words come from. Top of the stack feeds first; reviews still come from
-  everywhere. Up/down controls on the lists page, no drag required.
-- **Lifetime stats** — an "All time" card on the dashboard: total reviews,
-  days studied, recall rate, and words-per-day pace, visible after your first
-  review.
-- **Focus-ring dashboard** — due counts, words learned, streak, and a 7-day
-  review forecast.
-- **Light / Dark / System theme** — a real account setting that follows you
-  across devices, with a separate Dark focus / Match app setting for the study
-  screen.
-- **Study scope** — narrow a session to one language and/or specific lists; the
-  choice is remembered.
-- **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–9,
-  frequency lists (Top 100 / Top 1000 words), original everyday-conversation
-  and news-reading sets, plus themed starter lists (greetings, numbers,
-  family, food, colors).
-- **Other languages (bonus)** — the engine is language-agnostic, so German
-  (A1 essentials, a Top 100 frequency list, themed starters) and a Spanish
-  starter list ship too, and you can import CSV decks for anything else. New
-  accounts onboard into Mandarin; switch or add a language anytime in Settings.
-- **One word, one card** — the same word appearing in several lists shares a
-  single progress record: enrolling a second list skips what you already
-  track, so stats and reviews never double.
-- **Organized list shelf** — lists are grouped into Studying / Your lists /
-  Explore, starter lists you don't want can be hidden (and restored) per
-  account, and every studied word shows a strength meter with its interval.
-- **Accounts & auth** — email + password via NextAuth (credentials), passwords
-  hashed with bcrypt, rate-limited signup and login, soft (non-blocking) email
-  verification, and self-service password reset — both via email if you
-  configure Resend, or via a link logged to the server console if you don't.
-- **Guest mode with upgrade** — one click on the login page creates a
-  throwaway account with a starter list already enrolled, so visitors can try
-  the app without signing up. Liked it? One small form turns the guest into a
-  real account and keeps every word and review. Stale guests are pruned
-  automatically after 14 days of inactivity.
-- **Per-list progress** — every list shows how many of its words are in your
-  queue, how strong they are, and how many are due right now.
-- **Dictionary-assisted entry (Chinese)** — typing a Chinese word suggests
-  pinyin and meaning from the bundled CC-CEDICT dictionary; one tap fills both
-  fields, always editable.
+HSK Nest is packed with features designed for effective and engaging language learning. Click to expand:
+
+<details>
+<summary><b>Content & Import</b></summary>
+
+- **Multi-language by design** — every word carries a `term`, `translation`, optional `phonetic`, and a free-form `metadata` JSON blob (tones, gender, part of speech, audio URLs, etc.), so any language fits without schema changes.
+- **Your own content** — create lists, add words one at a time, or paste / CSV import a whole batch. Add a language inline when none fits. Edit and delete your own lists and words; starter lists stay read-only.
+- **Paste / CSV import** — bring vocabulary in from a spreadsheet or a tab-separated export from other flashcard tools. Auto-detects tab vs comma, maps columns to term / meaning / reading, and skips blank or duplicate entries.
+- **Real example sentences** — 3,000 curated sentences (Tatoeba, CC-BY) with pinyin and translation appear on the flashcard answer and in the word browser, so every word is seen in context, not isolation.
+- **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–9, frequency lists (Top 100 / Top 1000 words), original everyday-conversation and news-reading sets, plus themed starter lists (greetings, numbers, family, food, colors).
+- **Other languages (bonus)** — the engine is language-agnostic, so German (A1 essentials, a Top 100 frequency list, themed starters) and a Spanish starter list ship too, and you can import CSV decks for anything else. New accounts onboard into Mandarin; switch or add a language anytime in Settings.
+- **Dictionary-assisted entry (Chinese)** — typing a Chinese word suggests pinyin and meaning from the bundled CC-CEDICT dictionary; one tap fills both fields, always editable.
+
+</details>
+
+<details>
+<summary><b>Study & Practice</b></summary>
+
+- **Gesture-first study** — a full-screen card stack in a dark focus mode. Tap to reveal (staged), then swipe to grade. Keyboard fallback on desktop (← → ↑ ↓ to grade).
+- **Practice modes** — beyond flashcards: a meaning quiz (pick the meaning from four options), a **reading quiz** (see the character, pick how it's read — trains symbol → sound, ideal for Chinese), matching rounds (pair up words and meanings from a five-word pool), and **sentence practice** (recognize your words inside real sentences). All pressure-free — they never move the review schedule.
+- **Hide-the-reading mode** — an optional per-account setting: flashcards skip the reading hint so you recall the pronunciation yourself; it still appears with the answer to check against.
+- **Sound effects** — subtle, dependency-free audio cues on correct grades and combo streaks (Web Audio, no asset files), on by default and toggleable in Settings.
+- **Hybrid pronunciation (Pre-generated Natural TTS + Web Speech)** — plays high-quality, pre-generated natural audio clips (utilizing Microsoft Edge's Azure neural voices) served entirely from your VPS (no runtime dependencies or costs). Seamlessly falls back to the browser's built-in Web Speech API for custom words or unsupported languages. Mandarin (words + sentences) and German (words) are supported out of the box. An optional auto-play setting speaks each word the moment its reading is revealed.
+- **Adjustable card text size** — small / normal / large study text, a per-account setting.
+- **Study scope** — narrow a session to one language and/or specific lists; the choice is remembered.
+
+</details>
+
+<details>
+<summary><b>Scheduling & Progress</b></summary>
+
+- **Selectable scheduling algorithms** — **FSRS** (modern memory-model scheduler, the default for new accounts), **SM-2** (adaptive SuperMemo 2), or **Leitner** (5 fixed boxes), chosen per account. Progress is stored as a superset, so switching never loses state.
+- **Tunable schedule** — daily new-word and known-word-check caps, interval and lapse modifiers, a mastery cut-off, and optional interval fuzz.
+- **Word-strength browser** — see every word banded by recall strength, in a searchable table view.
+- **List priority queue** — reorder your studying lists to control where new words come from. Top of the stack feeds first; reviews still come from everywhere. Up/down controls on the lists page, no drag required.
+- **Lifetime stats** — an "All time" card on the dashboard: total reviews, days studied, recall rate, and words-per-day pace, visible after your first review.
+- **Focus-ring dashboard** — due counts, words learned, streak, and a 7-day review forecast.
+- **One word, one card** — the same word appearing in several lists shares a single progress record: enrolling a second list skips what you already track, so stats and reviews never double.
+- **Per-list progress** — every list shows how many of its words are in your queue, how strong they are, and how many are due right now.
+
+</details>
+
+<details>
+<summary><b>Account & System</b></summary>
+
+- **HSK-level onboarding** — pick your level at signup and the matching deck is enrolled before your first review.
+- **Accounts & auth** — email + password via NextAuth (credentials), passwords hashed with bcrypt, rate-limited signup and login, soft (non-blocking) email verification, and self-service password reset — both via email if you configure Resend, or via a link logged to the server console if you don't.
+- **Guest mode with upgrade** — one click on the login page creates a throwaway account with a starter list already enrolled, so visitors can try the app without signing up. Liked it? One small form turns the guest into a real account and keeps every word and review. Stale guests are pruned automatically after 14 days of inactivity.
+- **Light / Dark / System theme** — a real account setting that follows you across devices, with a separate Dark focus / Match app setting for the study screen.
+- **Organized list shelf** — lists are grouped into Studying / Your lists / Explore, starter lists you don't want can be hidden (and restored) per account, and every studied word shows a strength meter with its interval.
+- **Data control** — export every word and its progress as CSV, reset progress for a clean slate, or delete the account entirely.
 - **In-app feedback** — report a bug or share an idea straight from Settings.
-- **Data control** — export every word and its progress as CSV, reset progress
-  for a clean slate, or delete the account entirely.
+
+</details>
 
 ## Tech stack
 
@@ -257,30 +221,13 @@ sentences come from [Tatoeba](https://tatoeba.org) (CC-BY 2.0 FR), with
 per-sentence attribution stored alongside each entry. The app also shows
 these credits at `/credits`.
 
-## Roadmap
+## 🗺️ Roadmap
 
-**Shipped (v0.1 MVP):** multi-language schema · SM-2 + Leitner (selectable) ·
-staged-reveal study with gesture + keyboard grading · daily new/review caps +
-session sizing · algorithm tuning (interval/lapse modifiers, mastery, fuzz) ·
-assumed-known + daily checks · weak-word triage · word-strength browser ·
-focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists &
-words · Light/Dark/System theme + study-screen focus setting · study-scope
-filtering · graded HSK + original Chinese lists · CSV export · progress
-reset · on-device pronunciation · security hardening (rate limits, input caps,
-headers) · in-app feedback · Docker + compose self-host packaging ·
-multiple-choice quiz + matching-pairs practice modes · card text sizing ·
-Playwright end-to-end suite · guest mode with account upgrade + stale-guest
-pruning · account deletion · per-list progress chips · CC-CEDICT
-dictionary-assisted word entry (Chinese) · session summary with toughest
-words + re-study · FSRS as a third scheduling strategy · email verification +
-password reset / account recovery flow · full HSK 1–9 (2021) decks ·
-3,000 Tatoeba example sentences with pinyin · sentence-practice mode ·
-new-word preview flow (see it once before it's graded) · HSK-level
-onboarding with deck auto-enroll · auto-play pronunciation setting ·
-hosted-plan billing (Stripe, fully bypassed when self-hosting via
-`SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env) ·
-list priority queue (reorder studying lists to control new-word source) ·
-lifetime stats card (reviews, days studied, recall rate, pace) · hybrid pronunciation engine (pre-generated Azure neural TTS for Mandarin and German with client Web Speech fallback) · card deck spacebar shortcuts for previews · sentence practice mode enhancements (pinyin display and audio replay button).
+<details>
+<summary><b>✅ Shipped (v0.1 MVP)</b></summary>
+
+multi-language schema · SM-2 + Leitner (selectable) · staged-reveal study with gesture + keyboard grading · daily new/review caps + session sizing · algorithm tuning (interval/lapse modifiers, mastery, fuzz) · assumed-known + daily checks · weak-word triage · word-strength browser · focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists & words · Light/Dark/System theme + study-screen focus setting · study-scope filtering · graded HSK + original Chinese lists · CSV export · progress reset · on-device pronunciation · security hardening (rate limits, input caps, headers) · in-app feedback · Docker + compose self-host packaging · multiple-choice quiz + matching-pairs practice modes · card text sizing · Playwright end-to-end suite · guest mode with account upgrade + stale-guest pruning · account deletion · per-list progress chips · CC-CEDICT dictionary-assisted word entry (Chinese) · session summary with toughest words + re-study · FSRS as a third scheduling strategy · email verification + password reset / account recovery flow · full HSK 1–9 (2021) decks · 3,000 Tatoeba example sentences with pinyin · sentence-practice mode · new-word preview flow (see it once before it's graded) · HSK-level onboarding with deck auto-enroll · auto-play pronunciation setting · hosted-plan billing (Stripe, fully bypassed when self-hosting via `SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env) · list priority queue (reorder studying lists to control new-word source) · lifetime stats card (reviews, days studied, recall rate, pace) · hybrid pronunciation engine (pre-generated Azure neural TTS for Mandarin and German with client Web Speech fallback) · card deck spacebar shortcuts for previews · sentence practice mode enhancements (pinyin display and audio replay button).
+</details>
 
 **Next (v0.2):**
 
