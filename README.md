@@ -1,21 +1,19 @@
-# HSK Nest
+# 🪹 HSK Nest
 
-**A self-hostable spaced-repetition trainer for Mandarin — all of HSK 1–9
-pre-loaded, scheduled by FSRS.**
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![CI](https://github.com/s-mberli/hsknest/actions/workflows/ci.yml/badge.svg)](https://github.com/s-mberli/hsknest/actions/workflows/ci.yml)
+[![Docker Image](https://img.shields.io/badge/docker%20pull-ghcr.io-blue?logo=docker)](https://github.com/s-mberli/hsknest/packages)
 
-HSK Nest helps you remember vocabulary the efficient way: a modern
-memory-model schedule (FSRS) brings each word back right before you'd forget
-it. The full New HSK 3.0 (2021) vocabulary — levels 1–9 — ships pre-loaded,
-with 3,000 real example sentences (with pinyin) and on-device pronunciation.
-Study a gesture-first swipe deck, quiz yourself four different ways, and tune
-the schedule to how you learn.
+**A modern, self-hostable spaced-repetition trainer for Mandarin.**
 
-Under the hood the data model is language-agnostic — anything with a term, a
-meaning, and an optional reading fits — so you can import CSV decks for any
-language you're memorizing.
+HSK Nest helps you remember vocabulary the efficient way. Powered by the state-of-the-art **FSRS memory model**, the app schedules your reviews to bring each word back exactly when you're about to forget it. 
 
-Own your data: run it on your own server, keep everything on-device (even the
-pronunciation audio), and never depend on a cloud service.
+Out of the box, it ships with the complete **New HSK 3.0 (2021) vocabulary (levels 1–9)**, over 3,000 real-world example sentences (with pinyin), and high-quality on-device pronunciation.
+
+Study using a gesture-first swipe deck, quiz yourself across four different practice modes, and own your learning data completely.
+
+- **Language-agnostic engine:** Import CSV decks for any language you're memorizing.
+- **Own your data:** Run it on your own server, keep everything on-device (even the audio), and never depend on a subscription cloud service.
 
 ## Screenshots
 
