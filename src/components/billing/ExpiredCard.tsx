@@ -16,10 +16,14 @@ export function ExpiredCard() {
   const [consented, setConsented] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function upgrade() {
+  async function upgrade(interval: "monthly" | "yearly") {
     setLoading(true);
     try {
-      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      const res = await fetch("/api/billing/checkout", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interval }),
+      });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error ?? "failed");
       window.location.href = data.url;
@@ -40,8 +44,8 @@ export function ExpiredCard() {
             Your trial has ended — your progress hasn&apos;t
           </h2>
           <p className="text-sm text-muted-foreground">
-            All your decks and review history are saved. Upgrade for €10/month
-            to keep studying, or export your data anytime.
+            All your decks and review history are saved. Upgrade to keep
+            studying, or export your data anytime.
           </p>
         </div>
 
@@ -58,15 +62,22 @@ export function ExpiredCard() {
         </label>
 
         <div className="flex flex-wrap justify-center gap-3">
-          <Button disabled={!consented || loading} onClick={upgrade}>
-            {loading ? "Opening checkout…" : "Upgrade — €10/mo"}
-          </Button>
-          <Button asChild variant="outline">
-            <a href="/api/account/export" download>
-              <Download className="size-4" />
-              Export my data
-            </a>
-          </Button>
+          <div className="flex flex-col gap-2 w-full max-w-sm">
+            <Button disabled={!consented || loading} onClick={() => upgrade("monthly")}>
+              {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
+            </Button>
+            <Button disabled={!consented || loading} onClick={() => upgrade("yearly")} variant="outline" className="border-primary text-primary">
+              {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
+            </Button>
+          </div>
+          <div className="mt-4">
+            <Button asChild variant="outline">
+              <a href="/api/account/export" download>
+                <Download className="size-4" />
+                Export my data
+              </a>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

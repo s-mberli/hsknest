@@ -11,7 +11,7 @@ import { isSelfHosted } from "@/lib/subscription";
  * the user here after they tick the EU withdrawal-right acknowledgment;
  * we stamp billingConsentAt before redirecting.
  */
-export async function POST() {
+export async function POST(req: Request) {
   if (isSelfHosted()) {
     return NextResponse.json({ error: "Not available" }, { status: 404 });
   }
@@ -23,11 +23,25 @@ export async function POST() {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
-  const priceId = process.env.STRIPE_PRICE_ID;
+  let interval = "monthly";
+  try {
+    const body = await req.json();
+    if (body.interval === "yearly") {
+      interval = "yearly";
+    }
+  } catch (e) {
+    // ignore missing/invalid body, default to monthly
+  }
+
+  const priceId =
+    interval === "yearly"
+      ? process.env.STRIPE_PRICE_ID_YEARLY
+      : (process.env.STRIPE_PRICE_ID_MONTHLY ?? process.env.STRIPE_PRICE_ID); // fallback for existing deployments
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   if (!priceId) {
     return NextResponse.json(
-      { error: "Billing is not configured" },
+      { error: "Billing is not configured for this interval" },
       { status: 503 }
     );
   }
