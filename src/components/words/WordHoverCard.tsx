@@ -2,10 +2,13 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Volume2 } from "lucide-react";
 
+import { audioAvailableFor, playAudio } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 import { relativeDueLabel } from "@/lib/horizon";
 import { parseMeanings } from "@/lib/meanings";
+import { speechSupported } from "@/lib/speech";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -269,7 +272,22 @@ export function WordHoverCard({
           className="rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
         >
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-lg font-semibold">{word.term}</span>
+            <span className="flex items-center gap-1 text-lg font-semibold">
+              {word.term}
+              {(speechSupported() || audioAvailableFor(word.languageCode)) && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void playAudio(word.term, "word", word.languageCode);
+                  }}
+                  aria-label="Play pronunciation"
+                  className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                >
+                  <Volume2 className="size-4" />
+                </button>
+              )}
+            </span>
             {word.phonetic && (
               <span className="text-sm text-muted-foreground">
                 {word.phonetic}

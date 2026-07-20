@@ -1,10 +1,13 @@
 # Natural pronunciation audio
 
-HSKNest can play natural Mandarin audio for every HSK word and example sentence,
-pre-generated once with [edge-tts](https://github.com/rany2/edge-tts) (Microsoft
-Edge's free TTS — the Azure neural voices, no API key) and served as static
-MP3s. When no audio is configured it falls back to the browser's built-in Web
-Speech voice — so this is entirely optional.
+HSKNest can play natural audio for every word (and, for Mandarin, example
+sentence too), pre-generated once with [edge-tts](https://github.com/rany2/edge-tts)
+(Microsoft Edge's free TTS — the Azure neural voices, no API key) and served as
+static MP3s. When no audio is configured — or for a language with no
+generated set — it falls back to the browser's built-in Web Speech voice, so
+this is entirely optional. Currently generated: **Mandarin** (`zh`, words +
+sentences) and **German** (`de`, words — no example sentences yet). Other
+languages (Spanish, or your own CSV import) always use Web Speech.
 
 > Why edge-tts: small local models (we first tried Kokoro-82M) hallucinate on
 > ultra-short input — a lone character like 个 can synthesize as a whole wrong
@@ -15,22 +18,27 @@ Speech voice — so this is entirely optional.
 
 ## How it works
 
-- The vocabulary is fixed (~11k words + 3k sentences), so clips are generated
-  **once**, not on demand — no TTS server runs in production.
+- The vocabulary is fixed, so clips are generated **once per language**, not
+  on demand — no TTS server runs in production.
 - A clip's filename is `sha256(text)[:20].mp3`. The runtime
-  (`src/lib/audio.ts`) computes the same hash client-side, so there's no
-  database column and no API change: any surface with the text finds its clip.
-- Missing clips (custom user words, unsupported languages) transparently fall
-  back to Web Speech (`src/lib/speech.ts`).
+  (`src/lib/audio.ts`, `SUPPORTED_AUDIO_LANGS`) computes the same hash
+  client-side, so there's no database column and no API change: any surface
+  with the text finds its clip.
+- Missing clips (custom user words, languages with no generated set)
+  transparently fall back to Web Speech (`src/lib/speech.ts`).
+- For German, the article is part of the term ("die Familie") and is spoken
+  with it — that's the deliberately correct pedagogy (see `prisma/data/de/`),
+  not a bug to strip.
 
-Layout:
+Layout, one subtree per language:
 
 ```
-/audio/zh/w/<hash>.mp3   # words
-/audio/zh/s/<hash>.mp3   # sentences
+/audio/zh/w/<hash>.mp3   # Mandarin words
+/audio/zh/s/<hash>.mp3   # Mandarin sentences
+/audio/de/w/<hash>.mp3   # German words
 ```
 
-## 1. Generate the clips (one-time)
+## 1. Generate the clips (one-time per language)
 
 Runs anywhere with internet — no GPU, no ffmpeg. Synthesis happens on
 Microsoft's servers; you just receive the MP3s. It is resumable — re-running
@@ -38,15 +46,18 @@ skips existing files.
 
 ```bash
 pip install edge-tts
-python scripts/generate-audio.py               # all words + sentences → ./audio-out/
-# pilot one level first (recommended): ~1k clips, a few minutes
+python scripts/generate-audio.py                # zh (default): all words + sentences → ./audio-out/
+python scripts/generate-audio.py --lang de       # German words (~270 clips, ~1 min)
+# pilot one HSK level first (recommended for zh): ~1k clips, a few minutes
 python scripts/generate-audio.py --level 1
-# options: --voice zh-CN-YunxiNeural (male)   --out /path/to/audio   --limit 20 (smoke test)
+# options: --voice zh-CN-YunxiNeural / de-DE-ConradNeural (male)
+#          --out /path/to/audio   --limit 20 (smoke test)
 ```
 
-Output lands in `audio-out/zh/{w,s}/*.mp3` plus a `manifest.json` (every
-expected hash, for coverage checks). Total is ~300–500 MB. The full run is
-~14k short clips; with the default concurrency expect roughly 20–40 minutes.
+Output lands in `audio-out/<lang>/{w,s}/*.mp3` plus a per-language
+`manifest.json` (every expected hash, for coverage checks). Mandarin's full
+run is ~14k short clips, ~300–500 MB, roughly 20–40 minutes at the default
+concurrency. German's ~270 clips take well under a minute.
 
 ## 2. Serve the clips from the VPS
 
@@ -83,11 +94,12 @@ Steps:
    ```bash
    # from the VPS, find the volume mount and copy the generated audio tree in
    docker volume inspect <project>_recall-audio --format '{{.Mountpoint}}'
-   # copy audio-out/zh/{w,s}/*.mp3 into <mountpoint>/zh/
+   # copy audio-out/<lang>/{w,s}/*.mp3 into <mountpoint>/<lang>/
    ```
    or, into the running container (same effect, since it's the mounted volume):
    ```bash
    docker cp audio-out/zh/. <app-container>:/app/public/audio/zh/
+   docker cp audio-out/de/. <app-container>:/app/public/audio/de/
    ```
 
 **Restart the app container after copying files in** — the Next.js standalone

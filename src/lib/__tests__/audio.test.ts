@@ -21,9 +21,8 @@ describe("audioUrl", () => {
     expect(await audioUrl("你好", "word", "zh")).toBeNull();
   });
 
-  it("returns null for non-zh languages (fall back to speech)", async () => {
+  it("returns null for unsupported languages (fall back to speech)", async () => {
     const { audioUrl } = await load("/audio");
-    expect(await audioUrl("hallo", "word", "de")).toBeNull();
     expect(await audioUrl("hola", "word", "es")).toBeNull();
     expect(await audioUrl("你好", "word", undefined)).toBeNull();
   });
@@ -43,6 +42,11 @@ describe("audioUrl", () => {
     expect(await audioUrl("火！", "sentence", "zh")).toBe(
       "/audio/zh/s/de23a4bf503d602af28a.mp3"
     );
+    // German: the article is part of the term ("die Familie") and gets
+    // spoken with it — see scripts/generate-audio.py --lang de.
+    expect(await audioUrl("die Familie", "word", "de")).toBe(
+      "/audio/de/w/5c0c4227776695d86a90.mp3"
+    );
   });
 
   it("accepts region subtags (zh-CN) and strips a trailing slash on the base", async () => {
@@ -50,5 +54,22 @@ describe("audioUrl", () => {
     expect(await audioUrl("你好", "word", "zh-CN")).toBe(
       "https://hsknest.com/audio/zh/w/670d9743542cae3ea7eb.mp3"
     );
+  });
+});
+
+describe("audioAvailableFor", () => {
+  it("is true for every supported language when a base URL is set", async () => {
+    const { audioAvailableFor } = await load("/audio");
+    expect(audioAvailableFor("zh")).toBe(true);
+    expect(audioAvailableFor("de")).toBe(true);
+    expect(audioAvailableFor("de-DE")).toBe(true);
+    expect(audioAvailableFor("es")).toBe(false);
+    expect(audioAvailableFor(undefined)).toBe(false);
+  });
+
+  it("is false for everything when no base URL is configured", async () => {
+    const { audioAvailableFor } = await load(undefined);
+    expect(audioAvailableFor("zh")).toBe(false);
+    expect(audioAvailableFor("de")).toBe(false);
   });
 });

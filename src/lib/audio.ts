@@ -1,7 +1,8 @@
 /**
- * Natural pronunciation audio: pre-generated MP3 clips (Kokoro TTS) served
+ * Natural pronunciation audio: pre-generated MP3 clips (edge-tts) served
  * statically, with the Web Speech API (see `@/lib/speech`) as the fallback for
- * missing clips and user-created words.
+ * missing clips, user-created words, and languages without a generated set
+ * (SUPPORTED_AUDIO_LANGS below).
  *
  * A clip's URL is derived from a SHA-256 of the exact text — the same hash the
  * offline generator (scripts/generate-audio.py) uses for filenames. That means
@@ -20,8 +21,15 @@ export type AudioKind = "word" | "sentence";
 
 const BASE = process.env.NEXT_PUBLIC_AUDIO_BASE_URL?.replace(/\/$/, "") ?? "";
 
+/** Languages with a pre-generated clip set (see scripts/generate-audio.py --lang). */
+const SUPPORTED_AUDIO_LANGS = new Set(["zh", "de"]);
+
 /** Hashes we've already seen 404 for — so a miss falls back instantly next time. */
 const missing = new Set<string>();
+
+function baseLang(langCode?: string): string {
+  return (langCode ?? "").split("-")[0];
+}
 
 /**
  * True when generated clips exist for `langCode` (base URL set + a supported
@@ -29,7 +37,7 @@ const missing = new Set<string>();
  * produce audio, so they shouldn't show a "no voice installed" dead end.
  */
 export function audioAvailableFor(langCode?: string): boolean {
-  return !!BASE && (langCode ?? "").split("-")[0] === "zh";
+  return !!BASE && SUPPORTED_AUDIO_LANGS.has(baseLang(langCode));
 }
 
 /** SHA-256 of `text` (UTF-8), first 20 hex chars — matches the generator. */
@@ -45,8 +53,8 @@ async function hashText(text: string): Promise<string | null> {
 
 /**
  * URL of the pre-generated clip for `text`, or null when audio is disabled
- * (no base URL) or the language has no generated clips (only zh today) — in
- * which case the caller should use Web Speech instead.
+ * (no base URL) or the language has no generated clips — in which case the
+ * caller should use Web Speech instead.
  */
 export async function audioUrl(
   text: string,
@@ -54,12 +62,12 @@ export async function audioUrl(
   langCode?: string
 ): Promise<string | null> {
   if (!BASE || !text) return null;
-  // Only Mandarin has generated clips for now; everything else uses speech.
-  if ((langCode ?? "").split("-")[0] !== "zh") return null;
+  const lang = baseLang(langCode);
+  if (!SUPPORTED_AUDIO_LANGS.has(lang)) return null;
   const hash = await hashText(text);
   if (!hash) return null;
   const dir = kind === "sentence" ? "s" : "w";
-  return `${BASE}/zh/${dir}/${hash}.mp3`;
+  return `${BASE}/${lang}/${dir}/${hash}.mp3`;
 }
 
 /**
