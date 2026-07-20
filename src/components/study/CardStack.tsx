@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, ChevronsUp, Minus, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SwipeCard } from "@/components/study/SwipeCard";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
@@ -50,27 +50,34 @@ export function CardStack({
   const [glow, setGlow] = useState<string | null>(null);
   const preview = !!current.preview;
 
-  function handleSwipe(direction: SwipeDirection) {
-    // Preview cards aren't graded: any commit gesture just continues.
-    const dir = preview ? "right" : direction;
-    const key = `fly-${flyCounter.current++}`;
-    setFlying((f) => [...f, { key, card: current, dir }]);
-    window.setTimeout(
-      () => setFlying((f) => f.filter((x) => x.key !== key)),
-      450
-    );
-    setGlow(preview ? "#0ea5e9" : GLOW[direction]);
-    if (preview) onContinue();
-    else onSwipe(direction);
-    window.setTimeout(() => setGlow(null), 350);
-  }
+  const handleSwipe = useCallback(
+    (direction: SwipeDirection) => {
+      // Preview cards aren't graded: any commit gesture just continues.
+      const dir = preview ? "right" : direction;
+      const key = `fly-${flyCounter.current++}`;
+      setFlying((f) => [...f, { key, card: current, dir }]);
+      window.setTimeout(
+        () => setFlying((f) => f.filter((x) => x.key !== key)),
+        450
+      );
+      setGlow(preview ? "#0ea5e9" : GLOW[direction]);
+      if (preview) onContinue();
+      else onSwipe(direction);
+      window.setTimeout(() => setGlow(null), 350);
+    },
+    [preview, current, onContinue, onSwipe]
+  );
 
   // Keyboard: Space advances a stage; arrows grade only at FULL.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === " " || e.code === "Space") {
         e.preventDefault();
-        onAdvance();
+        if (stage === "FULL" && preview) {
+          handleSwipe("right");
+        } else {
+          onAdvance();
+        }
         return;
       }
       if (stage !== "FULL") return;
@@ -90,8 +97,7 @@ export function CardStack({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, onAdvance]);
+  }, [stage, onAdvance, preview, handleSwipe]);
 
   const behind = [...upcoming].reverse();
 

@@ -36,7 +36,7 @@ export function Forecast({ forecast }: { forecast: number[] }) {
                 </span>
               )}
               <motion.div
-                className="w-full rounded-sm bg-primary/70"
+                className="w-3 sm:w-4 rounded-t bg-primary/70"
                 style={{ minHeight: 2 }}
                 initial={{ height: 0 }}
                 animate={{ height: `${(day.count / max) * 80}%` }}

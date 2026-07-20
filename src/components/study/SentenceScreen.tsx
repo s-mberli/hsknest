@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Volume2 } from "lucide-react";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
@@ -45,7 +46,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   const [cursor, setCursor] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [skipped, setSkipped] = useState(0);
-  const startedAt = useRef(Date.now()).current;
+  const [startedAt] = useState(() => Date.now());
   const sizes = CARD_TEXT_CLASSES[textSize];
 
   const { grade, combo, bestCombo, correct, missed, isRelearning, markRelearned } = usePracticeSession({ practice });
@@ -147,16 +148,36 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex flex-col items-center gap-2"
                 >
+                  {current.sentence.phonetic && (
+                    <p className={cn("text-muted-foreground", sizes.phoneticHint)}>
+                      {current.sentence.phonetic}
+                    </p>
+                  )}
                   <p className={cn("text-muted-foreground", sizes.phoneticHint)}>
                     {current.sentence.translation}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">
-                      {current.term}
-                    </span>
-                    {current.phonetic && <> · {current.phonetic}</>} ·{" "}
-                    {gameGloss(current)}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {current.term}
+                      </span>
+                      {current.phonetic && <> · {current.phonetic}</>} ·{" "}
+                      {gameGloss(current)}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (current.sentence) {
+                          void playAudio(current.sentence.text, "sentence", current.languageCode);
+                        }
+                      }}
+                      className="rounded-full bg-muted/50 p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      title="Play sentence again"
+                      aria-label="Play sentence again"
+                    >
+                      <Volume2 className="size-4" />
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </div>
