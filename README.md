@@ -66,10 +66,13 @@ pronunciation audio), and never depend on a cloud service.
 - **Sound effects** — subtle, dependency-free audio cues on correct grades and
   combo streaks (Web Audio, no asset files), on by default and toggleable in
   Settings.
-- **On-device pronunciation** — a speaker button reads the word using your
-  browser's built-in voices, and an optional auto-play setting speaks each
-  word the moment its reading is revealed. No cloud, no API key; it tells you
-  how to add a system voice if one is missing.
+- **Hybrid pronunciation (Pre-generated Natural TTS + Web Speech)** — plays
+  high-quality, pre-generated natural audio clips (utilizing Microsoft Edge's
+  Azure neural voices) served entirely from your VPS (no runtime dependencies or
+  costs). Seamlessly falls back to the browser's built-in Web Speech API for custom
+  words or unsupported languages. Mandarin (words + sentences) and German (words) are
+  supported out of the box. An optional auto-play setting speaks each word the moment
+  its reading is revealed.
 - **Word-strength browser** — see every word banded by recall strength, in a
   searchable table view.
 - **List priority queue** — reorder your studying lists to control where new
@@ -179,6 +182,8 @@ and reading in-app feedback are all documented in
 **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)**. The data model and SRS
 strategy pattern are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
+For instructions on generating and self-hosting natural pronunciation audio clips (pre-generated using Microsoft Edge's Azure voices, mapped via client-side hashing) instead of relying on browser Web Speech, see **[docs/AUDIO.md](docs/AUDIO.md)**.
+
 ## Tests
 
 ```bash
@@ -214,6 +219,7 @@ scripts/
   screenshots.mjs # Playwright helper that captures the README screenshots
 docs/
   ARCHITECTURE.md # data model + SRS strategy pattern + request flow
+  AUDIO.md        # generating and self-hosting natural TTS audio clips
   CONFIGURATION.md# environment variables, settings, audio, feedback
   DEPLOYMENT.md   # VPS / Docker deploy guide + backups
 ```
@@ -276,7 +282,7 @@ onboarding with deck auto-enroll · auto-play pronunciation setting ·
 hosted-plan billing (Stripe, fully bypassed when self-hosting via
 `SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env) ·
 list priority queue (reorder studying lists to control new-word source) ·
-lifetime stats card (reviews, days studied, recall rate, pace).
+lifetime stats card (reviews, days studied, recall rate, pace) · hybrid pronunciation engine (pre-generated Azure neural TTS for Mandarin and German with client Web Speech fallback) · card deck spacebar shortcuts for previews · sentence practice mode enhancements (pinyin display and audio replay button).
 
 **Next (v0.2):**
 
