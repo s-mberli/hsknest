@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     if (body.interval === "yearly") {
       interval = "yearly";
     }
-  } catch (e) {
+  } catch {
     // ignore missing/invalid body, default to monthly
   }
 
