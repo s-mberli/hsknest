@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { toCards } from "@/lib/buildQueue";
-import { startOfLocalDay } from "@/lib/utils";
+
 import type { Prisma } from "@prisma/client";
 
 function makeRow(

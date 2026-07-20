@@ -42,14 +42,14 @@ export default function ForgotPasswordPage() {
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Reset password</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
       </div>
 
       {status === "success" ? (
         <div className="rounded-md bg-green-500/10 p-4 text-center">
           <p className="text-sm font-medium text-green-600 dark:text-green-500">
-            Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.
+            Check your email for a link to reset your password. If it doesn&apos;t appear within a few minutes, check your spam folder.
           </p>
           <Button asChild variant="link" className="mt-4">
             <Link href="/login">Return to sign in</Link>

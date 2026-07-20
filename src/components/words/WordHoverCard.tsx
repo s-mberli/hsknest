@@ -195,7 +195,6 @@ export function WordHoverCard({
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onPointer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useEffect(() => () => releaseOpen(setOpen), []);
@@ -204,7 +203,7 @@ export function WordHoverCard({
   // from either edge (8px padding). Runs on open and on resize/scroll while open.
   useLayoutEffect(() => {
     if (!open) {
-      setShiftX(0);
+      requestAnimationFrame(() => setShiftX(0));
       return;
     }
     function clamp() {
@@ -225,7 +224,6 @@ export function WordHoverCard({
       window.removeEventListener("resize", clamp);
       window.removeEventListener("scroll", clamp, true);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return (

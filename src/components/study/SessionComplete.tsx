@@ -49,12 +49,7 @@ export function SessionComplete({
         ? "text-amber"
         : "text-destructive";
 
-  const [fire, setFire] = useState(0);
-
-  useEffect(() => {
-    if (accuracy >= 80) setFire(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [fire] = useState(accuracy >= 80 ? 1 : 0);
 
   // "What now?" orientation for new users: surface tomorrow's review count so
   // finishing a session ends with a concrete next step, not a dead end.

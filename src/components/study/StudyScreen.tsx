@@ -78,7 +78,12 @@ function StudySession({
   // Preview entries duplicate their graded reappearance — count each word once.
   const gradeableTotal = cards.filter((c) => !c.preview).length;
 
-  const startedAt = useRef(Date.now()).current;
+  const [startedAt] = useState(() => Date.now());
+
+  const [endTime, setEndTime] = useState(0);
+  useEffect(() => {
+    if (done) queueMicrotask(() => setEndTime(Date.now()));
+  }, [done]);
 
   // Mirror the user's setting into the sound module (no-ops when off).
   useEffect(() => {
@@ -147,7 +152,7 @@ function StudySession({
             reviewed={reviewed}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={Date.now() - startedAt}
+            elapsedMs={endTime ? endTime - startedAt : 0}
             missed={missed}
             practice={practice}
           />

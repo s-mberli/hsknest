@@ -24,7 +24,7 @@ export function FirstVisitIntro() {
       )
         return;
       localStorage.setItem(SEEN_KEY, "1");
-      setOpen(true);
+      queueMicrotask(() => setOpen(true));
     } catch {
       // localStorage unavailable — just skip the nudge.
     }

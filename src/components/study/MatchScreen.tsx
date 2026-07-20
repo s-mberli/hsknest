@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
@@ -101,7 +101,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   const [selected, setSelected] = useState<Tile | null>(null);
   const [shaking, setShaking] = useState<string | null>(null);
   const [wrongPair, setWrongPair] = useState<{ a: Tile; b: Tile } | null>(null);
-  const startedAt = useRef(Date.now()).current;
+  const [startedAt] = useState(() => Date.now());
 
   const { grade, combo, bestCombo, correct, missed: missedWords } = usePracticeSession({ practice: true });
 
@@ -146,6 +146,11 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   }, [roundCards]);
 
   const done = !loading && (rounds.length === 0 || round >= rounds.length);
+
+  const [endTime, setEndTime] = useState(0);
+  useEffect(() => {
+    if (done) queueMicrotask(() => setEndTime(Date.now()));
+  }, [done]);
 
   function tap(tile: Tile) {
     if (matched.has(tile.wordId)) return;
@@ -234,7 +239,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
             reviewed={totalWords}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={Date.now() - startedAt}
+            elapsedMs={endTime ? endTime - startedAt : 0}
             missed={missedWords}
             practice
           />

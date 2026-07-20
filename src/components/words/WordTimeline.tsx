@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ function FocusHeader({
   masteryThresholdDays?: number | null;
   reducedMotion: boolean;
 }) {
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
   const { nextDue, upcoming } = useMemo(() => {
     const due = words
@@ -187,6 +187,7 @@ export function WordTimeline({
   emptyLabel = "No words to show.",
   masteryThresholdDays,
 }: WordTimelineProps) {
+  const [now] = useState(() => Date.now());
   const reducedMotion = usePrefersReducedMotion();
   const allowed = bands ? new Set(bands) : null;
 
@@ -200,14 +201,13 @@ export function WordTimeline({
   );
 
   const lanes = useMemo(() => {
-    const now = Date.now();
     const buckets = new Map<Horizon, WordDetail[]>();
     for (const h of HORIZON_ORDER) buckets.set(h, []);
     for (const w of filtered) {
       buckets.get(wordHorizon(w, now))!.push(w);
     }
     return HORIZON_ORDER.map((h) => ({ horizon: h, words: buckets.get(h)! }));
-  }, [filtered]);
+  }, [filtered, now]);
 
   const animateLayout = !reducedMotion && filtered.length <= MOTION_PERF_GUARD;
 

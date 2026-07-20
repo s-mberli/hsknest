@@ -21,7 +21,7 @@ export function CookieBanner() {
     // Check if the user has already consented
     const consent = localStorage.getItem("cookieConsent");
     if (!consent) {
-      setShow(true);
+      queueMicrotask(() => setShow(true));
     }
   }, []);
 

@@ -136,8 +136,8 @@ describe("Lossless switching SM2 -> FSRS -> SM2", () => {
     expect(fsrsState.box).toBe(priorBox);
     
     // Assert srsData.fsrs is present
-    expect((fsrsState.srsData as any)?.fsrs).toBeDefined();
-    const srsDataFsrs = (fsrsState.srsData as any).fsrs;
+    expect((fsrsState.srsData as Record<string, unknown>)?.fsrs).toBeDefined();
+    const srsDataFsrs = (fsrsState.srsData as Record<string, unknown>).fsrs;
 
     // 3. Feed THAT state back into SM2 (q=4)
     const sm2Res = sm2.calculateNextReview(fsrsState, 4, NOW);
@@ -148,7 +148,7 @@ describe("Lossless switching SM2 -> FSRS -> SM2", () => {
     expect(sm2State.easeFactor).toBe(priorEaseFactor);
 
     // Assert srsData.fsrs is still present
-    expect((sm2State.srsData as any)?.fsrs).toBeDefined();
-    expect((sm2State.srsData as any).fsrs).toEqual(srsDataFsrs);
+    expect((sm2State.srsData as Record<string, unknown>)?.fsrs).toBeDefined();
+    expect((sm2State.srsData as Record<string, unknown>).fsrs).toEqual(srsDataFsrs);
   });
 });

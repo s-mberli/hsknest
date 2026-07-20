@@ -62,7 +62,7 @@ export function AppearanceSection({
   );
 
   // Avoid hydration mismatch: only reflect the resolved theme after mount.
-  useEffect(() => setMounted(true), []);
+  useEffect(() => queueMicrotask(() => setMounted(true)), []);
 
   const current = (mounted ? (theme as Theme) : initialTheme) ?? "system";
 

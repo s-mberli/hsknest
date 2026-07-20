@@ -53,7 +53,7 @@ export function SettingsTabs({ panels }: SettingsTabsProps) {
     if (!raw) return;
     const target = HASH_TO_TAB[raw];
     if (target) {
-      setTab(target);
+      queueMicrotask(() => setTab(target));
       // Wait a frame so the panel is unhidden before scrolling to the anchor.
       requestAnimationFrame(() => {
         document.getElementById(raw)?.scrollIntoView({ block: "start" });
