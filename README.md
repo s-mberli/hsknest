@@ -1,85 +1,83 @@
 # 🪹 HSK Nest
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![CI](https://github.com/s-mberli/hsknest/actions/workflows/ci.yml/badge.svg)](https://github.com/s-mberli/hsknest/actions/workflows/ci.yml)
 [![Docker Image](https://img.shields.io/badge/docker%20pull-ghcr.io-blue?logo=docker)](https://github.com/s-mberli/hsknest/packages)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-**A modern, self-hostable spaced-repetition trainer built for language learning.**
+> A self-hostable, FSRS-powered flashcard trainer built for serious language learners. Mandarin-first out of the box, language-agnostic under the hood.
 
-HSK Nest helps you remember vocabulary the efficient way. Powered by the state-of-the-art **FSRS memory model**, the app schedules your reviews to bring each word back exactly when you're about to forget it. 
+HSK Nest is an open-source, self-hostable flashcard app that uses the state-of-the-art FSRS memory model to schedule reviews exactly when you're about to forget. 
 
-While the engine is completely **language-agnostic**, out of the box it primarily ships with content for **Mandarin Chinese** (the complete New HSK 3.0 vocabulary levels 1–9 and over 3,000 real-world example sentences) and **German** (A1 essentials and Top 100 frequency lists), complete with high-quality on-device pronunciation.
+It ships Mandarin-first — the complete New HSK 3.0 vocabulary (levels 1–9), 3,000 real-world example sentences with pinyin, dictionary-assisted entry, and natural Azure neural TTS served entirely from your own server. The scheduling engine is language-agnostic, so you can import CSV decks for anything else (German and Spanish starters are bundled).
 
-Study using a gesture-first swipe deck, quiz yourself across four different practice modes, and own your learning data completely.
+Own your data. Run it on your VPS. No subscriptions, no telemetry, no lock-in.
 
-- **Language-agnostic engine:** Import CSV decks for *any* language you're memorizing. We plan to bundle more official languages in the future!
-- **Own your data:** Run it on your own server, keep everything on-device (even the audio), and never depend on a subscription cloud service.
+## Contents
+
+- [Why HSK Nest?](#why-hsk-nest)
+- [Highlights](#highlights)
+- [Screenshots](#screenshots)
+- [How it compares](#how-it-compares)
+- [Quick start](#quick-start)
+- [Self-hosting](#self-hosting)
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Project layout](#project-layout)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [License](#license)
+
+## Why HSK Nest?
+
+- 🧠 **State-of-the-art scheduling** — FSRS by default (with SM-2 & Leitner options), switchable per-account without losing progress.
+- 🇨🇳 **Mandarin-first content** — Full New HSK 3.0 (levels 1–9), 3,000 Tatoeba sentences with pinyin, and CC-CEDICT dictionary assist.
+- 🏠 **Truly self-hostable** — Your data, your VPS, your audio. No subscription lock-in. AGPL-3.0 licensed.
+- 🔊 **Natural on-device pronunciation** — Pre-generated Azure neural TTS served locally, with Web Speech API fallback for custom words.
+
+## Highlights
+	
+| Feature | Description |
+|---|---|
+| 🧠 | **FSRS / SM-2 / Leitner** — Pluggable scheduling strategies, switchable per-account. |
+| 🇨🇳 | **Mandarin-first** — Full New HSK 3.0 (1–9) + 3,000 example sentences with pinyin. |
+| 👆 | **Gesture-first swipe deck** — Full-screen dark focus mode with keyboard fallback. |
+| 🔊 | **Hybrid TTS** — Pre-generated Azure neural clips served locally + Web Speech fallback. |
+| 📥 | **CSV / paste import** — Bring vocabulary from spreadsheets or other flashcard tools. |
+| 🐳 | **One-command Docker** — Simple self-hosting with automated migrations and seeding. |
+| 🌗 | **Light / Dark / System themes** — Plus a dedicated dark focus mode for studying. |
+| 🔐 | **Accounts & Guest Mode** — Email auth, throwaway guest trials, full data export/deletion. |
 
 ## Screenshots
 
-|                Dashboard                 |               Study deck               |
-| :--------------------------------------: | :------------------------------------: |
+| Dashboard | Study deck |
+| :---: | :---: |
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Study deck](docs/screenshots/study.png) |
 
-|            Word-strength browser             |              List editor               |
-| :------------------------------------------: | :------------------------------------: |
-| ![Word browser](docs/screenshots/words.png)  | ![Lists](docs/screenshots/lists.png)   |
+| Word-strength browser | List editor |
+| :---: | :---: |
+| ![Word browser](docs/screenshots/words.png) | ![Lists](docs/screenshots/lists.png) |
 
-## Features
+## How it compares
 
-### Content & Import
-
-- **Multi-language by design** — every word carries a `term`, `translation`, optional `phonetic`, and a free-form `metadata` JSON blob (tones, gender, part of speech, audio URLs, etc.), so any language fits without schema changes.
-- **Your own content** — create lists, add words one at a time, or paste / CSV import a whole batch. Add a language inline when none fits. Edit and delete your own lists and words; starter lists stay read-only.
-- **Paste / CSV import** — bring vocabulary in from a spreadsheet or a tab-separated export from other flashcard tools. Auto-detects tab vs comma, maps columns to term / meaning / reading, and skips blank or duplicate entries.
-- **Real example sentences** — 3,000 curated sentences (Tatoeba, CC-BY) with pinyin and translation appear on the flashcard answer and in the word browser, so every word is seen in context, not isolation.
-- **Graded Chinese content** — the full New HSK 3.0 (2021) lists, levels 1–9, frequency lists (Top 100 / Top 1000 words), original everyday-conversation and news-reading sets, plus themed starter lists (greetings, numbers, family, food, colors).
-- **Other languages (bonus)** — the engine is language-agnostic, so German (A1 essentials, a Top 100 frequency list, themed starters) and a Spanish starter list ship too, and you can import CSV decks for anything else. New accounts onboard into Mandarin; switch or add a language anytime in Settings.
-- **Dictionary-assisted entry (Chinese)** — typing a Chinese word suggests pinyin and meaning from the bundled CC-CEDICT dictionary; one tap fills both fields, always editable.
-
-### Study & Practice
-
-- **Gesture-first study** — a full-screen card stack in a dark focus mode. Tap to reveal (staged), then swipe to grade. Keyboard fallback on desktop (← → ↑ ↓ to grade).
-- **Practice modes** — beyond flashcards: a meaning quiz (pick the meaning from four options), a **reading quiz** (see the character, pick how it's read — trains symbol → sound, ideal for Chinese), matching rounds (pair up words and meanings from a five-word pool), and **sentence practice** (recognize your words inside real sentences). All pressure-free — they never move the review schedule.
-- **Hide-the-reading mode** — an optional per-account setting: flashcards skip the reading hint so you recall the pronunciation yourself; it still appears with the answer to check against.
-- **Sound effects** — subtle, dependency-free audio cues on correct grades and combo streaks (Web Audio, no asset files), on by default and toggleable in Settings.
-- **Hybrid pronunciation (Pre-generated Natural TTS + Web Speech)** — plays high-quality, pre-generated natural audio clips (utilizing Microsoft Edge's Azure neural voices) served entirely from your VPS (no runtime dependencies or costs). Seamlessly falls back to the browser's built-in Web Speech API for custom words or unsupported languages. Mandarin (words + sentences) and German (words) are supported out of the box. An optional auto-play setting speaks each word the moment its reading is revealed.
-- **Adjustable card text size** — small / normal / large study text, a per-account setting.
-- **Study scope** — narrow a session to one language and/or specific lists; the choice is remembered.
-
-### Scheduling & Progress
-
-- **Selectable scheduling algorithms** — **FSRS** (modern memory-model scheduler, the default for new accounts), **SM-2** (adaptive SuperMemo 2), or **Leitner** (5 fixed boxes), chosen per account. Progress is stored as a superset, so switching never loses state.
-- **Tunable schedule** — daily new-word and known-word-check caps, interval and lapse modifiers, a mastery cut-off, and optional interval fuzz.
-- **Word-strength browser** — see every word banded by recall strength, in a searchable table view.
-- **List priority queue** — reorder your studying lists to control where new words come from. Top of the stack feeds first; reviews still come from everywhere. Up/down controls on the lists page, no drag required.
-- **Lifetime stats** — an "All time" card on the dashboard: total reviews, days studied, recall rate, and words-per-day pace, visible after your first review.
-- **Focus-ring dashboard** — due counts, words learned, streak, and a 7-day review forecast.
-- **One word, one card** — the same word appearing in several lists shares a single progress record: enrolling a second list skips what you already track, so stats and reviews never double.
-- **Per-list progress** — every list shows how many of its words are in your queue, how strong they are, and how many are due right now.
-
-### Account & System
-
-- **HSK-level onboarding** — pick your level at signup and the matching deck is enrolled before your first review.
-- **Accounts & auth** — email + password via NextAuth (credentials), passwords hashed with bcrypt, rate-limited signup and login, soft (non-blocking) email verification, and self-service password reset — both via email if you configure Resend, or via a link logged to the server console if you don't.
-- **Guest mode with upgrade** — one click on the login page creates a throwaway account with a starter list already enrolled, so visitors can try the app without signing up. Liked it? One small form turns the guest into a real account and keeps every word and review. Stale guests are pruned automatically after 14 days of inactivity.
-- **Light / Dark / System theme** — a real account setting that follows you across devices, with a separate Dark focus / Match app setting for the study screen.
-- **Organized list shelf** — lists are grouped into Studying / Your lists / Explore, starter lists you don't want can be hidden (and restored) per account, and every studied word shows a strength meter with its interval.
-- **Data control** — export every word and its progress as CSV, reset progress for a clean slate, or delete the account entirely.
-- **In-app feedback** — report a bug or share an idea straight from Settings.
-
-## Tech stack
-
-- **Next.js** (App Router) + **TypeScript**
-- **Tailwind CSS** + **shadcn/ui**-style primitives + **framer-motion** animations
-- **Prisma ORM** with **SQLite** for local dev (swap to Postgres for production)
-- **NextAuth.js** (Credentials provider, JWT sessions)
-- **next-themes** for theme switching
-- **Zod** for input validation
-- **Vitest** for unit tests
+| Feature | HSK Nest | Anki | Mochi | RemNote |
+|---|---|---|---|---|
+| FSRS by default | ✅ | ⚠️ (addon) | ❌ | ❌ |
+| Fully self-hostable | ✅ | ⚠️ (sync only) | ❌ | ❌ |
+| Mandarin-first content | ✅ | ⚠️ (find decks) | ❌ | ❌ |
+| On-device natural TTS | ✅ | ❌ | ❌ | ❌ |
+| Modern web UX | ✅ | ❌ | ✅ | ✅ |
+| Open source | ✅ AGPL | ✅ AGPL | ❌ | ❌ |
 
 ## Quick start
 
+**TL;DR (Docker):**
+
+```bash
+docker run -d -p 3000:3000 -v hsknest-data:/app/data ghcr.io/s-mberli/hsknest:latest
+```
+
+**Full local development:**
 Requires Node.js 18+ (Node 22 recommended).
 
 ```bash
@@ -100,53 +98,74 @@ npm run db:seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), create an account, add or
-import a word list, and start studying.
+Open http://localhost:3000, create an account, add or import a word list, and start studying.
 
-## Deploy
+## Self-hosting
 
-For self-hosting on a VPS with Docker Compose, HTTPS via a reverse proxy, and
-nightly backups, see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. The short
-version:
+For self-hosting on a VPS with Docker Compose, HTTPS via a reverse proxy, and nightly backups, see `docs/DEPLOYMENT.md`. 
+
+The short version:
 
 ```bash
 cp .env.example .env      # set NEXTAUTH_SECRET and NEXTAUTH_URL
 docker compose up -d --build
 ```
 
-Or skip the build and pull the prebuilt image from GHCR:
+The container applies migrations and seeds starter content on first boot, then serves the standalone Next.js build.
 
-```bash
-docker pull ghcr.io/s-mberli/hsknest:latest
-```
+## Features
 
-The container applies migrations and seeds starter content on first boot, then
-serves the standalone Next build.
+### Content & Import
 
-## Configuration
+- **Multi-language by design** — Every word carries a term, translation, optional phonetic, and free-form metadata (tones, gender, part of speech, etc.). Any language fits without schema changes.
+- **Your own content** — Create lists, add words one at a time, or paste/CSV import a whole batch. Add a language inline when none fits.
+- **Paste / CSV import** — Auto-detects tab vs comma, maps columns to term/meaning/reading, and skips blank or duplicate entries.
+- **Real example sentences** — 3,000 curated sentences (Tatoeba, CC-BY) with pinyin and translation appear on flashcards and in the word browser.
+- **Graded Chinese content** — Full New HSK 3.0 (2021) lists levels 1–9, frequency lists (Top 100/1000), original everyday-conversation and news-reading sets, plus themed starters.
+- **Dictionary-assisted entry (Chinese)** — Typing a Chinese word suggests pinyin and meaning from the bundled CC-CEDICT dictionary.
 
-Environment variables, per-account settings, adding system voices for audio,
-and reading in-app feedback are all documented in
-**[docs/CONFIGURATION.md](docs/CONFIGURATION.md)**. The data model and SRS
-strategy pattern are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+### Study & Practice
 
-For instructions on generating and self-hosting natural pronunciation audio clips (pre-generated using Microsoft Edge's Azure voices, mapped via client-side hashing) instead of relying on browser Web Speech, see **[docs/AUDIO.md](docs/AUDIO.md)**.
+- **Gesture-first study** — A full-screen card stack in a dark focus mode. Tap to reveal, swipe to grade. Keyboard fallback on desktop (← → ↑ ↓).
+- **Practice modes** — Meaning quiz, reading quiz (symbol → sound), matching rounds (pair words/meanings), and sentence practice. All pressure-free—they never move the review schedule.
+- **Hide-the-reading mode** — Flashcards skip the reading hint so you recall pronunciation yourself; it still appears with the answer.
+- **Sound effects** — Subtle, dependency-free Web Audio cues on correct grades and streaks (toggleable).
+- **Hybrid pronunciation** — High-quality, pre-generated Azure neural TTS clips served locally. Falls back to browser Web Speech API for custom words. Mandarin (words + sentences) and German (words) supported out of the box.
+- **Adjustable card text size** — Small / normal / large study text, per-account.
+- **Study scope** — Narrow a session to one language and/or specific lists; the choice is remembered.
 
-## Tests
+### Scheduling & Progress
 
-```bash
-npm test          # vitest unit suite (SRS algorithms, import parser, validation, rate limiter)
-npm run test:e2e  # Playwright browser suite (signup → enroll → study → practice modes)
-npm run lint      # ESLint (flat config, next/core-web-vitals + typescript)
-npx tsc --noEmit  # type check
-```
+- **Selectable algorithms** — FSRS (default), SM-2 (adaptive ease factor), or Leitner (5 fixed boxes). Progress is stored as a superset, so switching never loses state.
+- **Tunable schedule** — Daily new-word and known-word-check caps, interval/lapse modifiers, mastery cut-off, and optional interval fuzz.
+- **Word-strength browser** — See every word banded by recall strength in a searchable table.
+- **List priority queue** — Reorder studying lists to control where new words come from. Reviews still come from everywhere.
+- **Lifetime stats** — Total reviews, days studied, recall rate, and words-per-day pace.
+- **Focus-ring dashboard** — Due counts, words learned, streak, and a 7-day review forecast.
+- **One word, one card** — The same word in several lists shares a single progress record. Stats and reviews never double.
 
-CI (`.github/workflows/ci.yml`) runs type check, lint, unit tests, and a
-production build on every push/PR to `main`.
+### Account & System
+
+- **HSK-level onboarding** — Pick your level at signup and the matching deck is enrolled before your first review.
+- **Accounts & auth** — Email + password via NextAuth, bcrypt hashing, rate-limited signup/login, soft email verification, and self-service password reset.
+- **Guest mode with upgrade** — One click creates a throwaway account with a starter list. Liked it? One small form turns the guest into a real account and keeps all data.
+- **Light / Dark / System theme** — A real account setting that follows you across devices.
+- **Organized list shelf** — Lists grouped into Studying / Your lists / Explore. Hide starter lists you don't want.
+- **Data control** — Export every word and its progress as CSV, reset progress, or delete the account entirely.
+- **In-app feedback** — Report a bug or share an idea straight from Settings.
+
+## Tech stack
+
+- **Framework**: Next.js (App Router) + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui-style primitives + framer-motion
+- **Database**: Prisma ORM with SQLite for local dev (swap to Postgres for production)
+- **Auth**: NextAuth.js (Credentials provider, JWT sessions)
+- **Validation**: Zod
+- **Testing**: Vitest (unit) + Playwright (E2E)
 
 ## Project layout
 
-```
+```text
 src/
   app/            # App Router pages + API routes
   components/     # UI primitives + study/dashboard/list components
@@ -172,72 +191,53 @@ docs/
   DEPLOYMENT.md   # VPS / Docker deploy guide + backups
 ```
 
-## SRS algorithm
-
-Scheduling is a pluggable strategy. **FSRS** (the default for new accounts),
-**SM-2** (adaptive ease factor + interval), and **Leitner** (5 fixed boxes) are
-all implemented in `src/lib/srs/` behind a shared interface, selectable per
-account, with progress stored as a superset so switching never loses state. A
-modifier layer applies interval/lapse tuning, a mastery cut-off, and optional
-fuzz on top of whichever strategy is active. FSRS additionally reads a
-per-account `desiredRetention` target. The schema's `srsData` JSON field and
-`ReviewLog` history give each strategy room to store its own state without a
-migration.
-
-## Contributing
-
-Bug reports and ideas are welcome — file them right from the app
-(**Settings → Feedback**) or open an issue. Pull requests should keep the
-existing style and pass `npm test`, `npm run lint`, and `npm run build`
-(the same checks CI runs). See [CONTRIBUTING.md](CONTRIBUTING.md) for the
-full guide (project rules, migration safety, scheduler proof requirements).
-
-## License
-
-**AGPL-3.0** — self-host freely; if you offer it as a service with your own
-modifications, you must share those modifications. See [LICENSE](LICENSE) for
-the full text.
-
-The included HSK vocabulary data is MIT-licensed; see
-[prisma/data/hsk/README.md](prisma/data/hsk/README.md) for attribution.
-The bundled Chinese dictionary data is a trimmed build of
-[CC-CEDICT](https://cc-cedict.org/wiki/) (CC BY-SA 4.0); see
-[prisma/data/cedict/README.md](prisma/data/cedict/README.md). Example
-sentences come from [Tatoeba](https://tatoeba.org) (CC-BY 2.0 FR), with
-per-sentence attribution stored alongside each entry. The app also shows
-these credits at `/credits`.
+For more details on the SRS algorithm, data model, and configuration options, check the `docs/` directory.
 
 ## Roadmap
 
-### ✅ Shipped (v0.1 MVP)
+**In progress (v0.2):**
+
+- 🗓️ **Study reminders / schedule** — calendar of upcoming reviews with optional notifications
+- ⌨️ **More practice modes:** type-the-answer (phonetic-aware) and picture quiz
+- 🎙️ **Speaking-practice mode** — say the word aloud and get graded by speech recognition
+- 🔑 **Bring-your-own-key integrations:** cloud TTS and image generation via server proxy
+- 🔥 **Review heatmap / streak calendar;** per-list success and learning curve
+
+<details>
+<summary><b>✅ Shipped (v0.1 MVP)</b></summary>
 
 multi-language schema · SM-2 + Leitner (selectable) · staged-reveal study with gesture + keyboard grading · daily new/review caps + session sizing · algorithm tuning (interval/lapse modifiers, mastery, fuzz) · assumed-known + daily checks · weak-word triage · word-strength browser · focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists & words · Light/Dark/System theme + study-screen focus setting · study-scope filtering · graded HSK + original Chinese lists · CSV export · progress reset · on-device pronunciation · security hardening (rate limits, input caps, headers) · in-app feedback · Docker + compose self-host packaging · multiple-choice quiz + matching-pairs practice modes · card text sizing · Playwright end-to-end suite · guest mode with account upgrade + stale-guest pruning · account deletion · per-list progress chips · CC-CEDICT dictionary-assisted word entry (Chinese) · session summary with toughest words + re-study · FSRS as a third scheduling strategy · email verification + password reset / account recovery flow · full HSK 1–9 (2021) decks · 3,000 Tatoeba example sentences with pinyin · sentence-practice mode · new-word preview flow (see it once before it's graded) · HSK-level onboarding with deck auto-enroll · auto-play pronunciation setting · hosted-plan billing (Stripe, fully bypassed when self-hosting via `SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env) · list priority queue (reorder studying lists to control new-word source) · lifetime stats card (reviews, days studied, recall rate, pace) · hybrid pronunciation engine (pre-generated Azure neural TTS for Mandarin and German with client Web Speech fallback) · card deck spacebar shortcuts for previews · sentence practice mode enhancements (pinyin display and audio replay button).
+</details>
 
-**Next (v0.2):**
+## Contributing
 
-- Study reminders / schedule — a calendar of upcoming reviews with optional
-  notifications
-- More practice modes: type-the-answer (phonetic-aware for Chinese) and a
-  picture quiz with generated images
-  (pronunciation quiz + hide-reading mode + practice/refresh mode shipped)
-- Per-element card text controls (character / phonetic / meaning sizes)
-- Speaking-practice mode — say the word aloud and get graded by speech
-  recognition (a distinct study mode)
-- Bring-your-own-key integrations: cloud TTS and image generation via your own
-  API key (server proxy, encrypted per-user key storage; instance operators can
-  set global keys; features hide when no provider is configured)
-- 4-click response mode (separate pronunciation vs meaning grading) as a setting
-- Suspend/block words (never schedule)
-- Review heatmap / streak calendar; per-list success and learning curve
+Bug reports and ideas are welcome — file them right from the app (**Settings → Feedback**) or open an issue. Pull requests should keep the existing style and pass `npm test`, `npm run lint`, and `npm run build` (the same checks CI runs). 
 
-**Later (v1.0+):**
+See `CONTRIBUTING.md` for the full guide (project rules, migration safety, scheduler proof requirements).
 
-- PostgreSQL option for horizontal scaling
-- Feedback admin dashboard
-- PWA + installable mobile app with offline queue and idempotent batch sync
-- AI example-sentence generation from known vocabulary (`metadata` reserved)
-- Shared/public user lists + community library
-- Per-list progress stats (mastery breakdown, completion, due counts)
-- Dictionary-style word detail pages (components, example sentences, frequency)
-- Hosted managed instance (paid, free trial) for those who'd rather not
-  self-host, with per-account quotas on costly features
+## Credits
+
+HSK Nest wouldn't be possible without the open-source language learning community:
+
+- **Example sentences:** Tatoeba (CC-BY 2.0 FR)
+- **Chinese dictionary:** CC-CEDICT (CC BY-SA 4.0)
+- **Vocabulary data:** New HSK 3.0 lists (MIT-licensed, see `prisma/data/hsk/README.md`)
+
+The app shows these credits in-detail at `/credits`.
+
+## License
+
+The HSK Nest application code is licensed under **AGPL-3.0**. Self-host freely; if you offer it as a service with your own modifications, you must share those modifications. See LICENSE for the full text.
+
+Bundled data carries separate licenses:
+
+| Component | License |
+|---|---|
+| Application code | AGPL-3.0 |
+| HSK vocabulary data | MIT |
+| CC-CEDICT dictionary (trimmed) | CC BY-SA 4.0 |
+| Example sentences (Tatoeba) | CC BY 2.0 FR |
+
+---
+
+⭐ **If HSK Nest helps you, please star the repo — it helps others find it!**
