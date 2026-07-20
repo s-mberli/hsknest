@@ -37,7 +37,7 @@ export function AddWordRow({
 
   useEffect(() => {
     if (!dictEnabled || !term.trim()) {
-      setSuggestions([]);
+      queueMicrotask(() => setSuggestions([]));
       return;
     }
     if (debounce.current) window.clearTimeout(debounce.current);

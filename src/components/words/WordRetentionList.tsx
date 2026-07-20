@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { matches, relativeDueLabel } from "@/lib/horizon";
@@ -126,7 +126,7 @@ export function WordRetentionList({
   emptyLabel = "No words to show.",
 }: WordRetentionListProps) {
   const allowed = bands ? new Set(bands) : null;
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
   const sorted = useMemo(() => {
     const rank = new Map(STRENGTH_ORDER.map((b, i) => [b, i]));

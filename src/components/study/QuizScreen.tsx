@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
@@ -45,7 +45,9 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   const practice = true;
   const [cursor, setCursor] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
-  const startedAt = useRef(Date.now()).current;
+  const [startedAt] = useState(() => Date.now());
+  const [endTime, setEndTime] = useState(0);
+
   const advanceTimer = useRef<number | null>(null);
   const sizes = CARD_TEXT_CLASSES[textSize];
 
@@ -68,6 +70,10 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
+
+  useEffect(() => {
+    if (done) queueMicrotask(() => setEndTime(Date.now()));
+  }, [done]);
 
   const answerOf = (c: QuizCard) =>
     mode === "reading" ? c.phonetic ?? "" : gameGloss(c);
@@ -147,7 +153,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             reviewed={cards.length}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={Date.now() - startedAt}
+            elapsedMs={endTime ? endTime - startedAt : 0}
             missed={missed}
             practice
             note={

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
@@ -49,7 +49,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   const [startedAt] = useState(() => Date.now());
   const sizes = CARD_TEXT_CLASSES[textSize];
 
-  const { grade, combo, bestCombo, correct, missed, isRelearning, markRelearned } = usePracticeSession({ practice });
+  const { grade, combo, bestCombo, correct, missed } = usePracticeSession({ practice });
 
   const fetchUrl = useMemo(() => `/api/study/queue?${query}&sentences=1`, [query]);
 
@@ -60,12 +60,19 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   useEffect(() => {
     const all = rawCards as SentenceCard[];
     const usable = all.filter((c) => c.sentence);
-    setCards(usable);
-    setSkipped(all.length - usable.length);
+    queueMicrotask(() => {
+      setCards(usable);
+      setSkipped(all.length - usable.length);
+    });
   }, [rawCards]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
+
+  const [endTime, setEndTime] = useState(0);
+  useEffect(() => {
+    if (done) queueMicrotask(() => setEndTime(Date.now()));
+  }, [done]);
 
   function handleGrade(quality: number) {
     if (!current || !revealed) return;
@@ -118,7 +125,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
             reviewed={cards.length}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={Date.now() - startedAt}
+            elapsedMs={endTime ? endTime - startedAt : 0}
             missed={missed}
             practice={practice}
             note={

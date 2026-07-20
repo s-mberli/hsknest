@@ -40,7 +40,7 @@ export function GradeIsland({ lastGrade }: GradeIslandProps) {
 
   useEffect(() => {
     if (!lastGrade) return;
-    setExpanded(true);
+    queueMicrotask(() => setExpanded(true));
     const timeout = window.setTimeout(() => setExpanded(false), 900);
     return () => window.clearTimeout(timeout);
   }, [lastGrade]);

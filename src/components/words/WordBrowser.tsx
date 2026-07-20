@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export function WordBrowser() {
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
+  const [now] = useState(() => Date.now());
   // Language filter ("all" = every language) and the due-only queue toggle.
   const [language, setLanguage] = useState<string>("all");
   const [dueOnly, setDueOnly] = useState(false);
@@ -124,9 +126,8 @@ export function WordBrowser() {
   );
 
   const dueCount = useMemo(() => {
-    const now = Date.now();
     return inLanguage.filter((w) => isDueNow(w, now)).length;
-  }, [inLanguage]);
+  }, [inLanguage, now]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: inLanguage.length };
@@ -139,14 +140,13 @@ export function WordBrowser() {
   // narrowing sorted by dueAt ascending ("what comes next" in the queue).
   const visibleWords = useMemo(() => {
     if (!dueOnly) return inLanguage;
-    const now = Date.now();
     return inLanguage
       .filter((w) => isDueNow(w, now))
       .sort(
         (a, b) =>
           new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime()
       );
-  }, [inLanguage, dueOnly]);
+  }, [inLanguage, dueOnly, now]);
 
   if (error) {
     return (
@@ -260,7 +260,7 @@ export function WordBrowser() {
           </p>
           <div className="flex gap-2">
             <Button asChild size="sm">
-              <a href="/lists">Browse lists</a>
+              <Link href="/lists">Browse lists</Link>
             </Button>
             <Button variant="outline" size="sm" onClick={() => setLanguage("all")}>
               Show all languages

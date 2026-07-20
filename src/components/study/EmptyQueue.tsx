@@ -81,7 +81,7 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
 
       {scoped && (
         <p className="max-w-sm text-sm text-muted-foreground">
-          You're currently viewing a filtered deck. Clear your filters on the
+          You&apos;re currently viewing a filtered deck. Clear your filters on the
           dashboard to see all your flashcards.
         </p>
       )}

@@ -33,7 +33,7 @@ vi.mock("bcryptjs", () => ({
   hash: vi.fn(async () => "hashed_password"),
 }));
 
-function createRequest(body: any) {
+function createRequest(body: Record<string, unknown>) {
   return new Request("http://localhost/api/auth", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -52,7 +52,7 @@ describe("Auth Routes", () => {
       const res = await forgotPasswordPOST(req);
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.error).toBe("Invalid input");
+      expect((data as Record<string, unknown>).error).toBe("Invalid input");
     });
 
     it("returns 429 if rate limit is exceeded", async () => {
@@ -74,6 +74,7 @@ describe("Auth Routes", () => {
     });
 
     it("returns 200 and sends email if user exists", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ id: "1", email: "test@example.com" } as any);
       
       const req = createRequest({ email: "test@example.com" });
@@ -117,6 +118,7 @@ describe("Auth Routes", () => {
       const expiredDate = new Date(Date.now() - 10000); // Past date
       vi.mocked(prisma.passwordResetToken.findUnique).mockResolvedValueOnce({
         id: "1", token: "valid", email: "test@example.com", expires: expiredDate
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       
       const req = createRequest({ token: "valid", password: "validpassword123" });
@@ -130,6 +132,7 @@ describe("Auth Routes", () => {
       const validDate = new Date(Date.now() + 10000); // Future date
       vi.mocked(prisma.passwordResetToken.findUnique).mockResolvedValueOnce({
         id: "1", token: "valid", email: "test@example.com", expires: validDate
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       
       const req = createRequest({ token: "valid", password: "validpassword123" });

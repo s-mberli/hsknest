@@ -24,7 +24,7 @@ export function TrialBanner({ daysLeft }: { daysLeft: number }) {
   useEffect(() => {
     // Dismissal holds for the current day-count only, so the banner
     // reappears as the number drops.
-    setDismissed(!urgent && localStorage.getItem(dismissKey) === "1");
+    queueMicrotask(() => setDismissed(!urgent && localStorage.getItem(dismissKey) === "1"));
   }, [dismissKey, urgent]);
 
   if (dismissed) return null;

@@ -15,7 +15,7 @@ export function useQueueFetcher(
 
   useEffect(() => {
     let active = true;
-    setError(false);
+    queueMicrotask(() => setError(false));
     (async () => {
       try {
         const res = await fetch(fetchUrl);
@@ -37,6 +37,7 @@ export function useQueueFetcher(
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchUrl]);
 
   return { cards, loading, error };
