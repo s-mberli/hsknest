@@ -88,7 +88,7 @@ const STEPS = [
   {
     n: "3",
     title: "Review daily",
-    body: "HSK Nest tells you exactly what to study and when. A few minutes a day is enough.",
+    body: "HSK Nest tells you exactly what to study and when. Optimized by FSRS to minimize your daily review load, keeping your streak alive over years of fluency, not just weeks of cramming.",
   },
 ];
 
@@ -271,9 +271,15 @@ export function LandingSections() {
 
       {/* Pricing */}
       <section id="pricing" className="space-y-8">
-        <h2 className="text-center text-3xl font-bold tracking-tight">
-          Simple pricing, no lock-in
-        </h2>
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight">
+            Simple pricing, no lock-in
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
+            Same exact software. We just handle the servers, backups, and audio
+            pipeline so you don't have to.
+          </p>
+        </div>
         <div className="mx-auto max-w-sm rounded-3xl border border-primary/30 bg-card p-8 text-center shadow-card">
           <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             HSK Nest Hosted

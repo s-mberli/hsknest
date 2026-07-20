@@ -64,18 +64,25 @@ export function LandingHero() {
           <span className="text-primary">before you finish your coffee.</span>
         </motion.h1>
 
-        <motion.p
+        <motion.div
           initial={reducedMotion ? undefined : "hidden"}
           animate={reducedMotion ? undefined : "visible"}
           variants={safeFadeUp}
           transition={{ delay: 0.15 }}
-          className="mx-auto max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+          className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg"
         >
-          11,000+ words pre-loaded with real example sentences and audio,
-          scheduled by FSRS — modern spaced-repetition science, minus the
-          plugin archaeology. Swipe to grade, quiz yourself, match pairs.
-          Free for 14 days, no card required.
-        </motion.p>
+          <ul className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
+            <li className="flex items-center gap-2">
+              <span className="text-primary">•</span> 11,000+ pre-loaded words & 3,000 example sentences
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-primary">•</span> Powered by modern FSRS science
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-primary">•</span> Gesture-first swipe UX
+            </li>
+          </ul>
+        </motion.div>
 
         <motion.div
           initial={reducedMotion ? undefined : "hidden"}
