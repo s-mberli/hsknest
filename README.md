@@ -12,7 +12,7 @@ It ships Mandarin-first — the complete New HSK 3.0 vocabulary (levels 1–9), 
 
 Own your data. Run it on your VPS. No subscriptions, no telemetry, no lock-in.
 
-> 🚀 **Want to use HSK Nest without setting up a server?** Try our managed cloud version. 14-day free trial, then just €9/month.<br>
+> 🚀 **Want to use HSK Nest without setting up a server?** Try our managed cloud version. 14-day free trial, then just €10/month.<br>
 > 👉 **[Visit hsknest.com to sign up](https://hsknest.com)**
 >
 > *Prefer to self-host? Keep reading! 100% open-source under AGPL-3.0.*
