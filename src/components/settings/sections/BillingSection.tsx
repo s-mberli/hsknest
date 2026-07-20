@@ -47,7 +47,7 @@ export function BillingSection({
         ? "Payment problem — please update your card"
         : "No active plan";
 
-  async function post(path: string, bodyObj: Record<string, any> | undefined, failMessage: string) {
+  async function post(path: string, bodyObj: Record<string, unknown> | undefined, failMessage: string) {
     setLoading(true);
     try {
       const res = await fetch(path, {

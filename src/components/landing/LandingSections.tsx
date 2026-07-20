@@ -277,7 +277,7 @@ export function LandingSections() {
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
             Same exact software. We just handle the servers, backups, and audio
-            pipeline so you don't have to.
+            pipeline so you don&apos;t have to.
           </p>
         </div>
 
