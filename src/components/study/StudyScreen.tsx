@@ -110,6 +110,10 @@ function StudySession({
   const trackMouseClickForNudge = useCallback(() => {
     if (hasSeenToastRef.current) return;
     
+    // Only nudge if it's a device with a fine pointer (mouse/desktop).
+    // It makes no sense to tell mobile users to "use arrow keys".
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+    
     let hasUsedHotkeys = false;
     try {
       hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
