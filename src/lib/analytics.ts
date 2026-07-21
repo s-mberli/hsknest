@@ -16,7 +16,8 @@ declare global {
 export type FunnelEvent =
   | "guest_session_start"
   | "first_review_complete"
-  | "guest_upgrade_complete";
+  | "guest_upgrade_complete"
+  | "guest_checkout_redirect";
 
 export function trackEvent(event: FunnelEvent): void {
   try {
