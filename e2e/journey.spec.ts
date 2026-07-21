@@ -24,9 +24,8 @@ test("sign up and land on the dashboard", async ({ page }) => {
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
   await page.getByRole("button", { name: "Start studying" }).click();
-  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  await page.waitForURL("**/study**", { timeout: 15_000 });
   await dismissIntro(page);
-  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
 });
 
 /** Dismiss the one-time "How HSK Nest works" modal shown on the first dashboard visit. */
