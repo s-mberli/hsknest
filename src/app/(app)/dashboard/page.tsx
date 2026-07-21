@@ -40,6 +40,7 @@ export default async function DashboardPage({
       select: {
         email: true,
         emailVerified: true,
+        createdAt: true,
         targetLanguageId: true,
         targetLanguage: { select: { code: true } },
       },
@@ -99,6 +100,8 @@ export default async function DashboardPage({
         newBacklog={Math.max(0, stats.newCount - fresh)}
         languageCode={user.targetLanguage?.code}
         hasSentences={stats.hasSentences}
+        isGuest={isGuest}
+        createdAt={user?.createdAt}
       />
       )}
 
