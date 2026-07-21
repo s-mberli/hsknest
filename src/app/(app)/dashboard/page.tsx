@@ -90,7 +90,7 @@ export default async function DashboardPage({
       )}
 
       {!sub.access ? (
-        <ExpiredCard />
+        <ExpiredCard isGuest={isGuest} />
       ) : (
       <DashboardHero
         due={stats.dueCount}

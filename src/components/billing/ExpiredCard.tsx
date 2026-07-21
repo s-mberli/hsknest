@@ -6,13 +6,14 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { GuestCheckoutForm } from "@/components/billing/GuestCheckoutForm";
 
 /**
  * Replaces the dashboard hero once the hosted trial is over and no plan is
  * active. Deliberately no dark patterns: data stays, export stays, the
  * consent line covers the EU withdrawal-right acknowledgment.
  */
-export function ExpiredCard() {
+export function ExpiredCard({ isGuest }: { isGuest?: boolean }) {
   const [consented, setConsented] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -49,36 +50,44 @@ export function ExpiredCard() {
           </p>
         </div>
 
-        <label className="flex max-w-sm items-start gap-2 text-left text-xs text-muted-foreground">
-          <input
-            type="checkbox"
-            className="mt-0.5"
-            checked={consented}
-            onChange={(e) => setConsented(e.target.checked)}
-          />
-          I agree to immediate provision of the service and acknowledge that my
-          right of withdrawal ends when billing starts. 14-day no-questions
-          refund still applies.
-        </label>
+        {isGuest ? (
+          <div className="w-full max-w-sm mt-4 text-left">
+            <GuestCheckoutForm />
+          </div>
+        ) : (
+          <>
+            <label className="flex max-w-sm items-start gap-2 text-left text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={consented}
+                onChange={(e) => setConsented(e.target.checked)}
+              />
+              I agree to immediate provision of the service and acknowledge that my
+              right of withdrawal ends when billing starts. 14-day no-questions
+              refund still applies.
+            </label>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          <div className="flex flex-col gap-2 w-full max-w-sm">
-            <Button disabled={!consented || loading} onClick={() => upgrade("monthly")}>
-              {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
-            </Button>
-            <Button disabled={!consented || loading} onClick={() => upgrade("yearly")} variant="outline" className="border-primary text-primary">
-              {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
-            </Button>
-          </div>
-          <div className="mt-4">
-            <Button asChild variant="outline">
-              <a href="/api/account/export" download>
-                <Download className="size-4" />
-                Export my data
-              </a>
-            </Button>
-          </div>
-        </div>
+            <div className="flex flex-wrap justify-center gap-3 mt-4">
+              <div className="flex flex-col gap-2 w-full max-w-sm">
+                <Button disabled={!consented || loading} onClick={() => upgrade("monthly")}>
+                  {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
+                </Button>
+                <Button disabled={!consented || loading} onClick={() => upgrade("yearly")} variant="outline" className="border-primary text-primary">
+                  {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
+                </Button>
+              </div>
+              <div className="mt-4">
+                <Button asChild variant="outline">
+                  <a href="/api/account/export" download>
+                    <Download className="size-4" />
+                    Export my data
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

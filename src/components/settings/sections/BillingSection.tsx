@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
+import { GuestCheckoutForm } from "@/components/billing/GuestCheckoutForm";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,7 +38,7 @@ export function BillingSection({
   const active = status === "active";
 
   const statusLabel = active
-    ? "HSK Nest Hosted — €10/month"
+    ? "HSK Nest Hosted — Active"
     : trialing
       ? daysLeft !== null
         ? `Free trial — ${daysLeft} ${daysLeft === 1 ? "day" : "days"} left`
@@ -92,17 +92,7 @@ export function BillingSection({
 
         {!active &&
           (isGuest ? (
-            // Paying requires a real, loginable account first — otherwise the
-            // subscription attaches to a throwaway guest login. Claiming keeps
-            // the same userId, so all progress carries over, then the pay
-            // button appears.
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Create your account first — then you can subscribe, and
-                everything you&apos;ve studied stays with it.
-              </p>
-              <UpgradeBanner compact />
-            </div>
+            <GuestCheckoutForm />
           ) : (
             <div className="space-y-3">
               <label className="flex items-start gap-2 text-xs text-muted-foreground">
