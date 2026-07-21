@@ -24,10 +24,10 @@ interface CardStackProps {
 
 /** Edge-glow color per grade direction. */
 const GLOW: Record<SwipeDirection, string> = {
-  right: "var(--success)",
-  left: "var(--destructive)",
-  up: "var(--success)",
-  down: "var(--amber)",
+  right: "#22c55e",
+  left: "#ef4444",
+  up: "#0ea5e9",
+  down: "#f59e0b",
 };
 
 export function CardStack({
@@ -102,16 +102,16 @@ export function CardStack({
   const behind = [...upcoming].reverse();
 
   // On-screen grade buttons (mirror the swipe/keyboard gestures) shown once
-  // the answer is revealed. Order left→right: Again, Hard, Good, Easy.
+  // the answer is revealed. Order left→right: Forgot, Hard, Knew, Easy.
   const GRADES: {
     dir: SwipeDirection;
     label: string;
     icon: typeof Check;
     className: string;
   }[] = [
-    { dir: "left", label: "Again", icon: X, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
+    { dir: "left", label: "Forgot", icon: X, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
     { dir: "down", label: "Hard", icon: Minus, className: "text-amber border-amber/40 hover:bg-amber/10" },
-    { dir: "right", label: "Good", icon: Check, className: "text-success border-success/40 hover:bg-success/10" },
+    { dir: "right", label: "Knew", icon: Check, className: "text-success border-success/40 hover:bg-success/10" },
     { dir: "up", label: "Easy", icon: ChevronsUp, className: "text-sky-600 dark:text-sky-400 border-sky-500/40 hover:bg-sky-500/10" },
   ];
 
@@ -123,11 +123,11 @@ export function CardStack({
         <motion.div
           key={glow}
           initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.9, 0] }}
-          transition={{ duration: 0.35, times: [0, 0.4, 1] }}
-          className="pointer-events-none absolute -inset-3 z-0 rounded-3xl"
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ duration: 0.4, times: [0, 0.3, 1] }}
+          className="pointer-events-none absolute -inset-4 z-0 rounded-3xl"
           style={{
-            boxShadow: `0 0 40px 6px ${glow}`,
+            boxShadow: `0 0 50px 12px ${glow}, 0 0 20px 4px ${glow}`,
           }}
         />
       )}
@@ -190,7 +190,7 @@ export function CardStack({
         >
           <button
             type="button"
-            onClick={() => handleSwipe("right")}
+            onClick={() => handleSwipe("right", true)}
             disabled={stage !== "FULL"}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-sky-500/40 py-3 text-sm font-medium text-sky-600 transition-colors hover:bg-sky-500/10 dark:text-sky-400"
           >

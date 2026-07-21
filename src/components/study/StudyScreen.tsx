@@ -81,7 +81,7 @@ function StudySession({
 
   const [startedAt] = useState(() => Date.now());
 
-  const [consecutiveMouseClicks, setConsecutiveMouseClicks] = useState(0);
+  const [, setConsecutiveMouseClicks] = useState(0);
 
   // Kill switch listening for keyboard grading events.
   useEffect(() => {
@@ -109,22 +109,14 @@ function StudySession({
     (direction: SwipeDirection, isMouseClick = false) => {
       swipe(direction);
       if (isMouseClick) {
-        let hasUsedHotkeys = false;
-        try {
-          hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
-        } catch {
-          // ignore storage access errors
-        }
-
-        if (!hasUsedHotkeys) {
-          setConsecutiveMouseClicks((prev) => {
-            const next = prev + 1;
-            if (next === 10) {
-              toast("Tip: Use arrow keys to grade instantly.");
-            }
-            return next;
-          });
-        }
+        setConsecutiveMouseClicks((prev) => {
+          const next = prev + 1;
+          if (next === 10) {
+            toast("Tip: Use arrow keys to grade instantly.");
+            return 0;
+          }
+          return next;
+        });
       }
     },
     [swipe]
