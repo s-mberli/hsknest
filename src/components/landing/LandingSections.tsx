@@ -290,19 +290,21 @@ export function LandingSections() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 items-start pt-4">
+        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 pt-4">
           {/* Monthly Card */}
-          <div className="rounded-3xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
-            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Monthly
-            </p>
-            <p className="mt-2 text-5xl font-extrabold tracking-tight">
-              €10
-              <span className="text-lg font-medium text-muted-foreground">
-                /month
-              </span>
-            </p>
-            <ul className="mt-6 space-y-3 text-left text-sm text-muted-foreground">
+          <div className="flex flex-col h-full rounded-3xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Monthly
+              </p>
+              <p className="mt-2 text-5xl font-extrabold tracking-tight">
+                €10
+                <span className="text-lg font-medium text-muted-foreground">
+                  /month
+                </span>
+              </p>
+            </div>
+            <ul className="mt-6 space-y-3 text-left text-sm text-muted-foreground flex-grow">
               {[
                 "14 days free (no credit card to start)",
                 "All features & pre-loaded HSK decks",
@@ -322,20 +324,22 @@ export function LandingSections() {
           </div>
 
           {/* Yearly Card */}
-          <div className="relative rounded-3xl border-2 border-primary bg-card p-8 shadow-card">
+          <div className="relative flex flex-col h-full rounded-3xl border-2 border-primary bg-card p-8 shadow-card">
             <div className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium uppercase tracking-wider text-primary-foreground">
               Best Value
             </div>
-            <p className="text-sm font-medium uppercase tracking-wide text-primary">
-              Yearly
-            </p>
-            <p className="mt-2 text-5xl font-extrabold tracking-tight">
-              €99
-              <span className="text-lg font-medium text-muted-foreground">
-                /year
-              </span>
-            </p>
-            <ul className="mt-6 space-y-3 text-left text-sm text-muted-foreground">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-wide text-primary">
+                Yearly
+              </p>
+              <p className="mt-2 text-5xl font-extrabold tracking-tight">
+                €99
+                <span className="text-lg font-medium text-muted-foreground">
+                  /year
+                </span>
+              </p>
+            </div>
+            <ul className="mt-6 space-y-3 text-left text-sm text-muted-foreground flex-grow">
               {[
                 "Two months free",
                 "14 days free (no credit card to start)",

@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
 import { VerifyEmailBanner } from "@/components/auth/VerifyEmailBanner";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
-import { FirstVisitIntro } from "@/components/dashboard/FirstVisitIntro";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { LifetimeStats } from "@/components/dashboard/LifetimeStats";
@@ -68,7 +67,6 @@ export default async function DashboardPage({
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-8">
-      <FirstVisitIntro />
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Today</h1>
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">

@@ -14,7 +14,7 @@ interface CardStackProps {
   upcoming: StudyCard[];
   stage: Stage;
   onAdvance: () => void;
-  onSwipe: (direction: SwipeDirection) => void;
+  onSwipe: (direction: SwipeDirection, isMouseClick?: boolean) => void;
   /** Dismiss a new-word preview (no grade posted). */
   onContinue: () => void;
   textSize: CardTextSize;
@@ -51,7 +51,7 @@ export function CardStack({
   const preview = !!current.preview;
 
   const handleSwipe = useCallback(
-    (direction: SwipeDirection) => {
+    (direction: SwipeDirection, isMouseClick = false) => {
       // Preview cards aren't graded: any commit gesture just continues.
       const dir = preview ? "right" : direction;
       const key = `fly-${flyCounter.current++}`;
@@ -62,7 +62,7 @@ export function CardStack({
       );
       setGlow(preview ? "#0ea5e9" : GLOW[direction]);
       if (preview) onContinue();
-      else onSwipe(direction);
+      else onSwipe(direction, isMouseClick);
       window.setTimeout(() => setGlow(null), 350);
     },
     [preview, current, onContinue, onSwipe]
@@ -210,7 +210,7 @@ export function CardStack({
             <button
               key={dir}
               type="button"
-              onClick={() => handleSwipe(dir)}
+              onClick={() => handleSwipe(dir, true)}
               disabled={stage !== "FULL"}
               className={cn(
                 "flex flex-col items-center gap-1 rounded-xl border py-2.5 text-xs font-medium transition-colors",
