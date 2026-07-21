@@ -17,7 +17,7 @@ interface SwipeCardProps {
   stage: Stage;
   onSwipe: (direction: SwipeDirection) => void;
   /** Advance the reveal stage on tap (top card, pre-FULL only). */
-  onAdvance?: () => void;
+  onAdvance?: (isMouseClick?: boolean) => void;
   /** Depth offset for stacked cards behind the top card. */
   depth: number;
   isTop: boolean;
@@ -128,7 +128,7 @@ export function SwipeCard({
       onDragEnd={handleDragEnd}
       onTap={
         isTop && !flyOut && stage !== "FULL" && onAdvance
-          ? () => onAdvance()
+          ? () => onAdvance(true)
           : undefined
       }
     >

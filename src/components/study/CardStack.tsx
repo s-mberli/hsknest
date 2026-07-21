@@ -13,7 +13,7 @@ interface CardStackProps {
   current: StudyCard;
   upcoming: StudyCard[];
   stage: Stage;
-  onAdvance: () => void;
+  onAdvance: (isMouseClick?: boolean) => void;
   onSwipe: (direction: SwipeDirection, isMouseClick?: boolean) => void;
   /** Dismiss a new-word preview (no grade posted). */
   onContinue: (isMouseClick?: boolean) => void;
