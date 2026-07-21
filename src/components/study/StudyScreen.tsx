@@ -105,32 +105,44 @@ function StudySession({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const trackMouseClickForNudge = useCallback(() => {
+    let hasUsedHotkeys = false;
+    try {
+      hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
+    } catch {
+      // ignore
+    }
+
+    if (!hasUsedHotkeys) {
+      setConsecutiveMouseClicks((prev) => {
+        const next = prev + 1;
+        if (next === 10) {
+          toast("Tip: Use arrow keys to grade instantly.");
+          return 0;
+        }
+        return next;
+      });
+    }
+  }, []);
+
   const handleSwipe = useCallback(
     (direction: SwipeDirection, isMouseClick = false) => {
       swipe(direction);
-      
-      // Only track if it's a mouse click (not a touch swipe)
       if (isMouseClick) {
-        let hasUsedHotkeys = false;
-        try {
-          hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
-        } catch {
-          // ignore
-        }
-
-        if (!hasUsedHotkeys) {
-          setConsecutiveMouseClicks((prev) => {
-            const next = prev + 1;
-            if (next === 10) {
-              toast("Tip: Use arrow keys to grade instantly.");
-              return 0;
-            }
-            return next;
-          });
-        }
+        trackMouseClickForNudge();
       }
     },
-    [swipe]
+    [swipe, trackMouseClickForNudge]
+  );
+
+  const handleContinue = useCallback(
+    (isMouseClick = false) => {
+      continuePreview();
+      if (isMouseClick) {
+        trackMouseClickForNudge();
+      }
+    },
+    [continuePreview, trackMouseClickForNudge]
   );
 
   const [endTime, setEndTime] = useState(0);
@@ -219,7 +231,7 @@ function StudySession({
               stage={stage}
               onAdvance={advance}
               onSwipe={handleSwipe}
-              onContinue={continuePreview}
+              onContinue={handleContinue}
               textSize={textSize}
               autoPlay={autoPlayPronunciation}
             />

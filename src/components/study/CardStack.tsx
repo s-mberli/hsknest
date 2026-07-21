@@ -16,7 +16,7 @@ interface CardStackProps {
   onAdvance: () => void;
   onSwipe: (direction: SwipeDirection, isMouseClick?: boolean) => void;
   /** Dismiss a new-word preview (no grade posted). */
-  onContinue: () => void;
+  onContinue: (isMouseClick?: boolean) => void;
   textSize: CardTextSize;
   /** Speak the term automatically when its reading is revealed. */
   autoPlay?: boolean;
@@ -61,7 +61,7 @@ export function CardStack({
         450
       );
       setGlow(preview ? "#0ea5e9" : GLOW[direction]);
-      if (preview) onContinue();
+      if (preview) onContinue(isMouseClick);
       else onSwipe(direction, isMouseClick);
       window.setTimeout(() => setGlow(null), 350);
     },
