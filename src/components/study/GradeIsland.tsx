@@ -62,13 +62,17 @@ export function GradeIsland({ lastGrade }: GradeIslandProps) {
           showExpanded ? "min-w-24" : "size-2 min-w-0 border-transparent bg-muted p-0"
         )}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {showExpanded && outcome && (
             <motion.span
               key={lastGrade.id}
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
               animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
-              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8 }}
+              exit={
+                reducedMotion
+                  ? { opacity: 0, position: "absolute" }
+                  : { opacity: 0, scale: 0.8, position: "absolute" }
+              }
               transition={{ duration: reducedMotion ? 0.15 : 0.2 }}
               className={cn("whitespace-nowrap", outcome.className)}
             >
