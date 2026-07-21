@@ -108,15 +108,26 @@ function StudySession({
   const handleSwipe = useCallback(
     (direction: SwipeDirection, isMouseClick = false) => {
       swipe(direction);
+      
+      // Only track if it's a mouse click (not a touch swipe)
       if (isMouseClick) {
-        setConsecutiveMouseClicks((prev) => {
-          const next = prev + 1;
-          if (next === 10) {
-            toast("Tip: Use arrow keys to grade instantly.");
-            return 0;
-          }
-          return next;
-        });
+        let hasUsedHotkeys = false;
+        try {
+          hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
+        } catch {
+          // ignore
+        }
+
+        if (!hasUsedHotkeys) {
+          setConsecutiveMouseClicks((prev) => {
+            const next = prev + 1;
+            if (next === 10) {
+              toast("Tip: Use arrow keys to grade instantly.");
+              return 0;
+            }
+            return next;
+          });
+        }
       }
     },
     [swipe]
