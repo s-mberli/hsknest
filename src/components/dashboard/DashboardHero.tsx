@@ -10,6 +10,8 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+import { useState } from "react";
+import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
@@ -30,6 +32,10 @@ interface DashboardHeroProps {
   languageCode?: string;
   /** Whether the target language has example sentences (gates Sentences mode). */
   hasSentences?: boolean;
+  /** True if the user is a guest. */
+  isGuest?: boolean;
+  /** The user's account creation date. */
+  createdAt?: Date;
 }
 
 // Languages whose reading is a learnable romanization (e.g. pinyin), where a
@@ -64,12 +70,20 @@ export function DashboardHero({
   newBacklog = 0,
   languageCode,
   hasSentences = false,
+  isGuest = false,
+  createdAt,
 }: DashboardHeroProps) {
+  const [showWall, setShowWall] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const total = due + checks + fresh;
   const hasCards = total > 0;
   const canPractice = learnedCount > 0;
   const counts = { due, fresh, checks };
+
+  const isDay2 =
+    isGuest &&
+    createdAt &&
+    new Date().toDateString() !== new Date(createdAt).toDateString();
 
   const showReadingQuiz = languageCode
     ? ROMANIZED_READING_LANGS.has(languageCode)
@@ -127,12 +141,19 @@ export function DashboardHero({
               ))}
             </div>
 
-            <Button asChild size="lg" className="w-full max-w-xs rounded-full">
-              <Link href={STUDY_HREF}>
+            {isDay2 ? (
+              <Button size="lg" className="w-full max-w-xs rounded-full" onClick={() => setShowWall(true)}>
                 <GraduationCap className="size-4" />
                 Start studying
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button asChild size="lg" className="w-full max-w-xs rounded-full">
+                <Link href={STUDY_HREF}>
+                  <GraduationCap className="size-4" />
+                  Start studying
+                </Link>
+              </Button>
+            )}
 
             {/* The real "how fast do I grow" lever lives in Settings. */}
             {dailyNewWords > 0 && (
@@ -211,6 +232,14 @@ export function DashboardHero({
           </div>
         </div>
       )}
+
+      <UpgradeModal
+        isOpen={showWall}
+        onClose={() => setShowWall(false)}
+        title="Welcome back! Your Day-2 reviews are due."
+        description="Create your free account in 5 seconds to unlock your queue and keep your memory streak alive."
+        canClose={true}
+      />
     </div>
   );
 }

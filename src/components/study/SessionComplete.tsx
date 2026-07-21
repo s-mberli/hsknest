@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import { AuroraGlow } from "@/components/fx/AuroraGlow";
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
+import { UpgradeModal } from "@/components/auth/UpgradeModal";
 
 interface SessionCompleteProps {
   reviewed: number;
@@ -41,6 +43,9 @@ export function SessionComplete({
 }: SessionCompleteProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isGuest = session?.user?.email?.endsWith("@guest.local") ?? false;
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
     accuracy >= 80
@@ -122,40 +127,58 @@ export function SessionComplete({
         </div>
       )}
 
-      <div className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center">
-        {missed.length > 0 && (
+      {!isGuest && (
+        <div className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center">
+          {missed.length > 0 && (
+            <Button
+              className="w-full sm:w-auto"
+              onClick={() => {
+                const searchParams = new URLSearchParams(window.location.search);
+                searchParams.set("mode", "practice");
+                searchParams.set("limit", String(missed.length));
+                window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+              }}
+            >
+              Redo the {missed.length} you missed
+            </Button>
+          )}
           <Button
+            asChild
+            variant={missed.length > 0 ? "outline" : "default"}
+            className="w-full sm:w-auto"
+          >
+            {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
+            <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
+          </Button>
+          <Button
+            variant="outline"
             className="w-full sm:w-auto"
             onClick={() => {
-              const searchParams = new URLSearchParams(window.location.search);
-              searchParams.set("mode", "practice");
-              searchParams.set("limit", String(missed.length));
-              window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+              // Force fresh dashboard counts after studying (avoid stale ring).
+              router.push("/dashboard");
+              router.refresh();
             }}
           >
-            Redo the {missed.length} you missed
+            Back to dashboard
           </Button>
-        )}
-        <Button
-          asChild
-          variant={missed.length > 0 ? "outline" : "default"}
-          className="w-full sm:w-auto"
-        >
-          {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
-          <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={() => {
-            // Force fresh dashboard counts after studying (avoid stale ring).
-            router.push("/dashboard");
-            router.refresh();
-          }}
-        >
-          Back to dashboard
-        </Button>
-      </div>
+        </div>
+      )}
+
+      {isGuest && (
+        <div className="mt-4 w-full max-w-xs sm:max-w-md">
+          <Button size="lg" className="w-full text-md font-semibold" onClick={() => setShowUpgrade(true)}>
+            Save Progress & Continue Free
+          </Button>
+        </div>
+      )}
+
+      <UpgradeModal
+        isOpen={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        title="Save your progress"
+        description="Keep everything you've studied — just pick your login."
+        canClose={true}
+      />
     </div>
   );
 }

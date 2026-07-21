@@ -62,7 +62,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
           <p className="text-sm">
             <span className="font-medium">You&apos;re trying HSK Nest as a guest.</span>{" "}
             <span className="text-muted-foreground">
-              Add an email and password to keep your progress.
+              Guest progress is saved locally to this browser. Create a free account to sync your FSRS memory model across your phone and desktop.
             </span>
           </p>
           <Button size="sm" onClick={() => setOpen(true)}>
@@ -72,7 +72,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
       ) : (
         <form onSubmit={onSubmit} className="space-y-3">
           <p className="text-sm font-medium">
-            Keep everything you&apos;ve studied — just pick your login.
+            Create a free account to sync your FSRS memory model across your phone and desktop.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
