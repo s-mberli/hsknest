@@ -105,7 +105,11 @@ function StudySession({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const hasSeenToastRef = useRef(false);
+
   const trackMouseClickForNudge = useCallback(() => {
+    if (hasSeenToastRef.current) return;
+    
     let hasUsedHotkeys = false;
     try {
       hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
@@ -116,14 +120,25 @@ function StudySession({
     if (!hasUsedHotkeys) {
       setConsecutiveMouseClicks((prev) => {
         const next = prev + 1;
-        if (next === 10) {
+        if (next === 6) {
           toast("Tip: Use arrow keys to grade instantly.");
+          hasSeenToastRef.current = true;
           return 0;
         }
         return next;
       });
     }
   }, []);
+
+  const handleAdvance = useCallback(
+    (isMouseClick = false) => {
+      advance();
+      if (isMouseClick) {
+        trackMouseClickForNudge();
+      }
+    },
+    [advance, trackMouseClickForNudge]
+  );
 
   const handleSwipe = useCallback(
     (direction: SwipeDirection, isMouseClick = false) => {
@@ -229,7 +244,7 @@ function StudySession({
               current={current}
               upcoming={upcoming}
               stage={stage}
-              onAdvance={advance}
+              onAdvance={handleAdvance}
               onSwipe={handleSwipe}
               onContinue={handleContinue}
               textSize={textSize}
