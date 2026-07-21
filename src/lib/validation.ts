@@ -13,6 +13,10 @@ export const forgotPasswordSchema = z.object({
   email: z.string().email().max(254),
 });
 
+export const guestCheckoutSchema = signupSchema.extend({
+  interval: z.enum(["monthly", "yearly"]),
+});
+
 export const resetPasswordSchema = z.object({
   token: z.string().min(1),
   password: z
@@ -147,6 +151,7 @@ export const listPrioritySchema = z.object({
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;
+export type GuestCheckoutInput = z.infer<typeof guestCheckoutSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type VerifyTokenInput = z.infer<typeof verifyTokenSchema>;

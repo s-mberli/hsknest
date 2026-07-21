@@ -47,7 +47,7 @@ export default function TermsPage() {
 
         <h2>7. Billing, Renewal, and Cancellation</h2>
         <p>
-          The hosted plan costs €10 per month, billed as a recurring monthly subscription via our payment processor, Stripe. Your subscription renews automatically each month until cancelled. You can cancel at any time from Settings → Billing; cancellation takes effect at the end of the current billing period, and no further charges are made. We will give at least 30 days&apos; notice before any price change takes effect for existing subscribers.
+          The hosted plan costs **€10 per month or €99 per year**, billed as a recurring subscription via our payment processor, Stripe. Your subscription renews automatically until cancelled. You can cancel at any time from Settings → Billing; cancellation takes effect at the end of the current billing period, and no further charges are made. We will give at least 30 days&apos; notice before any price change takes effect for existing subscribers.
         </p>
 
         <h2>8. Refunds</h2>
