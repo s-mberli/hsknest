@@ -8,7 +8,6 @@ import { Check, Globe2, GraduationCap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { HowItWorksModal } from "@/components/HowItWorksModal";
 import { cn } from "@/lib/utils";
 
 interface OnboardingFormProps {
@@ -39,7 +38,6 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
   );
   const [listId, setListId] = useState<string | null>(hskLists[0]?.id ?? null);
   const [saving, setSaving] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
 
   const selectedLanguage = languages.find((l) => l.id === selected);
   const hasLevelStep =
@@ -64,13 +62,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
         );
       }
 
-      // Cue the one-time "How it works" nudge on the first dashboard visit.
-      try {
-        localStorage.removeItem("hsknest-seen-intro");
-        localStorage.removeItem("recall-seen-intro");
-      } catch {}
-
-      router.push("/dashboard");
+      router.push("/study");
       router.refresh();
     } catch {
       toast.error("Could not save your choices. Please try again.");
@@ -238,7 +230,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                   "Continue"
                 )}
               </Button>
-              {isLevelStep && !singleLanguage ? (
+              {isLevelStep && !singleLanguage && (
                 <button
                   type="button"
                   onClick={() => setStep("language")}
@@ -246,21 +238,11 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                 >
                   Back
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowHelp(true)}
-                  className="mx-auto mt-4 block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                >
-                  How does this work?
-                </button>
               )}
             </motion.div>
           </CardContent>
         </Card>
       </div>
-
-      <HowItWorksModal open={showHelp} onClose={() => setShowHelp(false)} />
     </motion.div>
   );
 }

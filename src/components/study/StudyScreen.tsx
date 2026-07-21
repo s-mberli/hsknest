@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { CardStack } from "@/components/study/CardStack";
 import { EmptyQueue } from "@/components/study/EmptyQueue";
@@ -8,7 +9,7 @@ import { GradeIsland } from "@/components/study/GradeIsland";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
-import { useStudySession } from "@/hooks/useStudySession";
+import { useStudySession, type SwipeDirection } from "@/hooks/useStudySession";
 import { trackEventOnce } from "@/lib/analytics";
 import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
@@ -79,6 +80,55 @@ function StudySession({
   const gradeableTotal = cards.filter((c) => !c.preview).length;
 
   const [startedAt] = useState(() => Date.now());
+
+  const [consecutiveMouseClicks, setConsecutiveMouseClicks] = useState(0);
+
+  // Kill switch listening for keyboard grading events.
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight" ||
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown"
+      ) {
+        try {
+          localStorage.setItem("hsknest-used-hotkeys", "true");
+        } catch {
+          // ignore storage access errors
+        }
+        setConsecutiveMouseClicks(0);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleSwipe = useCallback(
+    (direction: SwipeDirection, isMouseClick = false) => {
+      swipe(direction);
+      if (isMouseClick) {
+        let hasUsedHotkeys = false;
+        try {
+          hasUsedHotkeys = !!localStorage.getItem("hsknest-used-hotkeys");
+        } catch {
+          // ignore storage access errors
+        }
+
+        if (!hasUsedHotkeys) {
+          setConsecutiveMouseClicks((prev) => {
+            const next = prev + 1;
+            if (next === 10) {
+              toast("Tip: Use arrow keys to grade instantly.");
+            }
+            return next;
+          });
+        }
+      }
+    },
+    [swipe]
+  );
 
   const [endTime, setEndTime] = useState(0);
   useEffect(() => {
@@ -165,7 +215,7 @@ function StudySession({
               upcoming={upcoming}
               stage={stage}
               onAdvance={advance}
-              onSwipe={swipe}
+              onSwipe={handleSwipe}
               onContinue={continuePreview}
               textSize={textSize}
               autoPlay={autoPlayPronunciation}
