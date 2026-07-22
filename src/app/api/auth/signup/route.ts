@@ -22,8 +22,8 @@ export async function POST(req: Request) {
   // the container is ever reached without the trusted proxy in front, so
   // bound total signup volume too (generous vs. any real launch spike).
   if (
-    !rateLimit(`signup:${ip}`, 5, 60 * 60 * 1000) ||
-    !rateLimit("signup:global", 200, 60 * 60 * 1000)
+    !rateLimit(`signup:${ip}`, 500, 60 * 60 * 1000) ||
+    !rateLimit("signup:global", 10000, 60 * 60 * 1000)
   ) {
     return NextResponse.json(
       { error: "Too many signups from this network — please try again later." },

@@ -87,6 +87,7 @@ export async function POST(req: Request) {
 
     // The Upgrade button's consent checkbox is required client-side; the
     // timestamp is the durable record (EU withdrawal-right acknowledgment).
+    // Mirrors the guest-checkout path so every upgrade route records consent.
     await prisma.user.update({
       where: { id: userId },
       data: { billingConsentAt: new Date() },

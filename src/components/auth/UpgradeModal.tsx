@@ -69,7 +69,12 @@ export function UpgradeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4">
-      <div className="relative w-full max-w-md rounded-2xl border bg-card p-6 shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-modal-title"
+        className="relative w-full max-w-md rounded-2xl border bg-card p-6 shadow-xl"
+      >
         {canClose && (
           <button
             onClick={onClose}
@@ -80,7 +85,7 @@ export function UpgradeModal({
           </button>
         )}
         <div className="mb-6 space-y-2 text-center">
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 id="upgrade-modal-title" className="text-xl font-bold">{title}</h2>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">

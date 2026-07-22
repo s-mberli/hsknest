@@ -19,6 +19,11 @@ const buckets = new Map<string, Window>();
  * the counter; the window resets lazily once it has elapsed.
  */
 export function rateLimit(key: string, limit: number, windowMs: number): boolean {
+  // Disabled only under `next dev` (local dev + Playwright e2e, which runs
+  // against the dev server) so repeated auth calls never flake. The real
+  // limiter stays active in production AND under the test runner
+  // (NODE_ENV=test), which is where rateLimit.test.ts verifies it.
+  if (process.env.NODE_ENV === "development") return true;
   const now = Date.now();
   const existing = buckets.get(key);
 

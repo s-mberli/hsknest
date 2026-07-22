@@ -63,14 +63,29 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hash(password, 12);
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      email: normalizedEmail,
-      passwordHash,
-      ...(name ? { name } : { name: null }),
-    },
-  });
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: normalizedEmail,
+        passwordHash,
+        ...(name ? { name } : { name: null }),
+      },
+    });
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Email is already registered. Please sign in instead." },
+        { status: 409 }
+      );
+    }
+    throw error;
+  }
 
   // Fire-and-forget verification email — mirrors signup so upgraded users get
   // the same (soft, non-blocking) verify link instead of a dead-end banner.

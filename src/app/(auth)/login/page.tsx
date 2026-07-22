@@ -56,8 +56,7 @@ function LoginForm() {
       toast.error("Invalid email or password");
       return;
     }
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   }
 
   return (

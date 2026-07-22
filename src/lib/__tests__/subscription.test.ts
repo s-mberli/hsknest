@@ -40,13 +40,13 @@ describe("hasAccess (hosted mode, SELF_HOSTED=false)", () => {
     ).toBe(true);
   });
 
-  it("denies canceled and past_due", () => {
+  it("denies canceled; allows past_due (Smart Retry grace period)", () => {
     expect(
       hasAccess({ subscriptionStatus: "canceled", trialEndsAt: null }, NOW)
     ).toBe(false);
     expect(
       hasAccess({ subscriptionStatus: "past_due", trialEndsAt: IN_5_DAYS }, NOW)
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("counts whole trial days left, ceiling, floored at 0", () => {
