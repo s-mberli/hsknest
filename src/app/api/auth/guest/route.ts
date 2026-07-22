@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   // legitimate launch-day burst.
   if (
     !rateLimit(`guest:${ip}`, 5, 60 * 60 * 1000) ||
-    !rateLimit("guest:global", 100, 60 * 60 * 1000)
+    !rateLimit("guest:global", 10000, 60 * 60 * 1000)
   ) {
     return NextResponse.json(
       { error: "Too many guest sessions from this network — please try again later." },

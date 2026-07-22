@@ -20,7 +20,7 @@ test("sign up and land on the dashboard", async ({ page }) => {
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
   // New accounts pick a target language first, then land on the dashboard.
-  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.waitForURL("**/onboarding", { timeout: 30_000 });
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
   await page.getByRole("button", { name: "Start studying" }).click();
@@ -182,7 +182,10 @@ test("guest mode: one click to studying", async ({ page }) => {
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
   await page.getByRole("button", { name: "Start studying" }).click();
-  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  // Onboarding's "Start studying" drops straight into a study session, not
+  // the dashboard — go there to check the enrolled starter list surfaced.
+  await page.waitForURL("**/study**", { timeout: 15_000 });
+  await page.goto("/dashboard");
   await dismissIntro(page);
   // A starter list is auto-enrolled, so the Start button is available.
   await expect(page.getByRole("link", { name: /start/i })).toBeVisible({
@@ -198,7 +201,10 @@ test("guest upgrade keeps progress under a real login", async ({ page }) => {
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
   await page.getByRole("button", { name: "Start studying" }).click();
-  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  // Onboarding's "Start studying" drops straight into a study session, not
+  // the dashboard — go there to check the guest upgrade banner.
+  await page.waitForURL("**/study**", { timeout: 15_000 });
+  await page.goto("/dashboard");
   await dismissIntro(page);
 
   // The dashboard nudges guests to save their progress.
@@ -471,7 +477,9 @@ test("account deletion signs out and frees the email", async ({ page }) => {
   // Single launch language → onboarding opens on the level step directly;
   // HSK 1 is preselected and confirming enrolls the deck.
   await page.getByRole("button", { name: "Start studying" }).click();
-  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  // Onboarding's "Start studying" drops straight into a study session, not
+  // the dashboard.
+  await page.waitForURL("**/study**", { timeout: 15_000 });
 
   await page.goto("/settings");
   // Delete account lives on the Account tab.

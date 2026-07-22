@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
@@ -80,10 +80,11 @@ export function DashboardHero({
   const canPractice = learnedCount > 0;
   const counts = { due, fresh, checks };
 
-  const isDay2 =
+  const isDay2 = Boolean(
     isGuest &&
-    createdAt &&
-    new Date().toDateString() !== new Date(createdAt).toDateString();
+      createdAt &&
+      new Date().toDateString() !== new Date(createdAt).toDateString()
+  );
 
   const showReadingQuiz = languageCode
     ? ROMANIZED_READING_LANGS.has(languageCode)

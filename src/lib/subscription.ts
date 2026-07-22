@@ -29,7 +29,7 @@ export function hasAccess(
   now: Date = new Date()
 ): boolean {
   if (isSelfHosted()) return true;
-  if (user.subscriptionStatus === "active") return true;
+  if (user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due") return true;
   if (user.subscriptionStatus === "trialing") {
     // No trial clock set (legacy/grandfathered rows) counts as in-trial.
     return user.trialEndsAt === null || user.trialEndsAt > now;
