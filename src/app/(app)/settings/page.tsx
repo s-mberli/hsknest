@@ -72,7 +72,7 @@ export default async function SettingsPage() {
         targetLanguageId={user.targetLanguageId}
         languages={languages}
         billing={
-          !sub.selfHosted ? (
+          !sub.selfHosted && !user.email.endsWith("@guest.local") ? (
             <BillingSection
               status={sub.status}
               daysLeft={sub.daysLeft}
