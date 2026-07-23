@@ -20,16 +20,18 @@ export default async function AppLayout({
   const [user, sub] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { theme: true },
+      select: { theme: true, email: true },
     }),
     getSubscriptionInfo(userId),
   ]);
 
+  const isGuest = user?.email?.endsWith("@guest.local") ?? false;
   const showTrialBanner =
     !sub.selfHosted &&
     sub.status === "trialing" &&
     sub.daysLeft !== null &&
-    sub.access;
+    sub.access &&
+    !isGuest;
 
   return (
     <div className="flex min-h-full flex-1 flex-col">

@@ -47,20 +47,25 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
     if (!selected) return;
     setSaving(true);
     try {
+      // Enroll the chosen level deck FIRST, so the study queue starts with the
+      // words the user picked. The settings PATCH below auto-enrolls the HSK 1
+      // "Foundation" starter deck only when the user has zero progress in the
+      // language — enrolling here first makes that guard skip, so the chosen
+      // level isn't clobbered. Non-fatal: the dashboard still guides deck-less
+      // users to /lists, and a language without a level step falls back to the
+      // settings starter auto-enroll.
+      if (hasLevelStep && listId) {
+        await fetch(`/api/lists/${listId}/enroll`, { method: "POST" }).catch(
+          () => null
+        );
+      }
+
       const res = await fetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetLanguageId: selected }),
       });
       if (!res.ok) throw new Error();
-
-      // Enroll the chosen level deck so day one starts with the right words.
-      // Non-fatal: the dashboard still guides deck-less users to /lists.
-      if (hasLevelStep && listId) {
-        await fetch(`/api/lists/${listId}/enroll`, { method: "POST" }).catch(
-          () => null
-        );
-      }
 
       router.push("/study");
       router.refresh();
