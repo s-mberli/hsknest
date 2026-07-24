@@ -33,6 +33,17 @@ type BentoCell =
       span?: string;
     };
 
+const HSK_LEVEL_PILLS = [
+  { label: "HSK 1", words: "~500 words" },
+  { label: "HSK 9", words: "11,000+ words total" },
+];
+
+const SAMPLE_SENTENCE = {
+  hanzi: "我每天都在学习中文。",
+  pinyin: "wǒ měi tiān dōu zài xué xí zhōng wén.",
+  translation: "I study Chinese every day.",
+};
+
 const BENTO: BentoCell[] = [
   {
     kind: "copy",
@@ -71,6 +82,12 @@ const BENTO: BentoCell[] = [
     icon: Import,
     title: "Bring your decks, own your data",
     body: "Import CSV/TSV from Anki in under a minute. Full progress export anytime — no lock-in.",
+  },
+  {
+    kind: "copy",
+    icon: GitBranch,
+    title: "Open source",
+    body: "AGPL-licensed, auditable, and self-hostable. No black boxes, no lock-in, no telemetry.",
   },
 ];
 
@@ -197,11 +214,38 @@ export function LandingSections() {
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <cell.icon className="size-5 text-primary" />
                   </span>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold">{cell.title}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{cell.body}</p>
                   </div>
                 </div>
+
+                {cell.title === "Every HSK word, ready to study" && (
+                  <div className="flex flex-wrap items-center gap-2 pl-[3.25rem]">
+                    {HSK_LEVEL_PILLS.map((pill, i) => (
+                      <span key={pill.label} className="flex items-center gap-2">
+                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                          {pill.label}: {pill.words}
+                        </span>
+                        {i < HSK_LEVEL_PILLS.length - 1 && (
+                          <span aria-hidden="true" className="text-muted-foreground/50">···</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {cell.title === "3,000 real example sentences" && (
+                  <div className="rounded-xl border bg-background/60 p-3 pl-[3.25rem]">
+                    <p className="text-base font-medium">{SAMPLE_SENTENCE.hanzi}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {SAMPLE_SENTENCE.pinyin}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {SAMPLE_SENTENCE.translation}
+                    </p>
+                  </div>
+                )}
               </div>
             )
           )}
