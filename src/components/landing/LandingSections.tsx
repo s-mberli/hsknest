@@ -3,35 +3,15 @@ import {
   BookOpenCheck,
   Check,
   GitBranch,
-  Import,
-  Layers,
-  MessageSquareText,
   Timer,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
 
 import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 
 const GITHUB_URL = "https://github.com/s-mberli/hsknest";
-
-type BentoCell =
-  | {
-      kind: "copy";
-      icon: LucideIcon;
-      title: string;
-      body: string;
-      span?: string;
-    }
-  | {
-      kind: "shot";
-      src: string;
-      alt: string;
-      caption: string;
-      span?: string;
-    };
 
 const HSK_LEVEL_PILLS = [
   { label: "HSK 1", words: "~500 words" },
@@ -44,52 +24,6 @@ const SAMPLE_SENTENCE = {
   translation: "I study Chinese every day.",
 };
 
-const BENTO: BentoCell[] = [
-  {
-    kind: "copy",
-    icon: BookOpenCheck,
-    title: "Every HSK word, ready to study",
-    body: "HSK 1–9 and top-frequency decks are pre-loaded — no deck building, no downloads.",
-    span: "sm:col-span-2",
-  },
-  {
-    kind: "copy",
-    icon: MessageSquareText,
-    title: "3,000 real example sentences",
-    body: "See each word in context with pinyin and translation, not as an isolated flashcard.",
-  },
-  {
-    kind: "copy",
-    icon: AudioLines,
-    title: "Pronunciation built in",
-    body: "Hear every word and sentence spoken — auto-plays as you reveal the reading.",
-  },
-  {
-    kind: "copy",
-    icon: Layers,
-    title: "Five ways to review",
-    body: "Flashcards, meaning quiz, reading quiz, word match, and sentence practice keep it fresh.",
-  },
-  {
-    kind: "copy",
-    icon: Timer,
-    title: "Modern scheduling, by default",
-    body: "FSRS — the algorithm Anki users install by choice — is the default here, with SM-2 and Leitner switchable anytime.",
-    span: "sm:col-span-2",
-  },
-  {
-    kind: "copy",
-    icon: Import,
-    title: "Bring your decks, own your data",
-    body: "Import CSV/TSV from Anki in under a minute. Full progress export anytime — no lock-in.",
-  },
-  {
-    kind: "copy",
-    icon: GitBranch,
-    title: "Open source",
-    body: "AGPL-licensed, auditable, and self-hostable. No black boxes, no lock-in, no telemetry.",
-  },
-];
 
 const STEPS = [
   {
@@ -183,72 +117,80 @@ export function LandingSections() {
       <section className="space-y-8">
         <div className="space-y-1.5 text-center">
           <h2 className="text-3xl font-bold tracking-tight">
-            Everything you need to master vocabulary
+            Everything you need to master vocabulary.
           </h2>
           <p className="text-sm text-muted-foreground">Zero configuration required.</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {BENTO.map((cell) =>
-            cell.kind === "shot" ? (
-              <div
-                key={cell.src}
-                className={`flex flex-col overflow-hidden rounded-2xl border bg-card ${cell.span ?? ""}`}
-              >
-                <Image
-                  src={cell.src}
-                  alt={cell.alt}
-                  width={1280}
-                  height={800}
-                  className="h-auto w-full"
-                />
-                <p className="border-t px-4 py-3 text-sm text-muted-foreground">
-                  {cell.caption}
-                </p>
-              </div>
-            ) : (
-              <div
-                key={cell.title}
-                className={`flex flex-col gap-4 rounded-2xl border bg-card p-5 ${cell.span ?? ""}`}
-              >
-                <div className="flex gap-4">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <cell.icon className="size-5 text-primary" />
+
+        {/* Row 1: wide left (Every HSK Word + pills) + narrow right (Pronunciation) */}
+        <div className="grid gap-4 sm:grid-cols-5">
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:col-span-3">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+              <BookOpenCheck className="size-5 text-primary" />
+            </span>
+            <h3 className="font-semibold">Every HSK Word, Curated</h3>
+            <p className="text-sm text-muted-foreground">
+              From absolute beginner to mastery. The complete HSK 1–9 vocabulary
+              list, meticulously tagged, categorized, and error-checked.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {HSK_LEVEL_PILLS.map((pill, i) => (
+                <span key={pill.label} className="flex items-center gap-2">
+                  <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                    {pill.label}: {pill.words}
                   </span>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{cell.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{cell.body}</p>
-                  </div>
-                </div>
+                  {i < HSK_LEVEL_PILLS.length - 1 && (
+                    <span aria-hidden="true" className="text-muted-foreground/50">···</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          </div>
 
-                {cell.title === "Every HSK word, ready to study" && (
-                  <div className="flex flex-wrap items-center gap-2 pl-[3.25rem]">
-                    {HSK_LEVEL_PILLS.map((pill, i) => (
-                      <span key={pill.label} className="flex items-center gap-2">
-                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                          {pill.label}: {pill.words}
-                        </span>
-                        {i < HSK_LEVEL_PILLS.length - 1 && (
-                          <span aria-hidden="true" className="text-muted-foreground/50">···</span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:col-span-2">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+              <AudioLines className="size-5 text-primary" />
+            </span>
+            <h3 className="font-semibold">Native Audio</h3>
+            <p className="text-sm text-muted-foreground">
+              Crystal clear pronunciation for every character and word.
+            </p>
+          </div>
+        </div>
 
-                {cell.title === "3,000 real example sentences" && (
-                  <div className="rounded-xl border bg-background/60 p-3 pl-[3.25rem]">
-                    <p className="text-base font-medium">{SAMPLE_SENTENCE.hanzi}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {SAMPLE_SENTENCE.pinyin}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {SAMPLE_SENTENCE.translation}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )
-          )}
+        {/* Row 2: FSRS left + 3000 sentences middle + sentence example right */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+              <Timer className="size-5 text-primary" />
+            </span>
+            <h3 className="font-semibold">FSRS Scheduling</h3>
+            <p className="text-sm text-muted-foreground">
+              State-of-the-art spaced repetition algorithm minimizes review time
+              while maximizing retention.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6">
+            <p className="text-4xl font-bold text-primary/80">99</p>
+            <h3 className="font-semibold">3,000+ Context Sentences</h3>
+            <p className="text-sm text-muted-foreground">
+              Don&apos;t learn words in a vacuum. Understand nuance with
+              high-quality, practical example sentences.
+            </p>
+          </div>
+
+          <div className="flex flex-col justify-center gap-2 rounded-2xl border bg-primary/5 p-6">
+            <p className="text-lg font-medium">
+              {SAMPLE_SENTENCE.hanzi.split("").map((char, i) => (
+                <span key={i} className={/[一-鿿]/.test(char) && i >= 4 && i <= 5 ? "text-primary" : ""}>
+                  {char}
+                </span>
+              ))}
+            </p>
+            <p className="text-sm text-muted-foreground">{SAMPLE_SENTENCE.pinyin}</p>
+            <p className="text-sm text-muted-foreground">{SAMPLE_SENTENCE.translation}</p>
+          </div>
         </div>
       </section>
 
