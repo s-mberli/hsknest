@@ -73,13 +73,8 @@ const FAQ = [
 const SHOTS = [
   {
     src: "/screenshots/study.png",
-    alt: "Studying a flashcard with pinyin, meaning, and an example sentence",
+    alt: "Studying a flashcard with pinyin, meaning, and example sentence",
     caption: "Study",
-  },
-  {
-    src: "/screenshots/dashboard.png",
-    alt: "Dashboard with today's review queue and forecast",
-    caption: "Today",
   },
   {
     src: "/screenshots/words.png",
@@ -160,7 +155,7 @@ export function LandingSections() {
 
         {/* Row 2: FSRS left + 3000 sentences middle + sentence example right */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6">
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:min-h-[220px]">
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
               <Timer className="size-5 text-primary" />
             </span>
@@ -171,7 +166,7 @@ export function LandingSections() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6">
+          <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:min-h-[220px]">
             <p className="text-4xl font-bold text-primary/80">99</p>
             <h3 className="font-semibold">3,000+ Context Sentences</h3>
             <p className="text-sm text-muted-foreground">
@@ -180,7 +175,7 @@ export function LandingSections() {
             </p>
           </div>
 
-          <div className="flex flex-col justify-center gap-2 rounded-2xl border bg-primary/5 p-6">
+          <div className="flex flex-col justify-center gap-2 rounded-2xl border bg-primary/5 p-6 sm:min-h-[220px]">
             <p className="text-lg font-medium">
               {SAMPLE_SENTENCE.hanzi.split("").map((char, i) => (
                 <span key={i} className={/[一-鿿]/.test(char) && i >= 4 && i <= 5 ? "text-primary" : ""}>
@@ -199,21 +194,21 @@ export function LandingSections() {
         <h2 className="text-center text-3xl font-bold tracking-tight">
           Study without the clutter
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {SHOTS.map(({ src, alt, caption }, i) => (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {SHOTS.map(({ src, alt, caption }) => (
             <figure
               key={src}
-              className={`overflow-hidden rounded-2xl border bg-card shadow-card ${
-                i === 0 ? "sm:col-span-2" : ""
-              }`}
+              className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-card"
             >
-              <Image
-                src={src}
-                alt={alt}
-                width={1280}
-                height={800}
-                className="h-auto w-full"
-              />
+              <div className="aspect-video overflow-hidden bg-muted/30">
+                <Image
+                  src={src}
+                  alt={alt}
+                  width={1280}
+                  height={1600}
+                  className="h-full w-full object-cover object-top"
+                />
+              </div>
               <figcaption className="border-t px-4 py-2.5 text-sm text-muted-foreground">
                 {caption}
               </figcaption>
@@ -245,7 +240,7 @@ export function LandingSections() {
       </section>
 
       {/* Open source trust */}
-      <section className="mx-auto max-w-2xl space-y-4 border-y py-10 text-center">
+      <section className="mx-auto max-w-2xl space-y-4 border-y py-16 text-center">
         <h2 className="text-2xl font-bold tracking-tight">
           Self-host it forever, free
         </h2>
@@ -263,7 +258,7 @@ export function LandingSections() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="mx-auto max-w-5xl space-y-8 px-4">
+      <section id="pricing" className="mx-auto max-w-5xl space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight">
             Simple pricing, no lock-in
@@ -283,7 +278,7 @@ export function LandingSections() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 pt-4">
+        <div className="mx-auto grid max-w-4xl items-start gap-8 pt-6 md:grid-cols-2">
           {/* Monthly Card */}
           <div className="flex flex-col h-full rounded-3xl border border-border bg-card p-8 shadow-sm transition-shadow hover:shadow-md">
             <div>
