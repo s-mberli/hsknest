@@ -164,9 +164,12 @@ export function LandingSections() {
 
       {/* Value stack — asymmetric bento */}
       <section className="space-y-8">
-        <h2 className="text-center text-3xl font-bold tracking-tight">
-          Everything you need to master vocabulary
-        </h2>
+        <div className="space-y-1.5 text-center">
+          <h2 className="text-3xl font-bold tracking-tight">
+            Everything you need to master vocabulary
+          </h2>
+          <p className="text-sm text-muted-foreground">Zero configuration required.</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {BENTO.map((cell) =>
             cell.kind === "shot" ? (
@@ -188,12 +191,16 @@ export function LandingSections() {
             ) : (
               <div
                 key={cell.title}
-                className={`flex gap-4 rounded-2xl border bg-card p-5 ${cell.span ?? ""}`}
+                className={`flex flex-col gap-4 rounded-2xl border bg-card p-5 ${cell.span ?? ""}`}
               >
-                <cell.icon className="mt-0.5 size-5 shrink-0 text-primary" />
-                <div>
-                  <h3 className="font-semibold">{cell.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{cell.body}</p>
+                <div className="flex gap-4">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <cell.icon className="size-5 text-primary" />
+                  </span>
+                  <div>
+                    <h3 className="font-semibold">{cell.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{cell.body}</p>
+                  </div>
                 </div>
               </div>
             )

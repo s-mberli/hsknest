@@ -33,99 +33,104 @@ export function LandingHero() {
     : fadeUp;
 
   return (
-    <main className="relative flex min-h-[85svh] flex-1 flex-col items-center justify-center overflow-hidden px-6 py-20 text-center sm:py-24">
+    <main className="relative flex min-h-[85svh] flex-1 items-center overflow-hidden px-6 py-20 sm:py-24">
       <div
         aria-hidden="true"
         className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_60%)]"
       />
 
-      <div className="relative z-10 w-full max-w-3xl space-y-7">
-        <motion.div
-          initial={reducedMotion ? undefined : "hidden"}
-          animate={reducedMotion ? undefined : "visible"}
-          variants={safeFadeUp}
-          transition={{ delay: 0.05 }}
-          className="flex justify-center"
-        >
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-primary" />
-            Open source · Self-hostable
-          </span>
-        </motion.div>
-
-        <motion.h1
-          initial={reducedMotion ? undefined : "hidden"}
-          animate={reducedMotion ? undefined : "visible"}
-          variants={safeFadeUp}
-          transition={{ delay: 0.1 }}
-          className="text-4xl font-extrabold tracking-tight sm:text-6xl"
-        >
-          All 11,000 words of HSK 1–9. <br className="hidden sm:block" />
-          <span className="text-primary">Pre-loaded and ready to swipe.</span>
-        </motion.h1>
-
-        <motion.div
-          initial={reducedMotion ? undefined : "hidden"}
-          animate={reducedMotion ? undefined : "visible"}
-          variants={safeFadeUp}
-          transition={{ delay: 0.15 }}
-          className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg"
-        >
-          <ul className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
-            <li className="flex items-center gap-2">
-              <span className="text-primary">•</span> 3,000+ example sentences & native audio
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-primary">•</span> Powered by modern FSRS science
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-primary">•</span> Gesture-first swipe UX
-            </li>
-          </ul>
-        </motion.div>
-
-        <motion.div
-          initial={reducedMotion ? undefined : "hidden"}
-          animate={reducedMotion ? undefined : "visible"}
-          variants={safeFadeUp}
-          transition={{ delay: 0.2 }}
-          className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row"
-        >
-          <TryFreeButton className="w-full sm:w-auto" />
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="h-14 w-full rounded-full border-primary/20 bg-background/50 px-8 text-base sm:w-auto"
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 text-center lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:text-left">
+        <div className="space-y-7">
+          <motion.div
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.05 }}
+            className="flex justify-center lg:justify-start"
           >
-            <Link href="/login">Sign in</Link>
-          </Button>
-        </motion.div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-primary" />
+              Open source · Self-hostable
+            </span>
+          </motion.div>
 
-        <motion.p
-          initial={reducedMotion ? undefined : "hidden"}
-          animate={reducedMotion ? undefined : "visible"}
-          variants={safeFadeUp}
-          transition={{ delay: 0.25 }}
-          className="text-sm text-muted-foreground"
-        >
-          No signup to try ·{" "}
-          <a
-            href="https://github.com/s-mberli/hsknest"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-foreground"
+          <motion.h1
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.1 }}
+            className="text-4xl font-extrabold tracking-tight sm:text-6xl"
           >
-            or self-host it free, forever
-          </a>
-        </motion.p>
+            All 11,000 words of <br className="hidden sm:block" />
+            <span className="text-primary">
+              HSK 1–9. <br className="hidden sm:block" />
+              Pre-loaded and ready to swipe.
+            </span>
+          </motion.h1>
+
+          <motion.div
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.15 }}
+            className="mx-auto max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0"
+          >
+            <ul className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 lg:justify-start">
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span> 3,000+ example sentences & native audio
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span> Powered by modern FSRS science
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">•</span> Gesture-first swipe UX
+              </li>
+            </ul>
+          </motion.div>
+
+          <motion.div
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row lg:justify-start"
+          >
+            <TryFreeButton className="w-full sm:w-auto" />
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="h-14 w-full rounded-full border-primary/20 bg-background/50 px-8 text-base sm:w-auto"
+            >
+              <Link href="/login">Sign in</Link>
+            </Button>
+          </motion.div>
+
+          <motion.p
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.25 }}
+            className="text-sm text-muted-foreground"
+          >
+            No signup to try ·{" "}
+            <a
+              href="https://github.com/s-mberli/hsknest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              or self-host it free, forever
+            </a>
+          </motion.p>
+        </div>
 
         <motion.div
           initial={reducedMotion ? undefined : "hidden"}
           animate={reducedMotion ? undefined : "visible"}
           variants={safeFadeUp}
           transition={{ delay: 0.3 }}
-          className="mx-auto w-full max-w-2xl pt-4"
+          className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-none"
         >
           <div className="overflow-hidden rounded-2xl border bg-card shadow-card">
             <div
@@ -145,7 +150,7 @@ export function LandingHero() {
               priority
             />
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-4 text-center text-sm text-muted-foreground lg:text-left">
             11,000+ words · HSK 1–9 · 3,000 sentences · FSRS
           </p>
         </motion.div>
