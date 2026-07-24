@@ -93,11 +93,27 @@ export function buildListSections<L extends BaseList>(input: {
       !hiddenIds.has(l.id)
   );
 
+  // Extract leading integer from a list name for numeric sorting (HSK 1→7, Top 100→1000).
+  const firstIntIn = (name: string): number => {
+    const match = name.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
   // Explore reads as a curriculum: graded exam levels first, then frequency
   // lists, then topic sets — instead of one undifferentiated grid.
   const exploreGroups = [
-    { title: "By level", lists: exploreLists.filter((l) => /^HSK\b/i.test(l.name)) },
-    { title: "By frequency", lists: exploreLists.filter((l) => /\bTop \d+/i.test(l.name)) },
+    {
+      title: "By level",
+      lists: exploreLists
+        .filter((l) => /^HSK\b/i.test(l.name))
+        .sort((a, b) => firstIntIn(a.name) - firstIntIn(b.name)),
+    },
+    {
+      title: "By frequency",
+      lists: exploreLists
+        .filter((l) => /\bTop \d+/i.test(l.name))
+        .sort((a, b) => firstIntIn(a.name) - firstIntIn(b.name)),
+    },
   ];
   const grouped = new Set(exploreGroups.flatMap((g) => g.lists.map((l) => l.id)));
   exploreGroups.push({
