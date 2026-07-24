@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 
+import { FlipCard } from "@/components/landing/FlipCard";
 import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 import { usePrefersReducedMotion } from "@/lib/motion";
@@ -132,27 +132,9 @@ export function LandingHero() {
           transition={{ delay: 0.3 }}
           className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-none"
         >
-          <div className="overflow-hidden rounded-2xl border bg-card shadow-card">
-            <div
-              aria-hidden="true"
-              className="flex items-center gap-1.5 border-b bg-muted/40 px-3 py-2"
-            >
-              <span className="size-2 rounded-full bg-border" />
-              <span className="size-2 rounded-full bg-border" />
-              <span className="size-2 rounded-full bg-border" />
-            </div>
-            <Image
-              src="/screenshots/study.png"
-              alt="Studying a flashcard with pinyin, meaning, and an example sentence"
-              width={1280}
-              height={800}
-              className="h-auto w-full"
-              priority
-            />
+          <div className="mx-auto max-w-sm lg:max-w-md">
+            <FlipCard />
           </div>
-          <p className="mt-4 text-center text-sm text-muted-foreground lg:text-left">
-            11,000+ words · HSK 1–9 · 3,000 sentences · FSRS
-          </p>
         </motion.div>
       </div>
     </main>

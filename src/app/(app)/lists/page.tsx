@@ -123,20 +123,14 @@ export default async function ListsPage() {
         </section>
       )}
 
-      {(ownLists.length > 0 || studying.some((l) => l.createdById === userId)) && (
+      {ownLists.length > 0 && (
         <section className="mb-10">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
             Your lists
           </h2>
-          {ownLists.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {ownLists.map((l) => card(l))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              All your lists are in Studying above.
-            </p>
-          )}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {ownLists.map((l) => card(l))}
+          </div>
         </section>
       )}
 
