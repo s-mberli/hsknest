@@ -116,8 +116,11 @@ export function CardStack({
   ];
 
   return (
-    <div className="flex w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl flex-col gap-6">
-    <div className="relative mx-auto aspect-[3/4] w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+    <div className="mx-auto flex w-full max-w-sm flex-col gap-6 md:w-fit md:max-w-none">
+    {/* Mobile: width-driven (fills column, phone-shaped). Desktop: height-driven
+        so the whole card + grade buttons always fit the viewport without the
+        3:4 card growing tall enough to push the buttons below the fold. */}
+    <div className="relative mx-auto aspect-[3/4] w-full max-w-sm md:h-[min(64svh,560px)] md:w-auto md:max-w-none">
       {/* Edge glow flash on commit — fades itself out before removal. */}
       {glow && (
         <motion.div
