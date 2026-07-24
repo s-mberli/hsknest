@@ -116,8 +116,8 @@ export function CardStack({
   ];
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-6">
-    <div className="relative mx-auto aspect-[3/4] w-full max-w-sm">
+    <div className="flex w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl flex-col gap-6">
+    <div className="relative mx-auto aspect-[3/4] w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
       {/* Edge glow flash on commit — fades itself out before removal. */}
       {glow && (
         <motion.div

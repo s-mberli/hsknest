@@ -79,7 +79,7 @@ Own your data. Run it on your VPS. No subscriptions, no telemetry, no lock-in.
 **TL;DR (Docker):**
 
 ```bash
-docker run -d -p 3000:3000 -v hsknest-data:/app/data ghcr.io/s-mberli/hsknest:latest
+docker run -d -p 3000:3000 -v hsknest-data:/data ghcr.io/s-mberli/hsknest:latest
 ```
 
 **Full local development:**

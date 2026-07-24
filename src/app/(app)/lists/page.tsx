@@ -85,7 +85,7 @@ export default async function ListsPage() {
       enrolled={byList.get(list.id)?.enrolled ?? 0}
       due={byList.get(list.id)?.due ?? 0}
       owner={list.createdById === userId}
-      hideable={list.createdById !== userId}
+      hideable={list.createdById !== userId && !studyingIds.has(list.id)}
       hidden={opts?.hidden ?? false}
       studying={opts?.studying ?? false}
       rank={opts?.studying ? studyingOrder.indexOf(list.id) + 1 : undefined}
@@ -123,30 +123,22 @@ export default async function ListsPage() {
         </section>
       )}
 
-      <section className="mb-10">
-        <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-          Your lists
-        </h2>
-        {ownLists.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {ownLists.map((l) => card(l))}
-          </div>
-        ) : studyingIds.size === 0 || studying.every((l) => l.createdById !== userId) ? (
-          <Card className="border-dashed shadow-none">
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              You haven&apos;t created any lists yet.{" "}
-              <Link href="/lists/new" className="font-semibold text-primary underline-offset-4 hover:underline">
-                Create one
-              </Link>{" "}
-              to add your own words.
-            </CardContent>
-          </Card>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            All your lists are in Studying above.
-          </p>
-        )}
-      </section>
+      {(ownLists.length > 0 || studying.some((l) => l.createdById === userId)) && (
+        <section className="mb-10">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+            Your lists
+          </h2>
+          {ownLists.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {ownLists.map((l) => card(l))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              All your lists are in Studying above.
+            </p>
+          )}
+        </section>
+      )}
 
       <section>
         <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">

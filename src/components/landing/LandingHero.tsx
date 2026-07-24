@@ -60,8 +60,8 @@ export function LandingHero() {
           transition={{ delay: 0.1 }}
           className="text-5xl font-extrabold tracking-tight sm:text-7xl"
         >
-          All of HSK 1–9, ready <br className="hidden sm:block" />
-          <span className="text-primary">before you finish your coffee.</span>
+          All 11,000 words of HSK 1–9. <br className="hidden sm:block" />
+          <span className="text-primary">Pre-loaded and ready to swipe.</span>
         </motion.h1>
 
         <motion.div
