@@ -58,7 +58,7 @@ export function LandingHero() {
           animate={reducedMotion ? undefined : "visible"}
           variants={safeFadeUp}
           transition={{ delay: 0.1 }}
-          className="text-5xl font-extrabold tracking-tight sm:text-7xl"
+          className="text-4xl font-extrabold tracking-tight sm:text-6xl"
         >
           All 11,000 words of HSK 1–9. <br className="hidden sm:block" />
           <span className="text-primary">Pre-loaded and ready to swipe.</span>
@@ -73,7 +73,7 @@ export function LandingHero() {
         >
           <ul className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
             <li className="flex items-center gap-2">
-              <span className="text-primary">•</span> 11,000+ pre-loaded words & 3,000 example sentences
+              <span className="text-primary">•</span> 3,000+ example sentences & native audio
             </li>
             <li className="flex items-center gap-2">
               <span className="text-primary">•</span> Powered by modern FSRS science

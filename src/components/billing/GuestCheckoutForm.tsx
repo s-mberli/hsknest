@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 
@@ -124,19 +125,24 @@ export function GuestCheckoutForm() {
             type="button"
             disabled={loading}
             onClick={(e) => handleSubmit(e, "monthly")}
-            className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
           >
             Upgrade Monthly (€10/mo)
+            <ChevronRight className="size-4" />
           </button>
           <button
             type="button"
             disabled={loading}
             onClick={(e) => handleSubmit(e, "yearly")}
-            className="flex-1 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+            className="flex flex-1 items-center justify-center gap-1 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
           >
             Upgrade Yearly (€99/yr)
+            <ChevronRight className="size-4" />
           </button>
         </div>
+        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+          Cancel anytime — no commitment beyond this month.
+        </p>
       </form>
     </div>
   );

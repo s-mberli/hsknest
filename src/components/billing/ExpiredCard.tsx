@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Lock } from "lucide-react";
+import { ChevronRight, Download, Lock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -72,10 +72,15 @@ export function ExpiredCard({ isGuest }: { isGuest?: boolean }) {
               <div className="flex flex-col gap-2 w-full max-w-sm">
                 <Button disabled={!consented || loading} onClick={() => upgrade("monthly")}>
                   {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
+                  {!loading && <ChevronRight className="size-4" />}
                 </Button>
                 <Button disabled={!consented || loading} onClick={() => upgrade("yearly")} variant="outline" className="border-primary text-primary">
                   {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
+                  {!loading && <ChevronRight className="size-4" />}
                 </Button>
+                <p className="text-xs text-muted-foreground">
+                  Cancel anytime — no commitment beyond this month.
+                </p>
               </div>
               <div className="mt-4">
                 <Button asChild variant="outline">

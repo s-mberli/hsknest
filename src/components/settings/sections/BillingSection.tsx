@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -114,6 +115,7 @@ export function BillingSection({
                   }
                 >
                   {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
+                  {!loading && <ChevronRight className="size-4" />}
                 </Button>
                 <Button
                   variant="outline"
@@ -124,8 +126,12 @@ export function BillingSection({
                   }
                 >
                   {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
+                  {!loading && <ChevronRight className="size-4" />}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Cancel anytime — no commitment beyond this month.
+              </p>
             </div>
           ))}
       </CardContent>
