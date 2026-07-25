@@ -107,14 +107,14 @@ export async function sendTrialEmail(
       body: `
         <h2>${daysLeft ?? 3} days left in your trial</h2>
         <p>After that, studying pauses — but nothing is deleted. Your decks, progress, and CSV export stay available.</p>
-        <p>To keep studying without a break, you can upgrade for €5/month (cancel anytime, 14-day refund).</p>
+        <p>To keep studying without a break, you can lock in the €99/year Founder's Rate or upgrade for €10/month (cancel anytime, 14-day refund).</p>
         <p><a href="${baseUrl}/settings#billing" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Manage your plan</a></p>`,
     },
     trial_ended: {
       subject: "Your HSK Nest trial has ended — your progress hasn't",
       body: `
         <h2>Your trial has ended</h2>
-        <p>Everything you studied is saved. You can export your full progress as CSV anytime, upgrade for €5/month to continue, or self-host the open-source version for free.</p>
+        <p>Everything you studied is saved. You can export your full progress as CSV anytime, upgrade to lock in the €99/year Founder's Rate to continue, or self-host the open-source version for free.</p>
         <p><a href="${baseUrl}/settings#billing" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">See your options</a></p>`,
     },
   };
