@@ -1,1 +1,2761 @@
-{}
+{
+  "的": {
+    "translation": "of; ~'s (possessive particle)",
+    "meanings": [
+      {
+        "gloss": "of; ~'s (possessive particle)"
+      }
+    ]
+  },
+  "了": {
+    "translation": "(completed action marker); (modal particle indicating change of state, situation now)",
+    "meanings": [
+      {
+        "gloss": "(completed action marker)"
+      },
+      {
+        "gloss": "(modal particle indicating change of state, situation now)"
+      }
+    ]
+  },
+  "是": {
+    "translation": "to be (followed by substantives only)",
+    "meanings": [
+      {
+        "gloss": "to be (followed by substantives only)"
+      }
+    ]
+  },
+  "在": {
+    "translation": "(of sb or sth) to be located at; (used before a verb to indicate an action in progress)",
+    "meanings": [
+      {
+        "gloss": "(of sb or sth) to be located at"
+      },
+      {
+        "gloss": "(used before a verb to indicate an action in progress)"
+      }
+    ]
+  },
+  "他": {
+    "translation": "he; him",
+    "meanings": [
+      {
+        "gloss": "he; him"
+      }
+    ]
+  },
+  "这": {
+    "translation": "this; these",
+    "meanings": [
+      {
+        "gloss": "this; these"
+      }
+    ]
+  },
+  "就": {
+    "translation": "then; in that case; as soon as; immediately after; just; simply; precisely",
+    "meanings": [
+      {
+        "gloss": "then; in that case"
+      },
+      {
+        "gloss": "as soon as; immediately after"
+      },
+      {
+        "gloss": "just; simply; precisely"
+      }
+    ]
+  },
+  "和": {
+    "translation": "harmonious; to make peace",
+    "meanings": [
+      {
+        "gloss": "harmonious"
+      },
+      {
+        "gloss": "to make peace"
+      }
+    ]
+  },
+  "说": {
+    "translation": "to speak; to talk; to say",
+    "meanings": [
+      {
+        "gloss": "to speak; to talk; to say"
+      }
+    ]
+  },
+  "我们": {
+    "translation": "we; us",
+    "meanings": [
+      {
+        "gloss": "we"
+      },
+      {
+        "gloss": "us"
+      }
+    ]
+  },
+  "要": {
+    "translation": "to want; to need; will; shall; about to; need to; should",
+    "meanings": [
+      {
+        "gloss": "to want; to need"
+      },
+      {
+        "gloss": "will; shall; about to"
+      },
+      {
+        "gloss": "need to; should"
+      }
+    ]
+  },
+  "好": {
+    "translation": "good; all right!",
+    "meanings": [
+      {
+        "gloss": "good"
+      },
+      {
+        "gloss": "all right!"
+      }
+    ]
+  },
+  "一": {
+    "translation": "one; single",
+    "meanings": [
+      {
+        "gloss": "one"
+      },
+      {
+        "gloss": "single"
+      }
+    ]
+  },
+  "会": {
+    "translation": "can; to know how to; to be likely to; meeting; gathering",
+    "meanings": [
+      {
+        "gloss": "can; to know how to"
+      },
+      {
+        "gloss": "to be likely to"
+      },
+      {
+        "gloss": "meeting; gathering"
+      }
+    ]
+  },
+  "也": {
+    "translation": "also; too",
+    "meanings": [
+      {
+        "gloss": "also; too"
+      }
+    ]
+  },
+  "都": {
+    "translation": "all; both; entirely",
+    "meanings": [
+      {
+        "gloss": "all; both; entirely"
+      }
+    ]
+  },
+  "对": {
+    "translation": "right; correct; towards; at; for",
+    "meanings": [
+      {
+        "gloss": "right; correct"
+      },
+      {
+        "gloss": "towards; at; for"
+      }
+    ]
+  },
+  "到": {
+    "translation": "to reach; to arrive; to (a place); until (a time)",
+    "meanings": [
+      {
+        "gloss": "to reach; to arrive"
+      },
+      {
+        "gloss": "to (a place); until (a time)"
+      }
+    ]
+  },
+  "上": {
+    "translation": "on; above; to climb; to get onto; to go up",
+    "meanings": [
+      {
+        "gloss": "on; above"
+      },
+      {
+        "gloss": "to climb; to get onto; to go up"
+      }
+    ]
+  },
+  "来": {
+    "translation": "to come",
+    "meanings": [
+      {
+        "gloss": "to come"
+      }
+    ]
+  },
+  "很": {
+    "translation": "very",
+    "meanings": [
+      {
+        "gloss": "very"
+      }
+    ]
+  },
+  "还": {
+    "translation": "still; in addition",
+    "meanings": [
+      {
+        "gloss": "still"
+      },
+      {
+        "gloss": "in addition"
+      }
+    ]
+  },
+  "去": {
+    "translation": "to go; to go to (a place)",
+    "meanings": [
+      {
+        "gloss": "to go"
+      },
+      {
+        "gloss": "to go to (a place)"
+      }
+    ]
+  },
+  "着": {
+    "translation": "aspect particle indicating action in progress or ongoing state",
+    "meanings": [
+      {
+        "gloss": "aspect particle indicating action in progress or ongoing state"
+      }
+    ]
+  },
+  "想": {
+    "translation": "to think about; to desire; to want to; to miss (someone/something)",
+    "meanings": [
+      {
+        "gloss": "to think about"
+      },
+      {
+        "gloss": "to desire; to want to"
+      },
+      {
+        "gloss": "to miss (someone/something)"
+      }
+    ]
+  },
+  "给": {
+    "translation": "to give; to; for",
+    "meanings": [
+      {
+        "gloss": "to give"
+      },
+      {
+        "gloss": "to; for"
+      }
+    ]
+  },
+  "没有": {
+    "translation": "to not have; doesn't exist",
+    "meanings": [
+      {
+        "gloss": "to not have"
+      },
+      {
+        "gloss": "doesn't exist"
+      }
+    ]
+  },
+  "能": {
+    "translation": "can; to be able to",
+    "meanings": [
+      {
+        "gloss": "can; to be able to"
+      }
+    ]
+  },
+  "那": {
+    "translation": "that (referring to persons, things or situations); then; in that case",
+    "meanings": [
+      {
+        "gloss": "that (referring to persons, things or situations)"
+      },
+      {
+        "gloss": "then; in that case"
+      }
+    ]
+  },
+  "看": {
+    "translation": "to see; to look at; to read; to watch",
+    "meanings": [
+      {
+        "gloss": "to see; to look at"
+      },
+      {
+        "gloss": "to read"
+      },
+      {
+        "gloss": "to watch"
+      }
+    ]
+  },
+  "做": {
+    "translation": "to do; to engage in; to make; to produce; to become (an occupation)",
+    "meanings": [
+      {
+        "gloss": "to do; to engage in"
+      },
+      {
+        "gloss": "to make; to produce"
+      },
+      {
+        "gloss": "to become (an occupation)"
+      }
+    ]
+  },
+  "什么": {
+    "translation": "what?; something",
+    "meanings": [
+      {
+        "gloss": "what?"
+      },
+      {
+        "gloss": "something"
+      }
+    ]
+  },
+  "吧": {
+    "translation": "(modal particle indicating suggestion or surmise); ...right?",
+    "meanings": [
+      {
+        "gloss": "(modal particle indicating suggestion or surmise)"
+      },
+      {
+        "gloss": "...right?"
+      }
+    ]
+  },
+  "点": {
+    "translation": "o'clock; point (in space or time); dot",
+    "meanings": [
+      {
+        "gloss": "o'clock"
+      },
+      {
+        "gloss": "point (in space or time)"
+      },
+      {
+        "gloss": "dot"
+      }
+    ]
+  },
+  "过": {
+    "translation": "to celebrate (a holiday); to pass (time)",
+    "meanings": [
+      {
+        "gloss": "to celebrate (a holiday)"
+      },
+      {
+        "gloss": "to pass (time)"
+      }
+    ]
+  },
+  "没": {
+    "translation": "have not; not",
+    "meanings": [
+      {
+        "gloss": "have not; not"
+      }
+    ]
+  },
+  "大": {
+    "translation": "big; large; great",
+    "meanings": [
+      {
+        "gloss": "big; large; great"
+      }
+    ]
+  },
+  "从": {
+    "translation": "from; through; via",
+    "meanings": [
+      {
+        "gloss": "from"
+      },
+      {
+        "gloss": "through; via"
+      }
+    ]
+  },
+  "下": {
+    "translation": "down; below; next (week etc)",
+    "meanings": [
+      {
+        "gloss": "down; below"
+      },
+      {
+        "gloss": "next (week etc)"
+      }
+    ]
+  },
+  "中": {
+    "translation": "China; Chinese",
+    "meanings": [
+      {
+        "gloss": "China"
+      },
+      {
+        "gloss": "Chinese"
+      }
+    ]
+  },
+  "里": {
+    "translation": "inside; interior",
+    "meanings": [
+      {
+        "gloss": "inside; interior"
+      }
+    ]
+  },
+  "真": {
+    "translation": "real; true; really; truly",
+    "meanings": [
+      {
+        "gloss": "real; true"
+      },
+      {
+        "gloss": "really; truly"
+      }
+    ]
+  },
+  "现在": {
+    "translation": "now; at present",
+    "meanings": [
+      {
+        "gloss": "now"
+      },
+      {
+        "gloss": "at present"
+      }
+    ]
+  },
+  "年": {
+    "translation": "year",
+    "meanings": [
+      {
+        "gloss": "year"
+      }
+    ]
+  },
+  "用": {
+    "translation": "to use; to employ",
+    "meanings": [
+      {
+        "gloss": "to use"
+      },
+      {
+        "gloss": "to employ"
+      }
+    ]
+  },
+  "多": {
+    "translation": "many; much",
+    "meanings": [
+      {
+        "gloss": "many; much"
+      }
+    ]
+  },
+  "两": {
+    "translation": "two; both",
+    "meanings": [
+      {
+        "gloss": "two"
+      },
+      {
+        "gloss": "both"
+      }
+    ]
+  },
+  "等": {
+    "translation": "to wait for; to await; class; rank",
+    "meanings": [
+      {
+        "gloss": "to wait for; to await"
+      },
+      {
+        "gloss": "class; rank"
+      }
+    ]
+  },
+  "天": {
+    "translation": "day; sky",
+    "meanings": [
+      {
+        "gloss": "day"
+      },
+      {
+        "gloss": "sky"
+      }
+    ]
+  },
+  "出": {
+    "translation": "to go out; to come out",
+    "meanings": [
+      {
+        "gloss": "to go out"
+      },
+      {
+        "gloss": "to come out"
+      }
+    ]
+  },
+  "太": {
+    "translation": "too (much); very; extremely",
+    "meanings": [
+      {
+        "gloss": "too (much)"
+      },
+      {
+        "gloss": "very; extremely"
+      }
+    ]
+  },
+  "最": {
+    "translation": "most",
+    "meanings": [
+      {
+        "gloss": "most"
+      }
+    ]
+  },
+  "再": {
+    "translation": "again; once more",
+    "meanings": [
+      {
+        "gloss": "again; once more"
+      }
+    ]
+  },
+  "呢": {
+    "translation": "particle applying a previously asked question to the preceding word (\"What about ...?\"); particle for inquiring about location (\"Where is ...?\")",
+    "meanings": [
+      {
+        "gloss": "particle applying a previously asked question to the preceding word (\"What about ...?\")"
+      },
+      {
+        "gloss": "particle for inquiring about location (\"Where is ...?\")"
+      }
+    ]
+  },
+  "次": {
+    "translation": "classifier for occurrences/times; next in sequence",
+    "meanings": [
+      {
+        "gloss": "classifier for occurrences/times"
+      },
+      {
+        "gloss": "next in sequence"
+      }
+    ]
+  },
+  "小": {
+    "translation": "small; tiny; young",
+    "meanings": [
+      {
+        "gloss": "small; tiny"
+      },
+      {
+        "gloss": "young"
+      }
+    ]
+  },
+  "时候": {
+    "translation": "time; moment",
+    "meanings": [
+      {
+        "gloss": "time; moment"
+      }
+    ]
+  },
+  "走": {
+    "translation": "to walk; to leave; to go away",
+    "meanings": [
+      {
+        "gloss": "to walk"
+      },
+      {
+        "gloss": "to leave; to go away"
+      }
+    ]
+  },
+  "工作": {
+    "translation": "to work; job; work",
+    "meanings": [
+      {
+        "gloss": "to work"
+      },
+      {
+        "gloss": "job; work"
+      }
+    ]
+  },
+  "事": {
+    "translation": "matter; affair; thing",
+    "meanings": [
+      {
+        "gloss": "matter; affair; thing"
+      }
+    ]
+  },
+  "后": {
+    "translation": "behind; rear; afterwards",
+    "meanings": [
+      {
+        "gloss": "behind; rear"
+      },
+      {
+        "gloss": "afterwards"
+      }
+    ]
+  },
+  "家": {
+    "translation": "home; family; classifier for families or businesses",
+    "meanings": [
+      {
+        "gloss": "home"
+      },
+      {
+        "gloss": "family"
+      },
+      {
+        "gloss": "classifier for families or businesses"
+      }
+    ]
+  },
+  "前": {
+    "translation": "front; ahead; before",
+    "meanings": [
+      {
+        "gloss": "front; ahead"
+      },
+      {
+        "gloss": "before"
+      }
+    ]
+  },
+  "怎么": {
+    "translation": "how?",
+    "meanings": [
+      {
+        "gloss": "how?"
+      }
+    ]
+  },
+  "爱": {
+    "translation": "to love; to be fond of",
+    "meanings": [
+      {
+        "gloss": "to love; to be fond of"
+      }
+    ]
+  },
+  "地": {
+    "translation": "-ly (particle linking an adverb to a verb)",
+    "meanings": [
+      {
+        "gloss": "-ly (particle linking an adverb to a verb)"
+      }
+    ]
+  },
+  "跟": {
+    "translation": "with; to follow closely",
+    "meanings": [
+      {
+        "gloss": "with"
+      },
+      {
+        "gloss": "to follow closely"
+      }
+    ]
+  },
+  "吃": {
+    "translation": "to eat; to consume",
+    "meanings": [
+      {
+        "gloss": "to eat; to consume"
+      }
+    ]
+  },
+  "新": {
+    "translation": "new",
+    "meanings": [
+      {
+        "gloss": "new"
+      }
+    ]
+  },
+  "找": {
+    "translation": "to look for; to give change",
+    "meanings": [
+      {
+        "gloss": "to look for"
+      },
+      {
+        "gloss": "to give change"
+      }
+    ]
+  },
+  "打": {
+    "translation": "to hit; to strike; to make a phone call (as in 打电话)",
+    "meanings": [
+      {
+        "gloss": "to hit; to strike"
+      },
+      {
+        "gloss": "to make a phone call (as in 打电话)"
+      }
+    ]
+  },
+  "还有": {
+    "translation": "in addition; also",
+    "meanings": [
+      {
+        "gloss": "in addition"
+      },
+      {
+        "gloss": "also"
+      }
+    ]
+  },
+  "快": {
+    "translation": "quick; rapid; soon",
+    "meanings": [
+      {
+        "gloss": "quick; rapid"
+      },
+      {
+        "gloss": "soon"
+      }
+    ]
+  },
+  "比": {
+    "translation": "to compare",
+    "meanings": [
+      {
+        "gloss": "to compare"
+      }
+    ]
+  },
+  "今天": {
+    "translation": "today",
+    "meanings": [
+      {
+        "gloss": "today"
+      }
+    ]
+  },
+  "话": {
+    "translation": "words; speech; talk; conversation",
+    "meanings": [
+      {
+        "gloss": "words; speech"
+      },
+      {
+        "gloss": "talk; conversation"
+      }
+    ]
+  },
+  "还是": {
+    "translation": "or (in a question); still (as before)",
+    "meanings": [
+      {
+        "gloss": "or (in a question)"
+      },
+      {
+        "gloss": "still (as before)"
+      }
+    ]
+  },
+  "月": {
+    "translation": "month; moon",
+    "meanings": [
+      {
+        "gloss": "month"
+      },
+      {
+        "gloss": "moon"
+      }
+    ]
+  },
+  "起来": {
+    "translation": "to get up; to stand up",
+    "meanings": [
+      {
+        "gloss": "to get up"
+      },
+      {
+        "gloss": "to stand up"
+      }
+    ]
+  },
+  "一起": {
+    "translation": "together",
+    "meanings": [
+      {
+        "gloss": "together"
+      }
+    ]
+  },
+  "起": {
+    "translation": "to get up; to start",
+    "meanings": [
+      {
+        "gloss": "to get up"
+      },
+      {
+        "gloss": "to start"
+      }
+    ]
+  },
+  "几": {
+    "translation": "how many?; a few",
+    "meanings": [
+      {
+        "gloss": "how many?"
+      },
+      {
+        "gloss": "a few"
+      }
+    ]
+  },
+  "见": {
+    "translation": "to see; to meet",
+    "meanings": [
+      {
+        "gloss": "to see"
+      },
+      {
+        "gloss": "to meet"
+      }
+    ]
+  },
+  "车": {
+    "translation": "car; vehicle",
+    "meanings": [
+      {
+        "gloss": "car; vehicle"
+      }
+    ]
+  },
+  "一些": {
+    "translation": "some; a few",
+    "meanings": [
+      {
+        "gloss": "some"
+      },
+      {
+        "gloss": "a few"
+      }
+    ]
+  },
+  "手": {
+    "translation": "hand",
+    "meanings": [
+      {
+        "gloss": "hand"
+      }
+    ]
+  },
+  "听": {
+    "translation": "to listen to; to hear",
+    "meanings": [
+      {
+        "gloss": "to listen to; to hear"
+      }
+    ]
+  },
+  "开": {
+    "translation": "to open; to turn on; to operate",
+    "meanings": [
+      {
+        "gloss": "to open"
+      },
+      {
+        "gloss": "to turn on; to operate"
+      }
+    ]
+  },
+  "叫": {
+    "translation": "to call; to be called",
+    "meanings": [
+      {
+        "gloss": "to call"
+      },
+      {
+        "gloss": "to be called"
+      }
+    ]
+  },
+  "别": {
+    "translation": "don't ...!",
+    "meanings": [
+      {
+        "gloss": "don't ...!"
+      }
+    ]
+  },
+  "请": {
+    "translation": "please (do sth); to invite",
+    "meanings": [
+      {
+        "gloss": "please (do sth)"
+      },
+      {
+        "gloss": "to invite"
+      }
+    ]
+  },
+  "钱": {
+    "translation": "money",
+    "meanings": [
+      {
+        "gloss": "money"
+      }
+    ]
+  },
+  "本": {
+    "translation": "measure word for books; this; the current",
+    "meanings": [
+      {
+        "gloss": "measure word for books"
+      },
+      {
+        "gloss": "this; the current"
+      }
+    ]
+  },
+  "回": {
+    "translation": "to return; to go back; classifier for times/occurrences",
+    "meanings": [
+      {
+        "gloss": "to return; to go back"
+      },
+      {
+        "gloss": "classifier for times/occurrences"
+      }
+    ]
+  },
+  "东西": {
+    "translation": "thing (derived from east and west)",
+    "meanings": [
+      {
+        "gloss": "thing (derived from east and west)"
+      }
+    ]
+  },
+  "三": {
+    "translation": "three",
+    "meanings": [
+      {
+        "gloss": "three"
+      }
+    ]
+  },
+  "一样": {
+    "translation": "same; the same as",
+    "meanings": [
+      {
+        "gloss": "same"
+      },
+      {
+        "gloss": "the same as"
+      }
+    ]
+  },
+  "重要": {
+    "translation": "important",
+    "meanings": [
+      {
+        "gloss": "important"
+      }
+    ]
+  },
+  "出来": {
+    "translation": "to come out; to appear",
+    "meanings": [
+      {
+        "gloss": "to come out"
+      },
+      {
+        "gloss": "to appear"
+      }
+    ]
+  },
+  "地方": {
+    "translation": "region; local area",
+    "meanings": [
+      {
+        "gloss": "region; local area"
+      }
+    ]
+  },
+  "最后": {
+    "translation": "finally; last",
+    "meanings": [
+      {
+        "gloss": "finally"
+      },
+      {
+        "gloss": "last"
+      }
+    ]
+  },
+  "老": {
+    "translation": "old (of people); of long standing",
+    "meanings": [
+      {
+        "gloss": "old (of people)"
+      },
+      {
+        "gloss": "of long standing"
+      }
+    ]
+  },
+  "岁": {
+    "translation": "years old; classifier for years of age",
+    "meanings": [
+      {
+        "gloss": "years old"
+      },
+      {
+        "gloss": "classifier for years of age"
+      }
+    ]
+  },
+  "行": {
+    "translation": "to walk; to go; to travel",
+    "meanings": [
+      {
+        "gloss": "to walk; to go"
+      },
+      {
+        "gloss": "to travel"
+      }
+    ]
+  },
+  "号": {
+    "translation": "day of a month; number; size",
+    "meanings": [
+      {
+        "gloss": "day of a month"
+      },
+      {
+        "gloss": "number; size"
+      }
+    ]
+  },
+  "放": {
+    "translation": "to put; to place; to release; to let go",
+    "meanings": [
+      {
+        "gloss": "to put; to place"
+      },
+      {
+        "gloss": "to release; to let go"
+      }
+    ]
+  },
+  "住": {
+    "translation": "to live; to reside; to stay",
+    "meanings": [
+      {
+        "gloss": "to live; to reside"
+      },
+      {
+        "gloss": "to stay"
+      }
+    ]
+  },
+  "拿": {
+    "translation": "to take; to hold",
+    "meanings": [
+      {
+        "gloss": "to take"
+      },
+      {
+        "gloss": "to hold"
+      }
+    ]
+  },
+  "高": {
+    "translation": "high; tall",
+    "meanings": [
+      {
+        "gloss": "high"
+      },
+      {
+        "gloss": "tall"
+      }
+    ]
+  },
+  "正": {
+    "translation": "straight; upright; exactly",
+    "meanings": [
+      {
+        "gloss": "straight; upright"
+      },
+      {
+        "gloss": "exactly"
+      }
+    ]
+  },
+  "先": {
+    "translation": "first; in advance",
+    "meanings": [
+      {
+        "gloss": "first"
+      },
+      {
+        "gloss": "in advance"
+      }
+    ]
+  },
+  "得到": {
+    "translation": "to get; to obtain",
+    "meanings": [
+      {
+        "gloss": "to get; to obtain"
+      }
+    ]
+  },
+  "准备": {
+    "translation": "to prepare; to intend; to be about to",
+    "meanings": [
+      {
+        "gloss": "to prepare"
+      },
+      {
+        "gloss": "to intend; to be about to"
+      }
+    ]
+  },
+  "水": {
+    "translation": "water",
+    "meanings": [
+      {
+        "gloss": "water"
+      }
+    ]
+  },
+  "进": {
+    "translation": "to enter; to go in",
+    "meanings": [
+      {
+        "gloss": "to enter"
+      },
+      {
+        "gloss": "to go in"
+      }
+    ]
+  },
+  "电话": {
+    "translation": "telephone; phone call",
+    "meanings": [
+      {
+        "gloss": "telephone"
+      },
+      {
+        "gloss": "phone call"
+      }
+    ]
+  },
+  "女": {
+    "translation": "female; woman",
+    "meanings": [
+      {
+        "gloss": "female"
+      },
+      {
+        "gloss": "woman"
+      }
+    ]
+  },
+  "送": {
+    "translation": "to give (as a present); to send; to deliver",
+    "meanings": [
+      {
+        "gloss": "to give (as a present)"
+      },
+      {
+        "gloss": "to send; to deliver"
+      }
+    ]
+  },
+  "分": {
+    "translation": "to divide; to separate; minute (unit of time)",
+    "meanings": [
+      {
+        "gloss": "to divide; to separate"
+      },
+      {
+        "gloss": "minute (unit of time)"
+      }
+    ]
+  },
+  "帮": {
+    "translation": "to help; to assist",
+    "meanings": [
+      {
+        "gloss": "to help; to assist"
+      }
+    ]
+  },
+  "日": {
+    "translation": "sun",
+    "meanings": [
+      {
+        "gloss": "sun"
+      }
+    ]
+  },
+  "站": {
+    "translation": "station; stop; to stand",
+    "meanings": [
+      {
+        "gloss": "station; stop"
+      },
+      {
+        "gloss": "to stand"
+      }
+    ]
+  },
+  "路": {
+    "translation": "road; route",
+    "meanings": [
+      {
+        "gloss": "road"
+      },
+      {
+        "gloss": "route"
+      }
+    ]
+  },
+  "男人": {
+    "translation": "a man",
+    "meanings": [
+      {
+        "gloss": "a man"
+      }
+    ]
+  },
+  "正在": {
+    "translation": "right in the middle of (doing something)",
+    "meanings": [
+      {
+        "gloss": "right in the middle of (doing something)"
+      }
+    ]
+  },
+  "门": {
+    "translation": "door; gate",
+    "meanings": [
+      {
+        "gloss": "door"
+      },
+      {
+        "gloss": "gate"
+      }
+    ]
+  },
+  "穿": {
+    "translation": "to wear; to put on",
+    "meanings": [
+      {
+        "gloss": "to wear"
+      },
+      {
+        "gloss": "to put on"
+      }
+    ]
+  },
+  "花": {
+    "translation": "to spend (money, time); flower",
+    "meanings": [
+      {
+        "gloss": "to spend (money, time)"
+      },
+      {
+        "gloss": "flower"
+      }
+    ]
+  },
+  "坐": {
+    "translation": "to sit; to take (a bus, airplane etc)",
+    "meanings": [
+      {
+        "gloss": "to sit"
+      },
+      {
+        "gloss": "to take (a bus, airplane etc)"
+      }
+    ]
+  },
+  "早": {
+    "translation": "early; morning",
+    "meanings": [
+      {
+        "gloss": "early"
+      },
+      {
+        "gloss": "morning"
+      }
+    ]
+  },
+  "身上": {
+    "translation": "on the body",
+    "meanings": [
+      {
+        "gloss": "on the body"
+      }
+    ]
+  },
+  "干": {
+    "translation": "dry",
+    "meanings": [
+      {
+        "gloss": "dry"
+      }
+    ]
+  },
+  "认识": {
+    "translation": "to know; to recognize; to be familiar with",
+    "meanings": [
+      {
+        "gloss": "to know; to recognize"
+      },
+      {
+        "gloss": "to be familiar with"
+      }
+    ]
+  },
+  "块": {
+    "translation": "lump; chunk; piece; classifier for money and currency units",
+    "meanings": [
+      {
+        "gloss": "lump; chunk; piece"
+      },
+      {
+        "gloss": "classifier for money and currency units"
+      }
+    ]
+  },
+  "外": {
+    "translation": "outside",
+    "meanings": [
+      {
+        "gloss": "outside"
+      }
+    ]
+  },
+  "晚上": {
+    "translation": "evening",
+    "meanings": [
+      {
+        "gloss": "evening"
+      }
+    ]
+  },
+  "妈": {
+    "translation": "mom; mother",
+    "meanings": [
+      {
+        "gloss": "mom"
+      },
+      {
+        "gloss": "mother"
+      }
+    ]
+  },
+  "球": {
+    "translation": "ball; sphere",
+    "meanings": [
+      {
+        "gloss": "ball"
+      },
+      {
+        "gloss": "sphere"
+      }
+    ]
+  },
+  "谢谢": {
+    "translation": "thank you; to thank",
+    "meanings": [
+      {
+        "gloss": "thank you"
+      },
+      {
+        "gloss": "to thank"
+      }
+    ]
+  },
+  "学": {
+    "translation": "to learn; to study",
+    "meanings": [
+      {
+        "gloss": "to learn"
+      },
+      {
+        "gloss": "to study"
+      }
+    ]
+  },
+  "多少": {
+    "translation": "amount; number",
+    "meanings": [
+      {
+        "gloss": "amount"
+      },
+      {
+        "gloss": "number"
+      }
+    ]
+  },
+  "第二": {
+    "translation": "second; number two",
+    "meanings": [
+      {
+        "gloss": "second"
+      },
+      {
+        "gloss": "number two"
+      }
+    ]
+  },
+  "妈妈": {
+    "translation": "mother; mama",
+    "meanings": [
+      {
+        "gloss": "mother"
+      },
+      {
+        "gloss": "mama"
+      }
+    ]
+  },
+  "错": {
+    "translation": "wrong; mistake",
+    "meanings": [
+      {
+        "gloss": "wrong"
+      },
+      {
+        "gloss": "mistake"
+      }
+    ]
+  },
+  "少": {
+    "translation": "few; less",
+    "meanings": [
+      {
+        "gloss": "few"
+      },
+      {
+        "gloss": "less"
+      }
+    ]
+  },
+  "难": {
+    "translation": "difficult",
+    "meanings": [
+      {
+        "gloss": "difficult"
+      }
+    ]
+  },
+  "间": {
+    "translation": "classifier for rooms; between; among",
+    "meanings": [
+      {
+        "gloss": "classifier for rooms"
+      },
+      {
+        "gloss": "between; among"
+      }
+    ]
+  },
+  "哪": {
+    "translation": "which",
+    "meanings": [
+      {
+        "gloss": "which"
+      }
+    ]
+  },
+  "跑": {
+    "translation": "to run; to run away",
+    "meanings": [
+      {
+        "gloss": "to run"
+      },
+      {
+        "gloss": "to run away"
+      }
+    ]
+  },
+  "晚": {
+    "translation": "evening; late",
+    "meanings": [
+      {
+        "gloss": "evening"
+      },
+      {
+        "gloss": "late"
+      }
+    ]
+  },
+  "书": {
+    "translation": "book",
+    "meanings": [
+      {
+        "gloss": "book"
+      }
+    ]
+  },
+  "先生": {
+    "translation": "gentleman; sir; mister (Mr.); teacher",
+    "meanings": [
+      {
+        "gloss": "gentleman; sir; mister (Mr.)"
+      },
+      {
+        "gloss": "teacher"
+      }
+    ]
+  },
+  "动": {
+    "translation": "to move",
+    "meanings": [
+      {
+        "gloss": "to move"
+      }
+    ]
+  },
+  "重": {
+    "translation": "heavy; serious",
+    "meanings": [
+      {
+        "gloss": "heavy"
+      },
+      {
+        "gloss": "serious"
+      }
+    ]
+  },
+  "子": {
+    "translation": "son; child",
+    "meanings": [
+      {
+        "gloss": "son"
+      },
+      {
+        "gloss": "child"
+      }
+    ]
+  },
+  "远": {
+    "translation": "far; distant",
+    "meanings": [
+      {
+        "gloss": "far"
+      },
+      {
+        "gloss": "distant"
+      }
+    ]
+  },
+  "口": {
+    "translation": "mouth; classifier for family members",
+    "meanings": [
+      {
+        "gloss": "mouth"
+      },
+      {
+        "gloss": "classifier for family members"
+      }
+    ]
+  },
+  "二": {
+    "translation": "two",
+    "meanings": [
+      {
+        "gloss": "two"
+      }
+    ]
+  },
+  "明白": {
+    "translation": "to understand; clear",
+    "meanings": [
+      {
+        "gloss": "to understand"
+      },
+      {
+        "gloss": "clear"
+      }
+    ]
+  },
+  "杯": {
+    "translation": "cup; classifier for glasses/cups",
+    "meanings": [
+      {
+        "gloss": "cup"
+      },
+      {
+        "gloss": "classifier for glasses/cups"
+      }
+    ]
+  },
+  "半": {
+    "translation": "half",
+    "meanings": [
+      {
+        "gloss": "half"
+      }
+    ]
+  },
+  "身体": {
+    "translation": "the body; one's health",
+    "meanings": [
+      {
+        "gloss": "the body"
+      },
+      {
+        "gloss": "one's health"
+      }
+    ]
+  },
+  "元": {
+    "translation": "yuan (unit of Chinese currency)",
+    "meanings": [
+      {
+        "gloss": "yuan (unit of Chinese currency)"
+      }
+    ]
+  },
+  "哪里": {
+    "translation": "where?; somewhere",
+    "meanings": [
+      {
+        "gloss": "where?"
+      },
+      {
+        "gloss": "somewhere"
+      }
+    ]
+  },
+  "包": {
+    "translation": "package; to wrap",
+    "meanings": [
+      {
+        "gloss": "package"
+      },
+      {
+        "gloss": "to wrap"
+      }
+    ]
+  },
+  "楼": {
+    "translation": "storied building; floor",
+    "meanings": [
+      {
+        "gloss": "storied building"
+      },
+      {
+        "gloss": "floor"
+      }
+    ]
+  },
+  "介绍": {
+    "translation": "to introduce (someone to someone)",
+    "meanings": [
+      {
+        "gloss": "to introduce (someone to someone)"
+      }
+    ]
+  },
+  "唱": {
+    "translation": "to sing",
+    "meanings": [
+      {
+        "gloss": "to sing"
+      }
+    ]
+  },
+  "大学": {
+    "translation": "university",
+    "meanings": [
+      {
+        "gloss": "university"
+      }
+    ]
+  },
+  "病": {
+    "translation": "illness; disease; to fall ill",
+    "meanings": [
+      {
+        "gloss": "illness; disease"
+      },
+      {
+        "gloss": "to fall ill"
+      }
+    ]
+  },
+  "马上": {
+    "translation": "immediately; right away",
+    "meanings": [
+      {
+        "gloss": "immediately"
+      },
+      {
+        "gloss": "right away"
+      }
+    ]
+  },
+  "忙": {
+    "translation": "busy",
+    "meanings": [
+      {
+        "gloss": "busy"
+      }
+    ]
+  },
+  "说话": {
+    "translation": "to speak; to talk",
+    "meanings": [
+      {
+        "gloss": "to speak"
+      },
+      {
+        "gloss": "to talk"
+      }
+    ]
+  },
+  "汽车": {
+    "translation": "car; automobile",
+    "meanings": [
+      {
+        "gloss": "car"
+      },
+      {
+        "gloss": "automobile"
+      }
+    ]
+  },
+  "字": {
+    "translation": "character; word",
+    "meanings": [
+      {
+        "gloss": "character"
+      },
+      {
+        "gloss": "word"
+      }
+    ]
+  },
+  "高兴": {
+    "translation": "happy; glad",
+    "meanings": [
+      {
+        "gloss": "happy"
+      },
+      {
+        "gloss": "glad"
+      }
+    ]
+  },
+  "白": {
+    "translation": "white",
+    "meanings": [
+      {
+        "gloss": "white"
+      }
+    ]
+  },
+  "热": {
+    "translation": "hot (of weather); to heat up",
+    "meanings": [
+      {
+        "gloss": "hot (of weather)"
+      },
+      {
+        "gloss": "to heat up"
+      }
+    ]
+  },
+  "试": {
+    "translation": "to try; to test",
+    "meanings": [
+      {
+        "gloss": "to try"
+      },
+      {
+        "gloss": "to test"
+      }
+    ]
+  },
+  "票": {
+    "translation": "ticket",
+    "meanings": [
+      {
+        "gloss": "ticket"
+      }
+    ]
+  },
+  "西": {
+    "translation": "west",
+    "meanings": [
+      {
+        "gloss": "west"
+      }
+    ]
+  },
+  "床": {
+    "translation": "bed; couch",
+    "meanings": [
+      {
+        "gloss": "bed; couch"
+      }
+    ]
+  },
+  "第": {
+    "translation": "prefix indicating ordinal number (e.g. 第六 sixth)",
+    "meanings": [
+      {
+        "gloss": "prefix indicating ordinal number (e.g. 第六 sixth)"
+      }
+    ]
+  },
+  "差": {
+    "translation": "to fall short; to lack; not up to standard; inferior",
+    "meanings": [
+      {
+        "gloss": "to fall short; to lack"
+      },
+      {
+        "gloss": "not up to standard; inferior"
+      }
+    ]
+  },
+  "教": {
+    "translation": "to teach",
+    "meanings": [
+      {
+        "gloss": "to teach"
+      }
+    ]
+  },
+  "读": {
+    "translation": "to read; to attend school; to study",
+    "meanings": [
+      {
+        "gloss": "to read"
+      },
+      {
+        "gloss": "to attend school; to study"
+      }
+    ]
+  },
+  "忘": {
+    "translation": "to forget",
+    "meanings": [
+      {
+        "gloss": "to forget"
+      }
+    ]
+  },
+  "认真": {
+    "translation": "serious; earnest; conscientious",
+    "meanings": [
+      {
+        "gloss": "serious; earnest"
+      },
+      {
+        "gloss": "conscientious"
+      }
+    ]
+  },
+  "电": {
+    "translation": "electricity; phone call or telegram",
+    "meanings": [
+      {
+        "gloss": "electricity"
+      },
+      {
+        "gloss": "phone call or telegram"
+      }
+    ]
+  },
+  "房子": {
+    "translation": "house; apartment",
+    "meanings": [
+      {
+        "gloss": "house"
+      },
+      {
+        "gloss": "apartment"
+      }
+    ]
+  },
+  "山": {
+    "translation": "mountain; hill",
+    "meanings": [
+      {
+        "gloss": "mountain; hill"
+      }
+    ]
+  },
+  "常": {
+    "translation": "often; frequently; always",
+    "meanings": [
+      {
+        "gloss": "often; frequently"
+      },
+      {
+        "gloss": "always"
+      }
+    ]
+  },
+  "记": {
+    "translation": "to remember; to record; to note",
+    "meanings": [
+      {
+        "gloss": "to remember"
+      },
+      {
+        "gloss": "to record; to note"
+      }
+    ]
+  },
+  "关": {
+    "translation": "to close; to shut; to turn off; to concern; to involve",
+    "meanings": [
+      {
+        "gloss": "to close; to shut; to turn off"
+      },
+      {
+        "gloss": "to concern; to involve"
+      }
+    ]
+  },
+  "爸": {
+    "translation": "dad; father",
+    "meanings": [
+      {
+        "gloss": "dad; father"
+      }
+    ]
+  },
+  "风": {
+    "translation": "wind",
+    "meanings": [
+      {
+        "gloss": "wind"
+      }
+    ]
+  },
+  "累": {
+    "translation": "tired; weary",
+    "meanings": [
+      {
+        "gloss": "tired; weary"
+      }
+    ]
+  },
+  "打开": {
+    "translation": "to open; to turn on; to switch on",
+    "meanings": [
+      {
+        "gloss": "to open"
+      },
+      {
+        "gloss": "to turn on; to switch on"
+      }
+    ]
+  },
+  "病人": {
+    "translation": "patient; sick person",
+    "meanings": [
+      {
+        "gloss": "patient; sick person"
+      }
+    ]
+  },
+  "肉": {
+    "translation": "meat; flesh",
+    "meanings": [
+      {
+        "gloss": "meat"
+      },
+      {
+        "gloss": "flesh"
+      }
+    ]
+  },
+  "班": {
+    "translation": "class; grade; work shift",
+    "meanings": [
+      {
+        "gloss": "class; grade"
+      },
+      {
+        "gloss": "work shift"
+      }
+    ]
+  },
+  "坏": {
+    "translation": "bad; broken; spoiled",
+    "meanings": [
+      {
+        "gloss": "bad"
+      },
+      {
+        "gloss": "broken; spoiled"
+      }
+    ]
+  },
+  "一边": {
+    "translation": "doing while (simultaneously); on the one hand ... on the other hand",
+    "meanings": [
+      {
+        "gloss": "doing while (simultaneously)"
+      },
+      {
+        "gloss": "on the one hand ... on the other hand"
+      }
+    ]
+  },
+  "洗": {
+    "translation": "to wash; to bathe",
+    "meanings": [
+      {
+        "gloss": "to wash; to bathe"
+      }
+    ]
+  },
+  "毛": {
+    "translation": "hair; fur; ten cents (dime, informal currency unit)",
+    "meanings": [
+      {
+        "gloss": "hair; fur"
+      },
+      {
+        "gloss": "ten cents (dime, informal currency unit)"
+      }
+    ]
+  },
+  "左": {
+    "translation": "left (direction or side)",
+    "meanings": [
+      {
+        "gloss": "left (direction or side)"
+      }
+    ]
+  },
+  "吃饭": {
+    "translation": "to have a meal; to eat",
+    "meanings": [
+      {
+        "gloss": "to have a meal; to eat"
+      }
+    ]
+  },
+  "菜": {
+    "translation": "vegetable; dish (type of food)",
+    "meanings": [
+      {
+        "gloss": "vegetable"
+      },
+      {
+        "gloss": "dish (type of food)"
+      }
+    ]
+  },
+  "饿": {
+    "translation": "hungry; to be hungry",
+    "meanings": [
+      {
+        "gloss": "hungry"
+      },
+      {
+        "gloss": "to be hungry"
+      }
+    ]
+  },
+  "树": {
+    "translation": "tree",
+    "meanings": [
+      {
+        "gloss": "tree"
+      }
+    ]
+  },
+  "右": {
+    "translation": "right; right-hand side",
+    "meanings": [
+      {
+        "gloss": "right; right-hand side"
+      }
+    ]
+  },
+  "上班": {
+    "translation": "to go to work",
+    "meanings": [
+      {
+        "gloss": "to go to work"
+      }
+    ]
+  },
+  "东": {
+    "translation": "east",
+    "meanings": [
+      {
+        "gloss": "east"
+      }
+    ]
+  },
+  "课": {
+    "translation": "class; lesson; course; subject",
+    "meanings": [
+      {
+        "gloss": "class; lesson"
+      },
+      {
+        "gloss": "course; subject"
+      }
+    ]
+  },
+  "国": {
+    "translation": "country; nation; state",
+    "meanings": [
+      {
+        "gloss": "country; nation; state"
+      }
+    ]
+  },
+  "饭": {
+    "translation": "cooked rice; meal",
+    "meanings": [
+      {
+        "gloss": "cooked rice"
+      },
+      {
+        "gloss": "meal"
+      }
+    ]
+  },
+  "小姐": {
+    "translation": "Miss; young lady",
+    "meanings": [
+      {
+        "gloss": "Miss; young lady"
+      }
+    ]
+  },
+  "没什么": {
+    "translation": "nothing; it doesn't matter; never mind",
+    "meanings": [
+      {
+        "gloss": "nothing"
+      },
+      {
+        "gloss": "it doesn't matter; never mind"
+      }
+    ]
+  },
+  "路上": {
+    "translation": "on the road; on a journey",
+    "meanings": [
+      {
+        "gloss": "on the road; on a journey"
+      }
+    ]
+  },
+  "同学": {
+    "translation": "classmate; fellow student",
+    "meanings": [
+      {
+        "gloss": "classmate; fellow student"
+      }
+    ]
+  },
+  "帮忙": {
+    "translation": "to help; to lend a hand",
+    "meanings": [
+      {
+        "gloss": "to help; to lend a hand"
+      }
+    ]
+  },
+  "好看": {
+    "translation": "good-looking; nice-looking; good (of a movie, book, show etc)",
+    "meanings": [
+      {
+        "gloss": "good-looking; nice-looking"
+      },
+      {
+        "gloss": "good (of a movie, book, show etc)"
+      }
+    ]
+  },
+  "中间": {
+    "translation": "the middle; in the middle; between; among",
+    "meanings": [
+      {
+        "gloss": "the middle"
+      },
+      {
+        "gloss": "in the middle; between; among"
+      }
+    ]
+  },
+  "女生": {
+    "translation": "female student; schoolgirl",
+    "meanings": [
+      {
+        "gloss": "female student; schoolgirl"
+      }
+    ]
+  },
+  "地点": {
+    "translation": "place; location",
+    "meanings": [
+      {
+        "gloss": "place; location"
+      }
+    ]
+  },
+  "雨": {
+    "translation": "rain",
+    "meanings": [
+      {
+        "gloss": "rain"
+      }
+    ]
+  },
+  "星期": {
+    "translation": "week",
+    "meanings": [
+      {
+        "gloss": "week"
+      }
+    ]
+  },
+  "考": {
+    "translation": "to take an exam; to test; to examine",
+    "meanings": [
+      {
+        "gloss": "to take an exam"
+      },
+      {
+        "gloss": "to test; to examine"
+      }
+    ]
+  },
+  "生气": {
+    "translation": "to get angry; angry",
+    "meanings": [
+      {
+        "gloss": "to get angry"
+      },
+      {
+        "gloss": "angry"
+      }
+    ]
+  },
+  "一会儿": {
+    "translation": "a moment; a while; in a moment",
+    "meanings": [
+      {
+        "gloss": "a moment; a while"
+      },
+      {
+        "gloss": "in a moment"
+      }
+    ]
+  },
+  "贵": {
+    "translation": "expensive",
+    "meanings": [
+      {
+        "gloss": "expensive"
+      }
+    ]
+  },
+  "记住": {
+    "translation": "to remember; to bear in mind",
+    "meanings": [
+      {
+        "gloss": "to remember; to bear in mind"
+      }
+    ]
+  },
+  "学院": {
+    "translation": "college",
+    "meanings": [
+      {
+        "gloss": "college"
+      }
+    ]
+  },
+  "老人": {
+    "translation": "old man or woman; the elderly",
+    "meanings": [
+      {
+        "gloss": "old man or woman; the elderly"
+      }
+    ]
+  },
+  "页": {
+    "translation": "page",
+    "meanings": [
+      {
+        "gloss": "page"
+      }
+    ]
+  },
+  "在家": {
+    "translation": "to be at home",
+    "meanings": [
+      {
+        "gloss": "to be at home"
+      }
+    ]
+  },
+  "百": {
+    "translation": "hundred",
+    "meanings": [
+      {
+        "gloss": "hundred"
+      }
+    ]
+  },
+  "好吃": {
+    "translation": "tasty; delicious",
+    "meanings": [
+      {
+        "gloss": "tasty; delicious"
+      }
+    ]
+  },
+  "哪儿": {
+    "translation": "where?; wherever; anywhere",
+    "meanings": [
+      {
+        "gloss": "where?"
+      },
+      {
+        "gloss": "wherever; anywhere"
+      }
+    ]
+  },
+  "不对": {
+    "translation": "incorrect; wrong",
+    "meanings": [
+      {
+        "gloss": "incorrect; wrong"
+      }
+    ]
+  },
+  "是不是": {
+    "translation": "is or isn't; whether or not",
+    "meanings": [
+      {
+        "gloss": "is or isn't"
+      },
+      {
+        "gloss": "whether or not"
+      }
+    ]
+  },
+  "奶": {
+    "translation": "milk; to breastfeed",
+    "meanings": [
+      {
+        "gloss": "milk"
+      },
+      {
+        "gloss": "to breastfeed"
+      }
+    ]
+  },
+  "男生": {
+    "translation": "schoolboy; male student",
+    "meanings": [
+      {
+        "gloss": "schoolboy; male student"
+      }
+    ]
+  },
+  "奶奶": {
+    "translation": "grandma (paternal grandmother)",
+    "meanings": [
+      {
+        "gloss": "grandma (paternal grandmother)"
+      }
+    ]
+  },
+  "上课": {
+    "translation": "to go to class; to attend class",
+    "meanings": [
+      {
+        "gloss": "to go to class; to attend class"
+      }
+    ]
+  },
+  "读书": {
+    "translation": "to read a book; to study",
+    "meanings": [
+      {
+        "gloss": "to read a book"
+      },
+      {
+        "gloss": "to study"
+      }
+    ]
+  },
+  "零": {
+    "translation": "zero",
+    "meanings": [
+      {
+        "gloss": "zero"
+      }
+    ]
+  },
+  "白天": {
+    "translation": "daytime",
+    "meanings": [
+      {
+        "gloss": "daytime"
+      }
+    ]
+  },
+  "哪些": {
+    "translation": "which ones?",
+    "meanings": [
+      {
+        "gloss": "which ones?"
+      }
+    ]
+  },
+  "晚饭": {
+    "translation": "evening meal; dinner",
+    "meanings": [
+      {
+        "gloss": "evening meal; dinner"
+      }
+    ]
+  },
+  "开玩笑": {
+    "translation": "to joke; to play a joke",
+    "meanings": [
+      {
+        "gloss": "to joke; to play a joke"
+      }
+    ]
+  },
+  "国外": {
+    "translation": "abroad; overseas",
+    "meanings": [
+      {
+        "gloss": "abroad"
+      },
+      {
+        "gloss": "overseas"
+      }
+    ]
+  },
+  "上网": {
+    "translation": "to go online; to connect to the Internet",
+    "meanings": [
+      {
+        "gloss": "to go online; to connect to the Internet"
+      }
+    ]
+  },
+  "商场": {
+    "translation": "shopping mall; department store",
+    "meanings": [
+      {
+        "gloss": "shopping mall"
+      },
+      {
+        "gloss": "department store"
+      }
+    ]
+  },
+  "左边": {
+    "translation": "the left side",
+    "meanings": [
+      {
+        "gloss": "the left side"
+      }
+    ]
+  },
+  "不大": {
+    "translation": "not very; not often",
+    "meanings": [
+      {
+        "gloss": "not very"
+      },
+      {
+        "gloss": "not often"
+      }
+    ]
+  },
+  "弟": {
+    "translation": "younger brother",
+    "meanings": [
+      {
+        "gloss": "younger brother"
+      }
+    ]
+  },
+  "一点儿": {
+    "translation": "a bit; a little bit",
+    "meanings": [
+      {
+        "gloss": "a bit; a little bit"
+      }
+    ]
+  },
+  "玩儿": {
+    "translation": "to play; to have fun",
+    "meanings": [
+      {
+        "gloss": "to play"
+      },
+      {
+        "gloss": "to have fun"
+      }
+    ]
+  },
+  "半天": {
+    "translation": "half of the day; a long time",
+    "meanings": [
+      {
+        "gloss": "half of the day"
+      },
+      {
+        "gloss": "a long time"
+      }
+    ]
+  },
+  "后天": {
+    "translation": "the day after tomorrow",
+    "meanings": [
+      {
+        "gloss": "the day after tomorrow"
+      }
+    ]
+  },
+  "洗手间": {
+    "translation": "toilet; washroom",
+    "meanings": [
+      {
+        "gloss": "toilet; washroom"
+      }
+    ]
+  },
+  "下课": {
+    "translation": "to finish class; to get out of class",
+    "meanings": [
+      {
+        "gloss": "to finish class; to get out of class"
+      }
+    ]
+  },
+  "没事儿": {
+    "translation": "it's nothing; never mind; to have spare time",
+    "meanings": [
+      {
+        "gloss": "it's nothing; never mind"
+      },
+      {
+        "gloss": "to have spare time"
+      }
+    ]
+  },
+  "一块儿": {
+    "translation": "a piece; a chunk",
+    "meanings": [
+      {
+        "gloss": "a piece; a chunk"
+      }
+    ]
+  },
+  "书包": {
+    "translation": "schoolbag",
+    "meanings": [
+      {
+        "gloss": "schoolbag"
+      }
+    ]
+  },
+  "小学生": {
+    "translation": "primary school student",
+    "meanings": [
+      {
+        "gloss": "primary school student"
+      }
+    ]
+  },
+  "外边": {
+    "translation": "outside",
+    "meanings": [
+      {
+        "gloss": "outside"
+      }
+    ]
+  },
+  "本子": {
+    "translation": "book; notebook",
+    "meanings": [
+      {
+        "gloss": "book; notebook"
+      }
+    ]
+  },
+  "后边": {
+    "translation": "behind; at the back",
+    "meanings": [
+      {
+        "gloss": "behind; at the back"
+      }
+    ]
+  },
+  "西边": {
+    "translation": "west side",
+    "meanings": [
+      {
+        "gloss": "west side"
+      }
+    ]
+  },
+  "上边": {
+    "translation": "above; the top",
+    "meanings": [
+      {
+        "gloss": "above"
+      },
+      {
+        "gloss": "the top"
+      }
+    ]
+  },
+  "东边": {
+    "translation": "east side",
+    "meanings": [
+      {
+        "gloss": "east side"
+      }
+    ]
+  },
+  "不客气": {
+    "translation": "you're welcome; don't mention it",
+    "meanings": [
+      {
+        "gloss": "you're welcome; don't mention it"
+      }
+    ]
+  },
+  "南边": {
+    "translation": "south side",
+    "meanings": [
+      {
+        "gloss": "south side"
+      }
+    ]
+  },
+  "北边": {
+    "translation": "north side",
+    "meanings": [
+      {
+        "gloss": "north side"
+      }
+    ]
+  },
+  "下边": {
+    "translation": "below; the underside",
+    "meanings": [
+      {
+        "gloss": "below; the underside"
+      }
+    ]
+  },
+  "汉字": {
+    "translation": "Chinese character",
+    "meanings": [
+      {
+        "gloss": "Chinese character"
+      }
+    ]
+  },
+  "好玩儿": {
+    "translation": "fun; amusing",
+    "meanings": [
+      {
+        "gloss": "fun"
+      },
+      {
+        "gloss": "amusing"
+      }
+    ]
+  },
+  "前边": {
+    "translation": "front; in front of",
+    "meanings": [
+      {
+        "gloss": "front; in front of"
+      }
+    ]
+  },
+  "听写": {
+    "translation": "dictation",
+    "meanings": [
+      {
+        "gloss": "dictation"
+      }
+    ]
+  },
+  "一下儿": {
+    "translation": "one time; once",
+    "meanings": [
+      {
+        "gloss": "one time; once"
+      }
+    ]
+  },
+  "有一些": {
+    "translation": "somewhat; some",
+    "meanings": [
+      {
+        "gloss": "somewhat"
+      },
+      {
+        "gloss": "some"
+      }
+    ]
+  }
+}

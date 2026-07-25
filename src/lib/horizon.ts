@@ -97,7 +97,7 @@ export const HORIZON_ORDER: Horizon[] = [
 /** Display copy per lane. */
 export const HORIZON_META: Record<Horizon, { label: string; sublabel: string }> = {
   due: {
-    label: "Due now",
+    label: "All due now",
     sublabel: "Ready for review — practice these to keep them.",
   },
   week: {
