@@ -18,6 +18,19 @@ for the dataset download command):
 npx tsx scripts/generate-hsk-data.ts <path-to-complete.json>
 ```
 
+**Sense ordering is curated.** CC-CEDICT sometimes ranks a proper-noun or
+abbreviation sense first (e.g. 新 → "abbr. for Xinjiang", 女孩儿 → "erhua
+variant of 女孩"), which is wrong to lead with for a learner who only sees the
+first sense. `scripts/fix-primary-glosses.ts` promotes the first genuinely
+common sense to the front (and rebuilds `translation`) for those cases, while
+leaving correct proper nouns (中国 = China, 长城 = the Great Wall) untouched. It
+is idempotent — re-run after any regeneration:
+
+```
+npx tsx scripts/fix-primary-glosses.ts --write      # then re-seed, or:
+npx tsx scripts/fix-hsk-meanings.ts                 # push into an existing DB, preserving progress
+```
+
 (The legacy `hsk1.json` … `hsk6.json` files are the old HSK 2.0 lists, kept
 only so existing installs whose users studied them keep working.)
 

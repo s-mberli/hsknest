@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TriangleAlert, Volume2, VolumeX } from "lucide-react";
+import { TriangleAlert, Volume2, VolumeX, Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -135,6 +135,45 @@ export function CardFace({
   // we re-check a couple of times and track whether the list is known yet.
   const [voiceReady, setVoiceReady] = useState(false);
   const [voicesKnown, setVoicesKnown] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackSending, setFeedbackSending] = useState(false);
+
+  async function submitWordFeedback(e: React.FormEvent) {
+    e.preventDefault();
+    if (feedbackMessage.trim().length < 10) {
+      return; // Button is disabled, shouldn't reach here
+    }
+    setFeedbackSending(true);
+    try {
+      const msg = feedbackMessage.trim();
+      const sentenceLine = card.sentence ? `\nSentence: ${card.sentence.text}` : "";
+      const fullMessage = `Word report: ${card.term} (${card.phonetic}) — "${primaryText}"${sentenceLine}\n\n${msg}`;
+
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: "bug",
+          message: fullMessage,
+          page: typeof window !== "undefined" ? window.location.pathname : undefined,
+        }),
+      });
+      if (!res.ok) {
+        toast.error("Could not send that — please try again.");
+        setFeedbackSending(false);
+        return;
+      }
+      toast.success("Thanks — we got it.");
+      setFeedbackMessage("");
+      setFeedbackOpen(false);
+      setFeedbackSending(false);
+    } catch {
+      toast.error("Could not send that — please try again.");
+      setFeedbackSending(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
     function check() {
@@ -193,21 +232,7 @@ export function CardFace({
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
   const meanings = showFull ? parseMeanings(card) : [];
-  // Lead with the top-ranked sense; a couple more collapse into one quiet line.
-  // A tight character budget keeps the answer glanceable and leaves room for
-  // the example sentence below (the card clips, it doesn't scroll).
-  const CHAR_BUDGET = 80;
-  const shown: typeof meanings = [];
-  let used = 0;
-  for (const m of meanings) {
-    if (shown.length >= 3) break;
-    if (shown.length >= 1 && used + m.gloss.length > CHAR_BUDGET) break;
-    shown.push(m);
-    used += m.gloss.length;
-  }
-  const primary = shown[0];
-  const secondary = shown.slice(1);
-  const overflowCount = meanings.length - shown.length;
+  const primary = meanings[0];
   const primaryText = primary?.gloss ?? card.translation;
 
   return (
@@ -290,51 +315,15 @@ export function CardFace({
             animate={{ opacity: 1, y: 0 }}
             className="flex w-full flex-col items-center gap-1.5 px-2"
           >
-            {/* Primary meaning leads; long glosses step down so they can't
-                outgrow the card (which clips, not scrolls). */}
+            {/* Primary meaning only — clean and glanceable. */}
             <p
               className={cn(
                 "max-w-full break-words font-semibold tracking-tight [overflow-wrap:anywhere]",
                 primaryText.length > 40 ? sizes.phoneticHint : sizes.translation
               )}
             >
-              {primary?.reading && primary.reading !== card.phonetic && (
-                <span
-                  className={cn(
-                    "mr-1.5 rounded bg-muted px-1 py-0.5 align-middle text-muted-foreground/80",
-                    sizes.secondaryMeaning
-                  )}
-                >
-                  {primary.reading}
-                </span>
-              )}
               {primaryText}
             </p>
-
-            {/* Remaining senses collapse into one quiet line. */}
-            {(secondary.length > 0 || overflowCount > 0) && (
-              <p
-                className={cn(
-                  "max-w-full break-words text-muted-foreground [overflow-wrap:anywhere]",
-                  sizes.secondaryMeaning
-                )}
-              >
-                {secondary.map((s, i) => (
-                  <span key={s.gloss}>
-                    {i > 0 && " · "}
-                    {s.gloss}
-                    {s.reading && s.reading !== card.phonetic && (
-                      <span className="text-muted-foreground/60"> ({s.reading})</span>
-                    )}
-                  </span>
-                ))}
-                {overflowCount > 0 && (
-                  <span className="text-muted-foreground/60">
-                    {secondary.length > 0 ? " · " : ""}+{overflowCount} more
-                  </span>
-                )}
-              </p>
-            )}
 
             {extras.length > 0 && (
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground/80">
@@ -375,6 +364,68 @@ export function CardFace({
             )}
           </motion.div>
         )}
+
+      {/* Report this word: corner flag button + overlay form. */}
+      {showFull && !card.preview && (
+        <>
+          {/* Corner flag button (subtle trigger). */}
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen((o) => !o)}
+            className="absolute right-3 top-3 text-muted-foreground/60 transition-colors hover:text-foreground"
+            aria-label="Report this word"
+          >
+            <Flag className="size-4" />
+          </button>
+
+          {/* Overlay form: covers card, no clipping. */}
+          {feedbackOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-card p-6"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <p className="text-sm font-semibold text-foreground">
+                Report {card.term}
+              </p>
+              <motion.form
+                onSubmit={submitWordFeedback}
+                className="w-full flex flex-col gap-2"
+              >
+                <textarea
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  placeholder="What's off with this word's meaning or example? (at least 10 characters)"
+                  maxLength={2000}
+                  className="w-full resize-none rounded border border-muted-foreground/20 bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  rows={4}
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={feedbackSending || feedbackMessage.trim().length < 10}
+                    className="flex-1 rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {feedbackSending ? "Sending…" : "Send"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackOpen(false)}
+                    className="flex-1 rounded border border-muted-foreground/20 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.form>
+            </motion.div>
+          )}
+        </>
+      )}
 
       {/* Prompt + difficult-word hint. */}
       {interactive && (
