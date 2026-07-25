@@ -71,6 +71,16 @@ export function CardStack({
   // Keyboard: Space advances a stage; arrows grade only at FULL.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      // Don't steal keystrokes from text fields (e.g. report textarea).
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "INPUT" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       if (e.key === " " || e.code === "Space") {
         e.preventDefault();
         if (stage === "FULL" && preview) {

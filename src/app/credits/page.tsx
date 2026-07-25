@@ -61,8 +61,11 @@ export default function CreditsPage() {
           >
             Creative Commons Attribution-ShareAlike 4.0 International License
           </a>{" "}
-          (CC BY-SA 4.0). Our trimmed build of the dictionary data is shared
-          under the same license in the{" "}
+          (CC BY-SA 4.0). Our build of the dictionary data has been{" "}
+          <strong>modified</strong> from the original: entries are trimmed, and
+          for some words the order of senses is curated so the most useful
+          everyday meaning is shown first to learners. These modifications are
+          shared under the same license in the{" "}
           <a
             href="https://github.com/s-mberli/hsknest"
             target="_blank"

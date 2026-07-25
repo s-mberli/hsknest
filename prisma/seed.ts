@@ -366,6 +366,33 @@ async function cleanUpLegacyLists() {
   }
 }
 
+/**
+ * Load and apply curated overrides for a list (e.g., curated/new1.json).
+ * Merges translation and metadata.meanings if present. Returns modified copy.
+ */
+function applyCuratedOverrides(file: string, words: SeedWord[]): SeedWord[] {
+  try {
+    const curatedPath = join(__dirname, "data/hsk/curated", `${file}.json`);
+    const curatedRaw = readFileSync(curatedPath, "utf-8");
+    const curated: Record<string, { translation?: string; meanings?: unknown }> = JSON.parse(curatedRaw);
+    if (Object.keys(curated).length === 0) return words;
+    return words.map((w) => {
+      const override = curated[w.term];
+      if (!override) return w;
+      return {
+        ...w,
+        translation: override.translation ?? w.translation,
+        metadata: override.meanings
+          ? { ...(typeof w.metadata === 'object' && w.metadata !== null ? w.metadata : {}), meanings: override.meanings }
+          : w.metadata,
+      };
+    });
+  } catch {
+    // File not found or parse error — return unchanged words.
+    return words;
+  }
+}
+
 async function main() {
   await cleanUpLegacyLists();
 
@@ -378,7 +405,9 @@ async function main() {
   const zh = await upsertLanguage("zh", "Mandarin Chinese");
 
   for (const { file, name, description } of ZH_LISTS) {
-    await seedList(zh.id, name, description, loadWords("hsk", file));
+    const words = loadWords("hsk", file);
+    const wordsWithCuration = applyCuratedOverrides(file, words);
+    await seedList(zh.id, name, description, wordsWithCuration);
   }
 
   await seedList(
