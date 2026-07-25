@@ -114,9 +114,11 @@ export default async function ListDetailPage({
             )}
             <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
           </div>
-          <p className="max-w-xs text-right text-xs text-muted-foreground">
-            Add all to my queue puts these words into your daily study rotation.
-          </p>
+          {!allEnrolled && (
+            <p className="max-w-xs text-right text-xs text-muted-foreground">
+              Adds these words to your daily study rotation.
+            </p>
+          )}
           <div className="flex flex-wrap items-center justify-end gap-1">
             <AssumeButton listId={list.id} />
             <UnenrollButton listId={list.id} enrolledCount={progress.length} />

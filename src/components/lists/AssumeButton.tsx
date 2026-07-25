@@ -34,9 +34,8 @@ export function AssumeButton({ listId }: { listId: string }) {
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="sm"
-      className="text-muted-foreground"
       onClick={assume}
       disabled={loading}
       title="Sets these aside as known — they'll be spot-checked occasionally instead of studied daily."

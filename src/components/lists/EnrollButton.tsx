@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -42,17 +43,22 @@ export function EnrollButton({
     }
   }
 
+  if (allEnrolled) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground">
+        <Check className="size-4" />
+        All words added
+      </span>
+    );
+  }
+
   return (
     <Button
       onClick={enroll}
-      disabled={loading || allEnrolled}
+      disabled={loading}
       title="Puts these words into your daily study rotation."
     >
-      {allEnrolled
-        ? "All words added"
-        : loading
-          ? "Adding…"
-          : "Add all to my queue"}
+      {loading ? "Adding…" : "Add all to my queue"}
     </Button>
   );
 }

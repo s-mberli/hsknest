@@ -95,7 +95,7 @@ export function LandingHero() {
             transition={{ delay: 0.2 }}
             className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row lg:justify-start"
           >
-            <TryFreeButton className="w-full sm:w-auto" />
+            <TryFreeButton className="w-full sm:w-auto">Start swiping instantly</TryFreeButton>
             <Button
               asChild
               variant="outline"
