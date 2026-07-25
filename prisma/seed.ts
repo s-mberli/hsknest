@@ -185,9 +185,7 @@ async function sameSeedContent(listId: string, words: SeedWord[]): Promise<boole
  * Idempotently seed a word list, refreshing outdated content:
  * - missing → create with words;
  * - exists with the same word count and same sampled content → current, no-op;
- * - exists with different content (outdated dataset) → replace when no
- *   user progress references it, otherwise rename the old list to
- *   "… (legacy)" and create the new one — never touch studied content.
+ * - exists with different content (outdated dataset) → replace (delete old, create new).
  */
 async function seedList(
   languageId: string,
@@ -207,16 +205,9 @@ async function seedList(
     ) {
       return; // current
     }
-    if ((await progressCount(existing.id)) === 0) {
-      await deleteSeededList(existing.id);
-      console.log(`Replacing outdated list: ${name}`);
-    } else {
-      await prisma.wordList.update({
-        where: { id: existing.id },
-        data: { name: `${name} (legacy)` },
-      });
-      console.log(`Kept studied list as: ${name} (legacy)`);
-    }
+    // Always delete and replace, don't keep legacy lists
+    await deleteSeededList(existing.id);
+    console.log(`Replacing outdated list: ${name}`);
   }
 
   const list = await prisma.wordList.create({
@@ -334,13 +325,11 @@ const ZH_LISTS: { file: string; name: string; description: string }[] = [
   { file: "freq1000", name: "Top 1000 Most Common Words", description: "The 1000 highest-frequency words, ordered by real-world usage." },
 ];
 
-// HSK 2.0 list names that no longer exist in the 2021 lineup. Retired only
-// when untouched; renamed to "… (legacy)" when a user has progress in them.
+// HSK 2.0 list names that no longer exist in the 2021 lineup.
 const RETIRED_ZH_LISTS = ["HSK 6 — Mastery"];
 
 /**
- * Retire a seeded list whose name left the lineup: delete when untouched,
- * rename to "… (legacy)" when a user has progress in it. Idempotent.
+ * Retire a seeded list whose name left the lineup: always delete.
  */
 async function retireSeededList(name: string) {
   const list = await prisma.wordList.findFirst({
@@ -352,18 +341,6 @@ async function retireSeededList(name: string) {
   // Forcefully delete it, ignoring progress (as requested).
   await deleteSeededList(list.id);
   console.log(`Forcefully removed retired list: ${name}`);
-}
-
-/** Clean up any lists that were renamed to "(legacy)". */
-async function cleanUpLegacyLists() {
-  const legacyLists = await prisma.wordList.findMany({
-    where: { name: { endsWith: " (legacy)" } },
-    select: { id: true, name: true },
-  });
-  for (const list of legacyLists) {
-    await deleteSeededList(list.id);
-    console.log(`Forcefully deleted legacy list: ${list.name}`);
-  }
 }
 
 /**
@@ -394,8 +371,6 @@ function applyCuratedOverrides(file: string, words: SeedWord[]): SeedWord[] {
 }
 
 async function main() {
-  await cleanUpLegacyLists();
-
   // Retired test content — drop from any existing DB.
   await retireSeededList("Everyday Mandarin Starter");
   for (const name of RETIRED_ZH_LISTS) {
