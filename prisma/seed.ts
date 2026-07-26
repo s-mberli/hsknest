@@ -314,13 +314,13 @@ async function seedSentences(languageId: string, sentences: SeedSentence[]) {
 // New HSK 3.0 (2021 standard) levels + general frequency lists. File names
 // map to prisma/data/hsk/<file>.json built from complete-hsk-vocabulary (MIT).
 const ZH_LISTS: { file: string; name: string; description: string }[] = [
-  { file: "new1", name: "HSK 1 — Foundation", description: "The first ~500 words of the current (2021) HSK standard." },
-  { file: "new2", name: "HSK 2 — Elementary", description: "Common verbs, times, and places — HSK 3.0 level 2." },
-  { file: "new3", name: "HSK 3 — Intermediate", description: "Everyday topics: travel, work, and simple opinions." },
-  { file: "new4", name: "HSK 4 — Upper Intermediate", description: "Richer vocabulary for experiences and abstract ideas." },
-  { file: "new5", name: "HSK 5 — Advanced", description: "Nuanced words for news, culture, and detailed discussion." },
-  { file: "new6", name: "HSK 6 — Proficient", description: "Advanced vocabulary approaching full working fluency." },
-  { file: "new7", name: "HSK 7–9 — Mastery", description: "The top band of the 2021 standard for near-native reading." },
+  { file: "new1", name: "HSK 1 — Foundation", description: "300 words (November 2025 official syllabus)." },
+  { file: "new2", name: "HSK 2 — Elementary", description: "200 words for early elementary Chinese." },
+  { file: "new3", name: "HSK 3 — Intermediate", description: "500 words for intermediate learners." },
+  { file: "new4", name: "HSK 4 — Upper Intermediate", description: "1,000 words for richer expression and experiences." },
+  { file: "new5", name: "HSK 5 — Advanced", description: "1,600 words for news, culture, and detailed discussion." },
+  { file: "new6", name: "HSK 6 — Proficient", description: "1,800 words approaching full working fluency." },
+  { file: "new7", name: "HSK 7–9 — Mastery", description: "5,600 words for near-native reading (November 2025 standard)." },
   { file: "freq100", name: "Top 100 Most Common Words", description: "The 100 highest-frequency words — the fastest possible start." },
   { file: "freq1000", name: "Top 1000 Most Common Words", description: "The 1000 highest-frequency words, ordered by real-world usage." },
 ];
