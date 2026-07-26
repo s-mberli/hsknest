@@ -12,7 +12,6 @@ import { SchedulingSection } from "@/components/settings/sections/SchedulingSect
 import { WorkloadSection } from "@/components/settings/sections/WorkloadSection";
 import { SettingsTabs } from "@/components/settings/SettingsTabs";
 
-type Algorithm = "SM2" | "LEITNER" | "FSRS";
 type Theme = "light" | "dark" | "system";
 type StudyTheme = "dark" | "follow";
 type CardTextSize = "small" | "normal" | "large";
@@ -20,13 +19,8 @@ type CardTextSize = "small" | "normal" | "large";
 interface SettingsFormProps {
   email: string;
   name: string | null;
-  preferredAlgorithm: Algorithm;
   dailyNewWords: number;
   assumedCheckPerDay: number;
-  intervalModifier: number;
-  lapseModifier: number;
-  masteryThresholdDays: number | null;
-  fuzzIntervals: boolean;
   theme: Theme;
   studyTheme: StudyTheme;
   cardTextSize: CardTextSize;
@@ -45,21 +39,10 @@ export function SettingsForm(props: SettingsFormProps) {
   const [saving, setSaving] = useState(false);
   const [targetLanguageId, setTargetLanguageId] = useState<string>(props.targetLanguageId);
 
-  const [algorithm, setAlgorithm] = useState<Algorithm>(
-    props.preferredAlgorithm
-  );
   const [dailyNewWords, setDailyNewWords] = useState(props.dailyNewWords);
   const [assumedCheckPerDay, setAssumedCheckPerDay] = useState(
     props.assumedCheckPerDay
   );
-  const [intervalModifier, setIntervalModifier] = useState(
-    props.intervalModifier
-  );
-  const [lapseModifier, setLapseModifier] = useState(props.lapseModifier);
-  const [masteryThresholdDays, setMasteryThresholdDays] = useState<
-    number | null
-  >(props.masteryThresholdDays);
-  const [fuzzIntervals, setFuzzIntervals] = useState(props.fuzzIntervals);
   const [desiredRetention, setDesiredRetention] = useState(props.desiredRetention);
 
   async function patch(body: Record<string, unknown>, revert: () => void) {
@@ -87,17 +70,6 @@ export function SettingsForm(props: SettingsFormProps) {
 
   const learning = (
     <>
-      <LanguageSection
-        targetLanguageId={targetLanguageId}
-        languages={props.languages}
-        saving={saving}
-        onTargetLanguageChange={(next) => {
-          const prev = targetLanguageId;
-          setTargetLanguageId(next);
-          patch({ targetLanguageId: next }, () => setTargetLanguageId(prev));
-        }}
-      />
-
       <WorkloadSection
         dailyNewWords={dailyNewWords}
         assumedCheckPerDay={assumedCheckPerDay}
@@ -117,44 +89,12 @@ export function SettingsForm(props: SettingsFormProps) {
       />
 
       <SchedulingSection
-        algorithm={algorithm}
         desiredRetention={desiredRetention}
-        intervalModifier={intervalModifier}
-        lapseModifier={lapseModifier}
-        masteryThresholdDays={masteryThresholdDays}
-        fuzzIntervals={fuzzIntervals}
         saving={saving}
-        onAlgorithmChange={(next) => {
-          const prev = algorithm;
-          setAlgorithm(next);
-          patch({ preferredAlgorithm: next }, () => setAlgorithm(prev));
-        }}
         onDesiredRetentionChange={(next) => {
           const prev = desiredRetention;
           setDesiredRetention(next);
           patch({ desiredRetention: next }, () => setDesiredRetention(prev));
-        }}
-        onIntervalModifierChange={(next) => {
-          const prev = intervalModifier;
-          setIntervalModifier(next);
-          patch({ intervalModifier: next }, () => setIntervalModifier(prev));
-        }}
-        onLapseModifierChange={(next) => {
-          const prev = lapseModifier;
-          setLapseModifier(next);
-          patch({ lapseModifier: next }, () => setLapseModifier(prev));
-        }}
-        onMasteryThresholdDaysChange={(next) => {
-          const prev = masteryThresholdDays;
-          setMasteryThresholdDays(next);
-          patch({ masteryThresholdDays: next }, () =>
-            setMasteryThresholdDays(prev)
-          );
-        }}
-        onFuzzIntervalsChange={(next) => {
-          const prev = fuzzIntervals;
-          setFuzzIntervals(next);
-          patch({ fuzzIntervals: next }, () => setFuzzIntervals(prev));
         }}
       />
     </>
@@ -176,6 +116,16 @@ export function SettingsForm(props: SettingsFormProps) {
         ),
         account: (
           <>
+            <LanguageSection
+              targetLanguageId={targetLanguageId}
+              languages={props.languages}
+              saving={saving}
+              onTargetLanguageChange={(next) => {
+                const prev = targetLanguageId;
+                setTargetLanguageId(next);
+                patch({ targetLanguageId: next }, () => setTargetLanguageId(prev));
+              }}
+            />
             <AccountSection email={props.email} name={props.name} />
             {props.billing}
           </>
