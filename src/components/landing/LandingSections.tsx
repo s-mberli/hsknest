@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
 const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
 const HSK_LEVEL_PILLS = [
-  { label: "HSK 1", words: "~500 words" },
-  { label: "HSK 9", words: "11,000+ words total" },
+  { label: "HSK 1", words: "300 words" },
+  { label: "HSK 9", words: "11,000 words total" },
 ];
 
 const SAMPLE_SENTENCE = {
@@ -58,7 +58,7 @@ const FAQ = [
   },
   {
     q: "What languages does HSK Nest support?",
-    a: "HSK Nest is built for Mandarin: full HSK 1–9 (the 2021 standard) plus 3,000 example sentences with pinyin. The engine underneath is language-agnostic, so you can import your own CSV decks for anything else you're memorizing.",
+    a: "HSK Nest is built for Mandarin: full HSK 1–9 (11,000 words, November 2025 official syllabus) plus 3,000 example sentences with pinyin. The engine underneath is language-agnostic, so you can import your own CSV decks for anything else you're memorizing.",
   },
   {
     q: "What happens to my progress if I stop paying?",
