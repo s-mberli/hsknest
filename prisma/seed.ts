@@ -371,6 +371,16 @@ function applyCuratedOverrides(file: string, words: SeedWord[]): SeedWord[] {
 }
 
 async function main() {
+  // Clean up any legacy lists left over from previous seed runs.
+  const legacyLists = await prisma.wordList.findMany({
+    where: { name: { endsWith: " (legacy)" } },
+    select: { id: true, name: true },
+  });
+  for (const list of legacyLists) {
+    await deleteSeededList(list.id);
+    console.log(`Deleted legacy list: ${list.name}`);
+  }
+
   // Retired test content — drop from any existing DB.
   await retireSeededList("Everyday Mandarin Starter");
   for (const name of RETIRED_ZH_LISTS) {
