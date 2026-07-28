@@ -58,7 +58,7 @@ export function EnrollButton({
       disabled={loading}
       title="Puts these words into your daily study rotation."
     >
-      {loading ? "Adding…" : "Add all to my queue"}
+      {loading ? "Adding…" : "Add this list to my queue"}
     </Button>
   );
 }
