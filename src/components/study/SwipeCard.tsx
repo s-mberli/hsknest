@@ -11,6 +11,7 @@ import { CardFace } from "@/components/study/CardFace";
 import { SwipeIndicators } from "@/components/study/SwipeIndicators";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
 import type { CardTextSize } from "@/lib/textSize";
+import type { CharacterStyle } from "@/lib/characterStyle";
 
 interface SwipeCardProps {
   card: StudyCard;
@@ -29,6 +30,7 @@ interface SwipeCardProps {
    */
   flyOut?: SwipeDirection | null;
   textSize: CardTextSize;
+  characterStyle: CharacterStyle;
   /** Speak the term automatically when its reading is revealed (top card). */
   autoPlay?: boolean;
 }
@@ -45,6 +47,7 @@ export function SwipeCard({
   isTop,
   flyOut = null,
   textSize,
+  characterStyle,
   autoPlay = false,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
@@ -168,6 +171,7 @@ export function SwipeCard({
         // mid-flight; pointer events are already off on the wrapper.
         interactive={isTop || !!flyOut}
         textSize={textSize}
+        characterStyle={characterStyle}
         autoPlay={isTop && !flyOut && autoPlay}
       />
     </motion.div>

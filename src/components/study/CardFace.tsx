@@ -16,6 +16,10 @@ import {
   termSizeClass,
   type CardTextSize,
 } from "@/lib/textSize";
+import {
+  CHARACTER_STYLE_CLASS,
+  type CharacterStyle,
+} from "@/lib/characterStyle";
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
@@ -26,6 +30,7 @@ interface CardFaceProps {
   stage: Stage;
   interactive: boolean;
   textSize?: CardTextSize;
+  characterStyle?: CharacterStyle;
   /** Speak the term automatically the moment the reading is revealed. */
   autoPlay?: boolean;
 }
@@ -108,6 +113,7 @@ export function CardFace({
   stage,
   interactive,
   textSize = "normal",
+  characterStyle = "modern",
   autoPlay = false,
 }: CardFaceProps) {
   const sizes = CARD_TEXT_CLASSES[textSize];
@@ -256,7 +262,8 @@ export function CardFace({
           // break-normal: wrap between words only — long terms shrink via
           // termSizeClass instead of ever breaking mid-word.
           "max-w-full break-normal px-2 font-bold leading-tight tracking-tight",
-          termSizeClass(card.term, textSize)
+          termSizeClass(card.term, textSize),
+          CHARACTER_STYLE_CLASS[characterStyle]
         )}
       >
         {card.term}

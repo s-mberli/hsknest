@@ -58,6 +58,7 @@ export const settingsSchema = z.object({
   theme: z.enum(["light", "dark", "system"]).optional(),
   studyTheme: z.enum(["dark", "follow"]).optional(),
   cardTextSize: z.enum(["small", "normal", "large"]).optional(),
+  characterStyle: z.enum(["modern", "academic"]).optional(),
   showReading: z.boolean().optional(),
   soundEffects: z.boolean().optional(),
   autoPlayPronunciation: z.boolean().optional(),

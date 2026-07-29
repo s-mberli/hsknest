@@ -32,6 +32,7 @@ model User {
   theme              String           @default("system") // "light" | "dark" | "system"
   studyTheme         String           @default("follow") // "dark" = forced focus mode | "follow" = match app theme
   cardTextSize       String           @default("normal") // "small" | "normal" | "large" — study card text scale
+  characterStyle     String           @default("modern") // "modern" (Hei/sans) | "academic" (Song/serif) — study card term font
   showReading        Boolean          @default(true) // false = flashcards skip the reading hint stage
   soundEffects       Boolean          @default(true) // false = mute study sound effects
   autoPlayPronunciation Boolean       @default(true) // speak the term when its reading is revealed

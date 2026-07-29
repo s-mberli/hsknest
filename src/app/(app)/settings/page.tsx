@@ -21,6 +21,7 @@ export default async function SettingsPage() {
       theme: true,
       studyTheme: true,
       cardTextSize: true,
+      characterStyle: true,
       showReading: true,
       soundEffects: true,
       autoPlayPronunciation: true,
@@ -54,6 +55,9 @@ export default async function SettingsPage() {
         studyTheme={(user.studyTheme as "dark" | "follow") ?? "dark"}
         cardTextSize={
           (user.cardTextSize as "small" | "normal" | "large") ?? "normal"
+        }
+        characterStyle={
+          (user.characterStyle as "modern" | "academic") ?? "modern"
         }
         showReading={user.showReading}
         soundEffects={user.soundEffects}

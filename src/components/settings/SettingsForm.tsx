@@ -15,6 +15,7 @@ import { SettingsTabs } from "@/components/settings/SettingsTabs";
 type Theme = "light" | "dark" | "system";
 type StudyTheme = "dark" | "follow";
 type CardTextSize = "small" | "normal" | "large";
+type CharacterStyle = "modern" | "academic";
 
 interface SettingsFormProps {
   email: string;
@@ -24,6 +25,7 @@ interface SettingsFormProps {
   theme: Theme;
   studyTheme: StudyTheme;
   cardTextSize: CardTextSize;
+  characterStyle: CharacterStyle;
   showReading: boolean;
   soundEffects: boolean;
   autoPlayPronunciation: boolean;
@@ -109,6 +111,7 @@ export function SettingsForm(props: SettingsFormProps) {
             initialTheme={props.theme}
             initialStudyTheme={props.studyTheme}
             initialCardTextSize={props.cardTextSize}
+            initialCharacterStyle={props.characterStyle}
             initialShowReading={props.showReading}
             initialSoundEffects={props.soundEffects}
             initialAutoPlayPronunciation={props.autoPlayPronunciation}

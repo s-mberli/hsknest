@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getSubscriptionInfo } from "@/lib/subscription";
 import { normalizeCardTextSize } from "@/lib/textSize";
+import { normalizeCharacterStyle } from "@/lib/characterStyle";
 
 export default async function StudyPage() {
   const userId = await getCurrentUserId();
@@ -16,6 +17,7 @@ export default async function StudyPage() {
       email: true,
       studyTheme: true,
       cardTextSize: true,
+      characterStyle: true,
       showReading: true,
       soundEffects: true,
       autoPlayPronunciation: true,
@@ -33,6 +35,7 @@ export default async function StudyPage() {
     <StudyScreen
       studyTheme={studyTheme}
       textSize={normalizeCardTextSize(user.cardTextSize)}
+      characterStyle={normalizeCharacterStyle(user.characterStyle)}
       showReading={user.showReading}
       soundEffects={user.soundEffects}
       autoPlayPronunciation={user.autoPlayPronunciation}
