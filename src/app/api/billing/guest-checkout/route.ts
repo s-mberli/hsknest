@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { email: true, stripeCustomerId: true },
+    select: { email: true, stripeCustomerId: true, billingConsentAt: true },
   });
   if (!user || !user.email.endsWith("@guest.local")) {
     return NextResponse.json(
@@ -79,30 +79,10 @@ export async function POST(req: Request) {
     const passwordHash = await hash(password, 12);
     const tokenStr = randomBytes(32).toString("hex");
 
-    await prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          email: normalizedEmail,
-          passwordHash,
-          ...(name ? { name } : {}),
-          billingConsentAt: new Date(),
-        },
-      });
-
-      await tx.verificationToken.create({
-        data: {
-          email: normalizedEmail,
-          token: hashToken(tokenStr),
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
-        },
-      });
-    });
-
-    sendVerificationEmail(normalizedEmail, tokenStr).catch((err) => {
-      console.error("Failed to send verification email:", err);
-    });
-
+    // Resolve Stripe customer before session creation. If the user already
+    // has a customer ID, update its email; otherwise create one. Must happen
+    // before the DB identity change so a failed session doesn't orphan the
+    // user (email stays @guest.local, retries pass the guard again).
     const stripe = getStripe();
     let customerId = user.stripeCustomerId;
 
@@ -128,6 +108,32 @@ export async function POST(req: Request) {
       cancel_url: `${appUrl}/settings?billing=canceled`,
       metadata: { userId },
       subscription_data: { metadata: { userId } },
+    });
+
+    // Only commit the identity change AFTER Stripe succeeds. On failure the
+    // email stays @guest.local so the user can retry.
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          email: normalizedEmail,
+          passwordHash,
+          ...(name ? { name } : {}),
+          ...(!user.billingConsentAt ? { billingConsentAt: new Date() } : {}),
+        },
+      });
+
+      await tx.verificationToken.create({
+        data: {
+          email: normalizedEmail,
+          token: hashToken(tokenStr),
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+        },
+      });
+    });
+
+    sendVerificationEmail(normalizedEmail, tokenStr).catch((err) => {
+      console.error("Failed to send verification email:", err);
     });
 
     return NextResponse.json({ url: session.url });

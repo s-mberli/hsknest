@@ -50,6 +50,8 @@ next-env.d.ts
 # prisma / sqlite
 /prisma/*.db
 /prisma/*.db-journal
+/prisma/*.db-wal
+/prisma/*.db-shm
 
 # local assistant config (not part of the app)
 /CLAUDE.md

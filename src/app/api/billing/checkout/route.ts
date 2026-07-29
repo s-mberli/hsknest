@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { logApiError, requireUser } from "@/lib/apiRoute";
+import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { getStripe } from "@/lib/stripe";
 import { isSelfHosted } from "@/lib/subscription";
+import { checkoutIntervalSchema } from "@/lib/validation";
 
 /**
  * Start a Stripe Checkout session for the hosted plan. The client sends
@@ -23,15 +24,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
-  let interval = "monthly";
-  try {
-    const body = await req.json();
-    if (body.interval === "yearly") {
-      interval = "yearly";
-    }
-  } catch {
-    // ignore missing/invalid body, default to monthly
-  }
+  const body = await parseBody(req, checkoutIntervalSchema);
+  if (body instanceof NextResponse) return body;
+  const interval = body.interval === "yearly" ? "yearly" : "monthly";
 
   const priceId =
     interval === "yearly"
@@ -49,7 +44,7 @@ export async function POST(req: Request) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, stripeCustomerId: true },
+      select: { email: true, stripeCustomerId: true, billingConsentAt: true },
     });
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -87,11 +82,14 @@ export async function POST(req: Request) {
 
     // The Upgrade button's consent checkbox is required client-side; the
     // timestamp is the durable record (EU withdrawal-right acknowledgment).
-    // Mirrors the guest-checkout path so every upgrade route records consent.
-    await prisma.user.update({
-      where: { id: userId },
-      data: { billingConsentAt: new Date() },
-    });
+    // Only stamp the FIRST consent — subsequent checkout attempts must not
+    // overwrite the original timestamp so a compliance record stays intact.
+    if (!user.billingConsentAt) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { billingConsentAt: new Date() },
+      });
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

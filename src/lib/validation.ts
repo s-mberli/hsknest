@@ -151,6 +151,10 @@ export const listPrioritySchema = z.object({
   order: z.array(z.string().cuid()).min(1).max(100),
 });
 
+export const checkoutIntervalSchema = z.object({
+  interval: z.enum(["monthly", "yearly"]).optional(),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type GuestCheckoutInput = z.infer<typeof guestCheckoutSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
@@ -168,3 +172,4 @@ export type BulkWordsInput = z.infer<typeof bulkWordsSchema>;
 export type UpdateWordInput = z.infer<typeof updateWordSchema>;
 export type ImportInput = z.infer<typeof importSchema>;
 export type ListPriorityInput = z.infer<typeof listPrioritySchema>;
+export type CheckoutIntervalInput = z.infer<typeof checkoutIntervalSchema>;
