@@ -16,6 +16,7 @@ import { Segmented, SettingRow } from "./shared";
 type Theme = "light" | "dark" | "system";
 type StudyTheme = "dark" | "follow";
 type CardTextSize = "small" | "normal" | "large";
+type CharacterStyle = "modern" | "academic";
 
 const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: "light", label: "Light" },
@@ -34,10 +35,16 @@ const CARD_TEXT_SIZE_OPTIONS: { value: CardTextSize; label: string }[] = [
   { value: "large", label: "Large" },
 ];
 
+const CHARACTER_STYLE_OPTIONS: { value: CharacterStyle; label: string }[] = [
+  { value: "modern", label: "Modern (Apps)" },
+  { value: "academic", label: "Academic (HSK Print)" },
+];
+
 export function AppearanceSection({
   initialTheme,
   initialStudyTheme,
   initialCardTextSize,
+  initialCharacterStyle,
   initialShowReading,
   initialSoundEffects,
   initialAutoPlayPronunciation,
@@ -45,6 +52,7 @@ export function AppearanceSection({
   initialTheme: Theme;
   initialStudyTheme: StudyTheme;
   initialCardTextSize: CardTextSize;
+  initialCharacterStyle: CharacterStyle;
   initialShowReading: boolean;
   initialSoundEffects: boolean;
   initialAutoPlayPronunciation: boolean;
@@ -55,6 +63,8 @@ export function AppearanceSection({
   const [studyTheme, setStudyTheme] = useState<StudyTheme>(initialStudyTheme);
   const [cardTextSize, setCardTextSize] =
     useState<CardTextSize>(initialCardTextSize);
+  const [characterStyle, setCharacterStyle] =
+    useState<CharacterStyle>(initialCharacterStyle);
   const [showReading, setShowReading] = useState(initialShowReading);
   const [soundEffects, setSoundEffects] = useState(initialSoundEffects);
   const [autoPlayPronunciation, setAutoPlayPronunciation] = useState(
@@ -154,6 +164,23 @@ export function AppearanceSection({
               const prev = cardTextSize;
               setCardTextSize(next);
               patch("cardTextSize", next, () => setCardTextSize(prev));
+            }}
+          />
+        </SettingRow>
+
+        <SettingRow
+          name="Character style"
+          description="Modern uses clean, digital fonts (Hei). Academic uses print style (Song) as on the HSK exam."
+        >
+          <Segmented
+            label="Character style"
+            value={characterStyle}
+            disabled={saving}
+            options={CHARACTER_STYLE_OPTIONS}
+            onChange={(next) => {
+              const prev = characterStyle;
+              setCharacterStyle(next);
+              patch("characterStyle", next, () => setCharacterStyle(prev));
             }}
           />
         </SettingRow>

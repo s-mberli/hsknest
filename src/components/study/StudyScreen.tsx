@@ -13,6 +13,7 @@ import { useStudySession, type SwipeDirection } from "@/hooks/useStudySession";
 import { trackEventOnce } from "@/lib/analytics";
 import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
+import type { CharacterStyle } from "@/lib/characterStyle";
 import { cn } from "@/lib/utils";
 
 const QUALITY_BY_DIRECTION = { left: 1, right: 4, up: 5, down: 3 } as const;
@@ -20,6 +21,7 @@ const QUALITY_BY_DIRECTION = { left: 1, right: 4, up: 5, down: 3 } as const;
 interface StudyScreenProps {
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
+  characterStyle: CharacterStyle;
   showReading?: boolean;
   soundEffects?: boolean;
   autoPlayPronunciation?: boolean;
@@ -30,6 +32,7 @@ interface StudyScreenProps {
 export function StudyScreen({
   studyTheme,
   textSize,
+  characterStyle,
   showReading = true,
   soundEffects = true,
   autoPlayPronunciation = true,
@@ -40,6 +43,7 @@ export function StudyScreen({
       <StudySession
         studyTheme={studyTheme}
         textSize={textSize}
+        characterStyle={characterStyle}
         showReading={showReading}
         soundEffects={soundEffects}
         autoPlayPronunciation={autoPlayPronunciation}
@@ -52,6 +56,7 @@ export function StudyScreen({
 function StudySession({
   studyTheme,
   textSize,
+  characterStyle,
   showReading = true,
   soundEffects = true,
   autoPlayPronunciation = true,
@@ -252,6 +257,7 @@ function StudySession({
               onSwipe={handleSwipe}
               onContinue={handleContinue}
               textSize={textSize}
+              characterStyle={characterStyle}
               autoPlay={autoPlayPronunciation}
             />
 
