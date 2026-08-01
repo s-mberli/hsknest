@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { parseBody, requireUser } from "@/lib/apiRoute";
+import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
+import { ownedListWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
 import { parseDelimited } from "@/lib/import";
 import { rateLimit } from "@/lib/rateLimit";
@@ -36,100 +37,108 @@ export async function POST(
   const parsed = await parseBody(req, importSchema);
   if (parsed instanceof NextResponse) return parsed;
 
-  const list = await prisma.wordList.findUnique({
-    where: { id },
+  const list = await prisma.wordList.findFirst({
+    where: ownedListWhere(id, userId),
     select: { createdById: true },
   });
-  if (!list || list.createdById !== userId) {
+  if (!list) {
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
-  const {
-    words,
-    skipped: parseSkipped,
-    skippedNoTerm,
-    skippedDuplicate,
-  } = parseDelimited(parsed.text, {
-    delimiter: parsed.delimiter,
-    columns: parsed.columns,
-  });
-
-  // Drop terms that already exist in the list (case-insensitive).
-  const existing = await prisma.word.findMany({
-    where: { wordListId: id },
-    select: { term: true },
-  });
-  const existingTerms = new Set(existing.map((w) => w.term.toLowerCase()));
-
-  let skipped = parseSkipped;
-  let skippedAlreadyInList = 0;
-  let skippedOverCap = 0;
-  let skippedInvalid = 0;
-  const toAdd: typeof words = [];
-  for (const w of words) {
-    // Enforce the same field caps as manual add: a raw CSV cell must not
-    // smuggle in oversized values that wordInputSchema would reject.
-    if (w.term.length > MAX_TERM) {
-      skipped += 1;
-      skippedInvalid += 1;
-      continue;
-    }
-    if (existingTerms.has(w.term.toLowerCase())) {
-      skipped += 1;
-      skippedAlreadyInList += 1;
-      continue;
-    }
-    if (toAdd.length >= MAX_ROWS) {
-      skipped += 1;
-      skippedOverCap += 1;
-      continue;
-    }
-    // Non-identity fields are truncated best-effort rather than dropped.
-    toAdd.push({
-      ...w,
-      translation: w.translation.slice(0, MAX_TRANSLATION),
-      phonetic: w.phonetic ? w.phonetic.slice(0, MAX_PHONETIC) : w.phonetic,
-      meanings: w.meanings
-        ? w.meanings
-            .slice(0, MAX_MEANINGS)
-            .map((m) => m.slice(0, MAX_TRANSLATION))
-        : w.meanings,
+  try {
+    const {
+      words,
+      skipped: parseSkipped,
+      skippedNoTerm,
+      skippedDuplicate,
+    } = parseDelimited(parsed.text, {
+      delimiter: parsed.delimiter,
+      columns: parsed.columns,
     });
-  }
 
-  let added = 0;
-  if (toAdd.length > 0) {
-    const last = await prisma.word.findFirst({
+    // Drop terms that already exist in the list (case-insensitive).
+    const existing = await prisma.word.findMany({
       where: { wordListId: id },
-      orderBy: { position: "desc" },
-      select: { position: true },
+      select: { term: true },
     });
-    const basePosition = (last?.position ?? -1) + 1;
+    const existingTerms = new Set(existing.map((w) => w.term.toLowerCase()));
 
-    const result = await prisma.word.createMany({
-      data: toAdd.map((w, i) => ({
-        wordListId: id,
-        term: w.term,
-        translation: w.translation,
-        phonetic: w.phonetic,
-        ...(w.meanings && w.meanings.length > 0
-          ? { metadata: { meanings: w.meanings.map((gloss) => ({ gloss })) } }
-          : {}),
-        position: basePosition + i,
-      })),
+    let skipped = parseSkipped;
+    let skippedAlreadyInList = 0;
+    let skippedOverCap = 0;
+    let skippedInvalid = 0;
+    const toAdd: typeof words = [];
+    for (const w of words) {
+      // Enforce the same field caps as manual add: a raw CSV cell must not
+      // smuggle in oversized values that wordInputSchema would reject.
+      if (w.term.length > MAX_TERM) {
+        skipped += 1;
+        skippedInvalid += 1;
+        continue;
+      }
+      if (existingTerms.has(w.term.toLowerCase())) {
+        skipped += 1;
+        skippedAlreadyInList += 1;
+        continue;
+      }
+      if (toAdd.length >= MAX_ROWS) {
+        skipped += 1;
+        skippedOverCap += 1;
+        continue;
+      }
+      // Non-identity fields are truncated best-effort rather than dropped.
+      toAdd.push({
+        ...w,
+        translation: w.translation.slice(0, MAX_TRANSLATION),
+        phonetic: w.phonetic ? w.phonetic.slice(0, MAX_PHONETIC) : w.phonetic,
+        meanings: w.meanings
+          ? w.meanings
+              .slice(0, MAX_MEANINGS)
+              .map((m) => m.slice(0, MAX_TRANSLATION))
+          : w.meanings,
+      });
+    }
+
+    let added = 0;
+    if (toAdd.length > 0) {
+      const last = await prisma.word.findFirst({
+        where: { wordListId: id },
+        orderBy: { position: "desc" },
+        select: { position: true },
+      });
+      const basePosition = (last?.position ?? -1) + 1;
+
+      const result = await prisma.word.createMany({
+        data: toAdd.map((w, i) => ({
+          wordListId: id,
+          term: w.term,
+          translation: w.translation,
+          phonetic: w.phonetic,
+          ...(w.meanings && w.meanings.length > 0
+            ? { metadata: { meanings: w.meanings.map((gloss) => ({ gloss })) } }
+            : {}),
+          position: basePosition + i,
+        })),
+      });
+      added = result.count;
+    }
+
+    return NextResponse.json({
+      added,
+      skipped,
+      reasons: {
+        noTerm: skippedNoTerm,
+        duplicateInPaste: skippedDuplicate,
+        alreadyInList: skippedAlreadyInList,
+        overCap: skippedOverCap,
+        invalid: skippedInvalid,
+      },
     });
-    added = result.count;
+  } catch (error) {
+    logApiError("/api/lists/[id]/import", error, userId);
+    return NextResponse.json(
+      { error: "Could not import words" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({
-    added,
-    skipped,
-    reasons: {
-      noTerm: skippedNoTerm,
-      duplicateInPaste: skippedDuplicate,
-      alreadyInList: skippedAlreadyInList,
-      overCap: skippedOverCap,
-      invalid: skippedInvalid,
-    },
-  });
 }

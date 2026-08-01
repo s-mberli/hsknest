@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-import { parseBody, requirePaidUser } from "@/lib/apiRoute";
+import { logApiError, parseBody, requirePaidUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { applyUserModifiers, getAlgorithm } from "@/lib/srs";
@@ -147,55 +147,82 @@ export async function POST(req: Request) {
 
   const { next } = result;
 
-  await prisma.$transaction([
-    prisma.userProgress.update({
-      where: {
-        userId_wordId: { userId, wordId },
-        // Dedup: prevent duplicate submission within 5 seconds, allowing null (first review)
-        OR: [
-          { lastReviewedAt: null },
-          { lastReviewedAt: { lt: new Date(submittedAt.getTime() - 5000) } },
-        ],
-      },
-      data: {
-        state: next.state,
-        easeFactor: next.easeFactor,
-        intervalDays: next.intervalDays,
-        repetitions: next.repetitions,
-        box: next.box,
-        lapses: next.lapses,
-        dueAt: next.dueAt,
-        lastReviewedAt: next.lastReviewedAt,
-        // Assumed checks must not consume the daily NEW budget, so leave
-        // introducedAt untouched; normal reviews stamp it on first sight.
-        introducedAt: isAssumedCheck
-          ? progress.introducedAt
-          : (progress.introducedAt ?? now),
-        assumedCheckedAt: isAssumedCheck ? now : progress.assumedCheckedAt,
-        srsData: next.srsData
-          ? (next.srsData as Prisma.InputJsonValue)
-          : undefined,
-      },
-    }),
-    prisma.reviewLog.create({
-      data: {
-        userId,
-        guestId,
-        wordId,
-        quality,
-        algorithm: user.preferredAlgorithm,
-        intervalBefore: progress.intervalDays,
-        intervalAfter: next.intervalDays,
-        reviewedAt: now,
-      },
-    }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.userProgress.update({
+        where: {
+          userId_wordId: { userId, wordId },
+          // Dedup: prevent duplicate submission within 5 seconds, allowing null (first review)
+          OR: [
+            { lastReviewedAt: null },
+            { lastReviewedAt: { lt: new Date(submittedAt.getTime() - 5000) } },
+          ],
+        },
+        data: {
+          state: next.state,
+          easeFactor: next.easeFactor,
+          intervalDays: next.intervalDays,
+          repetitions: next.repetitions,
+          box: next.box,
+          lapses: next.lapses,
+          dueAt: next.dueAt,
+          lastReviewedAt: next.lastReviewedAt,
+          // Assumed checks must not consume the daily NEW budget, so leave
+          // introducedAt untouched; normal reviews stamp it on first sight.
+          introducedAt: isAssumedCheck
+            ? progress.introducedAt
+            : (progress.introducedAt ?? now),
+          assumedCheckedAt: isAssumedCheck ? now : progress.assumedCheckedAt,
+          srsData: next.srsData
+            ? (next.srsData as Prisma.InputJsonValue)
+            : undefined,
+        },
+      }),
+      prisma.reviewLog.create({
+        data: {
+          userId,
+          guestId,
+          wordId,
+          quality,
+          algorithm: user.preferredAlgorithm,
+          intervalBefore: progress.intervalDays,
+          intervalAfter: next.intervalDays,
+          reviewedAt: now,
+        },
+      }),
+    ]);
 
-  return NextResponse.json({
-    next: {
-      dueAt: next.dueAt,
-      intervalDays: next.intervalDays,
-      state: next.state,
-    },
-  });
+    return NextResponse.json({
+      next: {
+        dueAt: next.dueAt,
+        intervalDays: next.intervalDays,
+        state: next.state,
+      },
+    });
+  } catch (error) {
+    // The dedup `where` above matches zero rows when this is a genuine
+    // duplicate submission (e.g. postReview's retry landing after the
+    // original request actually succeeded) — Prisma throws P2025 for an
+    // `update` whose `where` matched nothing. That's not a failure, it's the
+    // dedup guard doing its job: the schedule was already advanced by the
+    // first submission, so report the card's current (already-updated) state
+    // as success rather than surfacing a 500 for expected behavior.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return NextResponse.json({
+        next: {
+          dueAt: next.dueAt,
+          intervalDays: next.intervalDays,
+          state: next.state,
+        },
+      });
+    }
+    logApiError("/api/study/review", error, userId);
+    return NextResponse.json(
+      { error: "Could not save review" },
+      { status: 500 }
+    );
+  }
 }

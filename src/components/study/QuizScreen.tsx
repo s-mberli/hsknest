@@ -2,14 +2,16 @@
 
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { StudyShell } from "@/components/study/StudyShell";
 import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
+import { useSessionTiming } from "@/hooks/useSessionTiming";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { audioAvailableFor, playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
@@ -45,8 +47,6 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   const practice = true;
   const [cursor, setCursor] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
-  const [startedAt] = useState(() => Date.now());
-  const [endTime, setEndTime] = useState(0);
 
   const advanceTimer = useRef<number | null>(null);
   const sizes = CARD_TEXT_CLASSES[textSize];
@@ -70,10 +70,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
-
-  useEffect(() => {
-    if (done) queueMicrotask(() => setEndTime(Date.now()));
-  }, [done]);
+  const { startedAt, elapsedMs } = useSessionTiming(done);
 
   const answerOf = (c: QuizCard) =>
     mode === "reading" ? c.phonetic ?? "" : gameGloss(c);
@@ -108,12 +105,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   }
 
   return (
-    <div
-      className={cn(
-        "fixed inset-0 z-50 flex flex-col bg-background text-foreground",
-        studyTheme === "dark" && "dark"
-      )}
-    >
+    <StudyShell studyTheme={studyTheme}>
       <SessionHud
         reviewed={cursor}
         total={cards.length}
@@ -153,7 +145,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             reviewed={cards.length}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={endTime ? endTime - startedAt : 0}
+            elapsedMs={elapsedMs}
             missed={missed}
             practice
             note={
@@ -240,6 +232,6 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
           </motion.div>
         )}
       </main>
-    </div>
+    </StudyShell>
   );
 }

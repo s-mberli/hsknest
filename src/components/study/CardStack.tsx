@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SwipeCard } from "@/components/study/SwipeCard";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
+import { GRADE_LABELS, QUALITY_BY_DIRECTION } from "@/lib/grading";
 import type { CardTextSize } from "@/lib/textSize";
 import type { CharacterStyle } from "@/lib/characterStyle";
 import { cn } from "@/lib/utils";
@@ -115,18 +116,26 @@ export function CardStack({
   const behind = [...upcoming].reverse();
 
   // On-screen grade buttons (mirror the swipe/keyboard gestures) shown once
-  // the answer is revealed. Order left→right: Forgot, Hard, Knew, Easy.
+  // the answer is revealed. Order left→right: Again, Hard, Good, Easy.
+  // Icons stay direction-keyed here; label/className come from the shared
+  // grading vocabulary (@/lib/grading) so wording can't drift between screens.
+  const ICON_BY_DIRECTION: Record<SwipeDirection, typeof Check> = {
+    left: X,
+    down: Minus,
+    right: Check,
+    up: ChevronsUp,
+  };
   const GRADES: {
     dir: SwipeDirection;
     label: string;
     icon: typeof Check;
     className: string;
-  }[] = [
-    { dir: "left", label: "Forgot", icon: X, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
-    { dir: "down", label: "Hard", icon: Minus, className: "text-amber border-amber/40 hover:bg-amber/10" },
-    { dir: "right", label: "Knew", icon: Check, className: "text-success border-success/40 hover:bg-success/10" },
-    { dir: "up", label: "Easy", icon: ChevronsUp, className: "text-sky-600 dark:text-sky-400 border-sky-500/40 hover:bg-sky-500/10" },
-  ];
+  }[] = (Object.entries(QUALITY_BY_DIRECTION) as [SwipeDirection, number][]).map(
+    ([dir, quality]) => {
+      const g = GRADE_LABELS.find((g) => g.quality === quality)!;
+      return { dir, label: g.label, icon: ICON_BY_DIRECTION[dir], className: g.className };
+    }
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6 md:w-fit md:max-w-none">

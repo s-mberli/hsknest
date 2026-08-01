@@ -11,12 +11,16 @@ export function Forecast({ forecast }: { forecast: number[] }) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     // "Today"/"Tmrw" anchor the timeline for new users; weekday letters after.
+    // Locale pinned to "en-US" (not `undefined`) so server and client always
+    // agree — an unspecified locale resolves to the *runtime's* default,
+    // which differs between Node (SSR) and the browser and was causing a
+    // hydration mismatch whenever they disagreed.
     const label =
       i === 0
         ? "Today"
         : i === 1
           ? "Tmrw"
-          : d.toLocaleDateString(undefined, { weekday: "narrow" });
+          : d.toLocaleDateString("en-US", { weekday: "narrow" });
     return { count, label, isToday: i === 0 };
   });
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { visibleListWhere } from "@/lib/ownership";
+import { visibleLanguageWhere, visibleListWhere } from "@/lib/ownership";
 import { createListSchema } from "@/lib/validation";
 
 export async function GET(req: Request) {
@@ -84,10 +84,7 @@ export async function POST(req: Request) {
     }
   } else {
     const language = await prisma.language.findFirst({
-      where: {
-        id: languageId,
-        OR: [{ createdById: null }, { createdById: userId }],
-      },
+      where: { id: languageId, ...visibleLanguageWhere(userId) },
       select: { id: true },
     });
     if (!language) {

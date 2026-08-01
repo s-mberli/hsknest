@@ -57,6 +57,10 @@ next-env.d.ts
 /CLAUDE.md
 /.claude/
 /.opencode/
+# third-party agent skills (npx skills add) — local only, never published
+/.agents/
+/agent/
+/skills-lock.json
 
 # private launch/ops notes
 /LAUNCH-CHECKLIST.md

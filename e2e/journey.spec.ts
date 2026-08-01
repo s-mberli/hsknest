@@ -77,7 +77,7 @@ test("enroll a starter list", async ({ page }) => {
     (res) => res.url().includes("/enroll") && res.request().method() === "POST"
   );
   await page
-    .getByRole("button", { name: /add all to my queue/i })
+    .getByRole("button", { name: /add this list to my queue/i })
     .click();
   expect((await enrolled).ok()).toBeTruthy();
   // Enrollment reflects on the dashboard ring.
@@ -264,7 +264,7 @@ test("enrolling a second list skips already-tracked words", async ({ page }) => 
   const enrolled = page.waitForResponse(
     (res) => res.url().includes("/enroll") && res.request().method() === "POST"
   );
-  await page.getByRole("button", { name: /add all to my queue/i }).click();
+  await page.getByRole("button", { name: /add this list to my queue/i }).click();
   const body = await (await enrolled).json();
   // Some words overlap with HSK 1 (的, 是, …) — they must not be re-enrolled.
   expect(body.alreadyTracked).toBeGreaterThan(0);

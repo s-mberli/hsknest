@@ -2,7 +2,7 @@ import { hash } from "bcryptjs";
 import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 
-import { parseBody, requireUser } from "@/lib/apiRoute";
+import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { sendVerificationEmail } from "@/lib/email";
@@ -72,6 +72,22 @@ export async function POST(req: Request) {
         ...(name ? { name } : { name: null }),
       },
     });
+
+    // Fire-and-forget verification email — mirrors signup so upgraded users get
+    // the same (soft, non-blocking) verify link instead of a dead-end banner.
+    const token = randomBytes(32).toString("hex");
+    await prisma.verificationToken.create({
+      data: {
+        email: normalizedEmail,
+        token: hashToken(token),
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+      },
+    });
+    sendVerificationEmail(normalizedEmail, token).catch((err) => {
+      console.error("Failed to send verification email:", err);
+    });
+
+    return NextResponse.json({ email: normalizedEmail });
   } catch (error) {
     if (
       typeof error === "object" &&
@@ -84,22 +100,10 @@ export async function POST(req: Request) {
         { status: 409 }
       );
     }
-    throw error;
+    logApiError("/api/account/upgrade", error, userId);
+    return NextResponse.json(
+      { error: "Could not upgrade account" },
+      { status: 500 }
+    );
   }
-
-  // Fire-and-forget verification email — mirrors signup so upgraded users get
-  // the same (soft, non-blocking) verify link instead of a dead-end banner.
-  const token = randomBytes(32).toString("hex");
-  await prisma.verificationToken.create({
-    data: {
-      email: normalizedEmail,
-      token: hashToken(token),
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
-    },
-  });
-  sendVerificationEmail(normalizedEmail, token).catch((err) => {
-    console.error("Failed to send verification email:", err);
-  });
-
-  return NextResponse.json({ email: normalizedEmail });
 }

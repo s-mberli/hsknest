@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
-import { visibleListWhere } from "@/lib/ownership";
+import { ownedListWhere, visibleListWhere } from "@/lib/ownership";
 import { updateListSchema } from "@/lib/validation";
 
 export async function GET(
@@ -75,11 +75,11 @@ export async function PATCH(
   if (parsed instanceof NextResponse) return parsed;
 
   // Owner-only: seeded/public lists (createdById null) are read-only.
-  const list = await prisma.wordList.findUnique({
-    where: { id },
+  const list = await prisma.wordList.findFirst({
+    where: ownedListWhere(id, userId),
     select: { createdById: true },
   });
-  if (!list || list.createdById !== userId) {
+  if (!list) {
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 
@@ -105,11 +105,11 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const list = await prisma.wordList.findUnique({
-    where: { id },
+  const list = await prisma.wordList.findFirst({
+    where: ownedListWhere(id, userId),
     select: { createdById: true },
   });
-  if (!list || list.createdById !== userId) {
+  if (!list) {
     return NextResponse.json({ error: "List not found" }, { status: 404 });
   }
 

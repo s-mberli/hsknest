@@ -1,14 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { StudyShell } from "@/components/study/StudyShell";
 import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
+import { useSessionTiming } from "@/hooks/useSessionTiming";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
@@ -101,7 +103,6 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   const [selected, setSelected] = useState<Tile | null>(null);
   const [shaking, setShaking] = useState<string | null>(null);
   const [wrongPair, setWrongPair] = useState<{ a: Tile; b: Tile } | null>(null);
-  const [startedAt] = useState(() => Date.now());
 
   const { grade, combo, bestCombo, correct, missed: missedWords } = usePracticeSession({ practice: true });
 
@@ -146,11 +147,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   }, [roundCards]);
 
   const done = !loading && (rounds.length === 0 || round >= rounds.length);
-
-  const [endTime, setEndTime] = useState(0);
-  useEffect(() => {
-    if (done) queueMicrotask(() => setEndTime(Date.now()));
-  }, [done]);
+  const { startedAt, elapsedMs } = useSessionTiming(done);
 
   function tap(tile: Tile) {
     if (matched.has(tile.wordId)) return;
@@ -209,12 +206,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
   const gradedCount = graded.size;
 
   return (
-    <div
-      className={cn(
-        "fixed inset-0 z-50 flex flex-col bg-background text-foreground",
-        studyTheme === "dark" && "dark"
-      )}
-    >
+    <StudyShell studyTheme={studyTheme}>
       <SessionHud
         reviewed={gradedCount}
         total={totalWords}
@@ -239,7 +231,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
             reviewed={totalWords}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={endTime ? endTime - startedAt : 0}
+            elapsedMs={elapsedMs}
             missed={missedWords}
             practice
           />
@@ -289,6 +281,6 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
           </motion.div>
         )}
       </main>
-    </div>
+    </StudyShell>
   );
 }

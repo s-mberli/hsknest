@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 
+import { logApiError } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { verifyTokenSchema } from "@/lib/validation";
@@ -30,26 +31,31 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?verify=error", base));
   }
 
-  const tokenHash = hashToken(parsed.data.token);
-  const record = await prisma.verificationToken.findUnique({
-    where: { token: tokenHash },
-  });
+  try {
+    const tokenHash = hashToken(parsed.data.token);
+    const record = await prisma.verificationToken.findUnique({
+      where: { token: tokenHash },
+    });
 
-  if (!record || record.expires < new Date()) {
-    if (record) {
-      await prisma.verificationToken.delete({ where: { id: record.id } });
+    if (!record || record.expires < new Date()) {
+      if (record) {
+        await prisma.verificationToken.delete({ where: { id: record.id } });
+      }
+      return NextResponse.redirect(new URL("/login?verify=error", base));
     }
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { email: record.email },
+        data: { emailVerified: new Date() },
+      }),
+      // Single-use: clear all outstanding verification tokens for this email.
+      prisma.verificationToken.deleteMany({ where: { email: record.email } }),
+    ]);
+
+    return NextResponse.redirect(new URL("/login?verify=success", base));
+  } catch (error) {
+    logApiError("/api/auth/verify", error);
     return NextResponse.redirect(new URL("/login?verify=error", base));
   }
-
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { email: record.email },
-      data: { emailVerified: new Date() },
-    }),
-    // Single-use: clear all outstanding verification tokens for this email.
-    prisma.verificationToken.deleteMany({ where: { email: record.email } }),
-  ]);
-
-  return NextResponse.redirect(new URL("/login?verify=success", base));
 }

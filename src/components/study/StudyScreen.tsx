@@ -8,15 +8,14 @@ import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { GradeIsland } from "@/components/study/GradeIsland";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { StudyShell } from "@/components/study/StudyShell";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useStudySession, type SwipeDirection } from "@/hooks/useStudySession";
 import { trackEventOnce } from "@/lib/analytics";
+import { QUALITY_BY_DIRECTION } from "@/lib/grading";
 import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
 import type { CharacterStyle } from "@/lib/characterStyle";
-import { cn } from "@/lib/utils";
-
-const QUALITY_BY_DIRECTION = { left: 1, right: 4, up: 5, down: 3 } as const;
 
 interface StudyScreenProps {
   studyTheme: "dark" | "follow";
@@ -70,21 +69,19 @@ function StudySession({
     upcoming,
     stage,
     reviewed,
+    gradeableTotal,
     combo,
     bestCombo,
     correct,
     missed,
     lastGrade,
     done,
+    startedAt,
+    elapsedMs,
     advance,
     swipe,
     continuePreview,
   } = useStudySession(query, { showReading, practice });
-
-  // Preview entries duplicate their graded reappearance — count each word once.
-  const gradeableTotal = cards.filter((c) => !c.preview).length;
-
-  const [startedAt] = useState(() => Date.now());
 
   const [, setConsecutiveMouseClicks] = useState(0);
 
@@ -169,11 +166,6 @@ function StudySession({
     [continuePreview, trackMouseClickForNudge]
   );
 
-  const [endTime, setEndTime] = useState(0);
-  useEffect(() => {
-    if (done) queueMicrotask(() => setEndTime(Date.now()));
-  }, [done]);
-
   // Mirror the user's setting into the sound module (no-ops when off).
   useEffect(() => {
     setSoundEnabled(soundEffects);
@@ -207,14 +199,7 @@ function StudySession({
   }, [bestCombo]);
 
   return (
-    // Full-screen distraction-free study. "dark" forces focus mode; "follow"
-    // inherits next-themes' class on <html>.
-    <div
-      className={cn(
-        "fixed inset-0 z-50 flex flex-col bg-background text-foreground",
-        studyTheme === "dark" && "dark"
-      )}
-    >
+    <StudyShell studyTheme={studyTheme}>
       <SessionHud
         reviewed={reviewed}
         total={gradeableTotal}
@@ -241,7 +226,7 @@ function StudySession({
             reviewed={reviewed}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={endTime ? endTime - startedAt : 0}
+            elapsedMs={elapsedMs}
             missed={missed}
             practice={practice}
           />
@@ -269,6 +254,6 @@ function StudySession({
           </div>
         )}
       </main>
-    </div>
+    </StudyShell>
   );
 }

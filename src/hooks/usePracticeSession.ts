@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { breaksStreak, isPass, requeuesInSession } from "@/lib/grading";
 import { postReview } from "@/lib/postReview";
 
 interface UsePracticeSessionOptions {
@@ -19,7 +20,7 @@ export function usePracticeSession(
 
   const grade = useCallback(
     (wordId: string, quality: number, term: string, translation: string) => {
-      if (quality >= 4) {
+      if (isPass(quality)) {
         setCorrect((n) => n + 1);
         setCombo((c) => {
           const next = c + 1;
@@ -28,17 +29,17 @@ export function usePracticeSession(
         });
       } else {
         setCombo(0);
-        if (quality <= 1) {
-          setMissed((m) =>
-            m.some((w) => w.term === term)
-              ? m
-              : [...m, { term, translation }]
-          );
-        }
+      }
+      if (breaksStreak(quality)) {
+        setMissed((m) =>
+          m.some((w) => w.term === term)
+            ? m
+            : [...m, { term, translation }]
+        );
       }
 
       const isRepeat = relearning.current.has(wordId);
-      if (quality < 4) {
+      if (requeuesInSession(quality)) {
         relearning.current.add(wordId);
       }
 

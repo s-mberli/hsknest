@@ -84,3 +84,31 @@ export async function parseBody<S extends z.ZodTypeAny>(
   }
   return parsed.data;
 }
+
+/**
+ * Like `parseBody`, but the body itself is optional — an empty request body
+ * parses as `{}` instead of failing. `req.json()` throws on an empty body,
+ * so routes where omitting the body is valid (e.g. "enroll the whole list")
+ * can't use `parseBody` directly.
+ */
+export async function parseOptionalBody<S extends z.ZodTypeAny>(
+  req: Request,
+  schema: S
+): Promise<z.infer<S> | NextResponse> {
+  let body: unknown = {};
+  try {
+    const text = await req.text();
+    if (text) body = JSON.parse(text);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid input", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+  return parsed.data;
+}

@@ -1,10 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useMutateAction } from "@/hooks/useMutateAction";
+
+interface UnenrollResponse {
+  removed: number;
+}
 
 /**
  * Removes this list's words from the study queue (deletes their progress).
@@ -17,31 +21,23 @@ export function UnenrollButton({
   listId: string;
   enrolledCount: number;
 }) {
-  const router = useRouter();
   const [confirming, setConfirming] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { loading, run } = useMutateAction();
 
   if (enrolledCount === 0) return null;
 
   async function unenroll() {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/lists/${listId}/enroll`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        toast.error("Could not remove these words. Please try again.");
-        return;
+    await run<UnenrollResponse>(
+      () => fetch(`/api/lists/${listId}/enroll`, { method: "DELETE" }),
+      {
+        errorMessage: "Could not remove these words. Please try again.",
+        catchMessage: "Could not remove these words — check your connection.",
+        onSuccess: (data) => {
+          toast.success(`Removed ${data.removed} words from your queue.`);
+        },
       }
-      const data = await res.json();
-      toast.success(`Removed ${data.removed} words from your queue.`);
-      router.refresh();
-    } catch {
-      toast.error("Could not remove these words — check your connection.");
-    } finally {
-      setLoading(false);
-      setConfirming(false);
-    }
+    );
+    setConfirming(false);
   }
 
   if (confirming) {

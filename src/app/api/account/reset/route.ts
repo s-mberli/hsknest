@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { parseBody, requireUser } from "@/lib/apiRoute";
+import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { accountResetSchema } from "@/lib/validation";
 
@@ -12,10 +12,18 @@ export async function POST(req: Request) {
   const parsed = await parseBody(req, accountResetSchema);
   if (parsed instanceof NextResponse) return parsed;
 
-  await prisma.$transaction([
-    prisma.reviewLog.deleteMany({ where: { userId } }),
-    prisma.userProgress.deleteMany({ where: { userId } }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.reviewLog.deleteMany({ where: { userId } }),
+      prisma.userProgress.deleteMany({ where: { userId } }),
+    ]);
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    logApiError("/api/account/reset", error, userId);
+    return NextResponse.json(
+      { error: "Could not reset progress" },
+      { status: 500 }
+    );
+  }
 }

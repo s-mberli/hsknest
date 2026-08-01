@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { requirePaidUser } from "@/lib/apiRoute";
 import { computeDailyCaps, toCards, type QueueCard } from "@/lib/buildQueue";
+import { DUE_STATES } from "@/lib/horizon";
 import { targetLangFilter } from "@/lib/langScope";
+import type { CardState } from "@/lib/srs";
 import { prioritize } from "@/lib/listPriority";
 import { prisma } from "@/lib/prisma";
 import { gameGloss } from "@/lib/meanings";
@@ -131,6 +133,8 @@ export async function GET(req: Request) {
 
   // Practice/refresh mode: study already-learned words beyond the daily quota
   // without touching the schedule. Ignores caps entirely; excludes NEW/ASSUMED.
+  // Deliberately NOT `DUE_STATES` — this is "everything practiceable"
+  // (DUE_STATES + MASTERED), a different concept from "due right now".
   if (url.searchParams.get("mode") === "practice") {
     const practice = await prisma.userProgress.findMany({
       where: {
@@ -154,7 +158,7 @@ export async function GET(req: Request) {
     where: {
       userId,
       dueAt: { lte: now },
-      state: { in: ["LEARNING", "REVIEW", "LAPSED"] },
+      state: { in: [...DUE_STATES] as CardState[] },
       ...queueWhere,
     },
     orderBy: { dueAt: "asc" },

@@ -1,9 +1,8 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+
+import { useMutateAction } from "@/hooks/useMutateAction";
 
 /**
  * Per-user hide/restore control on starter-list cards. Hiding never deletes
@@ -16,28 +15,19 @@ export function ListVisibilityButton({
   listId: string;
   hidden: boolean;
 }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const { loading: busy, run } = useMutateAction();
 
-  async function toggle(e: React.MouseEvent) {
+  function toggle(e: React.MouseEvent) {
     // The button sits inside the card's <Link>; don't navigate.
     e.preventDefault();
     e.stopPropagation();
-    setBusy(true);
-    try {
-      const res = await fetch(`/api/lists/${listId}/hide`, {
-        method: hidden ? "DELETE" : "POST",
-      });
-      if (!res.ok) {
-        toast.error("Could not update that list.");
-        return;
+    void run(
+      () => fetch(`/api/lists/${listId}/hide`, { method: hidden ? "DELETE" : "POST" }),
+      {
+        errorMessage: "Could not update that list.",
+        catchMessage: "Could not update that list — check your connection.",
       }
-      router.refresh();
-    } catch {
-      toast.error("Could not update that list — check your connection.");
-    } finally {
-      setBusy(false);
-    }
+    );
   }
 
   return (

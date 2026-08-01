@@ -1,9 +1,25 @@
 import { toast } from "sonner";
 
+export interface PostReviewOptions {
+  /** Grade logged for schedule advancement, not just streak/stats. */
+  practice?: boolean;
+  /** Called once the review is durably saved (first try or the retry). */
+  onSuccess?: () => void;
+  /**
+   * Called when both the initial post and the retry failed on a *retriable*
+   * (network / 5xx) error, so the caller can re-queue the card rather than
+   * silently lose the grade. Not called for 4xx (non-retriable) or 404
+   * (stale card — dropped intentionally, nothing to re-queue).
+   */
+  onRequeue?: () => void;
+}
+
 /**
- * Post one review grade, with a single retry on transient failure.
- * Fire-and-forget for practice modes (quiz/match); the flashcard deck has its
- * own richer requeue logic in useStudySession.
+ * Post one review grade, with a single retry on transient failure. Used by
+ * both the practice modes (quiz/match/sentence — fire-and-forget) and the
+ * main flashcard deck (useStudySession), which supplies `onSuccess`/
+ * `onRequeue` to hook the shared retry logic into its own session state
+ * (activation tracking, optimistic requeue) without duplicating the fetch.
  *
  * `practice: true` logs the grade for streak/stats but does NOT advance the SRS
  * schedule (no interval/dueAt/cap change) — used by the practice-only games.
@@ -11,12 +27,17 @@ import { toast } from "sonner";
 export async function postReview(
   wordId: string,
   quality: number,
-  practice = false
+  practiceOrOptions: boolean | PostReviewOptions = false
 ) {
+  const opts: PostReviewOptions =
+    typeof practiceOrOptions === "boolean"
+      ? { practice: practiceOrOptions }
+      : practiceOrOptions;
+
   const body = JSON.stringify({
     wordId,
     quality,
-    ...(practice ? { practice: true } : {}),
+    ...(opts.practice ? { practice: true } : {}),
   });
   const post = () =>
     fetch("/api/study/review", {
@@ -27,8 +48,13 @@ export async function postReview(
 
   try {
     const res = await post();
-    if (res.ok || res.status === 404) return;
-    // 4xx: client/validation error, non-retriable
+    if (res.ok) {
+      opts.onSuccess?.();
+      return;
+    }
+    // Stale card (progress wiped elsewhere): drop silently, no requeue.
+    if (res.status === 404) return;
+    // 4xx: client/validation error, non-retriable.
     if (res.status >= 400 && res.status < 500) {
       try {
         const errorData = await res.json();
@@ -38,16 +64,22 @@ export async function postReview(
       }
       return;
     }
-    // 5xx: server error, retriable
+    // 5xx: server error, retriable — falls through below.
   } catch {
-    // fall through to retry
+    // Network error — falls through to retry below.
   }
+
   await new Promise((r) => setTimeout(r, 1500));
   try {
     const retry = await post();
-    if (retry.ok || retry.status === 404) return;
+    if (retry.ok) {
+      opts.onSuccess?.();
+      return;
+    }
+    if (retry.status === 404) return;
   } catch {
-    // ignored — toast below
+    // ignored — requeue + toast below
   }
-  toast.error("Couldn't save that answer.");
+  opts.onRequeue?.();
+  toast.error("Couldn't save that review — we'll ask again.");
 }
