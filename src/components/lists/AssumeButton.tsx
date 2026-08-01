@@ -1,35 +1,32 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useMutateAction } from "@/hooks/useMutateAction";
+
+interface AssumeResponse {
+  assumed: number;
+}
 
 export function AssumeButton({ listId }: { listId: string }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { loading, run } = useMutateAction();
 
-  async function assume() {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/lists/${listId}/assume`, { method: "POST" });
-      if (!res.ok) {
-        toast.error("Could not update these words. Please try again.");
-        return;
+  function assume() {
+    void run<AssumeResponse>(
+      () => fetch(`/api/lists/${listId}/assume`, { method: "POST" }),
+      {
+        errorMessage: "Could not update these words. Please try again.",
+        catchMessage: "Could not update these words — check your connection.",
+        onSuccess: (data) => {
+          if (data.assumed > 0) {
+            toast.success(`Marked ${data.assumed} words as already known.`);
+          } else {
+            toast.info("Nothing to mark — these are already tracked.");
+          }
+        },
       }
-      const data = await res.json();
-      if (data.assumed > 0) {
-        toast.success(`Marked ${data.assumed} words as already known.`);
-      } else {
-        toast.info("Nothing to mark — these are already tracked.");
-      }
-      router.refresh();
-    } catch {
-      toast.error("Could not update these words — check your connection.");
-    } finally {
-      setLoading(false);
-    }
+    );
   }
 
   return (

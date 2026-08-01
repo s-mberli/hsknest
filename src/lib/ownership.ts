@@ -9,6 +9,19 @@ export function visibleListWhere(userId: string): Prisma.WordListWhereInput {
 }
 
 /**
+ * A word list is owned (not merely visible) by the caller when they created
+ * it. Write routes (PATCH/DELETE on a list, or adding/importing words into
+ * one) use this instead of a hand-rolled `findUnique` + `createdById !==
+ * userId` check, so the ownership rule stays in one place.
+ */
+export function ownedListWhere(
+  listId: string,
+  userId: string
+): Prisma.WordListWhereInput {
+  return { id: listId, createdById: userId };
+}
+
+/**
  * A word is owned by the caller when its parent list was created by them.
  * Write routes (PATCH/DELETE) use this instead of inlining
  * `{ wordList: { createdById: userId } }` so the ownership rule stays

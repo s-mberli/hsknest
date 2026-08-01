@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { parseBody, requireUser } from "@/lib/apiRoute";
+import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
 import { visibleListWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
 import { listPrioritySchema } from "@/lib/validation";
@@ -31,12 +31,20 @@ export async function PATCH(req: Request) {
     );
   }
 
-  await prisma.$transaction([
-    prisma.listPriority.deleteMany({ where: { userId } }),
-    prisma.listPriority.createMany({
-      data: uniqueIds.map((wordListId, rank) => ({ userId, wordListId, rank })),
-    }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.listPriority.deleteMany({ where: { userId } }),
+      prisma.listPriority.createMany({
+        data: uniqueIds.map((wordListId, rank) => ({ userId, wordListId, rank })),
+      }),
+    ]);
 
-  return NextResponse.json({ order: uniqueIds });
+    return NextResponse.json({ order: uniqueIds });
+  } catch (error) {
+    logApiError("/api/lists/priority", error, userId);
+    return NextResponse.json(
+      { error: "Could not save list order" },
+      { status: 500 }
+    );
+  }
 }

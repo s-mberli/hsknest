@@ -3,7 +3,7 @@ import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
-import { parseBody } from "@/lib/apiRoute";
+import { logApiError, parseBody } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { signupSchema } from "@/lib/validation";
@@ -49,43 +49,51 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hash(password, 12);
-  const user = await prisma.user.create({
-    data: {
-      email: normalizedEmail,
-      passwordHash,
-      name,
-      trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86_400_000),
-    },
-    select: { id: true },
-  }).catch((err) => {
-    // Race condition between findUnique and create: two concurrent signups
-    // with the same email can both pass the uniqueness check. Prisma throws
-    // P2002 on the second create — map to 409 instead of 500.
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return null;
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email: normalizedEmail,
+        passwordHash,
+        name,
+        trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86_400_000),
+      },
+      select: { id: true },
+    }).catch((err) => {
+      // Race condition between findUnique and create: two concurrent signups
+      // with the same email can both pass the uniqueness check. Prisma throws
+      // P2002 on the second create — map to 409 instead of 500.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        return null;
+      }
+      throw err;
+    });
+    if (!user) {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
     }
-    throw err;
-  });
-  if (!user) {
+
+    // Fire-and-forget verification email — never block signup on email delivery.
+    // (Not sent for guest accounts, which are created via /api/auth/guest.)
+    const token = randomBytes(32).toString("hex");
+    await prisma.verificationToken.create({
+      data: {
+        email: normalizedEmail,
+        token: hashToken(token),
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+      },
+    });
+    sendVerificationEmail(normalizedEmail, token).catch((err) => {
+      console.error("Failed to send verification email:", err);
+    });
+
+    return NextResponse.json({ userId: user.id }, { status: 201 });
+  } catch (error) {
+    logApiError("/api/auth/signup", error);
     return NextResponse.json(
-      { error: "An account with this email already exists" },
-      { status: 409 }
+      { error: "Could not create account" },
+      { status: 500 }
     );
   }
-
-  // Fire-and-forget verification email — never block signup on email delivery.
-  // (Not sent for guest accounts, which are created via /api/auth/guest.)
-  const token = randomBytes(32).toString("hex");
-  await prisma.verificationToken.create({
-    data: {
-      email: normalizedEmail,
-      token: hashToken(token),
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
-    },
-  });
-  sendVerificationEmail(normalizedEmail, token).catch((err) => {
-    console.error("Failed to send verification email:", err);
-  });
-
-  return NextResponse.json({ userId: user.id }, { status: 201 });
 }

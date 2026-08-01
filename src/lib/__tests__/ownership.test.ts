@@ -4,7 +4,12 @@ import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
 
-import { ownedWordWhere, visibleLanguageWhere, visibleListWhere } from "@/lib/ownership";
+import {
+  ownedListWhere,
+  ownedWordWhere,
+  visibleLanguageWhere,
+  visibleListWhere,
+} from "@/lib/ownership";
 
 const TEST_DB_PATH = path.join(
   __dirname,
@@ -50,6 +55,13 @@ describe("ownership — unit shape", () => {
     expect(ownedWordWhere("word_1", "user_x")).toEqual({
       id: "word_1",
       wordList: { createdById: "user_x" },
+    });
+  });
+
+  it("ownedListWhere requires the list to be owned by the user (not merely visible)", () => {
+    expect(ownedListWhere("list_1", "user_x")).toEqual({
+      id: "list_1",
+      createdById: "user_x",
     });
   });
 });
@@ -196,6 +208,28 @@ describe(
     it("ownedWordWhere(privateWord, userB) does NOT match — A's list is not B's", async () => {
       const found = await testPrisma.word.findFirst({
         where: ownedWordWhere(privateWordAId, userB.id),
+      });
+      expect(found).toBeNull();
+    });
+
+    it("ownedListWhere(privateListA, userA) matches — A owns it", async () => {
+      const found = await testPrisma.wordList.findFirst({
+        where: ownedListWhere(privateListAId, userA.id),
+      });
+      expect(found).not.toBeNull();
+      expect(found?.id).toBe(privateListAId);
+    });
+
+    it("ownedListWhere(seededList, userA) does NOT match — public/seeded is visible but not owned", async () => {
+      const found = await testPrisma.wordList.findFirst({
+        where: ownedListWhere(seededListId, userA.id),
+      });
+      expect(found).toBeNull();
+    });
+
+    it("ownedListWhere(privateListA, userB) does NOT match — A's list is not B's", async () => {
+      const found = await testPrisma.wordList.findFirst({
+        where: ownedListWhere(privateListAId, userB.id),
       });
       expect(found).toBeNull();
     });

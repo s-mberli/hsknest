@@ -1,16 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TriangleAlert, Volume2, VolumeX, Flag } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
-import { audioAvailableFor, playAudio } from "@/lib/audio";
-import {
-  hasVoiceFor,
-  speechSupported,
-  voicesLoaded,
-} from "@/lib/speech";
+import { TriangleAlert, Volume2, VolumeX } from "lucide-react";
 import {
   CARD_TEXT_CLASSES,
   termSizeClass,
@@ -23,6 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 import { parseMeanings } from "@/lib/meanings";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
+import { WordFeedback } from "@/components/study/WordFeedback";
+import { useCardSpeech } from "@/hooks/useCardSpeech";
 import type { Stage, StudyCard } from "@/hooks/useStudySession";
 
 interface CardFaceProps {
@@ -119,122 +112,13 @@ export function CardFace({
   const sizes = CARD_TEXT_CLASSES[textSize];
   const showPhonetic = stage !== "TERM" && !!card.phonetic;
   const showFull = stage === "FULL";
-  const canSpeak = speechSupported();
-  // Rare case: the taught sense's reading differs from the card's displayed
-  // phonetic (e.g. a word whose top-ranked meaning uses an alternate
-  // pronunciation). The bare term alone can't convey which sense is meant, so
-  // prefer the example sentence when one exists — it disambiguates by
-  // context. Plain audio synthesis (edge-tts) otherwise reads bare terms
-  // correctly, so this is the only remaining case that needs the fallback.
-  const topReading = parseMeanings(card)[0]?.reading;
-  const readingAmbiguous = !!topReading && !!card.phonetic && topReading !== card.phonetic;
-  const speakSentence = readingAmbiguous && !!card.sentence;
-  const speakText = speakSentence ? card.sentence!.text : card.term;
-  const speakKind: "word" | "sentence" = speakSentence ? "sentence" : "word";
   // A word the user keeps forgetting (currently relearning, or lapsed twice+).
   // Never on a brand-new preview — it can't be "difficult" yet.
   const struggling =
     !card.preview && (card.state === "LAPSED" || (card.lapses ?? 0) >= 2);
 
-  // Voice availability is device-specific, so resolve it client-side after
-  // mount to avoid a hydration mismatch. Mobile browsers load voices late, so
-  // we re-check a couple of times and track whether the list is known yet.
-  const [voiceReady, setVoiceReady] = useState(false);
-  const [voicesKnown, setVoicesKnown] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [feedbackSending, setFeedbackSending] = useState(false);
-
-  async function submitWordFeedback(e: React.FormEvent) {
-    e.preventDefault();
-    if (feedbackMessage.trim().length < 10) {
-      return; // Button is disabled, shouldn't reach here
-    }
-    setFeedbackSending(true);
-    try {
-      const msg = feedbackMessage.trim();
-      const sentenceLine = card.sentence ? `\nSentence: ${card.sentence.text}` : "";
-      const fullMessage = `Word report: ${card.term} (${card.phonetic}) — "${primaryText}"${sentenceLine}\n\n${msg}`;
-
-      const res = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          category: "bug",
-          message: fullMessage,
-          page: typeof window !== "undefined" ? window.location.pathname : undefined,
-        }),
-      });
-      if (!res.ok) {
-        toast.error("Could not send that — please try again.");
-        setFeedbackSending(false);
-        return;
-      }
-      toast.success("Thanks — we got it.");
-      setFeedbackMessage("");
-      setFeedbackOpen(false);
-      setFeedbackSending(false);
-    } catch {
-      toast.error("Could not send that — please try again.");
-      setFeedbackSending(false);
-    }
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    function check() {
-      if (cancelled) return;
-      setVoiceReady(!!card.languageCode && hasVoiceFor(card.languageCode));
-      setVoicesKnown(voicesLoaded());
-    }
-    check();
-    const t1 = setTimeout(check, 600);
-    const t2 = setTimeout(check, 1500);
-    return () => {
-      cancelled = true;
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [card.languageCode]);
-
-  // Pre-generated clips play even with no installed voice, so audio is "live"
-  // whenever a clip is available OR a Web Speech voice matches (or the voice
-  // list hasn't loaded yet — let mobile try).
-  const hasClips = audioAvailableFor(card.languageCode);
-  const speakLive =
-    hasClips || (canSpeak && (voiceReady || !voicesKnown));
-
-  // Auto-play the term once, the moment its reading is revealed. The tap that
-  // advanced the stage is the user gesture that unlocks playback. Keyed per
-  // card so re-renders (and voice-list arriving late) don't repeat it.
-  const spokenFor = useRef<string | null>(null);
-  useEffect(() => {
-    if (!autoPlay || !showPhonetic || !speakLive) return;
-    if (spokenFor.current === card.wordId) return;
-    spokenFor.current = card.wordId;
-    void playAudio(speakText, speakKind, card.languageCode);
-  }, [autoPlay, showPhonetic, speakLive, card.wordId, speakText, speakKind, card.languageCode]);
-
-  function onSpeak(e: React.MouseEvent) {
-    e.stopPropagation();
-    // No clip and no installed voice → nothing will be audible; hint the user.
-    const trulyNoVoice =
-      !hasClips && voicesKnown && !voiceReady && !!card.languageCode;
-    if (trulyNoVoice) {
-      const lang = card.languageCode ?? "this language";
-      toast(
-        `No ${lang} voice is installed on this device — add one in your system's language settings.`
-      );
-      return;
-    }
-    void playAudio(speakText, speakKind, card.languageCode);
-  }
-
-  function onSpeakSentence(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!card.sentence) return;
-    void playAudio(card.sentence.text, "sentence", card.languageCode);
-  }
+  const { canSpeak, hasClips, speakLive, onSpeak, onSpeakSentence } =
+    useCardSpeech(card, { autoPlay, showPhonetic });
 
   const extras = showFull ? metadataExtras(card.metadata) : [];
   const meanings = showFull ? parseMeanings(card) : [];
@@ -374,64 +258,7 @@ export function CardFace({
 
       {/* Report this word: corner flag button + overlay form. */}
       {showFull && !card.preview && (
-        <>
-          {/* Corner flag button (subtle trigger). */}
-          <button
-            type="button"
-            onClick={() => setFeedbackOpen((o) => !o)}
-            className="absolute right-3 top-3 text-muted-foreground/60 transition-colors hover:text-foreground"
-            aria-label="Report this word"
-          >
-            <Flag className="size-4" />
-          </button>
-
-          {/* Overlay form: covers card, no clipping. */}
-          {feedbackOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-card p-6"
-              onClick={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <p className="text-sm font-semibold text-foreground">
-                Report {card.term}
-              </p>
-              <motion.form
-                onSubmit={submitWordFeedback}
-                className="w-full flex flex-col gap-2"
-              >
-                <textarea
-                  value={feedbackMessage}
-                  onChange={(e) => setFeedbackMessage(e.target.value)}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  placeholder="What's off with this word's meaning or example? (at least 10 characters)"
-                  maxLength={2000}
-                  className="w-full resize-none rounded border border-muted-foreground/20 bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                  rows={4}
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={feedbackSending || feedbackMessage.trim().length < 10}
-                    className="flex-1 rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                  >
-                    {feedbackSending ? "Sending…" : "Send"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFeedbackOpen(false)}
-                    className="flex-1 rounded border border-muted-foreground/20 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.form>
-            </motion.div>
-          )}
-        </>
+        <WordFeedback card={card} primaryText={primaryText} />
       )}
 
       {/* Prompt + difficult-word hint. */}

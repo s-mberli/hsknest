@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireUser } from "@/lib/apiRoute";
+import { logApiError, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -13,13 +13,21 @@ export async function DELETE() {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
 
-  await prisma.$transaction([
-    // Word rows cascade from their list; other users can't be enrolled in
-    // these lists (private lists are only visible to their owner).
-    prisma.wordList.deleteMany({ where: { createdById: userId } }),
-    prisma.language.deleteMany({ where: { createdById: userId } }),
-    prisma.user.delete({ where: { id: userId } }),
-  ]);
+  try {
+    await prisma.$transaction([
+      // Word rows cascade from their list; other users can't be enrolled in
+      // these lists (private lists are only visible to their owner).
+      prisma.wordList.deleteMany({ where: { createdById: userId } }),
+      prisma.language.deleteMany({ where: { createdById: userId } }),
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    logApiError("/api/account", error, userId);
+    return NextResponse.json(
+      { error: "Could not delete account" },
+      { status: 500 }
+    );
+  }
 }

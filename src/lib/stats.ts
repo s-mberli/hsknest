@@ -1,8 +1,15 @@
 import { computeDailyCaps } from "@/lib/buildQueue";
+import { DUE_STATES } from "@/lib/horizon";
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
+import type { CardState } from "@/lib/srs";
 import { weakProgressWhere } from "@/lib/strength";
 import { startOfLocalDay } from "@/lib/utils";
+
+// horizon.ts deliberately stays Prisma-free (pure/derivation module), so
+// DUE_STATES is a plain Set<string> there — cast to the Prisma enum type here
+// at the boundary where it's actually used in a `where` clause.
+const DUE_STATES_LIST = [...DUE_STATES] as CardState[];
 
 export interface DashboardStats {
   dueCount: number;
@@ -64,7 +71,7 @@ export async function getDashboardStats(
       where: {
         userId,
         dueAt: { lte: now },
-        state: { in: ["LEARNING", "REVIEW", "LAPSED"] },
+        state: { in: DUE_STATES_LIST },
         ...langFilter,
       },
     }),
@@ -87,7 +94,7 @@ export async function getDashboardStats(
       where: {
         userId,
         dueAt: { lt: windowEnd },
-        state: { in: ["LEARNING", "REVIEW", "LAPSED"] },
+        state: { in: DUE_STATES_LIST },
         ...langFilter,
       },
       select: { dueAt: true },
@@ -162,6 +169,10 @@ export async function getLifetimeStats(
       where: { userId },
       select: { reviewedAt: true, quality: true },
     }),
+    // Deliberately NOT `DUE_STATES` (LEARNING/REVIEW/LAPSED) — this is the
+    // lifetime "learned" denominator for wordsPerDay, which excludes LAPSED
+    // (a card currently struggling isn't "learned" yet) but includes
+    // MASTERED. Different concept, not a duplicate to unify.
     prisma.userProgress.count({
       where: { userId, state: { in: ["LEARNING", "REVIEW", "MASTERED"] }, ...langFilter },
     }),
@@ -208,7 +219,6 @@ export function computeStreak(dates: Date[]): number {
     })
   );
 
-  const DAY_MS = 24 * 60 * 60 * 1000;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

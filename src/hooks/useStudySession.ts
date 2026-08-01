@@ -4,6 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { trackEventOnce } from "@/lib/analytics";
+import {
+  isPass,
+  QUALITY_BY_DIRECTION,
+  requeuesInSession,
+  type SwipeDirection,
+} from "@/lib/grading";
+import { postReview } from "@/lib/postReview";
 
 export interface StudyCard {
   wordId: string;
@@ -29,15 +36,8 @@ export interface StudyCard {
 /** Reveal stages of a card. Phonetic-less words skip PHONETIC. */
 export type Stage = "TERM" | "PHONETIC" | "FULL";
 
-/** Grade gestures map to SM-2 qualities. */
-export type SwipeDirection = "left" | "right" | "up" | "down";
-
-const QUALITY_BY_DIRECTION: Record<SwipeDirection, number> = {
-  left: 1, // forgot
-  right: 4, // knew
-  up: 5, // easy
-  down: 3, // hard / barely
-};
+/** Grade gestures map to SM-2 qualities. Re-exported for existing consumers. */
+export type { SwipeDirection };
 
 /** Latest grade outcome, for transient UI feedback (Dynamic Island pill). */
 export interface LastGrade {
@@ -56,6 +56,9 @@ interface UseStudySession {
   stage: Stage;
   remaining: number;
   reviewed: number;
+  /** Cards actually gradeable this session — previews count once, at their
+   *  real (graded) reappearance, not their first ungraded look. */
+  gradeableTotal: number;
   combo: number;
   bestCombo: number;
   correct: number;
@@ -64,6 +67,10 @@ interface UseStudySession {
   /** Outcome of the most recent grade, or null before the first one. */
   lastGrade: LastGrade | null;
   done: boolean;
+  /** Session start time (ms epoch) — for a live-ticking elapsed timer. */
+  startedAt: number;
+  /** Total session duration once `done`; 0 while still in progress. */
+  elapsedMs: number;
   /** Advance the reveal stage (tap / Space). */
   advance: () => void;
   /** Grade the current card (only meaningful at FULL). */
@@ -151,6 +158,14 @@ export function useStudySession(
   const current = cursor < cards.length ? cards[cursor] : null;
   const upcoming = cards.slice(cursor + 1, cursor + 3);
   const done = !loading && current === null;
+  // Preview entries duplicate their graded reappearance — count each word once.
+  const gradeableTotal = cards.filter((c) => !c.preview).length;
+
+  const [startedAt] = useState(() => Date.now());
+  const [endTime, setEndTime] = useState(0);
+  useEffect(() => {
+    if (done) queueMicrotask(() => setEndTime(Date.now()));
+  }, [done]);
 
   const advance = useCallback(() => {
     setStage((s) => nextStage(s, current, showReading));
@@ -181,7 +196,7 @@ export function useStudySession(
       }
 
       const quality = QUALITY_BY_DIRECTION[direction];
-      const wasCorrect = quality >= 3;
+      const wasCorrect = isPass(quality);
 
       // Combo: consecutive q>=3 this session; resets quietly otherwise.
       if (wasCorrect) {
@@ -218,7 +233,7 @@ export function useStudySession(
       // the same session until it scores ≥4. Only the FIRST grade moves the
       // schedule; repeats are logged as practice (no interval/EF change).
       const isRepeat = relearning.current.has(card.wordId);
-      if (quality < 4) {
+      if (requeuesInSession(quality)) {
         relearning.current.add(card.wordId);
         setCards((prev) => [...prev, card]);
       }
@@ -228,67 +243,22 @@ export function useStudySession(
       setStage("TERM");
       setReviewed((r) => r + 1);
 
-      void (async () => {
-        const body = JSON.stringify({
-          wordId: card.wordId,
-          quality,
-          ...(practice || isRepeat ? { practice: true } : {}),
-        });
-
-        const post = () =>
-          fetch("/api/study/review", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body,
-          });
-
-        // Re-queue the card once at the end so progress isn't silently lost.
-        const requeue = () => {
-          if (!requeued.current.has(card.wordId)) {
-            requeued.current.add(card.wordId);
-            setCards((prev) => [...prev, card]);
-            setReviewed((r) => Math.max(0, r - 1));
-          }
-        };
-
-        try {
-          const res = await post();
-          if (res.ok) {
-            // Launch-funnel activation signal: first saved review ever on
-            // this browser (no-op when analytics isn't configured).
-            trackEventOnce("first_review_complete");
-            return;
-          }
-
-          // Stale card (progress wiped elsewhere): drop silently.
-          if (res.status === 404) return;
-
-          // Transient server errors: retry once, then requeue + toast.
-          if (res.status >= 500) {
-            await new Promise((r) => setTimeout(r, 1500));
-            const retry = await post();
-            if (retry.ok) return;
-            requeue();
-            toast.error("Couldn't save that review — we'll ask again.");
-            return;
-          }
-
-          // Other 4xx (validation etc.): won't succeed on replay. Toast, no requeue.
-          toast.error("Couldn't save that review.");
-        } catch {
-          // Network error: retry once, then requeue + toast.
-          await new Promise((r) => setTimeout(r, 1500));
-          try {
-            const retry = await post();
-            if (retry.ok) return;
-            if (retry.status === 404) return;
-          } catch {
-            // fall through to requeue
-          }
-          requeue();
-          toast.error("Couldn't save that review — we'll ask again.");
+      // Re-queue the card once at the end so progress isn't silently lost.
+      const requeue = () => {
+        if (!requeued.current.has(card.wordId)) {
+          requeued.current.add(card.wordId);
+          setCards((prev) => [...prev, card]);
+          setReviewed((r) => Math.max(0, r - 1));
         }
-      })();
+      };
+
+      void postReview(card.wordId, quality, {
+        practice: practice || isRepeat,
+        // Launch-funnel activation signal: first saved review ever on this
+        // browser (no-op when analytics isn't configured).
+        onSuccess: () => trackEventOnce("first_review_complete"),
+        onRequeue: requeue,
+      });
     },
     [cards, cursor, practice, continuePreview]
   );
@@ -301,12 +271,15 @@ export function useStudySession(
     stage,
     remaining: Math.max(0, cards.length - cursor),
     reviewed,
+    gradeableTotal,
     combo,
     bestCombo,
     correct,
     missed,
     lastGrade,
     done,
+    startedAt,
+    elapsedMs: endTime ? endTime - startedAt : 0,
     advance,
     swipe,
     continuePreview,

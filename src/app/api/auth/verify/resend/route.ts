@@ -1,7 +1,7 @@
 import { randomBytes, createHash } from "crypto";
 import { NextResponse } from "next/server";
 
-import { requireUser } from "@/lib/apiRoute";
+import { logApiError, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { sendVerificationEmail } from "@/lib/email";
@@ -32,18 +32,26 @@ export async function POST() {
     return NextResponse.json({ message: "Already verified." });
   }
 
-  const token = randomBytes(32).toString("hex");
-  await prisma.$transaction([
-    prisma.verificationToken.deleteMany({ where: { email: user.email } }),
-    prisma.verificationToken.create({
-      data: {
-        email: user.email,
-        token: hashToken(token),
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    }),
-  ]);
-  await sendVerificationEmail(user.email, token);
+  try {
+    const token = randomBytes(32).toString("hex");
+    await prisma.$transaction([
+      prisma.verificationToken.deleteMany({ where: { email: user.email } }),
+      prisma.verificationToken.create({
+        data: {
+          email: user.email,
+          token: hashToken(token),
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      }),
+    ]);
+    await sendVerificationEmail(user.email, token);
 
-  return NextResponse.json({ message: "Verification email sent." });
+    return NextResponse.json({ message: "Verification email sent." });
+  } catch (error) {
+    logApiError("/api/auth/verify/resend", error, userId);
+    return NextResponse.json(
+      { error: "Could not send verification email" },
+      { status: 500 }
+    );
+  }
 }

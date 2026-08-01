@@ -8,11 +8,14 @@ import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
+import { StudyShell } from "@/components/study/StudyShell";
 import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
+import { useSessionTiming } from "@/hooks/useSessionTiming";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { playAudio } from "@/lib/audio";
+import { GRADE_LABELS, requeuesInSession } from "@/lib/grading";
 import { gameGloss } from "@/lib/meanings";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
@@ -26,12 +29,7 @@ interface SentenceScreenProps {
   textSize: CardTextSize;
 }
 
-const GRADES: { label: string; quality: number; className: string }[] = [
-  { label: "Again", quality: 1, className: "text-destructive border-destructive/40 hover:bg-destructive/10" },
-  { label: "Hard", quality: 3, className: "text-amber border-amber/40 hover:bg-amber/10" },
-  { label: "Good", quality: 4, className: "text-success border-success/40 hover:bg-success/10" },
-  { label: "Easy", quality: 5, className: "text-sky-600 dark:text-sky-400 border-sky-500/40 hover:bg-sky-500/10" },
-];
+const GRADES = GRADE_LABELS;
 
 export function SentenceScreen({ studyTheme, textSize }: SentenceScreenProps) {
   return (
@@ -46,7 +44,6 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   const [cursor, setCursor] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [skipped, setSkipped] = useState(0);
-  const [startedAt] = useState(() => Date.now());
   const sizes = CARD_TEXT_CLASSES[textSize];
 
   const { grade, combo, bestCombo, correct, missed } = usePracticeSession({ practice });
@@ -68,15 +65,11 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const done = !loading && current === null;
-
-  const [endTime, setEndTime] = useState(0);
-  useEffect(() => {
-    if (done) queueMicrotask(() => setEndTime(Date.now()));
-  }, [done]);
+  const { startedAt, elapsedMs } = useSessionTiming(done);
 
   function handleGrade(quality: number) {
     if (!current || !revealed) return;
-    if (quality < 4) {
+    if (requeuesInSession(quality)) {
       setCards((prev) => [...prev, current]);
     }
     grade(current.wordId, quality, current.term, current.translation);
@@ -85,12 +78,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   }
 
   return (
-    <div
-      className={cn(
-        "fixed inset-0 z-50 flex flex-col bg-background text-foreground",
-        studyTheme === "dark" && "dark"
-      )}
-    >
+    <StudyShell studyTheme={studyTheme}>
       <SessionHud
         reviewed={cursor}
         total={cards.length}
@@ -125,7 +113,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
             reviewed={cards.length}
             correct={correct}
             bestCombo={bestCombo}
-            elapsedMs={endTime ? endTime - startedAt : 0}
+            elapsedMs={elapsedMs}
             missed={missed}
             practice={practice}
             note={
@@ -232,6 +220,6 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
           </motion.div>
         )}
       </main>
-    </div>
+    </StudyShell>
   );
 }

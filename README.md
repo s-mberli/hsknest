@@ -215,7 +215,7 @@ multi-language schema · SM-2 + Leitner (selectable) · staged-reveal study with
 
 ## Contributing
 
-Bug reports and ideas are welcome — file them right from the app (**Settings → Feedback**) or open an issue. Pull requests should keep the existing style and pass `npm test`, `npm run lint`, and `npm run build` (the same checks CI runs). 
+Bug reports and ideas are welcome — file them right from the app (**Settings → Feedback**) or open an issue. Pull requests should keep the existing style and pass `npm test`, `npm run lint`, `npm run build`, and `npm run test:e2e` (the same checks CI runs, across two jobs). 
 
 See `CONTRIBUTING.md` for the full guide (project rules, migration safety, scheduler proof requirements).
 
