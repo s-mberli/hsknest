@@ -17,11 +17,11 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 
 /** Legend swatches — five buckets ("shaky" folds into the Trouble marker). */
 const LEGEND: { label: string; band: Strength; extra?: string }[] = [
-  { label: "New", band: "new" },
-  { label: "Learning", band: "growing" },
-  { label: "Solid", band: "solid" },
-  { label: "Mastered", band: "mastered" },
-  { label: "Trouble", band: "shaky", extra: "relative" },
+  { label: STRENGTH_META.new.label, band: "new" },
+  { label: STRENGTH_META.growing.label, band: "growing" },
+  { label: STRENGTH_META.solid.label, band: "solid" },
+  { label: STRENGTH_META.mastered.label, band: "mastered" },
+  { label: STRENGTH_META.shaky.label, band: "shaky", extra: "relative" },
 ];
 
 /** Bubble radius bounds (px): min keeps a 44px touch target, max caps depth. */

@@ -309,7 +309,19 @@ function Lane({
   }
 
   return (
-    <section aria-labelledby={headingId} style={{ contentVisibility: "auto" }}>
+    // contain-intrinsic-size is required: without it, a skipped (off-screen)
+    // section collapses to 0 height, so the browser reserves no space for
+    // it — this breaks scroll height and makes the scrollbar jump. These
+    // horizon groups are variable height, so "auto 400px" is only a
+    // pre-render estimate; `auto` lets the browser self-correct after the
+    // first real layout.
+    <section
+      aria-labelledby={headingId}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: "auto 400px",
+      }}
+    >
       <h3 id={headingId} className="mb-1.5 flex items-baseline gap-2">
         <span className="text-sm font-semibold">{meta.label}</span>
         <span className="text-xs tabular-nums text-muted-foreground">
