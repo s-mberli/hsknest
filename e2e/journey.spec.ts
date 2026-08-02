@@ -351,6 +351,36 @@ test("practice mode reviews without moving the schedule", async ({ page }) => {
   expect(after).toBe(before!.dueAt);
 });
 
+test("sentence mode: Hard counts as correct and keeps the combo", async ({ page }) => {
+  await logIn(page);
+
+  await page.goto("/study/sentences?mode=practice");
+  await expect(
+    page.getByRole("button", { name: "Show translation" })
+  ).toBeVisible({ timeout: 15_000 });
+
+  // Grade the first card Hard.
+  await page.getByRole("button", { name: "Show translation" }).click();
+  await page.getByRole("button", { name: "Hard" }).click();
+
+  // Grade the second card Hard too. Under the old buggy behaviour, Hard
+  // reset the combo to 0 each time, so it could never reach 2.
+  await expect(
+    page.getByRole("button", { name: "Show translation" })
+  ).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Show translation" }).click();
+  await page.getByRole("button", { name: "Hard" }).click();
+
+  // The combo indicator only renders once combo >= 2, so a combo of exactly
+  // 2 here proves Hard extended the streak instead of resetting it. Assert
+  // the labelled combo element specifically, NOT the header text: the header
+  // also holds a live m:ss timer, and a run that reaches 2:00 would satisfy a
+  // loose "contains 2" match even if this bug regressed.
+  await expect(page.locator('[aria-label="Combo 2"]')).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
 test("words tab defaults to the Strength bubble view", async ({ page }) => {
   await logIn(page);
   await page.goto("/words");

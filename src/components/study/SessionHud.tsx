@@ -78,6 +78,10 @@ export function SessionHud({
             {combo >= 2 && (
               <motion.span
                 key={combo}
+                // Without a label this announces as a bare number next to a
+                // decorative flame. Naming it also gives tests a stable hook
+                // that can't be confused with the m:ss timer beside it.
+                aria-label={`Combo ${combo}`}
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ opacity: 0 }}
