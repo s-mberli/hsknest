@@ -47,7 +47,17 @@ export default async function DashboardPage({
     }),
   ]);
   
-  if (!user?.targetLanguageId) {
+  // Split "no such user" from "hasn't picked a language yet" — they used to
+  // share one check and both fell through to /onboarding. getCurrentUserId()
+  // already screens out a stale session (see src/lib/session.ts), so `user`
+  // being null here is a narrow race (e.g. deleted between the two queries
+  // above) rather than the common case, but conflating it with "needs
+  // onboarding" sent a signed-out-in-all-but-cookie user into a form whose
+  // submit throws instead of back to a normal login.
+  if (!user) {
+    redirect("/login");
+  }
+  if (!user.targetLanguageId) {
     redirect("/onboarding");
   }
 

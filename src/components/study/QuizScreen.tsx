@@ -164,7 +164,13 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             className="mx-auto flex w-full max-w-sm flex-col items-center gap-8"
           >
             <div className="flex flex-col items-center gap-2 text-center">
-              <div className="flex items-center gap-2">
+              {/* The speaker sits OUTSIDE the flow (absolute, hugging the
+                  term's right edge) so the term itself stays optically
+                  centred. Inline, it pushed the term left by half the icon +
+                  gap, and unmounting it on answer snapped the term back to
+                  centre — a visible jump at the exact moment you're reading
+                  the feedback. */}
+              <div className="relative inline-flex items-center">
                 <p
                   className={cn(
                     "max-w-full break-normal font-bold leading-tight tracking-tight",
@@ -180,7 +186,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
                       void playAudio(current.term, "word", current.languageCode)
                     }
                     aria-label="Play pronunciation"
-                    className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    className="absolute left-full ml-2 shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
                     <Volume2 className="size-5" />
                   </button>
