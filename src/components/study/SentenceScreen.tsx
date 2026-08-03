@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
@@ -15,7 +15,12 @@ import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useSessionTiming } from "@/hooks/useSessionTiming";
 import type { StudyCard } from "@/hooks/useStudySession";
 import { playAudio } from "@/lib/audio";
-import { GRADE_LABELS, requeuesInSession } from "@/lib/grading";
+import {
+  GRADE_LABELS,
+  QUALITY_BY_DIRECTION,
+  requeuesInSession,
+  type SwipeDirection,
+} from "@/lib/grading";
 import { gameGloss } from "@/lib/meanings";
 import { CARD_TEXT_CLASSES, type CardTextSize } from "@/lib/textSize";
 import { cn } from "@/lib/utils";
@@ -30,6 +35,14 @@ interface SentenceScreenProps {
 }
 
 const GRADES = GRADE_LABELS;
+
+/** Arrow keys → swipe directions, so the deck's grade mapping applies here too. */
+const KEY_TO_DIRECTION: Record<string, SwipeDirection | undefined> = {
+  ArrowLeft: "left",
+  ArrowDown: "down",
+  ArrowRight: "right",
+  ArrowUp: "up",
+};
 
 export function SentenceScreen({ studyTheme, textSize }: SentenceScreenProps) {
   return (
@@ -67,15 +80,57 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   const done = !loading && current === null;
   const { startedAt, elapsedMs } = useSessionTiming(done);
 
-  function handleGrade(quality: number) {
-    if (!current || !revealed) return;
-    if (requeuesInSession(quality)) {
-      setCards((prev) => [...prev, current]);
+  const reveal = useCallback(() => {
+    setRevealed(true);
+    // Hear the sentence read aloud on reveal (user-test ask).
+    if (current?.sentence) {
+      void playAudio(current.sentence.text, "sentence", current.languageCode);
     }
-    grade(current.wordId, quality, current.term, current.translation);
-    setRevealed(false);
-    setCursor((c) => c + 1);
-  }
+  }, [current]);
+
+  const handleGrade = useCallback(
+    (quality: number) => {
+      if (!current || !revealed) return;
+      if (requeuesInSession(quality)) {
+        setCards((prev) => [...prev, current]);
+      }
+      grade(current.wordId, quality, current.term, current.translation);
+      setRevealed(false);
+      setCursor((c) => c + 1);
+    },
+    [current, revealed, grade]
+  );
+
+  // Same gestures as the flashcard deck: Space reveals, then the arrows grade
+  // on the identical direction→quality mapping (see @/lib/grading). Without
+  // this, sentence mode was the only graded screen with no keyboard path.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      // Never steal keystrokes from a text field (mirrors CardStack).
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "INPUT" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault(); // else Space scrolls the page
+        if (!revealed) reveal();
+        return;
+      }
+
+      if (!revealed) return;
+      const dir = KEY_TO_DIRECTION[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      handleGrade(QUALITY_BY_DIRECTION[dir]);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [revealed, reveal, handleGrade]);
 
   return (
     <StudyShell studyTheme={studyTheme}>
@@ -196,17 +251,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
             ) : (
               <button
                 type="button"
-                onClick={() => {
-                  setRevealed(true);
-                  // Hear the sentence read aloud on reveal (user-test ask).
-                  if (current.sentence) {
-                    void playAudio(
-                      current.sentence.text,
-                      "sentence",
-                      current.languageCode
-                    );
-                  }
-                }}
+                onClick={reveal}
                 className="w-full rounded-xl border bg-card px-4 py-3 text-sm font-medium transition-colors hover:border-primary/50 hover:bg-accent"
               >
                 Show translation
@@ -214,8 +259,9 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
             )}
 
             <p className="text-center text-xs text-muted-foreground">
-              Read the sentence, then grade how well you knew the highlighted
-              word
+              {revealed
+                ? "Grade how well you knew the highlighted word — or use ← ↓ → ↑"
+                : "Read the sentence, then reveal it — tap above or press Space"}
             </p>
           </motion.div>
         )}

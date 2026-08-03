@@ -59,6 +59,10 @@ export function SchedulingSection({
       <CardContent className="space-y-5">
         <SettingRow
           name="Desired retention"
+          // Four long labels ("Relaxed (80%)" … "Intense (95%)") make this the
+          // widest control in Settings; beside the text it squeezes the
+          // description into a cramped column, so give it its own line.
+          stack
           description="Target probability of recalling a card. Higher means more frequent reviews."
         >
           <Segmented

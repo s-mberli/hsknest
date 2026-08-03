@@ -51,23 +51,34 @@ export function Segmented<T extends string | number | null>({
 /**
  * One settings row: label + one-line description on the left, control on the
  * right. Stacks (label above control) below `sm:`.
+ *
+ * Pass `stack` to keep it stacked at every width. Use it when the control is
+ * wide enough that sitting it beside the text squeezes the description into a
+ * narrow, hard-to-read column (e.g. a four-option Segmented with long labels).
  */
 export function SettingRow({
   name,
   description,
   children,
+  stack = false,
 }: {
   name: string;
   description: string;
   children: React.ReactNode;
+  stack?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+    <div
+      className={cn(
+        "flex flex-col gap-2",
+        !stack && "sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+      )}
+    >
       <div className="space-y-0.5">
         <p className="text-sm font-medium leading-none">{name}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      <div className="shrink-0">{children}</div>
+      <div className={cn(!stack && "shrink-0")}>{children}</div>
     </div>
   );
 }
