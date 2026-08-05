@@ -37,7 +37,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
 
   // Baseline security headers. HSTS is best set at the TLS-terminating
-  // proxy (see docs/DEPLOYMENT.md).
+  // proxy (see docs/DEPLOYMENT.md); we also emit it here as defense in
+  // depth so a misconfigured proxy never ships a plain-HTTP session.
   async headers() {
     return [
       {
@@ -50,6 +51,10 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
           },
         ],
       },
