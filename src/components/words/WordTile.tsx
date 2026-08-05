@@ -61,7 +61,7 @@ export function WordTile({ word, tabIndex, onKeyDown, tileRef }: WordTileProps) 
         TILE[word.strength]
       )}
     >
-      <span className="max-w-full truncate">{word.term}</span>
+      <span data-term className="max-w-full truncate">{word.term}</span>
       <span aria-hidden className="h-[2px] w-3/4 max-w-8 rounded-full bg-current/25">
         <span
           className="block h-full rounded-full bg-current"

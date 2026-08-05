@@ -118,6 +118,16 @@
     background-color: var(--background);
     color: var(--foreground);
   }
+
+  /* Character style preference — applied declaratively to every Chinese
+     term element (marked with [data-term]) via the app layout's
+     data-character-style attribute. */
+  [data-character-style="academic"] [data-term] {
+    font-family: var(--font-serif, serif);
+  }
+  [data-character-style="modern"] [data-term] {
+    font-family: var(--font-sans, sans-serif);
+  }
 }
 
 /* Soft raised-card elevation for the warm paper surface. Warmer + softer

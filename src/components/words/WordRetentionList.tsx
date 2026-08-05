@@ -182,7 +182,7 @@ export function WordRetentionList({
               />
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline gap-2">
-                  <span className="truncate text-lg font-medium">{w.term}</span>
+                  <span data-term className="truncate text-lg font-medium">{w.term}</span>
                   {w.phonetic && (
                     <span className="shrink-0 text-sm text-muted-foreground">
                       {w.phonetic}

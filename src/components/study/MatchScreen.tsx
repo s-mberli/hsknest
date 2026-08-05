@@ -52,6 +52,7 @@ function TileButton({ tile, matched, selected, shaking, wrongPair, onTap }: Tile
       type="button"
       onClick={() => onTap(tile)}
       disabled={isMatched}
+      data-term={tile.side === "term" ? "" : undefined}
       animate={
         isShaking
           ? { x: [0, -8, 8, -6, 6, 0] }
