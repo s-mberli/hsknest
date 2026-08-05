@@ -85,7 +85,13 @@ interface UseStudySession {
  * learner recalls the pronunciation themselves (it still shows with the answer).
  */
 /** Cards between a new-word preview and its graded reappearance. */
-const PREVIEW_GAP = 3;
+const PREVIEW_GAP = 10;
+/**
+ * Cards ahead of the just-graded failure where the card is re-queued. A
+ * small buffer keeps the struggling word close to the review/graded region
+ * instead of dumping it past a long tail of new-word previews.
+ */
+const RELAPSE_GAP = 3;
 
 /**
  * Keep the server's order (all due reviews first, new words last) and just
@@ -232,10 +238,18 @@ export function useStudySession(
       // SM-2 step 7: repeat every card graded below 4 (Again/Hard) later in
       // the same session until it scores ≥4. Only the FIRST grade moves the
       // schedule; repeats are logged as practice (no interval/EF change).
+      // Insert near the front of the remaining deck (a few cards ahead) so
+      // the struggling word resurfaces in the review/graded region rather
+      // than being buried behind any remaining new-word previews at the tail.
       const isRepeat = relearning.current.has(card.wordId);
       if (requeuesInSession(quality)) {
         relearning.current.add(card.wordId);
-        setCards((prev) => [...prev, card]);
+        setCards((prev) => {
+          const next = [...prev];
+          const insertAt = Math.min(cursor + 1 + RELAPSE_GAP, next.length);
+          next.splice(insertAt, 0, card);
+          return next;
+        });
       }
 
       // Optimistic: advance immediately, post in the background.
