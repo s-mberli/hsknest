@@ -129,7 +129,7 @@ npm run db:migrate # prisma migrate dev (local schema changes)
 
 - The app is **AGPL-3.0** (see `LICENSE`). Any code you vendor in must be
   AGPL-compatible; changes to a hosted instance must remain source-available.
-- The bundled HSK vocabulary (`prisma/data/hsk/hsk1.json` … `hsk6.json`) is
+- The bundled HSK vocabulary (`prisma/data/hsk/new1.json` … `new7.json`) is
   derived from the MIT-licensed `complete-hsk-vocabulary` dataset — attribution
   and details in `prisma/data/hsk/README.md`. Keep that README and its
   attribution intact if you touch the data.

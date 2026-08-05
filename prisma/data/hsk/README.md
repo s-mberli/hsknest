@@ -31,8 +31,11 @@ npx tsx scripts/fix-primary-glosses.ts --write      # then re-seed, or:
 npx tsx scripts/fix-hsk-meanings.ts                 # push into an existing DB, preserving progress
 ```
 
-(The legacy `hsk1.json` … `hsk6.json` files are the old HSK 2.0 lists, kept
-only so existing installs whose users studied them keep working.)
+(The legacy `hsk1.json` … `hsk6.json` files — the old HSK 2.0 lists — were
+removed once the app migrated to the November 2025 HSK 3.0 syllabus above.
+Seeding matches an existing list by name and replaces its content wholesale,
+so no install ever depended on the old files being present; see
+`scripts/migrate-hsk-levels.ts` for the 2.0 → 3.0 migration itself.)
 
 Derived from the open-source dataset
 [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary)
