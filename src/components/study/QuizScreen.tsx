@@ -172,6 +172,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
                   the feedback. */}
               <div className="relative inline-flex items-center">
                 <p
+                  data-term
                   className={cn(
                     "max-w-full break-normal font-bold leading-tight tracking-tight",
                     termSizeClass(current.term, textSize)

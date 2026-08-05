@@ -7,9 +7,9 @@ import { Volume2 } from "lucide-react";
 import { audioAvailableFor, playAudio } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 import { relativeDueLabel } from "@/lib/horizon";
-import { parseMeanings } from "@/lib/meanings";
 import { speechSupported } from "@/lib/speech";
 import { HighlightedSentence } from "@/components/study/HighlightedSentence";
+import { Meanings } from "@/components/words/Meanings";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
@@ -57,52 +57,6 @@ function formatInterval(intervalDays: number | null): string {
   if (intervalDays < 1) return "<1 day";
   const d = Math.round(intervalDays);
   return d === 1 ? "1 day" : `${d} days`;
-}
-
-/**
- * All senses, up to 5 by default; "+N more" expands the rest in place so the
- * indicator is an affordance, not a dead end.
- */
-function Meanings({ word }: { word: WordDetail }) {
-  const [expanded, setExpanded] = useState(false);
-  const meanings = parseMeanings(word);
-  const shown = expanded ? meanings : meanings.slice(0, 5);
-  const hidden = meanings.length - shown.length;
-
-  if (meanings.length <= 1) {
-    return <p className="mt-0.5 text-sm">{meanings[0]?.gloss ?? word.translation}</p>;
-  }
-  return (
-    <ol className="mt-0.5 space-y-0.5 text-sm">
-      {shown.map((m, i) => (
-        <li key={i}>
-          <span className="mr-1 tabular-nums text-muted-foreground/60">
-            {i + 1}.
-          </span>
-          {m.reading && m.reading !== word.phonetic && (
-            <span className="mr-1 rounded bg-muted px-1 text-xs text-muted-foreground">
-              {m.reading}
-            </span>
-          )}
-          {m.gloss}
-        </li>
-      ))}
-      {hidden > 0 && (
-        <li>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(true);
-            }}
-            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-          >
-            +{hidden} more {hidden === 1 ? "meaning" : "meanings"}
-          </button>
-        </li>
-      )}
-    </ol>
-  );
 }
 
 interface WordHoverCardProps {
@@ -270,7 +224,7 @@ export function WordHoverCard({
           className="rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
         >
           <div className="flex items-baseline justify-between gap-2">
-            <span className="flex items-center gap-1 text-lg font-semibold">
+            <span data-term className="flex items-center gap-1 text-lg font-semibold">
               {word.term}
               {(speechSupported() || audioAvailableFor(word.languageCode)) && (
                 <button

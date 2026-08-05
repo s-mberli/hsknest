@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
 
 /** Fill fraction + color per band — one glance says "how well do I know this". */
-const METER: Record<Strength, { fill: number; className: string }> = {
+export const METER: Record<Strength, { fill: number; className: string }> = {
   mastered: { fill: 1, className: "bg-success" },
   solid: { fill: 0.8, className: "bg-success/80" },
   growing: { fill: 0.5, className: "bg-primary" },

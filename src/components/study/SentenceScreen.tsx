@@ -208,7 +208,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
                   </p>
                   <div className="flex items-center gap-3">
                     <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">
+                      <span data-term className="font-semibold text-foreground">
                         {current.term}
                       </span>
                       {current.phonetic && <> · {current.phonetic}</>} ·{" "}

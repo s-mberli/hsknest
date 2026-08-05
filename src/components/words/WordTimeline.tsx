@@ -95,7 +95,7 @@ function FocusHeader({
           Due now
         </p>
         <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-2xl font-semibold">{nextDue.term}</span>
+          <span data-term className="text-2xl font-semibold">{nextDue.term}</span>
           {nextDue.phonetic && (
             <span className="text-base text-muted-foreground">
               {nextDue.phonetic}
@@ -153,7 +153,7 @@ function FocusHeader({
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   )}
                 >
-                  <span className="max-w-full truncate text-sm font-medium">
+                  <span data-term className="max-w-full truncate text-sm font-medium">
                     {w.term}
                   </span>
                   {w.phonetic && (

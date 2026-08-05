@@ -15,12 +15,10 @@ import { trackEventOnce } from "@/lib/analytics";
 import { QUALITY_BY_DIRECTION } from "@/lib/grading";
 import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
-import type { CharacterStyle } from "@/lib/characterStyle";
 
 interface StudyScreenProps {
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
-  characterStyle: CharacterStyle;
   showReading?: boolean;
   soundEffects?: boolean;
   autoPlayPronunciation?: boolean;
@@ -31,7 +29,6 @@ interface StudyScreenProps {
 export function StudyScreen({
   studyTheme,
   textSize,
-  characterStyle,
   showReading = true,
   soundEffects = true,
   autoPlayPronunciation = true,
@@ -42,7 +39,6 @@ export function StudyScreen({
       <StudySession
         studyTheme={studyTheme}
         textSize={textSize}
-        characterStyle={characterStyle}
         showReading={showReading}
         soundEffects={soundEffects}
         autoPlayPronunciation={autoPlayPronunciation}
@@ -55,7 +51,6 @@ export function StudyScreen({
 function StudySession({
   studyTheme,
   textSize,
-  characterStyle,
   showReading = true,
   soundEffects = true,
   autoPlayPronunciation = true,
@@ -242,7 +237,6 @@ function StudySession({
               onSwipe={handleSwipe}
               onContinue={handleContinue}
               textSize={textSize}
-              characterStyle={characterStyle}
               autoPlay={autoPlayPronunciation}
             />
 

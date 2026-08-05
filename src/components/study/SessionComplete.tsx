@@ -119,7 +119,7 @@ export function SessionComplete({
           <ul className="space-y-1.5">
             {missed.slice(0, 5).map((w) => (
               <li key={w.term} className="flex items-baseline justify-between gap-3 text-sm">
-                <span className="font-medium">{w.term}</span>
+                <span data-term className="font-medium">{w.term}</span>
                 <span className="truncate text-muted-foreground">{w.translation}</span>
               </li>
             ))}

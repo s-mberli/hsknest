@@ -8,7 +8,6 @@ import { SwipeCard } from "@/components/study/SwipeCard";
 import type { Stage, StudyCard, SwipeDirection } from "@/hooks/useStudySession";
 import { GRADE_LABELS, QUALITY_BY_DIRECTION } from "@/lib/grading";
 import type { CardTextSize } from "@/lib/textSize";
-import type { CharacterStyle } from "@/lib/characterStyle";
 import { cn } from "@/lib/utils";
 
 interface CardStackProps {
@@ -20,7 +19,6 @@ interface CardStackProps {
   /** Dismiss a new-word preview (no grade posted). */
   onContinue: (isMouseClick?: boolean) => void;
   textSize: CardTextSize;
-  characterStyle: CharacterStyle;
   /** Speak the term automatically when its reading is revealed. */
   autoPlay?: boolean;
 }
@@ -41,7 +39,6 @@ export function CardStack({
   onSwipe,
   onContinue,
   textSize,
-  characterStyle,
   autoPlay = false,
 }: CardStackProps) {
   // Committed cards fly off under our own timer instead of AnimatePresence:
@@ -170,7 +167,6 @@ export function CardStack({
             depth={depth}
             isTop={false}
             textSize={textSize}
-            characterStyle={characterStyle}
           />
         );
       })}
@@ -186,7 +182,6 @@ export function CardStack({
         depth={0}
         isTop
         textSize={textSize}
-        characterStyle={characterStyle}
         autoPlay={autoPlay}
       />
 
@@ -201,7 +196,6 @@ export function CardStack({
           isTop={false}
           flyOut={f.dir}
           textSize={textSize}
-          characterStyle={characterStyle}
         />
       ))}
     </div>

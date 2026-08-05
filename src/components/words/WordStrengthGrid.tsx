@@ -312,7 +312,7 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
                   TILE[w.strength]
                 )}
               >
-                <span className="max-w-[85%] truncate px-0.5">{w.term}</span>
+                <span data-term className="max-w-[85%] truncate px-0.5">{w.term}</span>
                 {w.strength === "shaky" && (
                   <span
                     aria-hidden

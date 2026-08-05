@@ -20,7 +20,7 @@ export default async function AppLayout({
   const [user, sub] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { theme: true, email: true },
+      select: { theme: true, email: true, characterStyle: true },
     }),
     getSubscriptionInfo(userId),
   ]);
@@ -34,7 +34,10 @@ export default async function AppLayout({
     !isGuest;
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div
+      className="flex min-h-full flex-1 flex-col"
+      data-character-style={user?.characterStyle ?? "modern"}
+    >
       <ThemeSync theme={user?.theme ?? "system"} />
       {showTrialBanner && <TrialBanner daysLeft={sub.daysLeft as number} />}
       <div className="flex flex-1 flex-col">{children}</div>
