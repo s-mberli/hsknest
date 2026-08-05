@@ -53,6 +53,10 @@ next-env.d.ts
 /prisma/*.db-wal
 /prisma/*.db-shm
 
+# self-host: docker-compose.yml bind-mounts nightly SQLite backups here —
+# real user data (emails, password hashes), never commit
+/backups/
+
 # local assistant config (not part of the app)
 /CLAUDE.md
 /.claude/
