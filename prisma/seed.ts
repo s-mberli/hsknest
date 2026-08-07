@@ -242,10 +242,19 @@ type SeedSentence = {
  * every seeded word matching its terms (SentenceWord powers sentence
  * practice crediting word progress). Sentences carry no per-user state, so
  * outdated content is simply wiped and recreated.
+ *
+ * Word↔sentence links are always refreshed, independent of whether the
+ * sentence rows themselves changed: `seedList` replaces a word list (new
+ * row ids, cascade-deleting that list's SentenceWord rows) whenever its
+ * sampled content drifts, which can happen on a totally separate boot from
+ * the last sentence reseed. Gating the relink on "did sentence text change"
+ * left replaced lists permanently orphaned from their example sentences —
+ * this now self-heals every boot instead.
  */
 async function seedSentences(languageId: string, sentences: SeedSentence[]) {
   const existingCount = await prisma.sentence.count({ where: { languageId } });
-  if (existingCount === sentences.length) {
+  let rowsCurrent = existingCount === sentences.length;
+  if (rowsCurrent) {
     const sample = sentences[Math.floor(sentences.length / 2)];
     const match = sample
       ? await prisma.sentence.findUnique({
@@ -255,28 +264,30 @@ async function seedSentences(languageId: string, sentences: SeedSentence[]) {
       : null;
     // Re-seed when the reading is missing too, so adding pinyin refreshes an
     // already-seeded dev DB (production reseeds are gated by the seed marker).
-    if (
+    rowsCurrent = !!(
       sample &&
       match &&
       match.translation === sample.translation &&
       (match.phonetic ?? null) === (sample.phonetic ?? null)
-    )
-      return; // current
+    );
   }
 
-  await prisma.sentence.deleteMany({ where: { languageId } });
-  await prisma.sentence.createMany({
-    data: sentences.map((s) => ({
-      languageId,
-      text: s.text,
-      translation: s.translation,
-      source: s.source,
-      phonetic: s.phonetic,
-      metadata: s.metadata,
-    })),
-  });
+  if (!rowsCurrent) {
+    await prisma.sentence.deleteMany({ where: { languageId } });
+    await prisma.sentence.createMany({
+      data: sentences.map((s) => ({
+        languageId,
+        text: s.text,
+        translation: s.translation,
+        source: s.source,
+        phonetic: s.phonetic,
+        metadata: s.metadata,
+      })),
+    });
+  }
 
-  // term → word ids across all seeded lists in this language.
+  // term → word ids across all seeded lists in this language. Always
+  // re-derived from the current live Word rows (see doc comment above).
   const words = await prisma.word.findMany({
     where: { wordList: { languageId, createdById: null } },
     select: { id: true, term: true },
@@ -304,6 +315,8 @@ async function seedSentences(languageId: string, sentences: SeedSentence[]) {
       }
     }
   }
+
+  await prisma.sentenceWord.deleteMany({ where: { sentence: { languageId } } });
   // SQLite variable limit — insert in chunks.
   for (let i = 0; i < links.length; i += 5000) {
     await prisma.sentenceWord.createMany({ data: links.slice(i, i + 5000) });
