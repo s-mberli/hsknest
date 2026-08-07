@@ -66,7 +66,7 @@ services:
     command: >
       sh -c 'apk add --no-cache sqlite &&
       echo "#!/bin/sh" > /backup.sh &&
-      echo "sqlite3 /data/recall.db .backup /backups/recall-backup-$$(date +%Y%m%d).db" >> /backup.sh &&
+      echo "sqlite3 /data/recall.db \".backup /backups/recall-backup-$$(date +%Y%m%d).db\"" >> /backup.sh &&
       echo "find /backups -name \"recall-backup-*.db\" -mtime +7 -exec rm {} \\;" >> /backup.sh &&
       chmod +x /backup.sh &&
       echo "0 2 * * * /backup.sh" > /etc/crontabs/root &&
