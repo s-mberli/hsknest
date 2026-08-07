@@ -167,8 +167,8 @@ export function LandingSections() {
           </div>
 
           <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:min-h-[220px]">
-            <p className="text-4xl font-bold text-primary/80">99</p>
-            <h3 className="font-semibold">3,000+ Context Sentences</h3>
+            <p className="text-4xl font-bold text-primary/80">3,000+</p>
+            <h3 className="font-semibold">Context Sentences</h3>
             <p className="text-sm text-muted-foreground">
               Don&apos;t learn words in a vacuum. Understand nuance with
               high-quality, practical example sentences.
@@ -266,15 +266,6 @@ export function LandingSections() {
           <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
             Same exact software. We just handle the servers, backups, and audio
             pipeline so you don&apos;t have to.
-          </p>
-        </div>
-
-        <div className="mx-auto max-w-3xl text-center space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400">
-            <span>🔥</span> Founder&apos;s Rate: Limited to the first 50 users.
-          </div>
-          <p className="mx-auto max-w-xl text-sm text-muted-foreground">
-            Lock in this price forever. As we add features, the public price will increase to €15/month, but early adopters keep this rate for life.
           </p>
         </div>
 
@@ -480,7 +471,7 @@ export function LandingSections() {
               </li>
               <li>
                 <a
-                  href={`${GITHUB_URL}#deploy`}
+                  href={`${GITHUB_URL}#self-hosting`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground"
