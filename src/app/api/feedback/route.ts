@@ -6,8 +6,9 @@ import { rateLimit } from "@/lib/rateLimit";
 import { feedbackSchema } from "@/lib/validation";
 
 /**
- * File an in-app bug report / idea. Auth required, rate-limited to 5 per day
- * per user. Rows are read via Prisma Studio for now (admin view → roadmap).
+ * File an in-app bug report, idea, word-quality flag, or cancellation feedback.
+ * Auth required, rate-limited to 5 per day per user. Rows are displayed in the
+ * read-only operator dashboard at /mb-admin (gated by ADMIN_EMAIL env var).
  */
 export async function POST(req: Request) {
   const userId = await requireUser();

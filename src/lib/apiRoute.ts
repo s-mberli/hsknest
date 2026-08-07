@@ -18,9 +18,14 @@ import { requireAccess } from "@/lib/subscription";
  * Structured server-side error log: one JSON line per error so a log
  * aggregator (or `docker logs | grep '"level":"error"'`) can parse it.
  * Never include request bodies or emails — userId only.
+ *
+ * Errors are also sent to Sentry if SENTRY_DSN is configured; self-hosters
+ * who don't set the DSN will only see the JSON log output.
  */
 export function logApiError(route: string, error: unknown, userId?: string) {
   const err = error instanceof Error ? error : new Error(String(error));
+
+  // Structured JSON log (always emitted, for self-hosters and local dev)
   console.error(
     JSON.stringify({
       level: "error",
@@ -31,6 +36,20 @@ export function logApiError(route: string, error: unknown, userId?: string) {
       stack: err.stack,
     })
   );
+
+  // Also send to Sentry if configured (no-op if SENTRY_DSN is unset)
+  if (process.env.SENTRY_DSN) {
+    import("@sentry/nextjs").then((Sentry) => {
+      Sentry.captureException(err, {
+        tags: {
+          route,
+        },
+        user: userId ? { id: userId } : undefined,
+      });
+    }).catch(() => {
+      // Sentry capture failed; already logged to stdout, so we're fine.
+    });
+  }
 }
 
 export function unauthorized() {
