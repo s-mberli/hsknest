@@ -27,9 +27,6 @@ export default function PricingPage() {
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-16">
       <header className="space-y-3 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 mb-2">
-          <span>🔥</span> Founder&apos;s Rate: Limited to the first 50 users.
-        </div>
         <h1 className="text-4xl font-bold tracking-tight">
           Simple pricing, no lock-in
         </h1>
