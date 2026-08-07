@@ -12,6 +12,16 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Capture in Sentry if configured
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      import("@sentry/nextjs").then((Sentry) => {
+        Sentry.captureException(error, {
+          tags: {
+            level: "page",
+          },
+        });
+      });
+    }
     // Server-side render errors carry a digest that matches the structured
     // log line on the server — log it so users can report it from devtools.
     console.error("App error", { digest: error.digest, message: error.message });

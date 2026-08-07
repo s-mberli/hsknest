@@ -39,7 +39,7 @@ export function WordFeedback({ card, primaryText }: WordFeedbackProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          category: "bug",
+          category: "word",
           message: fullMessage,
           page: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),

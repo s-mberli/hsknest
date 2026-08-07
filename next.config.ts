@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Optional analytics script origin (Umami) — allowed in the CSP only when
 // configured at build time. Empty/unset → no third-party origins at all.
@@ -62,4 +63,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry to enable source-map upload and error tracking.
+// No-op when SENTRY_DSN is unset — self-hosters are unaffected.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true, // Suppress warnings if no auth token
+});

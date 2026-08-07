@@ -70,7 +70,9 @@ export const accountResetSchema = z.object({
 });
 
 export const feedbackSchema = z.object({
-  category: z.enum(["bug", "idea", "other", "cancellation"]),
+  // "word" = a card-quality report filed from study mode (WordFeedback.tsx);
+  // the rest come from Settings → Feedback.
+  category: z.enum(["bug", "idea", "other", "cancellation", "word"]),
   message: z.string().trim().min(10).max(2000),
   page: z.string().trim().max(200).optional(),
 });
