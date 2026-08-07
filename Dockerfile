@@ -20,6 +20,14 @@ ARG NEXT_PUBLIC_UMAMI_URL=""
 ENV NEXT_PUBLIC_UMAMI_URL=$NEXT_PUBLIC_UMAMI_URL
 ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=""
 ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
+# Sentry source-map upload (build-time only) — lets withSentryConfig upload
+# maps so production stack traces are readable. All optional; unset = no upload.
+ARG SENTRY_AUTH_TOKEN=""
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+ARG SENTRY_ORG=""
+ENV SENTRY_ORG=$SENTRY_ORG
+ARG SENTRY_PROJECT=""
+ENV SENTRY_PROJECT=$SENTRY_PROJECT
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

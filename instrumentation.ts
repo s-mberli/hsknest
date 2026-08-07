@@ -1,8 +1,12 @@
 /**
  * Next.js 16 instrumentation hook for Sentry. Captures uncaught errors from
  * the server, RSC rendering, and request-level exceptions. No-op when
- * SENTRY_DSN is unset — self-hosters are unaffected.
+ * SENTRY_DSN is unset — self-hosters are unaffected (the config files below
+ * only call Sentry.init() when the DSN is present, so the SDK stays dormant
+ * and captureRequestError becomes a no-op).
  */
+
+import * as Sentry from "@sentry/nextjs";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -14,19 +18,8 @@ export async function register() {
   }
 }
 
-/**
- * Optional: capture errors from failed requests. Called by Next.js when a
- * request throws an unhandled error.
- */
-export async function onRequestError(
-  error: Error
-) {
-  if (!process.env.SENTRY_DSN) return;
-
-  const Sentry = await import("@sentry/nextjs");
-  Sentry.captureException(error, {
-    tags: {
-      runtime: "edge-request",
-    },
-  });
-}
+// Canonical Next.js error hook — Sentry's purpose-built handler attaches the
+// request context (path, method, router/route type) and flushes the event on
+// the long-running server. Fires for uncaught errors in route handlers, RSC
+// rendering, and server actions.
+export const onRequestError = Sentry.captureRequestError;

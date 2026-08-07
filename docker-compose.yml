@@ -9,6 +9,10 @@ services:
         NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
         NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
         NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+        # Build-time only: source-map upload for readable prod stack traces.
+        SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN:-}
+        SENTRY_ORG: ${SENTRY_ORG:-}
+        SENTRY_PROJECT: ${SENTRY_PROJECT:-}
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -40,6 +44,13 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
       NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+      # Optional error tracking + tracing (Sentry). SENTRY_DSN is read at
+      # runtime by the server/edge SDK — it MUST be in this block, not just
+      # build args, or server-side errors are logged but never sent.
+      # NEXT_PUBLIC_SENTRY_DSN is build-time inlined (see build.args) but is
+      # listed here too for completeness.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     volumes:
       - recall-data:/data
       - recall-audio:/app/public/audio
