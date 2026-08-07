@@ -202,6 +202,7 @@ For more details on the SRS algorithm, data model, and configuration options, ch
 
 **In progress (v0.2):**
 
+- 📚 **Deeper sentence coverage from the full Tatoeba corpus:** Current example sentences come from a curated subset (manythings.org's `cmn-eng` export); coverage is strong at HSK1–3 but thins fast higher up (~22% of HSK5 words have a linked sentence, ~6% for HSK7–9). Pulling directly from Tatoeba's full CC-BY 2.0 FR sentence and translation-links dump, same license already in use, just more volume, should meaningfully improve mid-to-upper bands. Won't fully solve HSK7–9, since natural sentences using very rare words tend to also need other rare words the deck doesn't have yet, but should close a real, user-noticed gap.
 - 🚑 **Triage Mode (Anti-Churn):** A smart "Recovery Session" interface that automatically load-balances your FSRS queue when you miss a few days, preventing review bankruptcy and overwhelming backlogs.
 - 📊 **The Efficiency Receipt:** Post-session data summaries that instantly show your exact FSRS retention predictions, proving that your daily minutes are mathematically optimized.
 - 🧠 **Descending Retrievability Sorting:** Dynamically sorting overdue cards by easiest-first during catch-up sessions to immediately rebuild your momentum.
