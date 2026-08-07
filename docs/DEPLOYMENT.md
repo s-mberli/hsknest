@@ -141,6 +141,11 @@ vars), also schedule the daily trial-lifecycle email job:
 Both jobs are idempotent (EmailLog table) and exit immediately when
 `SELF_HOSTED` isn't `false`, so they're harmless everywhere else.
 
+Stale-guest pruning (`scripts/prune-guests.ts`) is not a cron job — it
+already runs at every container boot from `docker-entrypoint.sh`, which is
+frequent enough given guests are throwaway by design. No separate schedule
+needed.
+
 ## File permissions
 
 - Keep the database file readable only by the app user: `chmod 0600 recall.db`.
