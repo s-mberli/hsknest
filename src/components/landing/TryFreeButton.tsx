@@ -28,7 +28,7 @@ export function TryFreeButton({
       const res = await fetch("/api/auth/guest", { method: "POST" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Could not start — please try again.");
+        toast.error(data.error ?? "Could not start, please try again.");
         return;
       }
       const { email, password } = await res.json();
@@ -38,7 +38,7 @@ export function TryFreeButton({
         redirect: false,
       });
       if (login?.error) {
-        toast.error("Could not start — please try again.");
+        toast.error("Could not start, please try again.");
         return;
       }
       router.push("/dashboard");
