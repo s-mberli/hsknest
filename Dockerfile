@@ -37,9 +37,9 @@ COPY --from=build /app/prisma ./prisma
 # Maintenance scripts run by the entrypoint (guest pruning)
 COPY --from=build /app/scripts ./scripts
 
-# ALL node_modules die Prisma zur Laufzeit braucht (effect, etc.)
-# tsx is a runtime dependency (entrypoint runs seed + maintenance .ts scripts),
-# so it survives the production prune — no separate reinstall needed.
+# All node_modules Prisma needs at runtime (query engine, etc.).
+# tsx is a `dependencies` entry (not devDependencies) — the entrypoint runs
+# seed + maintenance .ts scripts, so it must survive the production prune.
 COPY --from=build /app/node_modules ./node_modules
 RUN npm prune --production
 
