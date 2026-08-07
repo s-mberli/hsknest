@@ -107,6 +107,27 @@ export default function CreditsPage() {
           app&apos;s database and data files.
         </p>
 
+        <h2>Fonts</h2>
+        <p>
+          Interface and code text use{" "}
+          <a
+            href="https://vercel.com/font"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Geist and Geist Mono
+          </a>{" "}
+          by Vercel, used under the{" "}
+          <a
+            href="https://scripts.sil.org/OFL"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            SIL Open Font License 1.1
+          </a>
+          .
+        </p>
+
         <h2>Application code</h2>
         <p>
           HSK Nest itself is open source under the{" "}
