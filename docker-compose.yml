@@ -6,6 +6,9 @@ services:
         # NEXT_PUBLIC_* vars must be passed as a build arg (see Dockerfile) —
         # the `environment:` block below is runtime-only, too late for these.
         NEXT_PUBLIC_AUDIO_BASE_URL: ${NEXT_PUBLIC_AUDIO_BASE_URL:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+        NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     restart: unless-stopped
     ports:
       - "3000:3000"
