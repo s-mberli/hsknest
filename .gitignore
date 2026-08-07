@@ -75,6 +75,10 @@ next-env.d.ts
 /LAUNCH-RUNBOOK.md
 /LAUNCH-RUNBOOK.html
 
+# one-off QA artifact from the HSK 2.0->3.0 data migration — internal dev
+# record, not user-facing documentation
+/docs/hsk-wordlist-diff-report.md
+
 # python bytecode cache
 __pycache__/
 *.pyc

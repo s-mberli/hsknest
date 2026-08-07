@@ -12,7 +12,7 @@ export default function PrivacyPage() {
 
       <div className="prose prose-slate dark:prose-invert">
         <p className="lead">
-          Last updated: July 16, 2026
+          Last updated: August 7, 2026
         </p>
 
         <h2>1. Information We Collect</h2>
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         </p>
         <ul>
           <li><strong>Stripe</strong> — payment processing for the hosted plan. Card details go directly to Stripe; we only receive a customer reference and subscription status.</li>
-          <li><strong>Resend</strong> — delivery of transactional emails (password reset, email verification, trial status).</li>
+          <li><strong>Resend</strong> — delivery of transactional emails (password reset, email verification, trial status, a re-engagement reminder if study activity drops for a week, and a one-question survey if you cancel).</li>
           <li><strong>Umami (self-hosted)</strong> — privacy-friendly, cookieless page analytics running on our own server. No data is shared with any third party and no visitor is individually identified.</li>
         </ul>
 

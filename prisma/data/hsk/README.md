@@ -32,8 +32,9 @@ npx tsx scripts/fix-hsk-meanings.ts                 # push into an existing DB, 
 ```
 
 (The legacy `hsk1.json` … `hsk6.json` files — the old HSK 2.0 lists — were
-removed once the app migrated to the November 2025 HSK 3.0 syllabus above.
-Seeding matches an existing list by name and replaces its content wholesale,
+removed once the app migrated, in November 2025, to the 2021 HSK 3.0
+standard lists above. Seeding matches an existing list by name and replaces
+its content wholesale,
 so no install ever depended on the old files being present; see
 `scripts/migrate-hsk-levels.ts` for the 2.0 → 3.0 migration itself.)
 
