@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { logApiError } from "@/lib/apiRoute";
+import { sendCancellationSurveyEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { isSelfHosted } from "@/lib/subscription";
@@ -80,16 +81,43 @@ export async function POST(req: Request) {
       case "customer.subscription.deleted": {
         const sub = event.data.object;
         const userId = sub.metadata?.userId;
+        let updated: { count: number } | undefined;
         if (userId) {
-          await prisma.user.updateMany({
+          updated = await prisma.user.updateMany({
             where: { id: userId },
             data: { subscriptionStatus: "canceled" },
           });
         } else if (typeof sub.customer === "string") {
-          await prisma.user.updateMany({
+          updated = await prisma.user.updateMany({
             where: { stripeCustomerId: sub.customer },
             data: { subscriptionStatus: "canceled" },
           });
+        }
+
+        // Exit Interviews (Gym Launch Secrets, ch.16): one honest question
+        // on the way out, not a retention gate. Best-effort and isolated in
+        // its own try/catch — an email failure here must never turn into a
+        // 500 (Stripe would retry the whole event); the subscription-status
+        // update above is what actually matters and already succeeded.
+        if (updated?.count) {
+          try {
+            const user = userId
+              ? await prisma.user.findUnique({
+                  where: { id: userId },
+                  select: { email: true },
+                })
+              : typeof sub.customer === "string"
+                ? await prisma.user.findFirst({
+                    where: { stripeCustomerId: sub.customer },
+                    select: { email: true },
+                  })
+                : null;
+            if (user?.email && !user.email.endsWith("@guest.local")) {
+              await sendCancellationSurveyEmail(user.email);
+            }
+          } catch (error) {
+            logApiError("/api/billing/webhook:cancellation-survey", error);
+          }
         }
         break;
       }

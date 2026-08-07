@@ -220,7 +220,7 @@ model ListPriority {
 model Feedback {
   id        String   @id @default(cuid())
   userId    String
-  category  String // "bug" | "idea" | "other"
+  category  String // "bug" | "idea" | "other" | "cancellation"
   message   String
   page      String? // route the report was filed from, if provided
   status    String   @default("open") // "open" | "closed" — triaged in Prisma Studio for now
