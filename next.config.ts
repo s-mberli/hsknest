@@ -39,6 +39,9 @@ const csp = [
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
   `connect-src 'self' ${umamiOrigin} ${sentryOrigin}`.trim(),
+  // Sentry's Session Replay integration compresses events in a blob: web
+  // worker. No sentryOrigin (DSN unset) → 'self' only, unchanged from today.
+  `worker-src 'self'${sentryOrigin ? " blob:" : ""}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
