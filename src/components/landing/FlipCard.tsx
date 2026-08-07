@@ -21,7 +21,7 @@ const CARD = {
 type Stage = "term" | "phonetic" | "full";
 
 const PROMPTS: Record<Stage, string> = {
-  term: "New word — tap to reveal",
+  term: "New word, tap to reveal",
   phonetic: "What does it mean? Tap again",
   full: "Grade yourself",
 };
@@ -31,13 +31,13 @@ const GRADES = [
     label: "Forgot",
     icon: "✕",
     color: "text-red-500 border-red-200 dark:border-red-900/60",
-    feedback: "No worries — you'll see it again soon.",
+    feedback: "No worries, you'll see it again soon.",
   },
   {
     label: "Hard",
     icon: "—",
     color: "text-amber-500 border-amber-200 dark:border-amber-900/60",
-    feedback: "Got it — back again shortly.",
+    feedback: "Got it, back again shortly.",
   },
   {
     label: "Knew",
@@ -49,7 +49,7 @@ const GRADES = [
     label: "Easy",
     icon: "»",
     color: "text-sky-500 border-sky-200 dark:border-sky-900/60",
-    feedback: "Easy — pushed further out.",
+    feedback: "Easy, pushed further out.",
   },
 ];
 
