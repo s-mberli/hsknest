@@ -70,7 +70,7 @@ export const accountResetSchema = z.object({
 });
 
 export const feedbackSchema = z.object({
-  category: z.enum(["bug", "idea", "other"]),
+  category: z.enum(["bug", "idea", "other", "cancellation"]),
   message: z.string().trim().min(10).max(2000),
   page: z.string().trim().max(200).optional(),
 });

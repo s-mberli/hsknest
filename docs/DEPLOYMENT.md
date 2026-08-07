@@ -133,10 +133,13 @@ vars), also schedule the daily trial-lifecycle email job:
 ```
 # /etc/cron.d/recall-trial-emails — 9am daily
 0 9 * * * root docker compose -f /path/to/docker-compose.yml exec -T app npx tsx scripts/send-trial-emails.ts
+
+# /etc/cron.d/recall-decline-check — 9:15am daily (weekly nudge, checked daily)
+15 9 * * * root docker compose -f /path/to/docker-compose.yml exec -T app npx tsx scripts/check-declining-engagement.ts
 ```
 
-The job is idempotent (EmailLog table) and exits immediately when
-`SELF_HOSTED` isn't `false`, so it is harmless everywhere else.
+Both jobs are idempotent (EmailLog table) and exit immediately when
+`SELF_HOSTED` isn't `false`, so they're harmless everywhere else.
 
 ## File permissions
 

@@ -13,12 +13,13 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { Segmented, SettingRow } from "./shared";
 
-type FeedbackCategory = "bug" | "idea" | "other";
+type FeedbackCategory = "bug" | "idea" | "other" | "cancellation";
 
 const FEEDBACK_OPTIONS: { value: FeedbackCategory; label: string }[] = [
   { value: "bug", label: "Bug" },
   { value: "idea", label: "Idea" },
   { value: "other", label: "Other" },
+  { value: "cancellation", label: "Cancellation" },
 ];
 
 /** In-app bug reports / ideas. Posts to /api/feedback (rate-limited server-side). */
@@ -62,6 +63,10 @@ export function FeedbackSection() {
         <SettingRow
           name="Type"
           description="What kind of feedback is this?"
+          // 4 options including "Cancellation" (the longest label) is the
+          // same width class that cramped "Desired retention" — stack here
+          // too rather than waiting to rediscover the same bug.
+          stack
         >
           <Segmented
             label="Feedback type"

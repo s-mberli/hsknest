@@ -154,6 +154,98 @@ export async function sendTrialEmail(
   }
 }
 
+/**
+ * Weekly declining-engagement nudge (hosted instance only) — see
+ * scripts/check-declining-engagement.ts and src/lib/engagementDecline.ts.
+ * Tone deliberately matches the source ("we noticed", not "you're failing
+ * your streak") — Gym Launch Secrets ch.16 frames the equivalent reach-out
+ * as praise-and-check-in, not guilt.
+ */
+export async function sendDeclineNudgeEmail(email: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const subject = "Haven't seen you in a bit";
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Your words are exactly where you left them</h2>
+      <p>Looks like studying slipped a bit this week — totally normal, life happens. Nothing's lost; your progress is saved and waiting.</p>
+      <p>A few minutes today is enough to pick the thread back up before it gets harder to.</p>
+      <p><a href="${baseUrl}/study" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Continue studying</a></p>
+      <p style="color: #666; font-size: 12px; margin-top: 40px; border-top: 1px solid #eee; padding-top: 16px;">
+        You're receiving this because your study activity dropped this week. Manage or delete your account anytime in
+        <a href="${baseUrl}/settings">Settings</a> — deleting it stops all email immediately.
+      </p>
+    </div>`;
+
+  if (!resend) {
+    warnNoEmailOnce();
+    console.log(`[email] decline_nudge for ${email}: ${subject}`);
+    return { success: true, data: null };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html,
+    });
+    if (error) {
+      console.error("Error sending decline nudge email:", error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to send decline nudge email:", error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * One honest question on cancellation (hosted instance only) — see
+ * customer.subscription.deleted in src/app/api/billing/webhook/route.ts.
+ * Gym Launch Secrets ch.16, "Exit Interviews": "we want to know what went
+ * wrong or what went right... even if you were totally satisfied." Best
+ * effort, never blocks or gates the cancellation itself.
+ */
+export async function sendCancellationSurveyEmail(email: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const subject = "Before you go — what happened?";
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Sorry to see you go</h2>
+      <p>We'd genuinely like to know what didn't work for you — even if it was nothing we could have fixed. It's the only way we get better.</p>
+      <p><a href="${baseUrl}/settings#feedback" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Tell us in 30 seconds</a></p>
+      <p>Or just reply to this email — a real person reads these.</p>
+      <p style="color: #666; font-size: 12px; margin-top: 40px; border-top: 1px solid #eee; padding-top: 16px;">
+        Your account and progress are untouched — you can resubscribe anytime in
+        <a href="${baseUrl}/settings">Settings</a>.
+      </p>
+    </div>`;
+
+  if (!resend) {
+    warnNoEmailOnce();
+    console.log(`[email] cancellation_survey for ${email}: ${subject}`);
+    return { success: true, data: null };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html,
+    });
+    if (error) {
+      console.error("Error sending cancellation survey email:", error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to send cancellation survey email:", error);
+    return { success: false, error };
+  }
+}
+
 export async function sendVerificationEmail(email: string, token: string) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const verifyLink = `${baseUrl}/api/auth/verify?token=${token}`;
