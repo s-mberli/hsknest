@@ -12,6 +12,18 @@ const umamiOrigin = (() => {
   }
 })();
 
+// Optional Sentry ingest origin — the browser SDK sends events/traces via
+// fetch to the DSN's host, which CSP's connect-src blocks by default. Derived
+// from the same DSN the client init already reads, so no separate config.
+const sentryOrigin = (() => {
+  try {
+    const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+    return dsn ? new URL(dsn).origin : "";
+  } catch {
+    return "";
+  }
+})();
+
 // Baseline CSP: blocks external script injection, framing, plugin content,
 // and form hijacking. `script-src` keeps 'unsafe-inline' because Next's
 // bootstrap inline scripts require it without per-request nonces (which need
@@ -26,7 +38,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  `connect-src 'self' ${umamiOrigin}`.trim(),
+  `connect-src 'self' ${umamiOrigin} ${sentryOrigin}`.trim(),
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
