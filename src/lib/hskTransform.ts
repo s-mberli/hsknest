@@ -141,9 +141,66 @@ function preferredReading(term: string): string {
 const MAX_MEANINGS = 8;
 
 /**
+ * Strip CC-CEDICT cruft from a translation: classifier notes, abbreviation
+ * pointers, variant markers, Taiwan pronunciation markers, and trailing
+ * place-name appositives. Preserves pedagogical context like contrast
+ * references ("as opposed to 您"), "e.g.", "used with", "equivalent to".
+ *
+ * Examples:
+ *   "spoon; ladle; CL:把[ba3]" → "spoon; ladle"
+ *   "Europe (abbr. for 欧罗巴洲…)" → "Europe"
+ *   "you (informal, as opposed to courteous 您)" → "you (informal, as opposed to courteous 您)"
+ *   "to catch cold; Taiwan pr. [zhao1 liang2]" → "to catch cold"
+ *   "rat; mouse (CL:隻|只[zhi1])" → "rat; mouse"
+ */
+export function stripTranslationCruft(translation: string): string {
+  if (!translation) return translation;
+
+  // Whitelist: pedagogical markers that make Han characters actually useful
+  // (contrast references, examples, usage context)
+  const PRESERVE = [
+    /as opposed to/i,
+    /equivalent to|equivalent of/i,
+    /used with|used in/i,
+    /namely|e\.g\./i,
+  ];
+  const hasPreserveMarker = PRESERVE.some((p) => p.test(translation));
+
+  // If the translation contains a preserve marker, don't strip anything
+  if (hasPreserveMarker) return translation;
+
+  // Remove trailing segments in order of prominence
+  let result = translation;
+
+  // 1. Remove classifier cruft: "; CL:…" or "(CL:…)" with all its bracketed segments
+  //    Pattern: "; CL:pinyin1[tone1],pinyin2[tone2],..." until end or next semicolon/paren
+  result = result.replace(/[;,]\s*CL:[^);]*/g, "");
+  result = result.replace(/\s*\(CL:[^)]*\)/gi, "");
+
+  // 2. Remove abbreviation pointers: "(abbr. for …)" or "; abbr. for …[…]"
+  result = result.replace(/\s*\(abbr\. for [^)]*\)/gi, "");
+  result = result.replace(/;\s*abbr\. for [^;]*/gi, "");
+
+  // 3. Remove variant/alternate form markers and pronunciation notes
+  //    "; also written …", "; also pr. …", "Taiwan pr. […]", "coll. pr. […]"
+  result = result.replace(/;\s*also (?:written|pr\.) [^;]*/gi, "");
+  result = result.replace(/;\s*(?:Taiwan|coll\.) pr\. \[[^\]]*\]/gi, "");
+  result = result.replace(/;\s*(?:Taiwan|coll\.) pr\. [^;]*/gi, "");
+
+  // 4. Remove trailing place-name appositives (after a semicolon or comma)
+  result = result.replace(/;\s*\w+\s+(?:county|district|city|township|prefecture)[^;]*$/gi, "");
+  result = result.replace(/,\s+\w+\s+(?:county|district|township|prefecture)[^;]*$/gi, "");
+
+  // Trim trailing whitespace and semicolons
+  result = result.trim().replace(/[;,]\s*$/, "").trim();
+
+  return result;
+}
+
+/**
  * Short, card-friendly primary translation: the first senses of the primary
  * form joined with "; ", stopping once ~60 chars are used (always ≥ 1 sense,
- * at most 3).
+ * at most 3). Strips CC-CEDICT cruft before returning.
  */
 export function buildTranslation(glosses: string[]): string {
   const parts: string[] = [];
@@ -152,7 +209,8 @@ export function buildTranslation(glosses: string[]): string {
     parts.push(g);
   }
   if (parts.length === 0 && glosses.length > 0) parts.push(glosses[0]);
-  return parts.join("; ");
+  const translation = parts.join("; ");
+  return stripTranslationCruft(translation);
 }
 
 /**

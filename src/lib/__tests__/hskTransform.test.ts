@@ -6,6 +6,7 @@ import {
   buildMeanings,
   buildTranslation,
   cleanGlosses,
+  stripTranslationCruft,
   transformEntry,
   type RawEntry,
 } from "../hskTransform";
@@ -57,6 +58,10 @@ describe("buildTranslation", () => {
   it("stops before exceeding the length budget but always keeps one", () => {
     const long = "x".repeat(80);
     expect(buildTranslation([long, "short"])).toBe(long);
+  });
+
+  it("strips CC-CEDICT cruft (classifier notes, abbreviation pointers)", () => {
+    expect(buildTranslation(["spoon", "ladle", "CL:把[ba3]"])).toBe("spoon; ladle");
   });
 });
 
@@ -236,6 +241,70 @@ describe("transformEntry", () => {
       ],
     };
     expect(transformEntry(rang, 2).metadata.traditional).toBe("讓");
+  });
+});
+
+describe("stripTranslationCruft", () => {
+  it("removes classifier cruft (CL:… with all bracketed segments)", () => {
+    expect(stripTranslationCruft("spoon; ladle; CL:把[ba3]")).toBe("spoon; ladle");
+    expect(stripTranslationCruft("tree peony; CL:棵[ke1]")).toBe("tree peony");
+    expect(
+      stripTranslationCruft("bed sheet; CL:條|条[tiao2],件[jian4],張|张[zhang1],床[chuang2]")
+    ).toBe("bed sheet");
+  });
+
+  it("removes abbreviation pointers (abbr. for …)", () => {
+    expect(stripTranslationCruft("Europe (abbr. for 欧罗巴洲)")).toBe("Europe");
+    expect(stripTranslationCruft("supermarket (abbr. for 超级市场)")).toBe("supermarket");
+  });
+
+  it("removes abbreviation pointers with trailing content", () => {
+    expect(stripTranslationCruft("Europe (abbr. for 欧罗巴洲[Ou1 luo2 ba1 Zhou1])")).toBe(
+      "Europe"
+    );
+  });
+
+  it("removes 'also written' and 'also pr.' markers in trailing position", () => {
+    expect(stripTranslationCruft("girl; also written 女孩")).toBe("girl");
+    expect(stripTranslationCruft("noodles; also pr. [mian4 tiao2 er2]")).toBe("noodles");
+  });
+
+  it("preserves helpful pedagogical context like 'as opposed to'", () => {
+    const input = "you (informal, as opposed to courteous 您)";
+    expect(stripTranslationCruft(input)).toBe(input);
+  });
+
+  it("preserves 'equivalent to' and 'equivalent of'", () => {
+    const input = "two (colloquial, equivalent to 两个)";
+    expect(stripTranslationCruft(input)).toBe(input);
+  });
+
+  it("preserves 'used with' and 'used in'", () => {
+    const input = "used to put the object before the verb: 把 + noun + verb";
+    expect(stripTranslationCruft(input)).toBe(input);
+  });
+
+  it("preserves 'e.g.' and 'namely'", () => {
+    const input = "prefix indicating ordinal number (e.g. 第六 sixth)";
+    expect(stripTranslationCruft(input)).toBe(input);
+    const input2 = "municipality, namely: Beijing 北京, Tianjin 天津";
+    expect(stripTranslationCruft(input2)).toBe(input2);
+  });
+
+  it("is idempotent (no double-stripping)", () => {
+    const input = "spoon; ladle; CL:把[ba3]";
+    const once = stripTranslationCruft(input);
+    const twice = stripTranslationCruft(once);
+    expect(once).toBe(twice);
+  });
+
+  it("preserves clean translations untouched", () => {
+    expect(stripTranslationCruft("to be; is; yes")).toBe("to be; is; yes");
+    expect(stripTranslationCruft("three; 3")).toBe("three; 3");
+  });
+
+  it("handles empty and null inputs gracefully", () => {
+    expect(stripTranslationCruft("")).toBe("");
   });
 });
 
