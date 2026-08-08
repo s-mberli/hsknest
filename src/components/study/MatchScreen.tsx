@@ -95,7 +95,7 @@ export function MatchScreen({ studyTheme }: MatchScreenProps) {
 }
 
 function MatchSession({ studyTheme }: MatchScreenProps) {
-  const { query, scoped } = useQueueQuery();
+  const { query, scoped, listIds } = useQueueQuery();
   const practice = true;
   const [round, setRound] = useState(0);
   const [matched, setMatched] = useState<Set<string>>(new Set());
@@ -224,7 +224,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
         )}
 
         {done && rounds.length === 0 && (
-          <EmptyQueue scoped={scoped} practice={practice} />
+          <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} />
         )}
 
         {done && rounds.length > 0 && (

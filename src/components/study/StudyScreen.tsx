@@ -56,7 +56,7 @@ function StudySession({
   autoPlayPronunciation = true,
   isGuest = false,
 }: StudyScreenProps) {
-  const { query, scoped, practice } = useQueueQuery();
+  const { query, scoped, practice, listIds } = useQueueQuery();
   const {
     loading,
     cards,
@@ -213,7 +213,7 @@ function StudySession({
         )}
 
         {!loading && done && cards.length === 0 && (
-          <EmptyQueue scoped={scoped} practice={practice} />
+          <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} />
         )}
 
         {!loading && done && cards.length > 0 && (

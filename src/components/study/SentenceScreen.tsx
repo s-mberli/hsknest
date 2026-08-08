@@ -53,7 +53,7 @@ export function SentenceScreen({ studyTheme, textSize }: SentenceScreenProps) {
 }
 
 function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
-  const { query, scoped, practice } = useQueueQuery();
+  const { query, scoped, practice, listIds } = useQueueQuery();
   const [cursor, setCursor] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [skipped, setSkipped] = useState(0);
@@ -151,7 +151,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
 
         {done && cards.length === 0 && (
           <div className="flex flex-col items-center gap-3">
-            <EmptyQueue scoped={scoped} practice={practice} />
+            <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} />
             {skipped > 0 && (
               <p className="max-w-xs text-center text-xs text-muted-foreground">
                 {skipped} {skipped === 1 ? "word doesn't" : "words don't"} have
