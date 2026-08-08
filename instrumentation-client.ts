@@ -1,13 +1,18 @@
 /**
  * Sentry client-side config for browser errors + tracing. Initialize only if
- * DSN is set. Runs in the browser and captures client-side exceptions, session
- * replays, and distributed traces (browserTracingIntegration links the browser
- * span to the server span for the same request).
+ * DSN is set AND we're in production — see sentry.server.config.ts for why
+ * the environment check matters. Runs in the browser and captures
+ * client-side exceptions, session replays, and distributed traces
+ * (browserTracingIntegration links the browser span to the server span for
+ * the same request).
  */
 
 import * as Sentry from "@sentry/nextjs";
 
-if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+if (
+  process.env.NEXT_PUBLIC_SENTRY_DSN &&
+  process.env.NODE_ENV === "production"
+) {
   Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
     environment: process.env.NODE_ENV,
