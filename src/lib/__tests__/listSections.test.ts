@@ -33,18 +33,34 @@ function run(input: {
 }
 
 describe("buildListSections — rollup", () => {
-  it("counts enrolled and due; NEW/ASSUMED and future dueAt are never due", () => {
+  it("counts enrolled, learned, and due; NEW/ASSUMED and future dueAt are never due", () => {
     const { byList } = run({
       lists: [list("l1", "HSK 1")],
       progress: [
-        prog("l1", "REVIEW", PAST), // due
-        prog("l1", "LEARNING", PAST), // due
-        prog("l1", "REVIEW", FUTURE), // not yet due
-        prog("l1", "NEW", PAST), // never due
-        prog("l1", "ASSUMED", PAST), // never due
+        prog("l1", "REVIEW", PAST), // due, learned
+        prog("l1", "LEARNING", PAST), // due, learned
+        prog("l1", "REVIEW", FUTURE), // not yet due, learned
+        prog("l1", "NEW", PAST), // never due, not learned
+        prog("l1", "ASSUMED", PAST), // never due, learned
       ],
     });
-    expect(byList.get("l1")).toEqual({ enrolled: 5, due: 2 });
+    expect(byList.get("l1")).toEqual({ enrolled: 5, learned: 4, due: 2 });
+  });
+
+  it("counts ASSUMED as learned but not due", () => {
+    const { byList } = run({
+      lists: [list("l1", "HSK 1")],
+      progress: [prog("l1", "ASSUMED", PAST)],
+    });
+    expect(byList.get("l1")).toEqual({ enrolled: 1, learned: 1, due: 0 });
+  });
+
+  it("starts at learned 0 for a fresh enroll (all NEW)", () => {
+    const { byList } = run({
+      lists: [list("l1", "HSK 1")],
+      progress: [prog("l1", "NEW", PAST), prog("l1", "NEW", PAST)],
+    });
+    expect(byList.get("l1")).toEqual({ enrolled: 2, learned: 0, due: 0 });
   });
 });
 
