@@ -138,7 +138,7 @@ export function ImportWords({
     <div className="space-y-4 rounded-lg border bg-muted/20 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-medium">Import words</p>
+          <p className="text-sm font-medium">Import batch</p>
           <p className="text-xs text-muted-foreground">
             Paste rows or choose a file. Works with tab-separated exports from
             other flashcard tools — one word per line, e.g. term&lt;tab&gt;meaning.
