@@ -85,17 +85,26 @@ export function ListWordsView({
     [words]
   );
 
+  const hasWords = words.length > 0;
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg border p-0.5">
-          <ToggleBtn active={view === "strength"} onClick={() => setView("strength")}>
-            Strength
-          </ToggleBtn>
-          <ToggleBtn active={view === "table"} onClick={() => setView("table")}>
-            Table
-          </ToggleBtn>
-        </div>
+        {hasWords ? (
+          <div className="inline-flex rounded-lg border p-0.5">
+            <ToggleBtn
+              active={view === "strength"}
+              onClick={() => setView("strength")}
+            >
+              Strength
+            </ToggleBtn>
+            <ToggleBtn active={view === "table"} onClick={() => setView("table")}>
+              Table
+            </ToggleBtn>
+          </div>
+        ) : (
+          <div />
+        )}
         <div className="flex items-center gap-2">
           {isOwner && listId && (
             <Button
@@ -105,16 +114,18 @@ export function ListWordsView({
               className="h-8"
               onClick={() => setImporting((v) => !v)}
             >
-              Import words
+              Import batch
             </Button>
           )}
-          <Input
-            type="search"
-            placeholder="Search words…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-xs"
-          />
+          {hasWords && (
+            <Input
+              type="search"
+              placeholder="Search words…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full max-w-xs"
+            />
+          )}
         </div>
       </div>
 
@@ -126,7 +137,13 @@ export function ListWordsView({
         <AddWordRow listId={listId} languageCode={languageCode} />
       )}
 
-      {view === "strength" ? (
+      {!hasWords ? (
+        isOwner ? (
+          <OwnerWordTable words={[]} />
+        ) : (
+          <WordTable words={[]} />
+        )
+      ) : view === "strength" ? (
         <WordStrengthGrid
           words={details}
           search={search}
