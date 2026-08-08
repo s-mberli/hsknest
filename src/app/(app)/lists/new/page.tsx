@@ -36,20 +36,35 @@ export default function NewListPage() {
   const [languageId, setLanguageId] = useState("");
   const [newLangName, setNewLangName] = useState("");
   const [newLangCode, setNewLangCode] = useState("");
+  const [lastRealLanguageId, setLastRealLanguageId] = useState("");
 
   useEffect(() => {
     fetch("/api/languages")
-      .then((res) => (res.ok ? res.json() : { languages: [] }))
+      .then((res) => (res.ok ? res.json() : { languages: [], targetLanguageId: null }))
       .then((data) => {
         const langs: Language[] = data.languages ?? [];
         setLanguages(langs);
-        if (langs.length > 0) setLanguageId(langs[0].id);
-        else setLanguageId(NEW_LANGUAGE);
+        const target: string | null = data.targetLanguageId ?? null;
+        const initial =
+          target && langs.some((l) => l.id === target)
+            ? target
+            : langs.length > 0
+              ? langs[0].id
+              : NEW_LANGUAGE;
+        setLanguageId(initial);
+        if (initial !== NEW_LANGUAGE) setLastRealLanguageId(initial);
       })
       .finally(() => setLoadingLangs(false));
   }, []);
 
+  function selectLanguage(id: string) {
+    setLanguageId(id);
+    if (id !== NEW_LANGUAGE) setLastRealLanguageId(id);
+  }
+
   const addingLanguage = languageId === NEW_LANGUAGE;
+  const soleLanguage =
+    !addingLanguage && languages.length === 1 ? languages[0] : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,43 +138,73 @@ export default function NewListPage() {
 
             <div className="space-y-2">
               <Label htmlFor="language">Language</Label>
-              <Select
-                id="language"
-                value={languageId}
-                disabled={loadingLangs}
-                onChange={(e) => setLanguageId(e.target.value)}
-              >
-                {languages.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-                <option value={NEW_LANGUAGE}>＋ Add a new language…</option>
-              </Select>
+              {soleLanguage ? (
+                <div className="flex items-center justify-between gap-3">
+                  <p id="language" className="text-sm">
+                    {soleLanguage.name}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => selectLanguage(NEW_LANGUAGE)}
+                  >
+                    ＋ Add a new language…
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  id="language"
+                  value={languageId}
+                  disabled={loadingLangs}
+                  onChange={(e) => selectLanguage(e.target.value)}
+                >
+                  {languages.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                  <option value={NEW_LANGUAGE}>＋ Add a new language…</option>
+                </Select>
+              )}
             </div>
 
             {addingLanguage && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="new-lang-name">New language name</Label>
-                  <Input
-                    id="new-lang-name"
-                    value={newLangName}
-                    onChange={(e) => setNewLangName(e.target.value)}
-                    placeholder="e.g. Japanese"
-                    maxLength={60}
-                  />
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-lang-name">New language name</Label>
+                    <Input
+                      id="new-lang-name"
+                      value={newLangName}
+                      onChange={(e) => setNewLangName(e.target.value)}
+                      placeholder="e.g. Japanese"
+                      maxLength={60}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-lang-code">Code</Label>
+                    <Input
+                      id="new-lang-code"
+                      value={newLangCode}
+                      onChange={(e) => setNewLangCode(e.target.value)}
+                      placeholder="e.g. ja"
+                      maxLength={10}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-lang-code">Code</Label>
-                  <Input
-                    id="new-lang-code"
-                    value={newLangCode}
-                    onChange={(e) => setNewLangCode(e.target.value)}
-                    placeholder="e.g. ja"
-                    maxLength={10}
-                  />
-                </div>
+                {lastRealLanguageId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => selectLanguage(lastRealLanguageId)}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </div>
             )}
 
