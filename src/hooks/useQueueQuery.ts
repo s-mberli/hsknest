@@ -11,9 +11,13 @@ export function useQueueQuery(): {
   query: string;
   scoped: boolean;
   practice: boolean;
+  listIds: string[];
 } {
   const params = useSearchParams();
   const practice = params.get("mode") === "practice";
+
+  const rawListIds = params.get("listIds");
+  const listIds = rawListIds ? rawListIds.split(",").filter(Boolean) : [];
 
   const parts: string[] = [];
   const minutes = Number(params.get("minutes"));
@@ -28,13 +32,13 @@ export function useQueueQuery(): {
     );
   }
 
-  const listIds = params.get("listIds");
-  if (listIds) parts.push(`listIds=${encodeURIComponent(listIds)}`);
+  if (rawListIds) parts.push(`listIds=${encodeURIComponent(rawListIds)}`);
   if (practice) parts.push("mode=practice");
 
   return {
     query: parts.join("&"),
-    scoped: Boolean(listIds),
+    scoped: listIds.length > 0,
     practice,
+    listIds,
   };
 }

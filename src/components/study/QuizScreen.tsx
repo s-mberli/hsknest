@@ -43,7 +43,7 @@ export function QuizScreen({ studyTheme, textSize, mode = "meaning" }: QuizScree
 }
 
 function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps) {
-  const { query, scoped } = useQueueQuery();
+  const { query, scoped, listIds } = useQueueQuery();
   const practice = true;
   const [cursor, setCursor] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -128,7 +128,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
 
         {done && cards.length === 0 && (
           <div className="flex flex-col items-center gap-3">
-            <EmptyQueue scoped={scoped} practice={practice} />
+            <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} />
             {skipped > 0 && (
               <p className="max-w-xs text-center text-xs text-muted-foreground">
                 {skipped} {skipped === 1 ? "card" : "cards"} can&apos;t be

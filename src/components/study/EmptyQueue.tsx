@@ -12,9 +12,16 @@ interface EmptyQueueProps {
   scoped: boolean;
   /** True when this was a practice/refresh session (no learned words to show). */
   practice?: boolean;
+  /** List ids active in the current scope, so a capped scoped session can
+   *  fall back to practice of just those lists. */
+  listIds?: string[];
 }
 
-export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
+export function EmptyQueue({
+  scoped,
+  practice = false,
+  listIds = [],
+}: EmptyQueueProps) {
   const router = useRouter();
 
   // Time-orientation for new users: an empty queue reads as a dead end
@@ -91,9 +98,27 @@ export function EmptyQueue({ scoped, practice = false }: EmptyQueueProps) {
           mobile. */}
       <div className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center">
         {scoped ? (
-          <Button className="w-full sm:w-auto" onClick={handleClearScope}>
-            Clear scope & retry
-          </Button>
+          <>
+            {/* Scoped + caps hit → practice the scope's lists instead of
+                dead-ending. mode=practice ignores daily caps and drills
+                learned words only. */}
+            {listIds.length > 0 && !practice && (
+              <Button asChild className="w-full sm:w-auto">
+                <Link
+                  href={`/study?mode=practice&listIds=${listIds.join(",")}&limit=500`}
+                >
+                  Practice this list
+                </Link>
+              </Button>
+            )}
+            <Button
+              variant={listIds.length > 0 && !practice ? "outline" : "default"}
+              className="w-full sm:w-auto"
+              onClick={handleClearScope}
+            >
+              Clear scope & retry
+            </Button>
+          </>
         ) : practice ? (
           <Button asChild className="w-full sm:w-auto">
             <Link href="/study?limit=500">Study flashcards</Link>
