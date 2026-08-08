@@ -9,6 +9,8 @@ import { rankListIds } from "@/lib/listPriority";
 
 export interface ListRollup {
   enrolled: number;
+  /** Progress rows in any state other than NEW (ASSUMED counts as learned). */
+  learned: number;
   due: number;
 }
 
@@ -50,8 +52,9 @@ export function buildListSections<L extends BaseList>(input: {
   const byList = new Map<string, ListRollup>();
   for (const p of progress) {
     const key = p.word.wordListId;
-    const entry = byList.get(key) ?? { enrolled: 0, due: 0 };
+    const entry = byList.get(key) ?? { enrolled: 0, learned: 0, due: 0 };
     entry.enrolled += 1;
+    if (p.state !== "NEW") entry.learned += 1;
     if (p.state !== "NEW" && p.state !== "ASSUMED" && p.dueAt <= now) {
       entry.due += 1;
     }
