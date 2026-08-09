@@ -51,6 +51,13 @@ export function CardStack({
   const [glow, setGlow] = useState<string | null>(null);
   const preview = !!current.preview;
 
+  // The very first card of a session was never visible as a stacked "behind"
+  // card, so it shouldn't play the stack->top entrance animation — every
+  // card promoted after it (i.e. after the first swipe/grade) was. Flipped
+  // from the swipe handler itself, not an effect, so it's set in time for
+  // the same render that promotes the next card.
+  const [enterFromStack, setEnterFromStack] = useState(false);
+
   const handleSwipe = useCallback(
     (direction: SwipeDirection, isMouseClick = false) => {
       // Preview cards aren't graded: any commit gesture just continues.
@@ -61,6 +68,7 @@ export function CardStack({
         () => setFlying((f) => f.filter((x) => x.key !== key)),
         450
       );
+      setEnterFromStack(true);
       setGlow(preview ? "#0ea5e9" : GLOW[direction]);
       if (preview) onContinue(isMouseClick);
       else onSwipe(direction, isMouseClick);
@@ -183,6 +191,7 @@ export function CardStack({
         isTop
         textSize={textSize}
         autoPlay={autoPlay}
+        enterFromStack={enterFromStack}
       />
 
       {/* Committed cards mid-flight (self-removed after the animation). */}
