@@ -140,14 +140,40 @@ export const dictionaryQuerySchema = z.object({
   languageCode: z.string().trim().min(2).max(10),
 });
 
-export const importSchema = z.object({
-  // ~100KB cap: guards the parser before the route's 2000-row post-parse limit.
-  text: z.string().min(1).max(100_000),
-  delimiter: z.enum(["auto", "tab", "comma"]).optional(),
-  columns: z
-    .array(z.enum(["term", "translation", "phonetic", "meanings", "ignore"]))
-    .optional(),
-});
+export const importSchema = z
+  .object({
+    // ~100KB cap: guards the parser before the route's 2000-row post-parse limit.
+    text: z.string().min(1).max(100_000),
+    delimiter: z.enum(["auto", "tab", "comma"]).optional(),
+    columns: z
+      .array(z.enum(["term", "translation", "phonetic", "meanings", "ignore"]))
+      .optional(),
+  })
+  .refine(
+    (v) => {
+      // Reject if the text starts with the ZIP local-file magic number
+      // (PK\x03\x04 = bytes 50 4B 03 04), which indicates a binary .apkg file
+      // or other ZIP archive that was mistakenly submitted as plain text.
+      const text = v.text;
+      if (text.length >= 4) {
+        const first4 = text.substring(0, 4);
+        if (
+          first4.charCodeAt(0) === 0x50 &&
+          first4.charCodeAt(1) === 0x4b &&
+          first4.charCodeAt(2) === 0x03 &&
+          first4.charCodeAt(3) === 0x04
+        ) {
+          return false;
+        }
+      }
+      return true;
+    },
+    {
+      message:
+        "This looks like a binary .apkg file. Export as plain text from Anki first.",
+      path: ["text"],
+    }
+  );
 
 export const listPrioritySchema = z.object({
   order: z.array(z.string().cuid()).min(1).max(100),
