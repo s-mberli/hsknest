@@ -109,9 +109,12 @@ export function ListWordsView({
           {isOwner && listId && (
             <Button
               type="button"
-              variant={importing ? "secondary" : "outline"}
+              variant="ghost"
               size="sm"
-              className="h-8"
+              className={cn(
+                "h-8 text-muted-foreground hover:text-foreground",
+                importing && "bg-secondary text-secondary-foreground"
+              )}
               onClick={() => setImporting((v) => !v)}
             >
               Import batch
