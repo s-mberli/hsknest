@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -27,6 +27,8 @@ const NEW_LANGUAGE = "__new__";
 
 export default function NewListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isImportMode = searchParams.get("import") === "true";
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLangs, setLoadingLangs] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -116,7 +118,21 @@ export default function NewListPage() {
         ← All lists
       </Link>
 
-      <h1 className="mb-6 mt-3 text-2xl font-bold tracking-tight">New list</h1>
+      <h1 className="mb-6 mt-3 text-2xl font-bold tracking-tight">
+        {isImportMode ? "Import from Anki" : "New list"}
+      </h1>
+      {isImportMode && (
+        <div className="mb-6 rounded-lg border border-blue-200/30 bg-blue-50/40 p-4 text-sm text-muted-foreground dark:border-blue-900/30 dark:bg-blue-950/20">
+          <p className="mb-3 font-medium text-foreground">How to export from Anki:</p>
+          <ol className="space-y-1.5 list-decimal list-inside text-xs">
+            <li>Open Anki and select your deck</li>
+            <li>Click File → Export</li>
+            <li>Choose "Notes in Plain Text" format</li>
+            <li>Save the file</li>
+          </ol>
+          <p className="mt-3 text-xs">Then create a list below and use the "Import batch" button to upload your export.</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
