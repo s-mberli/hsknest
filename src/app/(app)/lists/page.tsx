@@ -104,9 +104,14 @@ export default async function ListsPage() {
             Create your own lists, or add words from a starter set to your queue.
           </p>
         </div>
-        <Button asChild className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
-          <Link href="/lists/new">＋ New list</Link>
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild variant="outline" className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
+            <Link href="/lists/new?import=true">↗ Import from Anki</Link>
+          </Button>
+          <Button asChild className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
+            <Link href="/lists/new">＋ New list</Link>
+          </Button>
+        </div>
       </div>
 
       {studying.length > 0 && (
