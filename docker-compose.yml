@@ -9,10 +9,6 @@ services:
         NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
         NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
         NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
-        # Build-time only: source-map upload for readable prod stack traces.
-        SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN:-}
-        SENTRY_ORG: ${SENTRY_ORG:-}
-        SENTRY_PROJECT: ${SENTRY_PROJECT:-}
     restart: unless-stopped
     ports:
       - "3000:3000"

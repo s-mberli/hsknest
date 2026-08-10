@@ -50,6 +50,7 @@ model User {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  passwordChangedAt DateTime @default(now())
   emailVerified DateTime?
 
   // Hosted billing (ignored entirely when SELF_HOSTED=true)

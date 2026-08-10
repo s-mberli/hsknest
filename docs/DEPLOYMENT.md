@@ -101,6 +101,10 @@ vars, and terminates HTTPS through its bundled proxy:
 7. Set up the backup cron below (the volume path is under
    `/var/lib/docker/volumes/` on the Coolify host).
 
+> **After a deployment, verify the backup job still targets the current app
+> container or the mounted SQLite volume.** Deployment-specific container names
+> change over time; a hardcoded name can silently create empty backup files.
+
 Subsequent updates are just `git push` — Coolify redeploys, and migrations run
 on boot.
 
@@ -129,6 +133,14 @@ server. Copy the backup off-box immediately and retain for at least 7 days:
 (Replace `remote:backups/...` with your rclone target — S3, B2, rsync, etc.
 [Configure rclone](https://rclone.org/docs/) for your storage backend; test
 first.)
+
+For every new backup, verify that the file is non-zero and passes SQLite's
+integrity check before treating it as recoverable:
+
+```bash
+test -s /var/backups/recall-$(date +%F).db
+sqlite3 /var/backups/recall-$(date +%F).db 'PRAGMA integrity_check;'
+```
 
 ### Restore procedure
 

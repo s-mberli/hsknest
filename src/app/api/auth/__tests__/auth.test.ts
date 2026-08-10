@@ -4,6 +4,7 @@ import { POST as resetPasswordPOST } from "../reset-password/route";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rateLimit";
+import { authOptions } from "@/lib/auth";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -57,6 +58,15 @@ describe("Auth Routes", () => {
 
     it("returns 429 if rate limit is exceeded", async () => {
       vi.mocked(rateLimit).mockReturnValueOnce(false);
+      const req = createRequest({ email: "test@example.com" });
+      const res = await forgotPasswordPOST(req);
+      expect(res.status).toBe(429);
+    });
+
+    it("enforces the IP layer of the reset-email limit", async () => {
+      vi.mocked(rateLimit)
+        .mockReturnValueOnce(true)
+        .mockReturnValueOnce(false);
       const req = createRequest({ email: "test@example.com" });
       const res = await forgotPasswordPOST(req);
       expect(res.status).toBe(429);
@@ -140,6 +150,38 @@ describe("Auth Routes", () => {
       
       expect(res.status).toBe(200);
       expect(prisma.$transaction).toHaveBeenCalled();
+    });
+  });
+
+  describe("JWT session invalidation", () => {
+    it("rejects a token issued before the password change", async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+        passwordChangedAt: new Date(200_000),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const token = await authOptions.callbacks!.jwt!({
+        token: { id: "user-1", iat: 100 },
+        user: undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      expect(token.id).toBeUndefined();
+    });
+
+    it("keeps a token issued after the password change", async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+        passwordChangedAt: new Date(100_000),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const token = await authOptions.callbacks!.jwt!({
+        token: { id: "user-1", iat: 200 },
+        user: undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      expect(token.id).toBe("user-1");
     });
   });
 });

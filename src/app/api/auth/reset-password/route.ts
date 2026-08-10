@@ -14,7 +14,10 @@ export async function POST(request: Request) {
   try {
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    if (!rateLimit(`reset-password:${ip}`, 10, 60 * 1000)) {
+    if (
+      !rateLimit(`reset-password:${ip}`, 10, 60 * 1000) ||
+      !rateLimit("reset-password:global", 1000, 60 * 60 * 1000)
+    ) {
       return NextResponse.json(
         { error: "Too many attempts. Please try again later." },
         { status: 429 }
@@ -62,7 +65,7 @@ export async function POST(request: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { email: resetToken.email },
-        data: { passwordHash },
+        data: { passwordHash, passwordChangedAt: new Date() },
       }),
       prisma.passwordResetToken.deleteMany({
         where: { email: resetToken.email },
