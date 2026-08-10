@@ -25,7 +25,7 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.42.2",
+    "framer-motion": "^13.0.0",
     "langfuse": "^3.38.20",
     "lucide-react": "^1.23.0",
     "next": "^16.2.12",
