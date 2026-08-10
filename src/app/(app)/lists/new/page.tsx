@@ -127,10 +127,10 @@ export default function NewListPage() {
           <ol className="space-y-1.5 list-decimal list-inside text-xs">
             <li>Open Anki and select your deck</li>
             <li>Click File → Export</li>
-            <li>Choose "Notes in Plain Text" format</li>
+            <li>Choose &quot;Notes in Plain Text&quot; format</li>
             <li>Save the file</li>
           </ol>
-          <p className="mt-3 text-xs">Then create a list below and use the "Import batch" button to upload your export.</p>
+          <p className="mt-3 text-xs">Then create a list below and use the &quot;Import batch&quot; button to upload your export.</p>
         </div>
       )}
 
