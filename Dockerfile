@@ -2,13 +2,13 @@
 # syntax=docker/dockerfile:1
 
 # ── deps: install all dependencies (incl. dev) for the build ────────────────
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
 # ── build: generate prisma client + compile the standalone next server ──────
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 # NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so they
 # must arrive as build args (a runtime `environment:` entry alone is too late).
@@ -26,7 +26,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # ── runner: slim image serving the standalone bundle ────────────────────────
-FROM node:22-alpine AS runner
+FROM node:26-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
