@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { trackEventOnce } from "@/lib/analytics";
 
 interface Language {
   id: string;
@@ -106,6 +107,7 @@ export default function NewListPage() {
     }
     const data = await res.json();
     toast.success("List created.");
+    trackEventOnce("list_created");
     router.push(`/lists/${data.id}`);
   }
 
