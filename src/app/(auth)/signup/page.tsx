@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackEventOnce } from "@/lib/analytics";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function SignupPage() {
       toast.error(data.error ?? "Could not create account");
       return;
     }
+
+    trackEventOnce("signup_complete");
 
     // Auto sign-in after signup.
     const login = await signIn("credentials", {
