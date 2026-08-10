@@ -1,0 +1,40 @@
+# Deploy HSK Nest to the VPS over SSH after a merge to main.
+# The VPS runs a restricted deploy script as the `hskdeploy` user (sudo, no
+# password) that pulls main, rebuilds the app container, and runs migrations.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Set up SSH known_hosts
+        run: |
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          echo '${{ secrets.DEPLOY_KNOWN_HOST }}' > "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
+
+      - name: Deploy over SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          echo "$DEPLOY_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          ssh -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o LogLevel=ERROR \
+            hskdeploy@"$DEPLOY_HOST" 'sudo -n /usr/local/bin/hsknest-deploy'
