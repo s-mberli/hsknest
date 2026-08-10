@@ -59,7 +59,7 @@ export default async function AdminPage() {
     { label: "Users (total)", value: String(totalUsers) },
     { label: "— of which guests", value: String(guests) },
     { label: "Active subscriptions", value: String(activeSubs) },
-    { label: "MRR (est.)", value: `€${activeSubs * 5}` },
+    { label: "MRR (est.)", value: `€${activeSubs * 10}` },
     { label: "In trial", value: String(trialing) },
     { label: "Trials ending ≤7d", value: String(expiringSoon) },
     { label: "Word-quality reports", value: String(wordReports) },
