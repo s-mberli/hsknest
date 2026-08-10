@@ -12,6 +12,15 @@ const umamiOrigin = (() => {
   }
 })();
 
+// Umami Cloud (cloud.umami.is) serves its script from one origin but sends
+// the actual tracking payload to a *different* one (gateway.umami.is) —
+// confirmed via a live CSP violation in prod (2026-08-10): every beacon was
+// silently dropped by the browser because connect-src only trusted the
+// script's own origin. Self-hosted Umami serves both from the same origin,
+// so this extra allowance is scoped to Umami Cloud specifically.
+const umamiConnectExtra =
+  umamiOrigin === "https://cloud.umami.is" ? " https://gateway.umami.is" : "";
+
 // Optional Sentry ingest origin — the browser SDK sends events/traces via
 // fetch to the DSN's host, which CSP's connect-src blocks by default. Derived
 // from the same DSN the client init already reads, so no separate config.
@@ -38,7 +47,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  `connect-src 'self' ${umamiOrigin} ${sentryOrigin}`.trim(),
+  `connect-src 'self' ${umamiOrigin}${umamiConnectExtra} ${sentryOrigin}`.trim(),
   // Sentry's Session Replay integration compresses events in a blob: web
   // worker. No sentryOrigin (DSN unset) → 'self' only, unchanged from today.
   `worker-src 'self'${sentryOrigin ? " blob:" : ""}`,
