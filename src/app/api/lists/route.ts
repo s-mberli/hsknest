@@ -71,11 +71,25 @@ export async function POST(req: Request) {
   let resolvedLanguageId: string;
   if (newLanguage) {
     const code = newLanguage.code.toLowerCase();
-    const existing = await prisma.language.findUnique({ where: { code } });
+    const existing = await prisma.language.findFirst({
+      where: { code, ...visibleLanguageWhere(userId) },
+      select: { id: true },
+    });
     if (existing) {
       // A language with this code already exists — reuse it rather than error.
       resolvedLanguageId = existing.id;
     } else {
+      const codeTaken = await prisma.language.findUnique({
+        where: { code },
+        select: { id: true },
+      });
+      if (codeTaken) {
+        return NextResponse.json(
+          { error: "Language code unavailable" },
+          { status: 409 }
+        );
+      }
+
       const created = await prisma.language.create({
         data: { name: newLanguage.name, code, createdById: userId },
         select: { id: true },

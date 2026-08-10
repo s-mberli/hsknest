@@ -22,9 +22,16 @@ export async function POST(request: Request) {
       );
     }
     const normalizedEmail = parsed.data.email.toLowerCase();
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
 
-    // Rate limiting: 5 requests per 15 minutes per email.
-    if (!rateLimit(`forgot-password:${normalizedEmail}`, 5, 15 * 60 * 1000)) {
+    // Layered limits prevent both targeted email flooding and broad abuse.
+    if (
+      !rateLimit(`forgot-password:${normalizedEmail}`, 5, 15 * 60 * 1000) ||
+      !rateLimit(`forgot-password:ip:${ip}`, 20, 15 * 60 * 1000) ||
+      !rateLimit("forgot-password:global", 1000, 15 * 60 * 1000)
+    ) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429 }
