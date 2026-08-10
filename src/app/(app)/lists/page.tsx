@@ -83,6 +83,7 @@ export default async function ListsPage() {
       languageName={list.language.name}
       wordCount={list._count.words}
       enrolled={byList.get(list.id)?.enrolled ?? 0}
+      learned={byList.get(list.id)?.learned ?? 0}
       due={byList.get(list.id)?.due ?? 0}
       owner={list.createdById === userId}
       hideable={list.createdById !== userId && !studyingIds.has(list.id)}
@@ -103,9 +104,14 @@ export default async function ListsPage() {
             Create your own lists, or add words from a starter set to your queue.
           </p>
         </div>
-        <Button asChild className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
-          <Link href="/lists/new">＋ New list</Link>
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild variant="outline" className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
+            <Link href="/lists/new?import=true">↗ Import from Anki</Link>
+          </Button>
+          <Button asChild className="rounded-full px-6 shadow-sm transition-transform active:scale-95">
+            <Link href="/lists/new">＋ New list</Link>
+          </Button>
+        </div>
       </div>
 
       {studying.length > 0 && (
@@ -189,6 +195,7 @@ function ListCard({
   languageName,
   wordCount,
   enrolled,
+  learned,
   due,
   owner = false,
   hideable = false,
@@ -203,6 +210,7 @@ function ListCard({
   languageName: string;
   wordCount: number;
   enrolled: number;
+  learned: number;
   due: number;
   owner?: boolean;
   hideable?: boolean;
@@ -254,7 +262,7 @@ function ListCard({
                   </span>
                 )}
                 {due > 0 && " · "}
-                {enrolled}/{wordCount}
+                {learned}/{wordCount} learned
               </p>
             ) : (
               <div className="flex flex-wrap items-center gap-2">

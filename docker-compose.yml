@@ -6,6 +6,9 @@ services:
         # NEXT_PUBLIC_* vars must be passed as a build arg (see Dockerfile) —
         # the `environment:` block below is runtime-only, too late for these.
         NEXT_PUBLIC_AUDIO_BASE_URL: ${NEXT_PUBLIC_AUDIO_BASE_URL:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+        NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -37,6 +40,13 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
       NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+      # Optional error tracking + tracing (Sentry). SENTRY_DSN is read at
+      # runtime by the server/edge SDK — it MUST be in this block, not just
+      # build args, or server-side errors are logged but never sent.
+      # NEXT_PUBLIC_SENTRY_DSN is build-time inlined (see build.args) but is
+      # listed here too for completeness.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     volumes:
       - recall-data:/data
       - recall-audio:/app/public/audio
@@ -52,7 +62,7 @@ services:
     command: >
       sh -c 'apk add --no-cache sqlite &&
       echo "#!/bin/sh" > /backup.sh &&
-      echo "sqlite3 /data/recall.db .backup /backups/recall-backup-$$(date +%Y%m%d).db" >> /backup.sh &&
+      echo "sqlite3 /data/recall.db \".backup /backups/recall-backup-$$(date +%Y%m%d).db\"" >> /backup.sh &&
       echo "find /backups -name \"recall-backup-*.db\" -mtime +7 -exec rm {} \\;" >> /backup.sh &&
       chmod +x /backup.sh &&
       echo "0 2 * * * /backup.sh" > /etc/crontabs/root &&

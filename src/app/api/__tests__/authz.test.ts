@@ -46,6 +46,7 @@ vi.mock("@/lib/rateLimit", () => ({
 
 // Imported after the mocks above so the routes pick up the mocked modules.
 const { PATCH: listPATCH, DELETE: listDELETE } = await import("@/app/api/lists/[id]/route");
+const { POST: listPOST } = await import("@/app/api/lists/route");
 const { POST: wordsPOST } = await import("@/app/api/lists/[id]/words/route");
 const { POST: importPOST } = await import("@/app/api/lists/[id]/import/route");
 
@@ -163,6 +164,27 @@ describe(
         const res = await call(ownedListId);
         expect([403, 404]).toContain(res.status);
       });
+    });
+
+    it("rejects reusing another user's private language code", async () => {
+      const privateCode = `p${Date.now().toString().slice(-8)}`;
+      await testPrisma.language.create({
+        data: {
+          name: "Private language",
+          code: privateCode,
+          createdById: ownerId,
+        },
+      });
+
+      currentUserId = otherId;
+      const res = await listPOST(
+        jsonRequest({
+          name: "Other user's list",
+          newLanguage: { name: "Private language", code: privateCode },
+        })
+      );
+
+      expect(res.status).toBe(409);
     });
   },
   60000

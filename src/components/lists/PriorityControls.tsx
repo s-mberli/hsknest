@@ -72,7 +72,7 @@ export function PriorityControls({
           {rank}
         </span>
         <span className="text-xs font-medium text-muted-foreground">
-          {rank === 1 ? "Next up" : "in queue"}
+          Priority
         </span>
       </span>
       <span className="flex items-center gap-1.5">

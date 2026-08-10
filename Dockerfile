@@ -14,6 +14,12 @@ WORKDIR /app
 # must arrive as build args (a runtime `environment:` entry alone is too late).
 ARG NEXT_PUBLIC_AUDIO_BASE_URL=""
 ENV NEXT_PUBLIC_AUDIO_BASE_URL=$NEXT_PUBLIC_AUDIO_BASE_URL
+ARG NEXT_PUBLIC_SENTRY_DSN=""
+ENV NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN
+ARG NEXT_PUBLIC_UMAMI_URL=""
+ENV NEXT_PUBLIC_UMAMI_URL=$NEXT_PUBLIC_UMAMI_URL
+ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=""
+ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
@@ -37,9 +43,9 @@ COPY --from=build /app/prisma ./prisma
 # Maintenance scripts run by the entrypoint (guest pruning)
 COPY --from=build /app/scripts ./scripts
 
-# ALL node_modules die Prisma zur Laufzeit braucht (effect, etc.)
-# tsx is a runtime dependency (entrypoint runs seed + maintenance .ts scripts),
-# so it survives the production prune — no separate reinstall needed.
+# All node_modules Prisma needs at runtime (query engine, etc.).
+# tsx is a `dependencies` entry (not devDependencies) — the entrypoint runs
+# seed + maintenance .ts scripts, so it must survive the production prune.
 COPY --from=build /app/node_modules ./node_modules
 RUN npm prune --production
 

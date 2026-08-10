@@ -83,9 +83,26 @@ export function ImportWords({
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Detect .apkg or other binary files by sniffing the first 4 bytes for
+    // the ZIP local-file header (PK\x03\x04 = bytes 50 4B 03 04).
     const reader = new FileReader();
-    reader.onload = () => setText(String(reader.result ?? ""));
-    reader.readAsText(file);
+    reader.onload = (evt) => {
+      const bytes = new Uint8Array(evt.target?.result as ArrayBuffer);
+      // ZIP magic number: 50 4B 03 04 (PK in ASCII, followed by 0x03 0x04)
+      if (bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
+        toast.error(
+          "That looks like a real Anki .apkg file — we can't read that format yet. In Anki: File → Export → Notes in Plain Text, then upload or paste that instead."
+        );
+        return;
+      }
+      // Not a binary file; read as text.
+      const textReader = new FileReader();
+      textReader.onload = () => setText(String(textReader.result ?? ""));
+      textReader.readAsText(file);
+    };
+    // Read just the first 4 bytes to check the magic number.
+    reader.readAsArrayBuffer(file.slice(0, 4));
   }
 
   async function submit() {
@@ -138,7 +155,7 @@ export function ImportWords({
     <div className="space-y-4 rounded-lg border bg-muted/20 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-medium">Import words</p>
+          <p className="text-sm font-medium">Import batch</p>
           <p className="text-xs text-muted-foreground">
             Paste rows or choose a file. Works with tab-separated exports from
             other flashcard tools — one word per line, e.g. term&lt;tab&gt;meaning.

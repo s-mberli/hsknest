@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Optional analytics script origin (Umami) — allowed in the CSP only when
 // configured at build time. Empty/unset → no third-party origins at all.
@@ -6,6 +7,18 @@ const umamiOrigin = (() => {
   try {
     const url = process.env.NEXT_PUBLIC_UMAMI_URL;
     return url ? new URL(url).origin : "";
+  } catch {
+    return "";
+  }
+})();
+
+// Optional Sentry ingest origin — the browser SDK sends events/traces via
+// fetch to the DSN's host, which CSP's connect-src blocks by default. Derived
+// from the same DSN the client init already reads, so no separate config.
+const sentryOrigin = (() => {
+  try {
+    const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+    return dsn ? new URL(dsn).origin : "";
   } catch {
     return "";
   }
@@ -25,7 +38,10 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  `connect-src 'self' ${umamiOrigin}`.trim(),
+  `connect-src 'self' ${umamiOrigin} ${sentryOrigin}`.trim(),
+  // Sentry's Session Replay integration compresses events in a blob: web
+  // worker. No sentryOrigin (DSN unset) → 'self' only, unchanged from today.
+  `worker-src 'self'${sentryOrigin ? " blob:" : ""}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -62,4 +78,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry to enable source-map upload and error tracking.
+// No-op when SENTRY_DSN is unset — self-hosters are unaffected.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true, // Suppress warnings if no auth token
+});

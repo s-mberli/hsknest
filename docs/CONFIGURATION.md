@@ -16,6 +16,7 @@ Set these in a `.env` file at the project root.
 | `SELF_HOSTED`     | no       | `true`                        | **Keep the default `true` when self-hosting.** Anything other than an explicit `"false"` disables all billing: no trials, no paywall, no Stripe. Only the managed hosted instance sets `false`. A missing value can never paywall your own server. |
 | `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` / `STRIPE_WEBHOOK_SECRET` | no | `sk_live_...` / `price_...` / `whsec_...` | Hosted instance only — ignored entirely when `SELF_HOSTED` isn't `"false"`. Checkout, subscription price, and webhook signature verification. |
 | `ADMIN_EMAIL`     | no       | `you@example.com`             | Unlocks the read-only operator page at `/mb-admin` for the account with this email. Unset → the page 404s for everyone. |
+| `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | no | `https://xyz@sentry.io/...` / same | Optional error tracking via [Sentry](https://sentry.io) (free tier available). Leave blank to disable; self-hosters can point `SENTRY_DSN` at a self-hosted instance or [GlitchTip](https://glitchtip.com). **Sentry only initializes when `NODE_ENV=production`**. In Docker/Coolify, `SENTRY_DSN` must be available at runtime and `NEXT_PUBLIC_SENTRY_DSN` at build time. Docker builds intentionally do not accept Sentry auth tokens, so browser source maps are not uploaded from the production image; this avoids exposing build credentials. The Content-Security-Policy allow-lists the DSN ingest origin automatically. See [Sentry docs](https://docs.sentry.io/platforms/javascript/guides/nextjs/) for setup. |
 | `NEXT_PUBLIC_UMAMI_URL` / `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | no | `https://cloud.umami.is` / `uuid` | Optional cookieless [Umami](https://umami.is) analytics. Both must be set for the script to load; leave empty to ship no analytics at all (the default — funnel events become no-ops). The Content-Security-Policy allow-lists exactly this origin. |
 
 \* Optional in some local setups but recommended everywhere.
@@ -75,15 +76,19 @@ pick it up.
 
 ## Feedback
 
-In-app feedback (Settings → **Feedback**) writes rows to the `Feedback` table.
-There's no admin UI yet — read reports with Prisma Studio:
+In-app feedback (Settings → **Feedback**) and word-quality reports from study
+mode (card-flag button) write rows to the `Feedback` table. Viewing requires
+`ADMIN_EMAIL` to be set:
+
+1. Set `ADMIN_EMAIL` to your login email in `.env` (or `.env.production` on a deployed instance).
+2. Visit `/mb-admin` (logged in as that email).
+3. View a stats card showing word-quality report count, and two sections: word-reports (highlighted in amber) and general feedback (bug reports, ideas, etc.).
+
+Feedback rows carry a `status` field (`open` / `closed`); triaging is read-only in the dashboard for now — update status via Prisma Studio if needed:
 
 ```bash
 npx prisma studio
 ```
-
-Open the **Feedback** model to see each report's category, message, page, and
-status. A feedback admin dashboard is on the roadmap.
 
 ## Content ownership
 

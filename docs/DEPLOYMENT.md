@@ -101,6 +101,10 @@ vars, and terminates HTTPS through its bundled proxy:
 7. Set up the backup cron below (the volume path is under
    `/var/lib/docker/volumes/` on the Coolify host).
 
+> **After a deployment, verify the backup job still targets the current app
+> container or the mounted SQLite volume.** Deployment-specific container names
+> change over time; a hardcoded name can silently create empty backup files.
+
 Subsequent updates are just `git push` — Coolify redeploys, and migrations run
 on boot.
 
@@ -117,13 +121,64 @@ Nightly cron example (adjust the volume path for your Docker setup):
   ".backup '/var/backups/recall-$(date +\%F).db'"
 ```
 
-Then **copy the backup off-box** (rsync/rclone to object storage or another
-host) — a backup on the same machine doesn't survive a lost server. Prune old
-snapshots on whatever retention you like.
+**Off-box copy (critical)**: a backup on the same machine doesn't survive a lost
+server. Copy the backup off-box immediately and retain for at least 7 days:
+
+```bash
+# /etc/cron.d/recall-backup-offbox — 4am nightly (1 hour after backup)
+0 4 * * * root rclone sync /var/backups/recall-*.db remote:backups/hsknest-prod/ \
+  --remove-source-files --older-than 7d --filter '- recall-*.db'
+```
+
+(Replace `remote:backups/...` with your rclone target — S3, B2, rsync, etc.
+[Configure rclone](https://rclone.org/docs/) for your storage backend; test
+first.)
+
+For every new backup, verify that the file is non-zero and passes SQLite's
+integrity check before treating it as recoverable:
+
+```bash
+test -s /var/backups/recall-$(date +%F).db
+sqlite3 /var/backups/recall-$(date +%F).db 'PRAGMA integrity_check;'
+```
+
+### Restore procedure
+
+When the live database is corrupted or lost, restore from the backup:
+
+1. **Stop the app container:**
+   ```bash
+   docker compose down
+   ```
+
+2. **Restore the backup over the live database:**
+   ```bash
+   cp /var/backups/recall-2025-08-07.db /var/lib/docker/volumes/recall_recall-data/_data/recall.db
+   ```
+
+3. **Fix permissions** (ensure the app user can read it):
+   ```bash
+   chmod 0600 /var/lib/docker/volumes/recall_recall-data/_data/recall.db
+   chown $(id -u docker):$(id -g docker) /var/lib/docker/volumes/recall_recall-data/_data/recall.db
+   ```
+   (Adjust user/group to match your deployment; if unsure, use root temporarily or match the compose file.)
+
+4. **Restart the app:**
+   ```bash
+   docker compose up -d
+   ```
+
+5. **Verify:** Log in, check a user account, and review a few cards to confirm
+   the data looks right.
+
+**Test the restore procedure at least once** per quarter on a copy of the live
+DB to ensure backups are actually usable. A backup that hasn't been tested is
+not a backup.
 
 For continuous, near-zero-RPO backups, consider
 [Litestream](https://litestream.io/), which streams SQLite's WAL to S3-style
-storage.
+storage. This removes the restore downtime and is recommended for high-availability
+setups.
 
 ### Hosted-instance extras (self-hosters: skip)
 

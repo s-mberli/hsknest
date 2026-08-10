@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -27,6 +27,8 @@ const NEW_LANGUAGE = "__new__";
 
 export default function NewListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isImportMode = searchParams.get("import") === "true";
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLangs, setLoadingLangs] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,20 +38,35 @@ export default function NewListPage() {
   const [languageId, setLanguageId] = useState("");
   const [newLangName, setNewLangName] = useState("");
   const [newLangCode, setNewLangCode] = useState("");
+  const [lastRealLanguageId, setLastRealLanguageId] = useState("");
 
   useEffect(() => {
     fetch("/api/languages")
-      .then((res) => (res.ok ? res.json() : { languages: [] }))
+      .then((res) => (res.ok ? res.json() : { languages: [], targetLanguageId: null }))
       .then((data) => {
         const langs: Language[] = data.languages ?? [];
         setLanguages(langs);
-        if (langs.length > 0) setLanguageId(langs[0].id);
-        else setLanguageId(NEW_LANGUAGE);
+        const target: string | null = data.targetLanguageId ?? null;
+        const initial =
+          target && langs.some((l) => l.id === target)
+            ? target
+            : langs.length > 0
+              ? langs[0].id
+              : NEW_LANGUAGE;
+        setLanguageId(initial);
+        if (initial !== NEW_LANGUAGE) setLastRealLanguageId(initial);
       })
       .finally(() => setLoadingLangs(false));
   }, []);
 
+  function selectLanguage(id: string) {
+    setLanguageId(id);
+    if (id !== NEW_LANGUAGE) setLastRealLanguageId(id);
+  }
+
   const addingLanguage = languageId === NEW_LANGUAGE;
+  const soleLanguage =
+    !addingLanguage && languages.length === 1 ? languages[0] : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,7 +118,21 @@ export default function NewListPage() {
         ← All lists
       </Link>
 
-      <h1 className="mb-6 mt-3 text-2xl font-bold tracking-tight">New list</h1>
+      <h1 className="mb-6 mt-3 text-2xl font-bold tracking-tight">
+        {isImportMode ? "Import from Anki" : "New list"}
+      </h1>
+      {isImportMode && (
+        <div className="mb-6 rounded-lg border border-blue-200/30 bg-blue-50/40 p-4 text-sm text-muted-foreground dark:border-blue-900/30 dark:bg-blue-950/20">
+          <p className="mb-3 font-medium text-foreground">How to export from Anki:</p>
+          <ol className="space-y-1.5 list-decimal list-inside text-xs">
+            <li>Open Anki and select your deck</li>
+            <li>Click File → Export</li>
+            <li>Choose &quot;Notes in Plain Text&quot; format</li>
+            <li>Save the file</li>
+          </ol>
+          <p className="mt-3 text-xs">Then create a list below and use the &quot;Import batch&quot; button to upload your export.</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -123,43 +154,73 @@ export default function NewListPage() {
 
             <div className="space-y-2">
               <Label htmlFor="language">Language</Label>
-              <Select
-                id="language"
-                value={languageId}
-                disabled={loadingLangs}
-                onChange={(e) => setLanguageId(e.target.value)}
-              >
-                {languages.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-                <option value={NEW_LANGUAGE}>＋ Add a new language…</option>
-              </Select>
+              {soleLanguage ? (
+                <div className="flex items-center justify-between gap-3">
+                  <p id="language" className="text-sm">
+                    {soleLanguage.name}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => selectLanguage(NEW_LANGUAGE)}
+                  >
+                    ＋ Add a new language…
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  id="language"
+                  value={languageId}
+                  disabled={loadingLangs}
+                  onChange={(e) => selectLanguage(e.target.value)}
+                >
+                  {languages.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                  <option value={NEW_LANGUAGE}>＋ Add a new language…</option>
+                </Select>
+              )}
             </div>
 
             {addingLanguage && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="new-lang-name">New language name</Label>
-                  <Input
-                    id="new-lang-name"
-                    value={newLangName}
-                    onChange={(e) => setNewLangName(e.target.value)}
-                    placeholder="e.g. Japanese"
-                    maxLength={60}
-                  />
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-lang-name">New language name</Label>
+                    <Input
+                      id="new-lang-name"
+                      value={newLangName}
+                      onChange={(e) => setNewLangName(e.target.value)}
+                      placeholder="e.g. Japanese"
+                      maxLength={60}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-lang-code">Code</Label>
+                    <Input
+                      id="new-lang-code"
+                      value={newLangCode}
+                      onChange={(e) => setNewLangCode(e.target.value)}
+                      placeholder="e.g. ja"
+                      maxLength={10}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-lang-code">Code</Label>
-                  <Input
-                    id="new-lang-code"
-                    value={newLangCode}
-                    onChange={(e) => setNewLangCode(e.target.value)}
-                    placeholder="e.g. ja"
-                    maxLength={10}
-                  />
-                </div>
+                {lastRealLanguageId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => selectLanguage(lastRealLanguageId)}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </div>
             )}
 

@@ -31,6 +31,14 @@ interface SwipeCardProps {
   textSize: CardTextSize;
   /** Speak the term automatically when its reading is revealed (top card). */
   autoPlay?: boolean;
+  /**
+   * True when this card was already visible a moment ago as the next-up
+   * stacked card and is now being promoted to the top slot — animate its
+   * scale in from the stacked look instead of snapping straight to full
+   * size. False for the very first card of a session, which was never on
+   * screen before promotion.
+   */
+  enterFromStack?: boolean;
 }
 
 const COMMIT_OFFSET = 120;
@@ -46,6 +54,7 @@ export function SwipeCard({
   flyOut = null,
   textSize,
   autoPlay = false,
+  enterFromStack = false,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -93,7 +102,7 @@ export function SwipeCard({
       : flyOut === "left"
         ? { x: -vw * 1.3, rotate: -30, opacity: 0 }
         : flyOut === "up"
-          ? { y: -vh * 1.1, scale: 1.05, opacity: 0 }
+          ? { y: -vh * 1.1, opacity: 0 }
           : flyOut === "down"
             ? { y: vh * 0.5, opacity: 0 }
             : undefined;
@@ -112,15 +121,29 @@ export function SwipeCard({
                 zIndex: 10 - depth,
               }
       }
-      initial={isTop || flyOut ? false : { scale: 1 - depth * 0.05, y: depth * 12 }}
+      initial={
+        flyOut
+          ? false
+          : isTop
+            ? enterFromStack
+              ? { scale: 1 - 1 * 0.05 } // matches a depth-1 stacked card's look
+              : false
+            : { scale: 1 - depth * 0.05, y: depth * 12 }
+      }
       animate={
         flyTarget ??
-        (isTop ? undefined : { scale: 1 - depth * 0.05, y: depth * 12 })
+        (isTop
+          ? enterFromStack
+            ? { scale: 1 }
+            : undefined
+          : { scale: 1 - depth * 0.05, y: depth * 12 })
       }
       transition={
         flyTarget
           ? { type: "spring", stiffness: 200, damping: 25 }
-          : undefined
+          : isTop && enterFromStack
+            ? { type: "spring", stiffness: 380, damping: 30 }
+            : undefined
       }
       drag={armed}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}

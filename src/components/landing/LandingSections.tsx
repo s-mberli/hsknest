@@ -29,12 +29,12 @@ const STEPS = [
   {
     n: "1",
     title: "Jump in as a guest",
-    body: "No signup, no card — you're studying in ten seconds.",
+    body: "No signup, no card, you're studying in ten seconds.",
   },
   {
     n: "2",
     title: "Pick a deck",
-    body: "Tell us your HSK level and the right deck is waiting — or import your own lists.",
+    body: "Tell us your HSK level and the right deck is waiting, or import your own lists.",
   },
   {
     n: "3",
@@ -46,15 +46,15 @@ const STEPS = [
 const FAQ = [
   {
     q: "Is HSK Nest really free?",
-    a: "Self-hosted, yes — forever, under the AGPL license. The hosted version is €10/month after a 14-day free trial: we handle updates, backups, and hosting.",
+    a: "Self-hosted, yes, forever, under the AGPL license. The hosted version is €10/month after a 14-day free trial: we handle updates, backups, and hosting.",
   },
   {
     q: "Do I need a credit card to try it?",
-    a: "No. Start in guest mode instantly, and the 14-day trial never asks for a card — so there's no surprise charge, ever.",
+    a: "No. Start in guest mode instantly, and the 14-day trial never asks for a card, so there's no surprise charge, ever.",
   },
   {
     q: "Can I import my existing Anki decks?",
-    a: "Yes — export them from Anki as CSV/TSV and paste or upload; you map the columns and HSK Nest does the rest.",
+    a: "Yes, export them from Anki as CSV/TSV and paste or upload; you map the columns and HSK Nest does the rest.",
   },
   {
     q: "What languages does HSK Nest support?",
@@ -62,11 +62,11 @@ const FAQ = [
   },
   {
     q: "What happens to my progress if I stop paying?",
-    a: "Nothing is deleted. You can export your full progress as CSV at any time, and self-hosting is always free — your data isn't locked in.",
+    a: "Nothing is deleted. You can export your full progress as CSV at any time, and self-hosting is always free, your data isn't locked in.",
   },
   {
     q: "Is my data private?",
-    a: "Yes. No ad tracking, no analytics cookies, open-source code you can audit — and if you want full control, run it on your own server.",
+    a: "Yes. No ad tracking, no analytics cookies, open-source code you can audit, and if you want full control, run it on your own server.",
   },
 ];
 
@@ -103,7 +103,7 @@ export function LandingSections() {
         <p className="text-lg text-muted-foreground">
           Hours of setup before the first review, words with no context, and
           apps that stop halfway through the HSK levels. HSK Nest starts you
-          with everything already in place — so all that&apos;s left is the
+          with everything already in place, so all that&apos;s left is the
           studying.
         </p>
       </section>
@@ -246,7 +246,7 @@ export function LandingSections() {
         </h2>
         <p className="text-muted-foreground">
           HSK Nest is AGPL open source. Run it on your own server with zero
-          limits and zero subscription — or let us handle hosting, updates,
+          limits and zero subscription, or let us handle hosting, updates,
           and backups for you.
         </p>
         <Button asChild variant="outline" className="rounded-full">
@@ -385,7 +385,7 @@ export function LandingSections() {
           Stop forgetting the words you already learned
         </h2>
         <p className="text-lg text-muted-foreground">
-          Start free — no card, no signup required to try.
+          Start free, no card, no signup required to try.
         </p>
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <TryFreeButton />

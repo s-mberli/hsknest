@@ -5,7 +5,7 @@ import { computeDailyCaps, toCards, type QueueCard } from "@/lib/buildQueue";
 import { DUE_STATES } from "@/lib/horizon";
 import { targetLangFilter } from "@/lib/langScope";
 import type { CardState } from "@/lib/srs";
-import { prioritize } from "@/lib/listPriority";
+import { weightedInterleave } from "@/lib/listPriority";
 import { prisma } from "@/lib/prisma";
 import { gameGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
@@ -189,36 +189,41 @@ export async function GET(req: Request) {
   });
   const rankByListId = new Map(priorityRows.map((p) => [p.wordListId, p.rank]));
 
-  // 2. Assumed checks.
+  // 2. Assumed checks — mixed across studying lists by weighted ratio (a
+  // low-priority list still gets airtime; `weightedInterleave` handles the
+  // linear N:(N-1):…:1 split + round-robin). Over-fetch a generous window so
+  // every studying list has candidates in the pool.
   let remaining = limit - due.length;
   const checksTake = Math.min(remaining, checksAllowedToday);
   const checks =
     remaining > 0 && checksAllowedToday > 0
-      ? prioritize(
+      ? weightedInterleave(
           await prisma.userProgress.findMany({
             where: { userId, state: "ASSUMED", ...queueWhere },
             orderBy: { word: { position: "asc" } },
-            take: Math.max(checksTake * 5, 50),
+            take: Math.max(checksTake * 10, 100),
             include: wordInclude,
           }),
-          rankByListId
-        ).slice(0, checksTake)
+          rankByListId,
+          checksTake
+        )
       : [];
 
-  // 3. New cards.
+  // 3. New cards — same weighted multi-list mixing as the checks above.
   remaining = limit - due.length - checks.length;
   const freshTake = Math.min(remaining, newAllowedToday);
   const fresh =
     remaining > 0 && newAllowedToday > 0
-      ? prioritize(
+      ? weightedInterleave(
           await prisma.userProgress.findMany({
             where: { userId, state: "NEW", ...queueWhere },
             orderBy: { word: { position: "asc" } },
-            take: Math.max(freshTake * 5, 50),
+            take: Math.max(freshTake * 10, 100),
             include: wordInclude,
           }),
-          rankByListId
-        ).slice(0, freshTake)
+          rankByListId,
+          freshTake
+        )
       : [];
 
   const cards: QueueCard[] = [

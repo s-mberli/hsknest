@@ -53,6 +53,23 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
       }
+
+      // JWT sessions are stateless, so consult the account timestamp to
+      // revoke tokens issued before a password reset.
+      if (token.id && token.iat) {
+        const authState = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { passwordChangedAt: true },
+        });
+        if (
+          !authState ||
+          Math.floor(authState.passwordChangedAt.getTime() / 1000) >
+            Number(token.iat)
+        ) {
+          return {};
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {

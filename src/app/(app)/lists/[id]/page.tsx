@@ -102,27 +102,40 @@ export default async function ListDetailPage({
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {/* Study just this list (the dashboard has no per-list scope). */}
-            {progress.length > 0 && (
-              <Button asChild>
-                <Link href={`/study?listIds=${list.id}&limit=500`}>
-                  <GraduationCap className="size-4" />
-                  Study this list
-                </Link>
-              </Button>
-            )}
-            <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
-          </div>
-          {!allEnrolled && (
-            <p className="max-w-xs text-right text-xs text-muted-foreground">
-              Adds these words to your daily study rotation.
-            </p>
+          {list.words.length > 0 ? (
+            <>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {/* Study just this list (the dashboard has no per-list scope). */}
+                {progress.length > 0 && (
+                  <Button asChild>
+                    <Link href={`/study?listIds=${list.id}&limit=500`}>
+                      <GraduationCap className="size-4" />
+                      Study this list
+                    </Link>
+                  </Button>
+                )}
+                <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
+              </div>
+              {!allEnrolled && (
+                <p className="max-w-xs text-right text-xs text-muted-foreground">
+                  Adds these words to your daily study rotation.
+                </p>
+              )}
+              <div className="flex flex-wrap items-center justify-end gap-1">
+                <AssumeButton listId={list.id} />
+                <UnenrollButton
+                  listId={list.id}
+                  enrolledCount={progress.length}
+                />
+              </div>
+            </>
+          ) : (
+            isOwner && (
+              <p className="max-w-xs text-right text-xs text-muted-foreground">
+                Add some words, then enroll this list to start studying it.
+              </p>
+            )
           )}
-          <div className="flex flex-wrap items-center justify-end gap-1">
-            <AssumeButton listId={list.id} />
-            <UnenrollButton listId={list.id} enrolledCount={progress.length} />
-          </div>
         </div>
       </div>
 
