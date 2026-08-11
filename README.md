@@ -163,7 +163,7 @@ The container applies migrations and seeds starter content on first boot, then s
 
 - **Framework**: Next.js (App Router) + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui-style primitives + framer-motion
-- **Database**: Prisma ORM with SQLite for local dev (swap to Postgres for production)
+- **Database**: Prisma ORM with SQLite, including in production (single-file, backed up nightly; Postgres is schema-swappable in principle but untested — SQLite is what actually runs hsknest.com)
 - **Auth**: NextAuth.js (Credentials provider, JWT sessions)
 - **Validation**: Zod
 - **Testing**: Vitest (unit) + Playwright (E2E)
