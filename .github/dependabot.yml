@@ -12,6 +12,13 @@ updates:
       - "security"
     commit-message:
       prefix: "deps"
+    ignore:
+      # Majors land as PRs that can't merge (upstream peer conflicts,
+      # multi-package migrations) and pile up unreviewed. Minor/patch still
+      # flow via the groups below. Do majors deliberately instead — see
+      # RELEASES.md "Someday".
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       production:
         dependency-type: "production"
