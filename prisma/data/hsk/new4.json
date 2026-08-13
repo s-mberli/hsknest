@@ -11787,8 +11787,8 @@
   },
   {
     "term": "生意",
-    "translation": "life force; vitality",
-    "phonetic": "shēng yì",
+    "translation": "business; trade",
+    "phonetic": "shēng yi",
     "metadata": {
       "level": 4,
       "pos": [
@@ -11797,14 +11797,15 @@
       "frequencyRank": 2112,
       "meanings": [
         {
-          "gloss": "life force"
+          "gloss": "business; trade"
         },
         {
-          "gloss": "vitality"
+          "gloss": "life force",
+          "reading": "shēng yì"
         },
         {
-          "gloss": "business",
-          "reading": "shēng yi"
+          "gloss": "vitality",
+          "reading": "shēng yì"
         }
       ]
     }
@@ -21206,7 +21207,7 @@
   },
   {
     "term": "咸",
-    "translation": "all; everyone; each",
+    "translation": "salty; salted",
     "phonetic": "xián",
     "metadata": {
       "level": 4,
@@ -21216,25 +21217,25 @@
       "frequencyRank": 7379,
       "meanings": [
         {
-          "gloss": "all"
+          "gloss": "salty"
         },
         {
-          "gloss": "everyone"
+          "gloss": "salted"
         },
         {
-          "gloss": "each"
+          "gloss": "all (classical)"
+        },
+        {
+          "gloss": "everyone (classical)"
+        },
+        {
+          "gloss": "each (classical)"
         },
         {
           "gloss": "widespread"
         },
         {
           "gloss": "harmonious"
-        },
-        {
-          "gloss": "salted"
-        },
-        {
-          "gloss": "salty"
         },
         {
           "gloss": "stingy"

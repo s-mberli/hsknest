@@ -61,11 +61,37 @@ export type PairInput = {
 };
 
 /**
+ * Identify weak links: single characters that are strict substrings of longer
+ * co-present words (e.g., 中 when 中国 is also present). These waste sentence
+ * budget on common characters and should be dropped from the terms list.
+ */
+function dropWeakTerms(terms: string[]): string[] {
+  // A term is weak if it's a single character AND a strict substring of another co-present term.
+  // This prevents the "中 buried inside 中国" problem from starving rare words of examples.
+  const filtered = terms.filter((term) => {
+    if (term.length === 1) {
+      // Check if this single char appears as a substring of any longer word.
+      const isSubstringOfLonger = terms.some(
+        (other) => other.length > 1 && other.includes(term)
+      );
+      if (isSubstringOfLonger) return false; // Drop it.
+    }
+    return true; // Keep it.
+  });
+
+  return filtered.length > 0 ? filtered : terms; // Ensure we keep at least one term.
+}
+
+/**
  * Pick seed sentences: fully covered by the vocabulary, shortest first, at
  * most `perWord` sentences per exercised word and `total` overall. The level
  * stamped on a sentence is the highest HSK level among its words (reading
  * difficulty), with vocabulary levels supplied via `vocab` (term → level,
  * 0 = frequency-list-only word treated as unleveled).
+ *
+ * Weak links (single chars that are substrings of longer co-present words, or
+ * high-frequency grammatical markers) are dropped to prevent them from
+ * starving rare words of dedicated examples.
  */
 export function selectSentences(
   pairs: PairInput[],
@@ -92,14 +118,16 @@ export function selectSentences(
   const out: SeedSentence[] = [];
   for (const c of candidates) {
     if (out.length >= total) break;
-    const useful = c.terms.some((t) => (perWordCount.get(t) ?? 0) < perWord);
+    // Drop weak terms before checking budget, so single chars don't starve rare words.
+    const activeTerms = dropWeakTerms(c.terms);
+    const useful = activeTerms.some((t) => (perWordCount.get(t) ?? 0) < perWord);
     if (!useful) continue;
-    for (const t of c.terms) perWordCount.set(t, (perWordCount.get(t) ?? 0) + 1);
+    for (const t of activeTerms) perWordCount.set(t, (perWordCount.get(t) ?? 0) + 1);
     out.push({
       text: c.pair.text,
       translation: c.pair.translation.trim(),
       source: c.pair.source.trim(),
-      terms: c.terms,
+      terms: activeTerms,
       metadata: { level: c.level },
     });
   }
