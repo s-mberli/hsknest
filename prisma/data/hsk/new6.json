@@ -25334,8 +25334,8 @@
   },
   {
     "term": "大方",
-    "translation": "expert; scholar; mother earth",
-    "phonetic": "dà fāng",
+    "translation": "generous; natural and poised",
+    "phonetic": "dà fang",
     "metadata": {
       "level": 6,
       "pos": [
@@ -25344,24 +25344,26 @@
       "frequencyRank": 7757,
       "meanings": [
         {
-          "gloss": "expert"
+          "gloss": "generous"
         },
         {
-          "gloss": "scholar"
+          "gloss": "magnanimous"
         },
         {
-          "gloss": "mother earth"
+          "gloss": "expert",
+          "reading": "dà fāng"
         },
         {
-          "gloss": "a type of green tea"
+          "gloss": "scholar",
+          "reading": "dà fāng"
         },
         {
-          "gloss": "generous",
-          "reading": "dà fang"
+          "gloss": "mother earth",
+          "reading": "dà fāng"
         },
         {
-          "gloss": "magnanimous",
-          "reading": "dà fang"
+          "gloss": "a type of green tea",
+          "reading": "dà fāng"
         },
         {
           "gloss": "stylish",
@@ -37922,7 +37924,7 @@
   },
   {
     "term": "下功夫",
-    "translation": "",
+    "translation": "to put in time and energy; to work hard at something",
     "phonetic": "xià gōng fu",
     "metadata": {
       "level": 6,
@@ -37930,7 +37932,11 @@
         "v"
       ],
       "frequencyRank": 18471,
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "to put in time and energy; to work hard at something"
+        }
+      ]
     }
   },
   {

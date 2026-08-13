@@ -1,3 +1,6 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -57,6 +60,7 @@ export function AppearanceSection({
   initialSoundEffects: boolean;
   initialAutoPlayPronunciation: boolean;
 }) {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -106,6 +110,8 @@ export function AppearanceSection({
         return;
       }
       toast.success("Setting saved.");
+      // Re-render the server component to pick up the new data-character-style attribute.
+      router.refresh();
     } catch {
       toast.error("Could not save — check your connection.");
       revert();

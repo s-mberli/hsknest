@@ -30,6 +30,7 @@ const PROMPTS: Record<Stage, string> = {
 };
 
 const POS_LABELS: Record<string, string> = {
+  // Core parts of speech
   n: "noun",
   v: "verb",
   a: "adjective",
@@ -37,10 +38,40 @@ const POS_LABELS: Record<string, string> = {
   r: "pronoun",
   p: "preposition",
   c: "conjunction",
+  cc: "paired conj.",
   m: "numeral",
+  mq: "measure word",
   q: "classifier",
+  qt: "time classifier",
+  qv: "verbal classifier",
   u: "auxiliary",
   y: "modal",
+  // Compound / derived tags (adjective-adverb, adjective-noun, verb-noun)
+  ad: "adj./adv.",
+  an: "adj./noun",
+  vn: "verb/noun",
+  // Proper nouns and subtypes
+  nr: "name",
+  ns: "place name",
+  nt: "organization",
+  nz: "proper noun",
+  // Other word classes
+  b: "attributive",
+  e: "interjection",
+  f: "locative",
+  h: "prefix",
+  k: "suffix",
+  l: "idiom",
+  o: "onomatopoeia",
+  s: "spatial",
+  t: "time word",
+  z: "descriptive",
+  // Morpheme variants (less common, shown for completeness)
+  tg: "time morph.",
+  Mg: "numeral morph.",
+  Rg: "pronoun morph.",
+  g: "morpheme",
+  // Special
   phrase: "phrase",
 };
 

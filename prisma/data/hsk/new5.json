@@ -19582,7 +19582,7 @@
   },
   {
     "term": "纪录",
-    "translation": "",
+    "translation": "record; to record; a note-taker",
     "phonetic": "jì lù",
     "metadata": {
       "level": 5,
@@ -19592,7 +19592,11 @@
       ],
       "frequencyRank": 3694,
       "traditional": "紀錄",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "record; to record; a note-taker"
+        }
+      ]
     }
   },
   {

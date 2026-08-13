@@ -246,6 +246,56 @@ export async function sendCancellationSurveyEmail(email: string) {
   }
 }
 
+/**
+ * Upgrade confirmation email sent when a subscription is successfully activated.
+ * Best-effort only — this email is not critical to the upgrade flow.
+ */
+export async function sendUpgradeConfirmationEmail(email: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const subject = "Welcome to HSK Nest Premium!";
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Welcome to HSK Nest Premium! 🎉</h2>
+      <p>Your subscription is active. You now have unlimited access to:</p>
+      <ul style="line-height: 1.8; color: #333;">
+        <li>All HSK 1–9 vocabulary lists</li>
+        <li>Full example sentence library (3,000+ curated sentences)</li>
+        <li>Advanced scheduling options (FSRS, SM-2, Leitner)</li>
+        <li>Data export and progress analytics</li>
+        <li>Multiple lists and languages</li>
+      </ul>
+      <p style="margin-top: 24px;">
+        <a href="${baseUrl}/dashboard" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Go to your dashboard</a>
+      </p>
+      <p style="color: #666; font-size: 12px; margin-top: 40px; border-top: 1px solid #eee; padding-top: 16px;">
+        Questions? Check out <a href="${baseUrl}/help">our help center</a> or reply to this email.
+      </p>
+    </div>`;
+
+  if (!resend) {
+    warnNoEmailOnce();
+    console.log(`[email] upgrade_confirmation for ${email}: ${subject}`);
+    return { success: true, data: null };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html,
+    });
+    if (error) {
+      console.error("Error sending upgrade confirmation email:", error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to send upgrade confirmation email:", error);
+    return { success: false, error };
+  }
+}
+
 export async function sendVerificationEmail(email: string, token: string) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const verifyLink = `${baseUrl}/api/auth/verify?token=${token}`;

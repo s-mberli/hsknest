@@ -107,6 +107,9 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Serif font for academic/traditional character style. Prioritizes system CJK
+     serif fonts (Songti on macOS, Noto Serif SC on Linux), falls back to generic serif. */
+  --font-serif: Georgia, "Noto Serif SC", "Songti SC", "SimSun", serif;
 }
 
 @layer base {

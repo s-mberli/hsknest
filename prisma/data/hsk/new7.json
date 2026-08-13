@@ -1066,7 +1066,7 @@
   },
   {
     "term": "钟",
-    "translation": "handleless cup; goblet; to concentrate",
+    "translation": "clock; o'clock; bell",
     "phonetic": "zhōng",
     "metadata": {
       "level": 7,
@@ -1078,6 +1078,12 @@
       "traditional": "鍾",
       "meanings": [
         {
+          "gloss": "clock"
+        },
+        {
+          "gloss": "o'clock"
+        },
+        {
           "gloss": "handleless cup"
         },
         {
@@ -1085,12 +1091,6 @@
         },
         {
           "gloss": "to concentrate"
-        },
-        {
-          "gloss": "clock"
-        },
-        {
-          "gloss": "o'clock"
         },
         {
           "gloss": "time as measured in hours and minutes"
@@ -5039,7 +5039,7 @@
   },
   {
     "term": "轿车",
-    "translation": "enclosed carriage for carrying passengers; motor carriage",
+    "translation": "car; sedan; passenger vehicle",
     "phonetic": "jiào chē",
     "metadata": {
       "level": 7,
@@ -5050,16 +5050,16 @@
       "traditional": "轎車",
       "meanings": [
         {
-          "gloss": "enclosed carriage for carrying passengers"
-        },
-        {
-          "gloss": "motor carriage"
-        },
-        {
           "gloss": "car or bus"
         },
         {
           "gloss": "limousine"
+        },
+        {
+          "gloss": "enclosed carriage for carrying passengers (historical)"
+        },
+        {
+          "gloss": "motor carriage"
         }
       ]
     }
@@ -87485,7 +87485,7 @@
   },
   {
     "term": "效仿",
-    "translation": "",
+    "translation": "to imitate; to follow the example of; to model oneself on",
     "phonetic": "xiào fǎng",
     "metadata": {
       "level": 7,
@@ -87494,7 +87494,11 @@
       ],
       "frequencyRank": 21781,
       "traditional": "傚仿",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "to imitate; to follow the example of; to model oneself on"
+        }
+      ]
     }
   },
   {
@@ -89830,7 +89834,7 @@
   },
   {
     "term": "无可厚非",
-    "translation": "",
+    "translation": "cannot be blamed too much; not so bad; nothing much to criticize",
     "phonetic": "wú kě hòu fēi",
     "metadata": {
       "level": 7,
@@ -89839,7 +89843,11 @@
       ],
       "frequencyRank": 23211,
       "traditional": "無可厚非",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "cannot be blamed too much; not so bad; nothing much to criticize"
+        }
+      ]
     }
   },
   {
@@ -98092,7 +98100,7 @@
   },
   {
     "term": "纯朴",
-    "translation": "",
+    "translation": "simple and honest; unsophisticated; guileless",
     "phonetic": "chún pǔ",
     "metadata": {
       "level": 7,
@@ -98102,7 +98110,11 @@
       ],
       "frequencyRank": 30382,
       "traditional": "純樸",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "simple and honest; unsophisticated; guileless"
+        }
+      ]
     }
   },
   {
@@ -104794,7 +104806,7 @@
   },
   {
     "term": "抑扬顿挫",
-    "translation": "",
+    "translation": "cadence; a rhythmic, musical quality (of speech, poetry, or music)",
     "phonetic": "yì yáng dùn cuò",
     "metadata": {
       "level": 7,
@@ -104803,7 +104815,11 @@
       ],
       "frequencyRank": 55315,
       "traditional": "抑揚頓挫",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "cadence; a rhythmic, musical quality (of speech, poetry, or music)"
+        }
+      ]
     }
   },
   {
@@ -105515,13 +105531,17 @@
   },
   {
     "term": "得意扬扬",
-    "translation": "",
+    "translation": "immensely proud of oneself; joyfully satisfied; complacent",
     "phonetic": "dé yì yáng yáng",
     "metadata": {
       "level": 7,
       "frequencyRank": 164953,
       "traditional": "得意揚揚",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "immensely proud of oneself; joyfully satisfied; complacent"
+        }
+      ]
     }
   },
   {
@@ -105925,13 +105945,17 @@
   },
   {
     "term": "做证",
-    "translation": "",
+    "translation": "to testify; to bear witness; to serve as evidence",
     "phonetic": "zuò zhèng",
     "metadata": {
       "level": 7,
       "frequencyRank": 1000000,
       "traditional": "做證",
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "to testify; to bear witness; to serve as evidence"
+        }
+      ]
     }
   },
   {
