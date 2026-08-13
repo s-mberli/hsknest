@@ -1066,7 +1066,7 @@
   },
   {
     "term": "钟",
-    "translation": "handleless cup; goblet; to concentrate",
+    "translation": "clock; o'clock; bell",
     "phonetic": "zhōng",
     "metadata": {
       "level": 7,
@@ -1078,6 +1078,12 @@
       "traditional": "鍾",
       "meanings": [
         {
+          "gloss": "clock"
+        },
+        {
+          "gloss": "o'clock"
+        },
+        {
           "gloss": "handleless cup"
         },
         {
@@ -1085,12 +1091,6 @@
         },
         {
           "gloss": "to concentrate"
-        },
-        {
-          "gloss": "clock"
-        },
-        {
-          "gloss": "o'clock"
         },
         {
           "gloss": "time as measured in hours and minutes"

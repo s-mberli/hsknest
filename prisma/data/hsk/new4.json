@@ -11787,8 +11787,8 @@
   },
   {
     "term": "生意",
-    "translation": "life force; vitality",
-    "phonetic": "shēng yì",
+    "translation": "business; trade",
+    "phonetic": "shēng yi",
     "metadata": {
       "level": 4,
       "pos": [
@@ -11797,14 +11797,15 @@
       "frequencyRank": 2112,
       "meanings": [
         {
-          "gloss": "life force"
+          "gloss": "business; trade"
         },
         {
-          "gloss": "vitality"
+          "gloss": "life force",
+          "reading": "shēng yì"
         },
         {
-          "gloss": "business",
-          "reading": "shēng yi"
+          "gloss": "vitality",
+          "reading": "shēng yì"
         }
       ]
     }

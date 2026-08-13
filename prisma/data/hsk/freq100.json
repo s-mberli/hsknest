@@ -2189,7 +2189,7 @@
   },
   {
     "term": "等",
-    "translation": "class; rank; grade",
+    "translation": "to wait; to wait for; class; rank",
     "phonetic": "děng",
     "metadata": {
       "level": 0,
@@ -2199,6 +2199,9 @@
       ],
       "frequencyRank": 83,
       "meanings": [
+        {
+          "gloss": "to wait for"
+        },
         {
           "gloss": "class"
         },
@@ -2213,9 +2216,6 @@
         },
         {
           "gloss": "same as"
-        },
-        {
-          "gloss": "to wait for"
         },
         {
           "gloss": "to await"
@@ -2957,7 +2957,7 @@
   },
   {
     "term": "后",
-    "translation": "empress; queen; (archaic) monarch",
+    "translation": "after; behind; back; later",
     "phonetic": "hòu",
     "metadata": {
       "level": 0,
@@ -2969,6 +2969,12 @@
       "frequencyRank": 115,
       "meanings": [
         {
+          "gloss": "back"
+        },
+        {
+          "gloss": "behind"
+        },
+        {
           "gloss": "empress"
         },
         {
@@ -2979,12 +2985,6 @@
         },
         {
           "gloss": "ruler"
-        },
-        {
-          "gloss": "back"
-        },
-        {
-          "gloss": "behind"
         },
         {
           "gloss": "rear"

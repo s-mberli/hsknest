@@ -2189,7 +2189,7 @@
   },
   {
     "term": "等",
-    "translation": "class; rank; grade",
+    "translation": "to wait; to wait for; class; rank",
     "phonetic": "děng",
     "metadata": {
       "level": 0,
@@ -2199,6 +2199,9 @@
       ],
       "frequencyRank": 83,
       "meanings": [
+        {
+          "gloss": "to wait for"
+        },
         {
           "gloss": "class"
         },
@@ -2213,9 +2216,6 @@
         },
         {
           "gloss": "same as"
-        },
-        {
-          "gloss": "to wait for"
         },
         {
           "gloss": "to await"
@@ -2957,7 +2957,7 @@
   },
   {
     "term": "后",
-    "translation": "empress; queen; (archaic) monarch",
+    "translation": "after; behind; back; later",
     "phonetic": "hòu",
     "metadata": {
       "level": 0,
@@ -2969,6 +2969,12 @@
       "frequencyRank": 115,
       "meanings": [
         {
+          "gloss": "back"
+        },
+        {
+          "gloss": "behind"
+        },
+        {
           "gloss": "empress"
         },
         {
@@ -2979,12 +2985,6 @@
         },
         {
           "gloss": "ruler"
-        },
-        {
-          "gloss": "back"
-        },
-        {
-          "gloss": "behind"
         },
         {
           "gloss": "rear"
@@ -6020,8 +6020,8 @@
   },
   {
     "term": "告诉",
-    "translation": "to press charges; to file a complaint",
-    "phonetic": "gào sù",
+    "translation": "to tell; to inform; to let know",
+    "phonetic": "gào su",
     "metadata": {
       "level": 0,
       "pos": [
@@ -6031,11 +6031,11 @@
       "traditional": "告訴",
       "meanings": [
         {
-          "gloss": "to press charges; to file a complaint"
-        },
-        {
           "gloss": "to tell; to inform; to let know",
           "reading": "gào su"
+        },
+        {
+          "gloss": "to press charges; to file a complaint"
         }
       ]
     }
@@ -6140,7 +6140,7 @@
   },
   {
     "term": "老",
-    "translation": "prefix used before the surname of a person or a numeral indicating the order of birth of the children in a family or to indicate affection or familiarity",
+    "translation": "old (of people); venerable; experienced",
     "phonetic": "lǎo",
     "metadata": {
       "level": 0,
@@ -6152,9 +6152,6 @@
       "frequencyRank": 266,
       "meanings": [
         {
-          "gloss": "prefix used before the surname of a person or a numeral indicating the order of birth of the children in a family or to indicate affection or familiarity"
-        },
-        {
           "gloss": "old (of people)"
         },
         {
@@ -6162,6 +6159,9 @@
         },
         {
           "gloss": "experienced"
+        },
+        {
+          "gloss": "prefix used before the surname of a person or a numeral indicating the order of birth of the children in a family or to indicate affection or familiarity"
         },
         {
           "gloss": "of long standing"
@@ -14577,7 +14577,7 @@
   },
   {
     "term": "卡",
-    "translation": "to stop; to block; (computing) (coll.) slow",
+    "translation": "card (e.g. bank card, ID card); to stop; to block",
     "phonetic": "kǎ",
     "metadata": {
       "level": 0,
@@ -14589,6 +14589,9 @@
       "frequencyRank": 670,
       "meanings": [
         {
+          "gloss": "(loanword) card"
+        },
+        {
           "gloss": "to stop"
         },
         {
@@ -14596,9 +14599,6 @@
         },
         {
           "gloss": "(computing) (coll.) slow"
-        },
-        {
-          "gloss": "(loanword) card"
         },
         {
           "gloss": "truck (from \"car\")"
@@ -15221,7 +15221,7 @@
   },
   {
     "term": "药",
-    "translation": "leaf of the iris",
+    "translation": "medicine; drug; medication",
     "phonetic": "yào",
     "metadata": {
       "level": 0,
@@ -15232,13 +15232,13 @@
       "traditional": "葯",
       "meanings": [
         {
-          "gloss": "leaf of the iris"
-        },
-        {
           "gloss": "medicine"
         },
         {
           "gloss": "drug"
+        },
+        {
+          "gloss": "leaf of the iris"
         },
         {
           "gloss": "substance used for a specific purpose (e.g. poisoning, explosion, fermenting)"
@@ -16906,8 +16906,8 @@
   },
   {
     "term": "故事",
-    "translation": "old practice",
-    "phonetic": "gù shì",
+    "translation": "story; tale",
+    "phonetic": "gù shi",
     "metadata": {
       "level": 0,
       "pos": [
@@ -16916,11 +16916,11 @@
       "frequencyRank": 772,
       "meanings": [
         {
-          "gloss": "old practice"
-        },
-        {
           "gloss": "narrative; story; tale",
           "reading": "gù shi"
+        },
+        {
+          "gloss": "old practice"
         }
       ]
     }

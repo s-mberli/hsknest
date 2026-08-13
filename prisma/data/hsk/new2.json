@@ -333,7 +333,7 @@
   },
   {
     "term": "等",
-    "translation": "class; rank; grade",
+    "translation": "to wait; to wait for; class; rank",
     "phonetic": "děng",
     "metadata": {
       "level": 2,
@@ -343,6 +343,9 @@
       ],
       "frequencyRank": 83,
       "meanings": [
+        {
+          "gloss": "to wait; to wait for"
+        },
         {
           "gloss": "class"
         },
@@ -357,9 +360,6 @@
         },
         {
           "gloss": "same as"
-        },
-        {
-          "gloss": "to wait for"
         },
         {
           "gloss": "to await"
@@ -1315,8 +1315,8 @@
   },
   {
     "term": "告诉",
-    "translation": "to press charges; to file a complaint",
-    "phonetic": "gào sù",
+    "translation": "to tell; to inform; to let know",
+    "phonetic": "gào su",
     "metadata": {
       "level": 2,
       "pos": [
@@ -1326,11 +1326,11 @@
       "traditional": "告訴",
       "meanings": [
         {
-          "gloss": "to press charges; to file a complaint"
+          "gloss": "to tell; to inform; to let know"
         },
         {
-          "gloss": "to tell; to inform; to let know",
-          "reading": "gào su"
+          "gloss": "to press charges; to file a complaint",
+          "reading": "gào sù"
         }
       ]
     }
@@ -2523,7 +2523,7 @@
   },
   {
     "term": "药",
-    "translation": "leaf of the iris",
+    "translation": "medicine; drug; medication",
     "phonetic": "yào",
     "metadata": {
       "level": 2,
@@ -2534,13 +2534,13 @@
       "traditional": "葯",
       "meanings": [
         {
-          "gloss": "leaf of the iris"
-        },
-        {
           "gloss": "medicine"
         },
         {
           "gloss": "drug"
+        },
+        {
+          "gloss": "leaf of the iris"
         },
         {
           "gloss": "substance used for a specific purpose (e.g. poisoning, explosion, fermenting)"
@@ -4006,7 +4006,7 @@
   },
   {
     "term": "考",
-    "translation": "to beat; to hit; to inspect",
+    "translation": "to test; to take an exam",
     "phonetic": "kǎo",
     "metadata": {
       "level": 2,
@@ -4018,6 +4018,12 @@
       "traditional": "攷",
       "meanings": [
         {
+          "gloss": "to test"
+        },
+        {
+          "gloss": "to take an exam"
+        },
+        {
           "gloss": "to beat"
         },
         {
@@ -4025,12 +4031,6 @@
         },
         {
           "gloss": "to inspect"
-        },
-        {
-          "gloss": "to test"
-        },
-        {
-          "gloss": "to take an exam"
         },
         {
           "gloss": "to check"
