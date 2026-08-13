@@ -19,7 +19,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackEventOnce } from "@/lib/analytics";
 
-export function SignupForm({ guestEnabled }: { guestEnabled: boolean }) {
+export function SignupForm({
+  guestEnabled,
+  selfHosted,
+}: {
+  guestEnabled: boolean;
+  selfHosted: boolean;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -90,6 +96,12 @@ export function SignupForm({ guestEnabled }: { guestEnabled: boolean }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              {selfHosted && (
+                <p className="text-xs text-muted-foreground">
+                  No email is sent — use any address you&apos;ll remember as
+                  your login.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

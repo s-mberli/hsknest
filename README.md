@@ -51,7 +51,7 @@ Own your data. Run it on your VPS. No subscriptions, no telemetry, no lock-in.
 | 📥 | **CSV / paste import** — Bring vocabulary from spreadsheets or other flashcard tools. |
 | 🐳 | **One-command Docker** — Simple self-hosting with automated migrations and seeding. |
 | 🌗 | **Light / Dark / System themes** — Plus a dedicated dark focus mode for studying. |
-| 🔐 | **Accounts & Guest Mode** — Email auth, throwaway guest trials, full data export/deletion. |
+| 🔐 | **Accounts & Data Control** — Email auth, full data export/deletion. Guest trials on the hosted version. |
 
 ## Screenshots
 
