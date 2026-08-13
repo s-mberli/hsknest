@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { logApiError } from "@/lib/apiRoute";
-import { sendCancellationSurveyEmail } from "@/lib/email";
+import { sendCancellationSurveyEmail, sendUpgradeConfirmationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { isSelfHosted } from "@/lib/subscription";
@@ -49,6 +49,20 @@ export async function POST(req: Request) {
                   : undefined,
             },
           });
+
+          // Send upgrade confirmation email — best-effort, isolated in its own try/catch
+          // so an email failure never 500s and triggers a Stripe retry storm.
+          try {
+            const user = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { email: true },
+            });
+            if (user?.email && !user.email.endsWith("@guest.local")) {
+              await sendUpgradeConfirmationEmail(user.email);
+            }
+          } catch (error) {
+            logApiError("/api/billing/webhook:upgrade-email", error);
+          }
         }
         break;
       }

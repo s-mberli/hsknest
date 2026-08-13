@@ -11,6 +11,7 @@ import { LifetimeStats } from "@/components/dashboard/LifetimeStats";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
+import { isSelfHosted } from "@/lib/selfHosted";
 import { getCurrentUserId } from "@/lib/session";
 import { getDashboardStats, getLifetimeStats } from "@/lib/stats";
 import {
@@ -68,7 +69,11 @@ export default async function DashboardPage({
   ]);
 
   const isGuest = user?.email.endsWith("@guest.local") ?? false;
-  const showVerifyBanner = !isGuest && user && !user.emailVerified;
+  // Self-hosters usually haven't configured Resend, so the "verify" link is
+  // unreachable via the UI (only visible in container logs) — nagging them
+  // to click a link they can't easily get to is confusing, not helpful.
+  const showVerifyBanner =
+    !isSelfHosted() && !isGuest && user && !user.emailVerified;
 
   // Cap "new" the way the session actually would, so the ring total is honest.
   const newAllowed = Math.max(0, stats.dailyNewWords - stats.newIntroducedToday);
