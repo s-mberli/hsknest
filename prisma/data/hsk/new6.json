@@ -37922,7 +37922,7 @@
   },
   {
     "term": "下功夫",
-    "translation": "",
+    "translation": "to put in time and energy; to work hard at something",
     "phonetic": "xià gōng fu",
     "metadata": {
       "level": 6,
@@ -37930,7 +37930,11 @@
         "v"
       ],
       "frequencyRank": 18471,
-      "meanings": []
+      "meanings": [
+        {
+          "gloss": "to put in time and energy; to work hard at something"
+        }
+      ]
     }
   },
   {
