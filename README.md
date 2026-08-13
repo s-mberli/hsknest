@@ -133,6 +133,14 @@ The container will:
 
 Visit `http://localhost:3000`, create an account, and start studying. Your data lives entirely in the `hsknest-data` volume.
 
+**Registration closes after your first account** — it claims the instance, and
+signup/guest-mode turn off automatically so a network-reachable container
+can't hand out free accounts to strangers. Set `ALLOW_REGISTRATION=true` to
+reopen both (e.g. for a household member); see `docs/CONFIGURATION.md`. If the
+data volume is ever lost or unmounted, the app sees zero accounts and reopens
+registration — your original data is unaffected, but treat the volume as the
+thing to back up.
+
 ## Features
 
 ### Content & Import

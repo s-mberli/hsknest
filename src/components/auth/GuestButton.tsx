@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 
 /**
  * "Try as guest" — creates a throwaway account server-side and signs straight
- * in. Rendered on the login and signup pages under a divider.
+ * in. Rendered on the login and signup pages under a divider. Hosted-only —
+ * callers must not render this at all when guest mode is disabled (see
+ * `isGuestModeEnabled` in `@/lib/registration`); the API route also 404s as
+ * defense in depth.
  */
 export function GuestButton() {
   const router = useRouter();

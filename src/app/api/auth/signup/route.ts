@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { logApiError, parseBody } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
+import { isRegistrationOpen } from "@/lib/registration";
 import { signupSchema } from "@/lib/validation";
 import { sendVerificationEmail } from "@/lib/email";
 import { TRIAL_DAYS } from "@/lib/subscription";
@@ -30,6 +31,16 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "Too many signups from this network — please try again later." },
       { status: 429 }
+    );
+  }
+
+  // Self-hosted: the first account claims the instance, then registration
+  // closes. Checked before body parsing so a closed instance leaks nothing
+  // about input validation.
+  if (!(await isRegistrationOpen())) {
+    return NextResponse.json(
+      { error: "Registration is closed on this instance." },
+      { status: 403 }
     );
   }
 
