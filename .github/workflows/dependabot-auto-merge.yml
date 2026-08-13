@@ -1,0 +1,42 @@
+# Auto-merge Dependabot PRs that are patch/minor bumps once CI is green.
+# Major version bumps are never touched here - they always stay a normal
+# PR needing a manual look (semver majors are where behavior actually
+# changes; patch/minor are supposed to be safe by convention, and CI is
+# already checking that they don't break the app).
+#
+# pull_request_target (not pull_request) is required here: Dependabot PRs
+# run with a read-only token under the normal pull_request trigger, and
+# this job needs write access to approve/merge. Safe in this specific case
+# because the job never checks out or executes the PR's own code - it only
+# reads metadata about the bump and calls the GitHub API.
+name: dependabot-auto-merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Approve and enable auto-merge (patch/minor only)
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
