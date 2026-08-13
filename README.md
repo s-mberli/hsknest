@@ -109,14 +109,29 @@ Open http://localhost:3000, create an account, add or import a word list, and st
 
 For self-hosting on a VPS with Docker Compose, HTTPS via a reverse proxy, and nightly backups, see `docs/DEPLOYMENT.md`. 
 
-The short version:
+### Docker Compose (recommended)
 
 ```bash
 cp .env.example .env      # set NEXTAUTH_SECRET and NEXTAUTH_URL
 docker compose up -d --build
 ```
 
-The container applies migrations and seeds starter content on first boot, then serves the standalone Next.js build.
+### Docker run (quick start, no compose)
+
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -v hsknest-data:/data \
+  ghcr.io/s-mberli/hsknest:latest
+```
+
+The container will:
+- Auto-generate a `NEXTAUTH_SECRET` and persist it to `/data/.nextauth-secret` (survives restarts)
+- Auto-seed starter content (HSK vocabulary + lists) on first boot
+- Apply any pending database migrations
+- Serve the app at `http://localhost:3000`
+
+Visit `http://localhost:3000`, create an account, and start studying. Your data lives entirely in the `hsknest-data` volume.
 
 ## Features
 
@@ -200,19 +215,9 @@ For more details on the SRS algorithm, data model, and configuration options, ch
 
 ## Roadmap
 
-**In progress (v0.2):**
+See **[RELEASES.md](RELEASES.md)** for the full roadmap, release notes, and roadmap priorities.
 
-- 📚 **Deeper sentence coverage from the full Tatoeba corpus:** Current example sentences come from a curated subset (manythings.org's `cmn-eng` export); coverage is strong at HSK1–3 but thins fast higher up (~22% of HSK5 words have a linked sentence, ~6% for HSK7–9). Pulling directly from Tatoeba's full CC-BY 2.0 FR sentence and translation-links dump, same license already in use, just more volume, should meaningfully improve mid-to-upper bands. Won't fully solve HSK7–9, since natural sentences using very rare words tend to also need other rare words the deck doesn't have yet, but should close a real, user-noticed gap.
-- 🚑 **Triage Mode (Anti-Churn):** A smart "Recovery Session" interface that automatically load-balances your FSRS queue when you miss a few days, preventing review bankruptcy and overwhelming backlogs.
-- 📊 **The Efficiency Receipt:** Post-session data summaries that instantly show your exact FSRS retention predictions, proving that your daily minutes are mathematically optimized.
-- 🧠 **Descending Retrievability Sorting:** Dynamically sorting overdue cards by easiest-first during catch-up sessions to immediately rebuild your momentum.
-- 🔥 **Advanced Stability Dashboards:** Visualizing your memory half-life so you can see exactly how many words have been permanently encoded into your long-term memory.
-
-<details>
-<summary><b>✅ Shipped (v0.1 MVP)</b></summary>
-
-multi-language schema · FSRS scheduling (SM-2/Leitner retained server-side for legacy accounts, no longer user-selectable) · staged-reveal study with gesture + keyboard grading · daily new/review caps + session sizing · algorithm tuning (interval/lapse modifiers, mastery, fuzz) · assumed-known + daily checks · weak-word triage · word-strength browser · focus-ring dashboard + 7-day forecast · CSV/paste import · user-created lists & words · Light/Dark/System theme + study-screen focus setting · study-scope filtering · graded HSK + original Chinese lists · CSV export · progress reset · on-device pronunciation · security hardening (rate limits, input caps, headers) · in-app feedback · Docker + compose self-host packaging · multiple-choice quiz + matching-pairs practice modes · card text sizing · Playwright end-to-end suite · guest mode with account upgrade + stale-guest pruning · account deletion · per-list progress chips · CC-CEDICT dictionary-assisted word entry (Chinese) · session summary with toughest words + re-study · email verification + password reset / account recovery flow · full HSK 1–9 (2021) decks · 3,000 Tatoeba example sentences with pinyin · sentence-practice mode · new-word preview flow (see it once before it's graded) · HSK-level onboarding with deck auto-enroll · auto-play pronunciation setting · hosted-plan billing (Stripe, fully bypassed when self-hosting via `SELF_HOSTED=true`) · cookieless analytics hooks (Umami, opt-in via env) · error tracking + tracing (Sentry, opt-in via env) · list priority queue (reorder studying lists to control new-word source) · lifetime stats card (reviews, days studied, recall rate, pace) · hybrid pronunciation engine (pre-generated Azure neural TTS for Mandarin and German with client Web Speech fallback) · card deck spacebar shortcuts for previews · sentence practice mode enhancements (pinyin display and audio replay button) · frictionless 1-step guest checkout flow · behavior-based smart hotkey nudges · weekly engagement-decline nudge email · post-cancellation exit survey.
-</details>
+TL;DR: **Unreleased** tracks confirmed bugs and next-ship features; **Someday** is a flexible pool of ideas. No artificial milestones, just clear tracking as a solo dev.
 
 ## Contributing
 

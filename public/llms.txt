@@ -1,0 +1,46 @@
+# HSK Nest
+
+HSK Nest is an open-source, self-hostable spaced repetition system for learning any language, with Mandarin Chinese as the flagship use case.
+
+## What it is
+
+A Next.js web application that combines:
+- **State-of-the-art scheduling** — FSRS (Free Spaced Repetition Scheduler) by default, with SM-2 and Leitner algorithms available
+- **Mandarin-first content** — Complete HSK 3.0 vocabulary (levels 1–9) + 3,000 curated example sentences
+- **Self-hosting** — Run entirely on your own VPS or laptop; no subscription lock-in
+- **Natural pronunciation** — Pre-generated Azure neural TTS clips served locally, with Web Speech API fallback
+- **Multi-language support** — Language-agnostic schema; import vocabulary for German, Spanish, or any language
+
+## Key pages
+
+- **[HSK Nest](https://hsknest.com)** — Main landing page with sign-up and feature overview
+- **[Dashboard](https://hsknest.com/dashboard)** — Study interface with deck selection and progress tracking
+- **[Words browser](https://hsknest.com/words)** — Searchable vocabulary database with strength bands
+- **[Lists](https://hsknest.com/lists)** — View curated HSK lists and create custom word lists
+- **[Settings](https://hsknest.com/settings)** — Account, appearance (theme/font), study settings, billing
+- **[Docs](https://github.com/s-mberli/hsknest/tree/main/docs)** — Architecture, deployment, SRS algorithm details
+- **[GitHub](https://github.com/s-mberli/hsknest)** — Source code (AGPL-3.0), issues, self-hosting instructions
+
+## Who it's for
+
+- **Language learners** wanting a modern, privacy-respecting flashcard app
+- **Self-hosters** who want to run study software on their own infrastructure
+- **Researchers** studying spaced repetition algorithms (open-source, testable)
+- **Developers** building language-learning apps who need a reference implementation
+
+## Quick facts
+
+- **License**: AGPL-3.0 (open source, modifications must be shared if hosted publicly)
+- **Database**: SQLite, single-file, no setup needed
+- **Pricing** (managed version): €10/month or 14-day free trial
+- **Data privacy**: self-hosted version = zero telemetry; managed version uses cookieless Umami analytics
+
+## Try it
+
+- **Managed**: Visit https://hsknest.com, sign up, and start studying immediately
+- **Self-hosted**: `docker run -p 3000:3000 -v hsknest-data:/data ghcr.io/s-mberli/hsknest:latest`
+  Then open http://localhost:3000 and create an account
+
+## Contribute
+
+Bug reports and feature requests welcome. File them in [GitHub Issues](https://github.com/s-mberli/hsknest/issues) or directly in the app via **Settings → Feedback**.

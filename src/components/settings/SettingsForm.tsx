@@ -119,6 +119,7 @@ export function SettingsForm(props: SettingsFormProps) {
         ),
         account: (
           <>
+            {props.billing}
             <LanguageSection
               targetLanguageId={targetLanguageId}
               languages={props.languages}
@@ -130,7 +131,6 @@ export function SettingsForm(props: SettingsFormProps) {
               }}
             />
             <AccountSection email={props.email} name={props.name} />
-            {props.billing}
           </>
         ),
         support: <FeedbackSection />,

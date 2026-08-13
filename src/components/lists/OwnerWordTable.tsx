@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, Volume2 } from "lucide-react";
 import { toast } from "sonner";
+
+import { playAudio } from "@/lib/audio";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -282,7 +284,19 @@ function OwnerWordRow({
 
   return (
     <TableRow>
-      <TableCell className="text-base font-medium"><span data-term>{word.term}</span></TableCell>
+      <TableCell className="text-base font-medium">
+        <div className="flex items-center gap-1">
+          <span data-term>{word.term}</span>
+          <button
+            type="button"
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => void playAudio(word.term, "word", "zh")}
+            title="Pronounce"
+          >
+            <Volume2 className="h-4 w-4" />
+          </button>
+        </div>
+      </TableCell>
       <TableCell className="text-muted-foreground">
         {word.phonetic ?? "—"}
       </TableCell>
