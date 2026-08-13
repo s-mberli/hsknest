@@ -21206,7 +21206,7 @@
   },
   {
     "term": "咸",
-    "translation": "all; everyone; each",
+    "translation": "salty; salted",
     "phonetic": "xián",
     "metadata": {
       "level": 4,
@@ -21216,25 +21216,25 @@
       "frequencyRank": 7379,
       "meanings": [
         {
-          "gloss": "all"
+          "gloss": "salty"
         },
         {
-          "gloss": "everyone"
+          "gloss": "salted"
         },
         {
-          "gloss": "each"
+          "gloss": "all (classical)"
+        },
+        {
+          "gloss": "everyone (classical)"
+        },
+        {
+          "gloss": "each (classical)"
         },
         {
           "gloss": "widespread"
         },
         {
           "gloss": "harmonious"
-        },
-        {
-          "gloss": "salted"
-        },
-        {
-          "gloss": "salty"
         },
         {
           "gloss": "stingy"

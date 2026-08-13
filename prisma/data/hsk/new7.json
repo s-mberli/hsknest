@@ -5039,7 +5039,7 @@
   },
   {
     "term": "轿车",
-    "translation": "enclosed carriage for carrying passengers; motor carriage",
+    "translation": "car; sedan; passenger vehicle",
     "phonetic": "jiào chē",
     "metadata": {
       "level": 7,
@@ -5050,16 +5050,16 @@
       "traditional": "轎車",
       "meanings": [
         {
-          "gloss": "enclosed carriage for carrying passengers"
-        },
-        {
-          "gloss": "motor carriage"
-        },
-        {
           "gloss": "car or bus"
         },
         {
           "gloss": "limousine"
+        },
+        {
+          "gloss": "enclosed carriage for carrying passengers (historical)"
+        },
+        {
+          "gloss": "motor carriage"
         }
       ]
     }
