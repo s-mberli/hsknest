@@ -1339,7 +1339,7 @@
   },
   {
     "term": "被",
-    "translation": "quilt; to cover (with); (literary) to suffer (a misfortune)",
+    "translation": "used to indicate passive voice (like \"by\" in English); quilt",
     "phonetic": "bèi",
     "metadata": {
       "level": 0,
@@ -1351,6 +1351,9 @@
       "frequencyRank": 54,
       "meanings": [
         {
+          "gloss": "used to indicate passive voice (placed before the doer of the action like \"by\" in English passive-voice sentences, or, if the doer is not mentioned, before the verb)"
+        },
+        {
           "gloss": "quilt"
         },
         {
@@ -1358,9 +1361,6 @@
         },
         {
           "gloss": "(literary) to suffer (a misfortune)"
-        },
-        {
-          "gloss": "used to indicate passive voice (placed before the doer of the action like \"by\" in English passive-voice sentences, or, if the doer is not mentioned, before the verb)"
         },
         {
           "gloss": "(since c. 2009) (sarcastic or jocular) used to indicate that the following word should be regarded as being in air quotes (as in 被旅游 to \"go on a trip\", for example)"
