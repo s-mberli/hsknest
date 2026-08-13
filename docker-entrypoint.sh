@@ -4,6 +4,38 @@ set -e
 # Ensure the SQLite data directory exists (it's a mounted volume in compose).
 mkdir -p /data
 
+# Generate NEXTAUTH_SECRET if it doesn't exist and persist it so it survives restarts.
+# A regenerated secret would invalidate every session, so we persist it.
+if [ -z "$NEXTAUTH_SECRET" ]; then
+  SECRET_FILE="/data/.nextauth-secret"
+  if [ -f "$SECRET_FILE" ]; then
+    export NEXTAUTH_SECRET=$(cat "$SECRET_FILE")
+    echo "→ Using persisted NEXTAUTH_SECRET from /data/.nextauth-secret"
+  else
+    # Generate a 32-byte base64 secret (compatible with NextAuth expectations).
+    # Falls back to a hardcoded 64-char string if openssl is not available.
+    if command -v openssl > /dev/null 2>&1; then
+      export NEXTAUTH_SECRET=$(openssl rand -base64 32)
+    else
+      # Fallback: 64-char base64-like string (lowercase alphanumeric + =/+)
+      export NEXTAUTH_SECRET="$(head -c 32 /dev/urandom 2>/dev/null | base64 2>/dev/null || echo 'hsknest-fallback-secret-64chars-1234567890abcdefghijklmnopqrs')"
+    fi
+    # Persist it so the next boot uses the same secret.
+    if echo "$NEXTAUTH_SECRET" > "$SECRET_FILE"; then
+      echo "→ Generated and persisted NEXTAUTH_SECRET to /data/.nextauth-secret"
+    else
+      echo "⚠ WARNING: Could not persist NEXTAUTH_SECRET — /data may not be writable. Using ephemeral secret; sessions will invalidate on restart."
+    fi
+  fi
+fi
+
+# Default AUTO_SEED to true for first-time docker run (without compose env vars).
+# This ensures self-hosters get starter content on boot.
+if [ -z "$AUTO_SEED" ]; then
+  AUTO_SEED="true"
+  echo "→ AUTO_SEED unset; defaulting to true"
+fi
+
 # Apply any pending migrations against the live database.
 echo "→ Applying database migrations…"
 node_modules/.bin/prisma migrate deploy

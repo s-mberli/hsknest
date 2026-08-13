@@ -1,8 +1,9 @@
 "use client";
 
 import { useId, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Volume2 } from "lucide-react";
 
+import { playAudio } from "@/lib/audio";
 import { Meanings } from "@/components/words/Meanings";
 import { METER, StrengthMeter } from "@/components/words/StrengthMeter";
 import {
@@ -130,9 +131,19 @@ export function WordCard({
       <div className="space-y-1.5 p-3 pl-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col">
-            <span data-term className="font-semibold">
-              {word.term}
-            </span>
+            <div className="flex items-center gap-1">
+              <span data-term className="font-semibold">
+                {word.term}
+              </span>
+              <button
+                type="button"
+                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => void playAudio(word.term, "word", "zh")}
+                title="Pronounce"
+              >
+                <Volume2 className="h-4 w-4" />
+              </button>
+            </div>
             {word.phonetic && (
               <span className="text-sm text-muted-foreground">
                 {word.phonetic}
@@ -174,7 +185,19 @@ export function WordTable({ words }: { words: WordRow[] }) {
           <TableBody>
             {words.map((w) => (
               <TableRow key={w.id}>
-                <TableCell className="text-base font-medium"><span data-term>{w.term}</span></TableCell>
+                <TableCell className="text-base font-medium">
+                  <div className="flex items-center gap-1">
+                    <span data-term>{w.term}</span>
+                    <button
+                      type="button"
+                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => void playAudio(w.term, "word", "zh")}
+                      title="Pronounce"
+                    >
+                      <Volume2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {w.phonetic ?? "—"}
                 </TableCell>
