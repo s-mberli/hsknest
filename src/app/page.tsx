@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingSections } from "@/components/landing/LandingSections";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { isSelfHosted } from "@/lib/selfHosted";
 
@@ -11,9 +12,12 @@ export default async function LandingPage() {
     redirect("/dashboard");
   }
 
-  // Self-hosters see the app, not the marketing pitch.
+  // Self-hosters see the app, not the marketing pitch. On a brand-new
+  // instance with zero accounts, go straight to signup — landing on /login
+  // wrongly implies an account already exists.
   if (isSelfHosted()) {
-    redirect("/login");
+    const userCount = await prisma.user.count();
+    redirect(userCount === 0 ? "/signup" : "/login");
   }
 
   return (
