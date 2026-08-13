@@ -8,6 +8,16 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+## v0.2.3
+
+**Security / self-host:**
+- ✅ Self-hosted instances now close registration after the first account signs
+  up (it claims the instance) — previously signup and guest mode were fully
+  open, so any network-reachable container handed out free, permanent
+  full-access accounts to anyone. Guest mode ("Just looking? Try it as a
+  guest") is now hosted-only. `ALLOW_REGISTRATION=true` reopens both. See
+  `src/lib/registration.ts` and `docs/CONFIGURATION.md`.
+
 ### Known limitation (not fixed, documented, not blocking)
 
 - **着 TTS mispronunciation** — spoken as "zháo" instead of "zhe" (aspect particle). Checked edge-tts's source this release: it escapes all input text before wrapping in SSML, so there's no way to inject a `<phoneme>` override through the public API. A real fix needs either reverse-engineering the library's private internals or hand-rolling Azure's WebSocket protocol — deferred as genuinely non-trivial, not a quick patch.

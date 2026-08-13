@@ -28,5 +28,9 @@ export default defineConfig({
     url: "http://localhost:3000/api/health",
     reuseExistingServer: true,
     timeout: 120_000,
+    // The journey suite creates many accounts and exercises guest mode —
+    // both are gated to a single claim on self-hosted instances (see
+    // src/lib/registration.ts). Reopen registration for local e2e runs too.
+    env: { ALLOW_REGISTRATION: "true" },
   },
 });

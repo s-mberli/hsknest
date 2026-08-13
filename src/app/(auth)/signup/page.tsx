@@ -1,13 +1,6 @@
-"use client";
-
-import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 
-import { GuestButton } from "@/components/auth/GuestButton";
-import { Button } from "@/components/ui/button";
+import { SignupForm } from "@/components/auth/SignupForm";
 import {
   Card,
   CardContent,
@@ -15,121 +8,41 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { trackEventOnce } from "@/lib/analytics";
+import { isRegistrationOpen, isGuestModeEnabled } from "@/lib/registration";
 
-export default function SignupPage() {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+// Reads the current user count on every request — must never be statically
+// prerendered (which would bake in whatever DB state existed at build time
+// and could serve a stale "open"/"closed" verdict to every visitor).
+export const dynamic = "force-dynamic";
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+export default async function SignupPage() {
+  const open = await isRegistrationOpen();
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name: name || undefined }),
-    });
-
-    if (!res.ok) {
-      setLoading(false);
-      const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Could not create account");
-      return;
-    }
-
-    trackEventOnce("signup_complete");
-
-    // Auto sign-in after signup.
-    const login = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setLoading(false);
-
-    if (login?.error) {
-      toast.error("Account created — please sign in.");
-      router.push("/login");
-      return;
-    }
-    window.location.href = "/dashboard";
+  if (!open) {
+    return (
+      <main className="flex flex-1 items-center justify-center px-6 py-12">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl">Registration is closed</CardTitle>
+            <CardDescription>This instance is already set up.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              An account already claimed this instance. If that&apos;s you,{" "}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                sign in
+              </Link>
+              .
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Instance owner? Set <code>ALLOW_REGISTRATION=true</code> to allow
+              more accounts.
+            </p>
+          </CardContent>
+        </Card>
+      </main>
+    );
   }
 
-  return (
-    <main className="flex flex-1 items-center justify-center px-6 py-12">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Create your account</CardTitle>
-          <CardDescription>Start learning in under a minute.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name (optional)</Label>
-              <Input
-                id="name"
-                type="text"
-                autoComplete="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                At least 8 characters.
-              </p>
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating…" : "Create account"}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            By creating an account you agree to our{" "}
-            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
-          <GuestButton />
-        </CardContent>
-      </Card>
-    </main>
-  );
+  return <SignupForm guestEnabled={isGuestModeEnabled()} />;
 }

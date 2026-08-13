@@ -56,6 +56,11 @@ jobs:
       DATABASE_URL: file:./e2e.db
       NEXTAUTH_SECRET: ci-secret
       NEXTAUTH_URL: http://localhost:3000
+      # The journey suite creates many accounts and exercises guest mode —
+      # both are gated to a single claim on self-hosted instances (see
+      # src/lib/registration.ts). Reopen registration so the suite still
+      # covers the self-hosted path end-to-end.
+      ALLOW_REGISTRATION: "true"
 
     steps:
       - name: Checkout

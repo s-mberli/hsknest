@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
+import { isGuestModeEnabled } from "@/lib/registration";
 import { TRIAL_DAYS } from "@/lib/subscription";
 
 /**
@@ -14,6 +15,12 @@ import { TRIAL_DAYS } from "@/lib/subscription";
  * list is auto-enrolled so the demo is studyable from the first screen.
  */
 export async function POST(req: Request) {
+  // Guest mode is a hosted-only conversion funnel; a self-hosted instance
+  // has no funnel to convert into, so it's disabled by default there.
+  if (!isGuestModeEnabled()) {
+    return NextResponse.json({ error: "Not available" }, { status: 404 });
+  }
+
   // Same limiter pattern as signup: 5 guest accounts per hour per IP.
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
