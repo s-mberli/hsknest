@@ -32,8 +32,12 @@ interface SettingsFormProps {
   desiredRetention: number;
   targetLanguageId: string;
   languages: { id: string; name: string }[];
-  /** Billing card (hosted deployments only) — shown on the Account tab. */
-  billing?: React.ReactNode;
+  /**
+   * Leading card on the Account tab: the billing card for a real hosted
+   * account, the claim-your-account form for a guest. Whatever the visitor
+   * most needs to act on goes first; self-hosted gets neither.
+   */
+  topSlot?: React.ReactNode;
 }
 
 export function SettingsForm(props: SettingsFormProps) {
@@ -119,7 +123,7 @@ export function SettingsForm(props: SettingsFormProps) {
         ),
         account: (
           <>
-            {props.billing}
+            {props.topSlot}
             <LanguageSection
               targetLanguageId={targetLanguageId}
               languages={props.languages}

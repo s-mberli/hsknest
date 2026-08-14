@@ -3,7 +3,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -107,8 +106,6 @@ export function AccountSection({
             </Button>
           )}
         </SettingRow>
-
-        {isGuest && <UpgradeBanner compact />}
 
         <SettingRow
           name="Signed in as"

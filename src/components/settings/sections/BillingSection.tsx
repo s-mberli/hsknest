@@ -4,7 +4,6 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { GuestCheckoutForm } from "@/components/billing/GuestCheckoutForm";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,13 +23,10 @@ export function BillingSection({
   status,
   daysLeft,
   hasStripeCustomer,
-  isGuest,
 }: {
   status: string;
   daysLeft: number | null;
   hasStripeCustomer: boolean;
-  /** Guest (throwaway @guest.local login) — must claim a real account first. */
-  isGuest: boolean;
 }) {
   const [consented, setConsented] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -91,49 +87,46 @@ export function BillingSection({
           ) : null}
         </SettingRow>
 
-        {!active &&
-          (isGuest ? (
-            <GuestCheckoutForm />
-          ) : (
-            <div className="space-y-3">
-              <label className="flex items-start gap-2 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  className="mt-0.5"
-                  checked={consented}
-                  onChange={(e) => setConsented(e.target.checked)}
-                />
-                I agree to immediate provision of the service and acknowledge
-                that my right of withdrawal ends when billing starts. 14-day
-                no-questions refund still applies.
-              </label>
-              <div className="flex gap-3">
-                <Button
-                  disabled={!consented || loading}
-                  onClick={() =>
-                    post("/api/billing/checkout", { interval: "monthly" }, "Could not start checkout.")
-                  }
-                >
-                  {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
-                  {!loading && <ChevronRight className="size-4" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-primary text-primary"
-                  disabled={!consented || loading}
-                  onClick={() =>
-                    post("/api/billing/checkout", { interval: "yearly" }, "Could not start checkout.")
-                  }
-                >
-                  {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
-                  {!loading && <ChevronRight className="size-4" />}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Cancel anytime — no commitment beyond this month.
-              </p>
+        {!active && (
+          <div className="space-y-3">
+            <label className="flex items-start gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={consented}
+                onChange={(e) => setConsented(e.target.checked)}
+              />
+              I agree to immediate provision of the service and acknowledge
+              that my right of withdrawal ends when billing starts. 14-day
+              no-questions refund still applies.
+            </label>
+            <div className="flex gap-3">
+              <Button
+                disabled={!consented || loading}
+                onClick={() =>
+                  post("/api/billing/checkout", { interval: "monthly" }, "Could not start checkout.")
+                }
+              >
+                {loading ? "Opening…" : "Upgrade Monthly (€10/mo)"}
+                {!loading && <ChevronRight className="size-4" />}
+              </Button>
+              <Button
+                variant="outline"
+                className="border-primary text-primary"
+                disabled={!consented || loading}
+                onClick={() =>
+                  post("/api/billing/checkout", { interval: "yearly" }, "Could not start checkout.")
+                }
+              >
+                {loading ? "Opening…" : "Upgrade Yearly (€99/yr)"}
+                {!loading && <ChevronRight className="size-4" />}
+              </Button>
             </div>
-          ))}
+            <p className="text-xs text-muted-foreground">
+              Cancel anytime — no commitment beyond this month.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
