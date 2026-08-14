@@ -69,11 +69,14 @@ export default async function SettingsPage() {
         targetLanguageId={user.targetLanguageId}
         languages={languages}
         topSlot={
-          sub.selfHosted ? undefined : isGuest ? (
+          isGuest ? (
             // A guest hasn't committed to an account yet, so the urgent action
             // is claiming one before the progress is stranded — not paying.
+            // Applies self-hosted or hosted: a self-hoster who reopened guest
+            // mode via ALLOW_REGISTRATION still needs this nudge, just with
+            // no billing attached.
             <UpgradeBanner compact />
-          ) : (
+          ) : sub.selfHosted ? undefined : (
             <BillingSection
               status={sub.status}
               daysLeft={sub.daysLeft}
