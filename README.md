@@ -194,7 +194,7 @@ Your own language gets the full scheduler and every study mode. It won't have pr
 
 - **HSK-level onboarding** — Pick your level at signup and the matching deck is enrolled before your first review.
 - **Accounts & auth** — Email + password via NextAuth, bcrypt hashing, rate-limited signup/login, soft email verification, and self-service password reset.
-- **Guest mode with upgrade** — One click creates a throwaway account with a starter list. Liked it? One small form turns the guest into a real account and keeps all data.
+- **Guest mode with upgrade** — One click creates a throwaway account with a starter list. Liked it? One small form turns the guest into a real account and keeps all data. Hosted only; on a self-hosted instance it stays off unless you set `ALLOW_REGISTRATION=true`.
 - **Light / Dark / System theme** — A real account setting that follows you across devices.
 - **Organized list shelf** — Lists grouped into Studying / Your lists / Explore. Hide starter lists you don't want.
 - **Data control** — Export every word and its progress as CSV, reset progress, or delete the account entirely.
