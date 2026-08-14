@@ -324,8 +324,9 @@ async function seedSentences(languageId: string, sentences: SeedSentence[]) {
   console.log(`Seeded sentences: ${sentences.length} (${links.length} word links)`);
 }
 
-// New HSK 3.0 (2021 standard) levels + general frequency lists. File names
-// map to prisma/data/hsk/<file>.json built from complete-hsk-vocabulary (MIT).
+// New HSK 3.0 (November 2025 syllabus, effective July 2026) levels + general
+// frequency lists. File names map to prisma/data/hsk/<file>.json built from
+// complete-hsk-vocabulary (MIT).
 const ZH_LISTS: { file: string; name: string; description: string }[] = [
   { file: "new1", name: "HSK 1 — Foundation", description: "300 words (November 2025 official syllabus)." },
   { file: "new2", name: "HSK 2 — Elementary", description: "200 words for early elementary Chinese." },
