@@ -111,6 +111,11 @@ export function parseDelimited(
   text: string,
   options: ParseOptions = {}
 ): ParseResult {
+  // Strip a UTF-8 BOM. Excel's "CSV UTF-8" and Google Sheets both emit one,
+  // and without this it rides along inside the very first term ("﻿你好"),
+  // silently creating a word that never matches anything.
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+
   const delimiter = resolveDelimiter(text, options.delimiter ?? "auto");
   const columns = options.columns ?? DEFAULT_COLUMNS;
 

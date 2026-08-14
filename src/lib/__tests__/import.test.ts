@@ -148,3 +148,73 @@ describe("ZIP binary guard (.apkg detection)", () => {
     // byte-detection logic works.
   });
 });
+
+/**
+ * Contract tests for `docs/IMPORT.md`.
+ *
+ * Every example below is copied verbatim from that page. If a parser change
+ * breaks one of these, the published documentation is now wrong — fix the doc
+ * in the same commit, don't just update the expectation here.
+ */
+describe("docs/IMPORT.md examples stay accurate", () => {
+  it("the quick-start example imports two words", () => {
+    const { words, skipped } = parseDelimited("你好,hello\n谢谢,thank you");
+    expect(skipped).toBe(0);
+    expect(words).toEqual([
+      { term: "你好", translation: "hello", phonetic: null, meanings: null },
+      { term: "谢谢", translation: "thank you", phonetic: null, meanings: null },
+    ]);
+  });
+
+  it("documents the reading as the THIRD column, not the second", () => {
+    const { words } = parseDelimited("你好\thello\tnǐ hǎo");
+    expect(words[0]).toEqual({
+      term: "你好",
+      translation: "hello",
+      phonetic: "nǐ hǎo",
+      meanings: null,
+    });
+  });
+
+  it("the quoting example keeps commas and escaped quotes intact", () => {
+    const text = '"看",to look; to see,kàn\n"say ""hello""",a greeting,';
+    const { words } = parseDelimited(text, { delimiter: "comma" });
+    expect(words[0]).toMatchObject({ term: "看", phonetic: "kàn" });
+    expect(words[1]).toMatchObject({
+      term: 'say "hello"',
+      translation: "a greeting",
+    });
+  });
+
+  it("the multi-sense example splits senses on semicolons", () => {
+    const { words } = parseDelimited("行,to walk; capable; OK,xíng", {
+      columns: ["term", "meanings", "phonetic"],
+    });
+    expect(words[0].meanings).toEqual(["to walk", "capable", "OK"]);
+    // Doc claims translation is backfilled from the first three senses.
+    expect(words[0].translation).toBe("to walk; capable; OK");
+  });
+
+  it("strips a UTF-8 BOM so Excel/Sheets exports don't corrupt the first term", () => {
+    const { words } = parseDelimited("﻿你好,hello");
+    expect(words[0].term).toBe("你好");
+  });
+
+  it("does NOT skip a header row — the doc tells users to delete it", () => {
+    // Documented gotcha: header detection does not exist. If this ever starts
+    // passing as "skipped", the Troubleshooting section must be updated.
+    const { words } = parseDelimited("term,translation,phonetic\n你好,hello,nǐ hǎo");
+    expect(words).toHaveLength(2);
+    expect(words[0].term).toBe("term");
+  });
+
+  it("dedupes case-insensitively within a paste, first occurrence winning", () => {
+    const { words, skipped, skippedDuplicate } = parseDelimited(
+      "Hello,greeting\nhello,duplicate"
+    );
+    expect(words).toHaveLength(1);
+    expect(words[0].translation).toBe("greeting");
+    expect(skipped).toBe(1);
+    expect(skippedDuplicate).toBe(1);
+  });
+});

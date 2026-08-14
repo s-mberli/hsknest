@@ -25,6 +25,7 @@ Own your data. Run it on your VPS. No subscriptions, no telemetry, no lock-in.
 - [How it compares](#how-it-compares)
 - [Quick start](#quick-start)
 - [Self-hosting](#self-hosting)
+- [Bring your own vocabulary](#bring-your-own-vocabulary)
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Project layout](#project-layout)
@@ -141,13 +142,30 @@ data volume is ever lost or unmounted, the app sees zero accounts and reopens
 registration — your original data is unaffected, but treat the volume as the
 thing to back up.
 
+## Bring your own vocabulary
+
+HSK Nest ships Mandarin-first, but the engine is language-agnostic — **add any language yourself in about ten seconds**, no config files, no restart, no schema changes:
+
+**Lists → New list → Language → “+ new language”** → name it (`Japanese` / `ja`) and start adding words.
+
+Vocabulary goes in as plain comma- or tab-separated text — paste straight from a spreadsheet, or from **Anki** via *File → Export → “Notes in Plain Text”*:
+
+```
+你好,hello,nǐ hǎo
+谢谢,thank you,xiè xie
+```
+
+Because the format is plain text, you can have an LLM build a deck for you — **[docs/IMPORT.md](docs/IMPORT.md) includes a copy-paste prompt** for generating a word list in any language, along with the full format spec, limits, and troubleshooting.
+
+Your own language gets the full scheduler and every study mode. It won't have pre-generated Azure audio, dictionary assist, or graded level lists — those are Mandarin-specific (German and Spanish ship starter lists). Browser text-to-speech still works for any language your OS has a voice for.
+
 ## Features
 
 ### Content & Import
 
 - **Multi-language by design** — Every word carries a term, translation, optional phonetic, and free-form metadata (tones, gender, part of speech, etc.). Any language fits without schema changes.
 - **Your own content** — Create lists, add words one at a time, or paste/CSV import a whole batch. Add a language inline when none fits.
-- **Paste / CSV import** — Auto-detects tab vs comma, maps columns to term/meaning/reading, and skips blank or duplicate entries.
+- **Paste / CSV import** — Auto-detects tab vs comma, maps columns to term/meaning/reading, and skips blank or duplicate entries. Full spec and an AI deck-generation prompt in [docs/IMPORT.md](docs/IMPORT.md).
 - **Real example sentences** — 3,000 curated sentences (Tatoeba, CC-BY) with pinyin and translation appear on flashcards and in the word browser.
 - **Graded Chinese content** — Full New HSK 3.0 (2021) lists levels 1–9, frequency lists (Top 100/1000), original everyday-conversation and news-reading sets, plus themed starters.
 - **Dictionary-assisted entry (Chinese)** — Typing a Chinese word suggests pinyin and meaning from the bundled CC-CEDICT dictionary.
@@ -216,6 +234,7 @@ docs/
   ARCHITECTURE.md # data model + SRS strategy pattern + request flow
   AUDIO.md        # generating and self-hosting natural TTS audio clips
   CONFIGURATION.md# environment variables, settings, audio, feedback
+  IMPORT.md       # CSV/TSV format spec, AI deck generation, new languages
   DEPLOYMENT.md   # VPS / Docker deploy guide + backups
 ```
 
