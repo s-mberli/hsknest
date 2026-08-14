@@ -8,6 +8,11 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+## v0.2.4 — 2026-08-14
+
+Self-host first-run and recovery polish, ahead of the r/selfhosted launch.
+No schema or scheduler changes.
+
 **Self-host UX / recovery:**
 - ✅ Stale session cookies (after a container recreation changed the
   auto-generated `NEXTAUTH_SECRET`) are now detected and cleared instead of

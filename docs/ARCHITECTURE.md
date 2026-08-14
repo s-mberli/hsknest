@@ -43,6 +43,7 @@ Grades are submitted to `POST /api/study/review`, which runs the active strategy
 
 ## Request flow
 
+0. **Proxy** — `src/proxy.ts` (the Next.js 16 Proxy convention, formerly `middleware.ts`) runs first on page requests. It only acts when a session cookie is present but can't be decrypted — e.g. after a container recreation regenerated `NEXTAUTH_SECRET`. In that case it clears both cookie names and redirects to `/login`, or to `/signup` if the database has zero users (a reset data volume). API routes, static assets, and the auth pages themselves are excluded from the matcher.
 1. **Auth** — NextAuth (Credentials, JWT). `getCurrentUserId()` (`src/lib/session.ts`) resolves the signed-in user id in server components and route handlers; unauthenticated requests get a 401 (API) or redirect to `/login` (pages).
 2. **Validation** — every mutating route parses its body with a Zod schema from `src/lib/validation.ts` and returns a flattened error on failure.
 3. **Data** — a single Prisma client singleton (`src/lib/prisma.ts`) talks to SQLite (or Postgres in production).
