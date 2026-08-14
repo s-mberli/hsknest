@@ -8,7 +8,7 @@
 
 HSK Nest schedules your reviews with FSRS, the same memory model behind modern Anki, right when you're about to forget a word.
 
-It ships Mandarin-first: the complete New HSK 3.0 vocabulary — November 2025 syllabus, effective July 2026 — across levels 1–9, 3,000 example sentences with pinyin, dictionary-assisted entry, and natural Azure neural TTS served from your own server.
+It ships Mandarin-first: the complete New HSK 3.0 vocabulary across levels 1–9, 3,000 example sentences with pinyin, dictionary-assisted entry, and natural Azure neural TTS served from your own server.
 
 Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
 
@@ -21,7 +21,7 @@ Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
 	
 | Feature | Description |
 |---|---|
-| 🧠 | **FSRS / SM-2 / Leitner** — Pluggable scheduling strategies, switchable per-account. |
+| 🧠 | **FSRS / SM-2 / Leitner** — Pluggable scheduling strategies. |
 | 🇨🇳 | **Mandarin-first** — Full New HSK 3.0 (1–9) + 3,000 example sentences with pinyin. |
 | 👆 | **Gesture-first swipe deck** — Full-screen dark focus mode with keyboard fallback. |
 | 🔊 | **Hybrid TTS** — Pre-generated Azure neural clips served locally + Web Speech fallback. |
@@ -87,14 +87,6 @@ The container will:
 - Serve the app at `http://localhost:3000`
 
 Visit `http://localhost:3000`, create an account, and start studying. Your data lives entirely in the `hsknest-data` volume.
-
-**Registration closes after your first account.** It claims the instance, and
-signup/guest mode turn off automatically so a network-reachable container
-can't hand out free accounts to strangers. Set `ALLOW_REGISTRATION=true` to
-reopen both (e.g. for a household member); see `docs/CONFIGURATION.md`. If the
-data volume is ever lost or unmounted, the app sees zero accounts and reopens
-registration. Your original data is unaffected, but treat the volume as the
-thing to back up.
 
 ## Tech stack
 
