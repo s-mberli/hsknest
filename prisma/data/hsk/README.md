@@ -1,7 +1,7 @@
 # Chinese vocabulary data
 
-`new1.json` … `new7.json` contain the **New HSK 3.0 (2021 standard)**
-vocabulary lists — levels 1–6 plus the 7–9 band — and `freq100.json` /
+`new1.json` … `new7.json` contain the **New HSK 3.0 vocabulary (November 2025
+syllabus, effective July 2026)** lists — levels 1–6 plus the 7–9 band — and `freq100.json` /
 `freq1000.json` contain the highest-frequency words overall, ordered by
 real-world usage rank. One entry per word:
 `{ term, translation, phonetic, metadata: { level, pos?, frequencyRank?, traditional?, meanings } }`.
@@ -32,9 +32,9 @@ npx tsx scripts/fix-hsk-meanings.ts                 # push into an existing DB, 
 ```
 
 (The legacy `hsk1.json` … `hsk6.json` files — the old HSK 2.0 lists — were
-removed once the app migrated, in November 2025, to the 2021 HSK 3.0
-standard lists above. Seeding matches an existing list by name and replaces
-its content wholesale,
+removed once the app migrated to the HSK 3.0 lists above (November 2025
+syllabus, effective July 2026). Seeding matches an existing list by name and
+replaces its content wholesale,
 so no install ever depended on the old files being present; see
 `scripts/migrate-hsk-levels.ts` for the 2.0 → 3.0 migration itself.)
 
