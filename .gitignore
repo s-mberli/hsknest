@@ -74,6 +74,11 @@ next-env.d.ts
 /LAUNCH-CHECKLIST.md
 /docs/marketing/
 
+# private product sequencing — deliberately NOT in the public RELEASES.md
+# roadmap (see docs/marketing/positioning.md: multi-language is an
+# architecture story, not a marketing promise we want to owe anyone).
+/ROADMAP-INTERNAL.md
+
 # private ops runbook
 /LAUNCH-RUNBOOK.md
 /LAUNCH-RUNBOOK.html

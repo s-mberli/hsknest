@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { isRegistrationOpen, isGuestModeEnabled } from "@/lib/registration";
+import { isSelfHosted } from "@/lib/selfHosted";
 
 // Reads the current user count on every request — must never be statically
 // prerendered (which would bake in whatever DB state existed at build time
@@ -34,6 +35,13 @@ export default async function SignupPage() {
               </Link>
               .
             </p>
+            <p className="text-sm text-muted-foreground">
+              Forgot your password?{" "}
+              <Link href="/forgot-password" className="font-medium text-primary hover:underline">
+                Reset it
+              </Link>
+              .
+            </p>
             <p className="text-xs text-muted-foreground">
               Instance owner? Set <code>ALLOW_REGISTRATION=true</code> to allow
               more accounts.
@@ -44,5 +52,10 @@ export default async function SignupPage() {
     );
   }
 
-  return <SignupForm guestEnabled={isGuestModeEnabled()} />;
+  return (
+    <SignupForm
+      guestEnabled={isGuestModeEnabled()}
+      selfHosted={isSelfHosted()}
+    />
+  );
 }

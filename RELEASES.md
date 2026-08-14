@@ -8,6 +8,36 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+**Self-host UX / recovery:**
+- ✅ Stale session cookies (after a container recreation changed the
+  auto-generated `NEXTAUTH_SECRET`) are now detected and cleared instead of
+  spamming `JWT_SESSION_ERROR` with no recovery path. If the data volume was
+  reset, the visitor is sent to `/signup` rather than a dead-end `/login`.
+  See `src/proxy.ts` (renamed from `middleware.ts` for the Next.js 16 Proxy
+  convention).
+- ✅ The "registration closed" page now links to password recovery — an owner
+  who forgot their password had no path forward from there.
+- ✅ Self-hosted signup notes that no verification email is sent (the address
+  is just a login handle), and forgot-password points at `docker logs` for the
+  reset link when no `RESEND_API_KEY` is configured.
+- ✅ Removed the hardcoded fallback `NEXTAUTH_SECRET` in
+  `docker-entrypoint.sh` — a fixed secret in a public repo is a known-value
+  session-signing key. Now fails loudly if no secure random source exists, and
+  `chmod 600`s the persisted secret file.
+
+**Import / bring-your-own-vocabulary:**
+- ✅ `docs/IMPORT.md` — full CSV/TSV format spec, limits, Anki export path,
+  a copy-paste prompt for generating decks with an LLM, and how to add a new
+  language. Its examples are covered by contract tests in
+  `src/lib/__tests__/import.test.ts`, so the docs can't silently drift.
+- ✅ Fixed: a UTF-8 BOM (emitted by Excel "CSV UTF-8" and Google Sheets) was
+  not stripped on import, silently corrupting the first term of the file.
+
+**Release process:**
+- ✅ `docker-publish.yml` now also publishes `:edge` on pushes to `main`, so
+  fixes reach testers without minting a version tag. `:latest` is only moved
+  by an actual `v*.*.*` tag.
+
 ## v0.2.3
 
 **Security / self-host:**

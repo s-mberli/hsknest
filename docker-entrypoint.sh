@@ -10,18 +10,26 @@ if [ -z "$NEXTAUTH_SECRET" ]; then
   SECRET_FILE="/data/.nextauth-secret"
   if [ -f "$SECRET_FILE" ]; then
     export NEXTAUTH_SECRET=$(cat "$SECRET_FILE")
+    chmod 600 "$SECRET_FILE" 2>/dev/null || true
     echo "→ Using persisted NEXTAUTH_SECRET from /data/.nextauth-secret"
   else
     # Generate a 32-byte base64 secret (compatible with NextAuth expectations).
-    # Falls back to a hardcoded 64-char string if openssl is not available.
+    # No fallback to a fixed string here on purpose: a hardcoded secret baked
+    # into a public repo is a known-value session-signing key, worse than
+    # refusing to start. If neither source of randomness is available, fail
+    # loudly instead of silently shipping a guessable secret.
     if command -v openssl > /dev/null 2>&1; then
       export NEXTAUTH_SECRET=$(openssl rand -base64 32)
+    elif [ -r /dev/urandom ]; then
+      export NEXTAUTH_SECRET="$(head -c 32 /dev/urandom | base64)"
     else
-      # Fallback: 64-char base64-like string (lowercase alphanumeric + =/+)
-      export NEXTAUTH_SECRET="$(head -c 32 /dev/urandom 2>/dev/null | base64 2>/dev/null || echo 'hsknest-fallback-secret-64chars-1234567890abcdefghijklmnopqrs')"
+      echo "✗ FATAL: no secure random source available (openssl and /dev/urandom both missing) — cannot generate NEXTAUTH_SECRET. Set NEXTAUTH_SECRET explicitly in your environment." >&2
+      exit 1
     fi
-    # Persist it so the next boot uses the same secret.
+    # Persist it so the next boot uses the same secret. Restrict permissions —
+    # this file is a session-signing key sitting next to the database.
     if echo "$NEXTAUTH_SECRET" > "$SECRET_FILE"; then
+      chmod 600 "$SECRET_FILE" 2>/dev/null || true
       echo "→ Generated and persisted NEXTAUTH_SECRET to /data/.nextauth-secret"
     else
       echo "⚠ WARNING: Could not persist NEXTAUTH_SECRET — /data may not be writable. Using ephemeral secret; sessions will invalidate on restart."
