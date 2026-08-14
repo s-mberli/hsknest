@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { UpgradeBanner } from "@/components/auth/UpgradeBanner";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { BillingSection } from "@/components/settings/sections/BillingSection";
 import { prisma } from "@/lib/prisma";
@@ -35,6 +36,8 @@ export default async function SettingsPage() {
     redirect("/onboarding");
   }
 
+  const isGuest = user.email.endsWith("@guest.local");
+
   const [languages, sub] = await Promise.all([
     prisma.language.findMany({
       orderBy: { name: "asc" },
@@ -65,15 +68,21 @@ export default async function SettingsPage() {
         desiredRetention={user.desiredRetention}
         targetLanguageId={user.targetLanguageId}
         languages={languages}
-        billing={
-          !sub.selfHosted && !user.email.endsWith("@guest.local") ? (
+        topSlot={
+          isGuest ? (
+            // A guest hasn't committed to an account yet, so the urgent action
+            // is claiming one before the progress is stranded — not paying.
+            // Applies self-hosted or hosted: a self-hoster who reopened guest
+            // mode via ALLOW_REGISTRATION still needs this nudge, just with
+            // no billing attached.
+            <UpgradeBanner compact />
+          ) : sub.selfHosted ? undefined : (
             <BillingSection
               status={sub.status}
               daysLeft={sub.daysLeft}
               hasStripeCustomer={sub.hasStripeCustomer}
-              isGuest={user.email.endsWith("@guest.local")}
             />
-          ) : undefined
+          )
         }
       />
       <p className="mt-8 text-center text-xs text-muted-foreground">
