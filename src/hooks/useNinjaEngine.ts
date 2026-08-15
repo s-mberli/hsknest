@@ -184,6 +184,11 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
     let down = false;
 
     function onPointerDown(e: PointerEvent) {
+      // Don't capture the pointer once the game is over — doing so retargets
+      // the pointerup/click away from the "Play Again" button, silently
+      // breaking it. Slicing input is irrelevant post-game-over anyway.
+      if (stateRef.current.waveStatus === "game-over") return;
+
       down = true;
       stage!.setPointerCapture(e.pointerId);
       stateRef.current.trail = [];
