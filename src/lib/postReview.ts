@@ -3,6 +3,10 @@ import { toast } from "sonner";
 export interface PostReviewOptions {
   /** Grade logged for schedule advancement, not just streak/stats. */
   practice?: boolean;
+  /** Source mode: "srs" (default), "quiz", "match", "sentences", "ninja". */
+  source?: "srs" | "quiz" | "match" | "sentences" | "ninja";
+  /** Response time in milliseconds (null for untimed modes). */
+  latencyMs?: number;
   /** Called once the review is durably saved (first try or the retry). */
   onSuccess?: () => void;
   /**
@@ -38,6 +42,8 @@ export async function postReview(
     wordId,
     quality,
     ...(opts.practice ? { practice: true } : {}),
+    ...(opts.source ? { source: opts.source } : {}),
+    ...(opts.latencyMs ? { latencyMs: opts.latencyMs } : {}),
   });
   const post = () =>
     fetch("/api/study/review", {

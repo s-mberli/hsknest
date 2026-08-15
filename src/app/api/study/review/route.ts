@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const parsed = await parseBody(req, reviewSchema);
   if (parsed instanceof NextResponse) return parsed;
 
-  const { wordId, quality, practice } = parsed;
+  const { wordId, quality, practice, source, latencyMs } = parsed;
   const now = new Date();
   const submittedAt = new Date();
 
@@ -71,6 +71,8 @@ export async function POST(req: Request) {
         intervalBefore: progress.intervalDays,
         intervalAfter: progress.intervalDays,
         reviewedAt: now,
+        source: source || "srs",
+        latencyMs,
       },
     });
     return NextResponse.json({
@@ -188,6 +190,8 @@ export async function POST(req: Request) {
           intervalBefore: progress.intervalDays,
           intervalAfter: next.intervalDays,
           reviewedAt: now,
+          source: source || "srs",
+          latencyMs,
         },
       }),
     ]);
