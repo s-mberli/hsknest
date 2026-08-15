@@ -109,6 +109,12 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
     if (state.tiles.length === 0) return;
     if (state.stageBounds.width <= 0) return; // stageBounds not ready yet
 
+    // Debug: log first time painting
+    if (!window.__ninjaDebug) {
+      window.__ninjaDebug = true;
+      console.log(`[ninja] painting ${state.tiles.length} tiles, bounds:`, state.stageBounds);
+    }
+
     // Compute tile size (matches NinjaTile.tsx sizing logic exactly)
     // NinjaTile uses: clamp(79.2px, 14.4vw, 129.6px) for width
     // which is 1.8 * clamp(44px, 8vw, 72px)
@@ -158,6 +164,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
         state.waveSize = fullConfig.waveSize;
         state.trailMs = fullConfig.trailMs;
         spawnWave(state, targetWord, distractorPool, rngRef.current, performance.now(), fullConfig.waveSize);
+        console.log(`[ninja] spawned wave 1:`, state.tiles.length, "tiles, target:", targetWord.term);
         setView(projectView(state));
       }
     };
