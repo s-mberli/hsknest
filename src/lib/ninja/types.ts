@@ -40,6 +40,7 @@ export interface WaveOutcome {
 
 export interface SliceBurst extends Point {
   t: number; // milliseconds, performance.now(), when the slice landed
+  quality?: 1 | 3 | 4 | 5; // SRS quality tier, for speed-tiered visual rendering
 }
 
 export interface EngineState {
@@ -65,6 +66,9 @@ export interface EngineState {
      * `translation` still carries text (used as game-over/history copy and
      * as a fallback), but the UI shows a speaker icon instead of it. */
     isAudioPrompt?: boolean;
+    /** True for a "Reverse" wave: tiles show translations, not hanzi —
+     * the prompt shows the hanzi and the player slices the meaning. */
+    isReverseWave?: boolean;
   };
   waveStatus: "lead-in" | "live" | "resolved" | "game-over";
   leadInEnd: number; // ms timestamp when lead-in ends
@@ -72,4 +76,7 @@ export interface EngineState {
   leadInMs: number;
   waveSize: number;
   trailMs: number;
+  /** Words to requeue (missed/wrong slices) — Map of wordId to requeue count.
+   * A word requeues at most 1 time per session. */
+  requeuePool: Map<string, number>;
 }

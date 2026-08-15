@@ -130,6 +130,31 @@ export function spawnListenWave(
   launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
 }
 
+/**
+ * Spawn a "Reverse" wave: the prompt is the target's hanzi, and the tiles
+ * show English glosses (translations) instead of hanzi. Player slices the
+ * meaning/translation that matches the prompt hanzi. Distractors are
+ * frequency-matched translations from the word pool (not homophones).
+ */
+export function spawnReverseWave(
+  state: EngineState,
+  targetWord: NinjaWord,
+  distractors: NinjaWord[],
+  rng: () => number,
+  now: number,
+  waveSize: number = 4
+): void {
+  state.promptWord = {
+    wordId: targetWord.wordId,
+    char: targetWord.term,
+    translation: targetWord.translation,
+    isAudioPrompt: false,
+    isReverseWave: true,
+  };
+
+  launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
+}
+
 export interface WaveOutcome {
   wordId: string;
   slicedTarget: boolean;
@@ -217,7 +242,6 @@ export function stepHitTests(
       if (tile.isTarget) {
         state.combo += 1;
         state.correct += 1;
-        state.sliceBursts.push({ x: tile.position.x, y: tile.position.y, t: now });
         const quality = qualityForOutcome({
           wordId,
           slicedTarget: true,
@@ -226,6 +250,7 @@ export function stepHitTests(
           msToSlice,
           quality: 3,
         });
+        state.sliceBursts.push({ x: tile.position.x, y: tile.position.y, t: now, quality });
         resolveWave(state, "correct", now);
         return {
           wordId,

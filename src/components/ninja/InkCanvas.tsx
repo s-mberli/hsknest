@@ -102,16 +102,27 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
 
         // Ink-splatter burst on each successful slice — a handful of short
         // streaks radiating outward, growing and fading over SLICE_BURST_MS.
+        // Speed-tiered: faster slices (quality 5) get bigger/brighter bursts.
         for (const burst of state.sliceBursts) {
           const age = now - burst.t;
           if (age < 0 || age >= SLICE_BURST_MS) continue;
           const progress = age / SLICE_BURST_MS;
-          const alpha = 1 - progress;
-          const innerR = 4 + progress * 6;
-          const outerR = innerR + 10 + progress * 14;
+
+          // Scale burst size and brightness by quality tier
+          // quality 5 (fast): 1.2x size, full alpha
+          // quality 4 (medium): 1.0x size, 0.9x alpha
+          // quality 3 (slow): 0.8x size, 0.75x alpha
+          const qualityScale =
+            burst.quality === 5 ? 1.2 : burst.quality === 4 ? 1.0 : burst.quality === 3 ? 0.8 : 1.0;
+          const qualityAlpha =
+            burst.quality === 5 ? 1.0 : burst.quality === 4 ? 0.9 : burst.quality === 3 ? 0.75 : 0.85;
+
+          const alpha = (1 - progress) * qualityAlpha;
+          const innerR = (4 + progress * 6) * qualityScale;
+          const outerR = (innerR + 10 + progress * 14) * qualityScale;
 
           ctx.strokeStyle = `rgba(234, 88, 12, ${alpha * 0.85})`;
-          ctx.lineWidth = Math.max(1, 3 * (1 - progress));
+          ctx.lineWidth = Math.max(1, 3 * (1 - progress) * qualityScale);
           ctx.lineCap = "round";
 
           for (const deg of BURST_ANGLES) {

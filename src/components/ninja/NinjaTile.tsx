@@ -1,5 +1,5 @@
 /**
- * Single tile: circular backdrop + hanzi character.
+ * Single tile: circular backdrop + hanzi character (or English translation text).
  * Position managed by useNinjaEngine.paint() per-frame.
  * Opacity managed here to fade out when sliced.
  */
@@ -17,10 +17,12 @@ export interface NinjaTileProps {
   tile: TileData;
   tileElRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
   onFaded?: (tileId: string) => void;
+  /** When true, render tile.char as English text instead of hanzi. */
+  isReverse?: boolean;
 }
 
 const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
-  ({ tile, tileElRefs, onFaded }, ref) => {
+  ({ tile, tileElRefs, onFaded, isReverse }, ref) => {
     // Handle sliced state (fade out and callback)
     useEffect(() => {
       const el = tileElRefs.current.get(tile.id);
@@ -57,14 +59,27 @@ const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
           willChange: "transform, opacity",
         }}
       >
-        <span
-          className="font-serif"
-          style={{
-            fontSize: "clamp(44px, 8vw, 72px)",
-          }}
-        >
-          {tile.char}
-        </span>
+        {isReverse ? (
+          // Reverse wave: show English translation text, word-wrapped
+          <span
+            className="text-center font-sans text-xs font-medium leading-tight px-2"
+            style={{
+              fontSize: "clamp(11px, 2.2vw, 16px)",
+            }}
+          >
+            {tile.char}
+          </span>
+        ) : (
+          // Normal/Listen wave: show hanzi character
+          <span
+            className="font-serif"
+            style={{
+              fontSize: "clamp(44px, 8vw, 72px)",
+            }}
+          >
+            {tile.char}
+          </span>
+        )}
       </div>
     );
   }

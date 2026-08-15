@@ -5,13 +5,13 @@
 
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, X as XIcon, ArrowDown, Heart, Flame, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { NinjaView } from "@/hooks/useNinjaEngine";
 import type { EngineState } from "@/lib/ninja/types";
-import { playSliceWrong, playMiss, setSoundEnabled } from "@/lib/sound";
+import { playSliceWrong, playMiss, setSoundEnabled, playCelebrate, playSlice } from "@/lib/sound";
 import { playAudio } from "@/lib/audio";
 import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
 import NinjaTile from "./NinjaTile";
@@ -46,12 +46,30 @@ export default function NinjaStage({
   exitHref = "/dashboard",
 }: NinjaStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [shakeIntensity, setShakeIntensity] = useState(0);
+  const [shakeOffset, setShakeOffset] = useState(0);
+  const prevComboRef = useRef(0);
+  const [bestStats, setBestStats] = useState<{ correct: number; combo: number } | null>(null);
+  const [isNewBest, setIsNewBest] = useState(false);
 
   // This test/prototype route has no user settings to read soundEffects from —
   // default sound on. NinjaScreen (Phase 5, real app wiring) must call
   // setSoundEnabled(user.soundEffects) instead, same gotcha StudyScreen hit.
   useEffect(() => {
     setSoundEnabled(true);
+  }, []);
+
+  // Load best stats from localStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = localStorage.getItem("ninja-best-stats");
+      if (stored) {
+        setBestStats(JSON.parse(stored));
+      }
+    } catch {
+      // Silently ignore parse errors
+    }
   }, []);
 
   // Feedback per resolved wave. lastOutcome is a fresh object identity each
@@ -89,6 +107,51 @@ export default function NinjaStage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.promptWord]);
 
+  // Hit-stop + screen shake on correct slice. Intensity scales with combo.
+  // The shake auto-decays over 100ms via a separate effect.
+  useEffect(() => {
+    if (!view.lastOutcome || view.lastOutcome.kind !== "correct") return;
+    // Intensity from 0.8 (combo 0–2) to 1.0 (combo 5+)
+    const intensity = Math.min(1, 0.8 + view.combo / 20);
+    setShakeIntensity(intensity);
+    setShakeOffset(Math.random() * 4 - 2);
+    setTimeout(() => setShakeIntensity(0), 100);
+    playSlice(view.combo);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.lastOutcome]);
+
+  // Combo milestone rewards (5/10/15) — fire celebratory arpeggio.
+  useEffect(() => {
+    const milestones = [5, 10, 15];
+    if (view.combo > prevComboRef.current && milestones.includes(view.combo)) {
+      playCelebrate();
+    }
+    prevComboRef.current = view.combo;
+  }, [view.combo]);
+
+  // Check for new personal bests when game ends
+  useEffect(() => {
+    if (view.waveStatus !== "game-over") return;
+    if (typeof window === "undefined") return;
+
+    const newBest = !bestStats || view.correct > bestStats.correct || view.bestCombo > bestStats.combo;
+    setIsNewBest(newBest);
+
+    if (newBest) {
+      const updated = {
+        correct: Math.max(bestStats?.correct ?? 0, view.correct),
+        combo: Math.max(bestStats?.combo ?? 0, view.bestCombo),
+      };
+      setBestStats(updated);
+      try {
+        localStorage.setItem("ninja-best-stats", JSON.stringify(updated));
+      } catch {
+        // Silently ignore storage errors
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.waveStatus]);
+
   const wavePct = Math.min(100, (view.waveIndex / TOTAL_WAVES) * 100);
   const livesLeft = Math.max(view.lives, 0);
   // Background warms toward amber as combo climbs, capped well below full
@@ -98,12 +161,15 @@ export default function NinjaStage({
 
   return (
     <div
-      className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground"
+      className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground transition-transform"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
         paddingLeft: "env(safe-area-inset-left)",
         paddingRight: "env(safe-area-inset-right)",
+        transform:
+          shakeIntensity > 0 ? `translate(${shakeOffset * shakeIntensity}px, ${shakeOffset * shakeIntensity}px)` : undefined,
+        transitionDuration: "60ms",
       }}
     >
       <div
@@ -223,12 +289,25 @@ export default function NinjaStage({
             key={`${view.waveIndex}-${view.promptWord.wordId}`}
             className="animate-in fade-in zoom-in-95 duration-200"
           >
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Slice the word for
-            </p>
-            <p className="mt-0.5 text-3xl font-bold font-serif leading-tight sm:text-4xl">
-              {view.promptWord.translation}
-            </p>
+            {view.promptWord.isReverseWave ? (
+              <>
+                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Slice the meaning for
+                </p>
+                <p className="mt-0.5 text-3xl font-bold font-serif leading-tight sm:text-4xl">
+                  {view.promptWord.char}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Slice the word for
+                </p>
+                <p className="mt-0.5 text-3xl font-bold font-serif leading-tight sm:text-4xl">
+                  {view.promptWord.translation}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -245,6 +324,7 @@ export default function NinjaStage({
             tile={tile}
             tileElRefs={tileElRefs}
             onFaded={onTileFaded}
+            isReverse={view.promptWord.isReverseWave}
           />
         ))}
 
@@ -253,15 +333,42 @@ export default function NinjaStage({
 
         {view.waveStatus === "game-over" && (
           <div className="animate-in fade-in absolute inset-0 flex flex-col items-center justify-center gap-5 bg-background/95 px-6 text-center backdrop-blur-sm duration-300">
-            <div className="space-y-1">
-              <p className="text-2xl font-bold font-serif sm:text-3xl">
-                {view.correct}/{TOTAL_WAVES} correct
-              </p>
-              <p className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-                <Flame className="size-4 text-primary" aria-hidden="true" />
-                Best combo: {view.bestCombo}
-              </p>
+            <div className="space-y-3">
+              {/* Session grade — prominent display */}
+              {view.grade && (
+                <div className="flex flex-col items-center gap-1">
+                  <p className="text-7xl font-bold text-primary">{view.grade}</p>
+                  <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground">
+                    {view.grade === "S"
+                      ? "Outstanding"
+                      : view.grade === "A"
+                        ? "Excellent"
+                        : view.grade === "B"
+                          ? "Good"
+                          : "Keep Going"}
+                  </p>
+                </div>
+              )}
+
+              {/* Session stats */}
+              <div className="space-y-1 pt-2 border-t border-muted">
+                <p className="text-2xl font-bold font-serif sm:text-3xl">
+                  {view.correct}/{TOTAL_WAVES} correct
+                </p>
+                <p className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+                  <Flame className="size-4 text-primary" aria-hidden="true" />
+                  Best combo: {view.bestCombo}
+                </p>
+
+                {/* New Best! indicator */}
+                {isNewBest && (
+                  <p className="pt-1 text-sm font-semibold text-primary animate-pulse">
+                    ✨ New Best! ✨
+                  </p>
+                )}
+              </div>
             </div>
+
             <div className="flex items-center gap-3">
               <Button asChild variant="outline">
                 <Link href={exitHref}>Exit</Link>

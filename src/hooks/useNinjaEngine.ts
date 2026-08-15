@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spawnWave,
   spawnListenWave,
+  spawnReverseWave,
   stepPhysics,
   stepHitTests,
   decayTrail,
@@ -18,16 +19,18 @@ import {
 } from "@/lib/ninja/engine";
 import type { EngineState, StageBounds, TrailPoint } from "@/lib/ninja/types";
 import type { NinjaWord } from "@/lib/ninja/distractors";
+import { pickDistractors } from "@/lib/ninja/distractors";
 import { buildHomophoneGroups, pickListenWaveTarget, type HomophoneGroup } from "@/lib/ninja/homophones";
 import { makeRng } from "@/lib/ninja/physics";
-import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
+import { WAVES_PER_SESSION, gradeForSession, getDifficultyParams } from "@/lib/ninja/scoring";
 
-// Roughly 1 in 4 waves try a "Listen & Slice" (homophone/tone) wave instead
-// of a gloss prompt, when the session's own queue has an eligible group.
-// Flat probability, no adaptive weighting — see plan. Target/distractor
-// selection itself lives in pickListenWaveTarget (lib/ninja/homophones.ts,
-// pure + tested); this just rolls the dice and wires the result into state.
+// Wave-type distribution:
+// - ~25% "Listen & Slice" (audio → hanzi, homophone tiles)
+// - ~25% "Reverse" (hanzi → audio/gloss, translation tiles)
+// - ~50% "Gloss" (hanzi prompt, english gloss → hanzi, frequency-matched tiles)
+// Flat probabilities, no adaptive weighting.
 const LISTEN_WAVE_CHANCE = 0.25;
+const REVERSE_WAVE_CHANCE = 0.25;
 
 /**
  * Roll for and, if eligible, spawn a "Listen & Slice" wave. Returns true if
@@ -39,15 +42,65 @@ function trySpawnListenWave(
   homophoneGroups: Map<string, HomophoneGroup>,
   rng: () => number,
   now: number,
-  waveSize: number
+  waveSize: number,
+  listenChance: number = LISTEN_WAVE_CHANCE
 ): boolean {
-  if (rng() >= LISTEN_WAVE_CHANCE) return false;
+  if (rng() >= listenChance) return false;
 
   const picked = pickListenWaveTarget(homophoneGroups, rng, waveSize);
   if (!picked) return false; // thin/empty groups — fall back to gloss
 
   spawnListenWave(state, picked.target, picked.distractors, rng, now, waveSize);
   return true;
+}
+
+/**
+ * Try to spawn a "Reverse" wave: hanzi prompt, English translation tiles.
+ * Returns true if spawned, false otherwise.
+ */
+function trySpawnReverseWave(
+  state: EngineState,
+  words: NinjaWord[],
+  rng: () => number,
+  now: number,
+  waveSize: number,
+  reverseChance: number = REVERSE_WAVE_CHANCE
+): boolean {
+  if (rng() >= reverseChance) return false;
+  if (words.length < waveSize) return false;
+
+  const targetWord = words[Math.floor(rng() * words.length)];
+  const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
+  const distractors = pickDistractors(targetWord, distractorPool, rng, waveSize - 1);
+
+  if (distractors.length === 0) return false;
+  spawnReverseWave(state, targetWord, distractors, rng, now, waveSize);
+  return true;
+}
+
+/**
+ * Try to pull a word from the requeue pool. Returns the word if one was
+ * dequeued, null otherwise. A word can only requeue once per session.
+ */
+function tryDequeuRequeueWord(state: EngineState, words: NinjaWord[]): NinjaWord | null {
+  if (state.requeuePool.size === 0) return null;
+
+  // Get the first word in the requeue pool
+  const entry = state.requeuePool.entries().next().value;
+  if (!entry) return null;
+
+  const [wordId, count] = entry as [string, number];
+
+  // Each word requeues at most once (count = 1). Don't dequeue if already requeued.
+  if (count >= 1) {
+    state.requeuePool.delete(wordId);
+    return null;
+  }
+
+  // Increment requeue count and find the word in the pool
+  state.requeuePool.set(wordId, count + 1);
+  const word = words.find((w) => w.wordId === wordId);
+  return word ?? null;
 }
 
 export interface NinjaOutcomeFeedback {
@@ -69,6 +122,8 @@ export interface NinjaView {
   pointer: { x: number; y: number } | null;
   /** Corrective feedback for the wave that just resolved; null before any wave ends. */
   lastOutcome: NinjaOutcomeFeedback | null;
+  /** Session grade (S/A/B/C) computed at game-over. */
+  grade?: "S" | "A" | "B" | "C";
 }
 
 export interface UseNinjaEngineOptions {
@@ -85,7 +140,7 @@ function projectView(
   state: EngineState,
   lastOutcome: NinjaOutcomeFeedback | null = null
 ): NinjaView {
-  return {
+  const view: NinjaView = {
     lives: state.lives,
     waveIndex: state.waveIndex,
     combo: state.combo,
@@ -103,6 +158,13 @@ function projectView(
     pointer: state.pointer,
     lastOutcome,
   };
+
+  // Compute grade at game-over
+  if (state.waveStatus === "game-over") {
+    view.grade = gradeForSession(state.correct, state.bestCombo);
+  }
+
+  return view;
 }
 
 function initialState(): EngineState {
@@ -125,6 +187,7 @@ function initialState(): EngineState {
     leadInMs: DEFAULT_CONFIG.leadInMs,
     waveSize: DEFAULT_CONFIG.waveSize,
     trailMs: DEFAULT_CONFIG.trailMs,
+    requeuePool: new Map(),
   };
 }
 
@@ -212,15 +275,26 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       if (!spawnedRef.current && rect.width > 0 && words.length > 0) {
         spawnedRef.current = true;
         const state = stateRef.current;
-        state.leadInMs = fullConfig.leadInMs;
-        state.waveSize = fullConfig.waveSize;
         state.trailMs = fullConfig.trailMs;
         const now = performance.now();
-        if (!trySpawnListenWave(state, homophoneGroups, rngRef.current, now, fullConfig.waveSize)) {
-          const targetWord = words[0];
-          const distractorPool = words.slice(1);
-          spawnWave(state, targetWord, distractorPool, rngRef.current, now, fullConfig.waveSize);
+
+        // Apply difficulty curve for wave 0
+        const diffParams = getDifficultyParams(0);
+        state.leadInMs = diffParams.leadInMs;
+        state.waveSize = diffParams.waveSize;
+
+        // Try wave types in order: Listen > Reverse > Gloss
+        let spawned = trySpawnListenWave(state, homophoneGroups, rngRef.current, now, diffParams.waveSize, diffParams.listenChance);
+        if (!spawned) {
+          spawned = trySpawnReverseWave(state, words, rngRef.current, now, diffParams.waveSize, diffParams.reverseChance);
         }
+        if (!spawned) {
+          const requeueWord = tryDequeuRequeueWord(state, words);
+          const targetWord = requeueWord || words[0];
+          const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
+          spawnWave(state, targetWord, distractorPool, rngRef.current, now, diffParams.waveSize);
+        }
+
         setView(projectView(state));
       }
     };
@@ -324,6 +398,8 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
                 char: promptAtStep.char,
                 translation: promptAtStep.translation,
               };
+              // Add missed words to requeue pool for immediate re-test
+              state.requeuePool.set(promptAtStep.wordId, (state.requeuePool.get(promptAtStep.wordId) ?? 0));
               onWaveOutcome?.({
                 wordId: promptAtStep.wordId,
                 slicedTarget: false,
@@ -341,6 +417,10 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
                 char: promptAtStep.char,
                 translation: promptAtStep.translation,
               };
+              // Add missed/wrong words to requeue pool for immediate re-test
+              if (!outcome.slicedTarget) {
+                state.requeuePool.set(outcome.wordId, (state.requeuePool.get(outcome.wordId) ?? 0));
+              }
               onWaveOutcome?.(outcome);
             }
           }
@@ -376,10 +456,22 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
             } else {
               s.waveIndex = nextIndex;
               const now = performance.now();
-              if (!trySpawnListenWave(s, homophoneGroups, rngRef.current, now, fullConfig.waveSize)) {
-                const targetWord = words[nextIndex % words.length];
-                const distractorPool = words.filter((_, i) => i !== (nextIndex % words.length));
-                spawnWave(s, targetWord, distractorPool, rngRef.current, now, fullConfig.waveSize);
+
+              // Apply difficulty curve for this wave index
+              const diffParams = getDifficultyParams(nextIndex);
+              s.leadInMs = diffParams.leadInMs;
+              s.waveSize = diffParams.waveSize;
+
+              // Try wave types in order: Listen > Reverse > Gloss
+              let spawned = trySpawnListenWave(s, homophoneGroups, rngRef.current, now, diffParams.waveSize, diffParams.listenChance);
+              if (!spawned) {
+                spawned = trySpawnReverseWave(s, words, rngRef.current, now, diffParams.waveSize, diffParams.reverseChance);
+              }
+              if (!spawned) {
+                const requeueWord = tryDequeuRequeueWord(s, words);
+                const targetWord = requeueWord || words[nextIndex % words.length];
+                const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
+                spawnWave(s, targetWord, distractorPool, rngRef.current, now, diffParams.waveSize);
               }
               // Clear corrective feedback now that a fresh wave is live — the
               // previous outcome's flash/toast should not linger past its wave.
