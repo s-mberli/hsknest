@@ -49,7 +49,7 @@ const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
             tileElRefs.current.delete(tile.id);
           }
         }}
-        className="absolute left-0 top-0 flex select-none items-center justify-center rounded-full border-2 border-foreground/25 bg-background shadow-md transition-opacity duration-300"
+        className="absolute left-0 top-0 flex select-none items-center justify-center rounded-full border-2 border-border bg-card shadow-md transition-opacity duration-300"
         style={{
           width: "clamp(79.2px, 14.4vw, 129.6px)", // 1.8 * clamp(44px, 8vw, 72px)
           aspectRatio: "1 / 1",

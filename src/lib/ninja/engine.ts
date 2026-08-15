@@ -36,7 +36,9 @@ export const DEFAULT_CONFIG: EngineConfig = {
   tileSizePxMin: 44,
   tileSizePxMax: 72,
   trailCap: 32,
-  advancePauseMs: 900,
+  // 900ms was too short to read "Missed — X was Y" before the next wave spawned.
+  // Bumped to give the corrective-feedback banner room to actually be read.
+  advancePauseMs: 1700,
 };
 
 /**
@@ -217,9 +219,12 @@ export function resolveWave(
 
   state.bestCombo = Math.max(state.bestCombo, state.combo);
 
-  if (state.lives <= 0) {
-    state.waveStatus = "game-over";
-  }
+  // Do NOT jump straight to "game-over" here even when lives just hit 0.
+  // Staying in "resolved" lets the corrective-feedback banner (the prompt
+  // card flipping red) show for advancePauseMs, same as every other wave —
+  // otherwise the last mistake of a session never reveals the right answer
+  // before the game-over screen covers it. useNinjaEngine's advance timer
+  // is the sole place that transitions to "game-over", after the pause.
 }
 
 /**
@@ -239,7 +244,6 @@ export function stepWaveLogic(state: EngineState, now: number): void {
     state.waveStatus = "live";
   }
 
-  if (state.lives <= 0 && state.waveStatus !== "game-over") {
-    state.waveStatus = "game-over";
-  }
+  // Game-over on lives<=0 is decided by useNinjaEngine's advance timer, not
+  // here — see the comment in resolveWave for why.
 }

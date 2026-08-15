@@ -5,7 +5,10 @@
 
 import type { NinjaItem, StageBounds } from "./types";
 
-export const GRAVITY = 420; // px/s² — tuned in Phase 0
+// 420 px/s² was the Phase 0 tuned value. Dropped ~30% (not 20% — flight time
+// scales with 1/sqrt(gravity), so a 20%-longer hangtime needs gravity down by
+// ~1/1.2² ≈ 0.69x) per playtest feedback that waves felt too fast to read.
+export const GRAVITY = 290; // px/s²
 export const APEX_RATIO = 0.58; // apex height as fraction of stage height
 
 /** Simple mulberry32 PRNG for seeded, deterministic waves. */
