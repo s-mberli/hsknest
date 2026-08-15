@@ -8,6 +8,15 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+**Hanzi Ninja** (Recall mode) — behind `NEXT_PUBLIC_ENABLE_NINJA`, off by
+default. A fast-paced slice-practice mode: falling hanzi tiles, swipe to
+slice the one matching the prompt gloss. Practice-only (never touches the
+review schedule), frequency-matched distractors, real pronunciation audio
+on feedback. Not yet at the shipped-mode bar — still missing: Sweep
+(multi-target) mode, a reduced-motion alternative (Static Sweep), homophone/
+tone-confusion waves, and device-matrix testing. `/prototype/ninja-slice`
+and `/test/ninja-engine` are throwaway routes to delete once those land.
+
 ## v0.2.4 — 2026-08-14
 
 Self-host first-run and recovery polish, ahead of the r/selfhosted launch.
