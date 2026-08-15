@@ -86,7 +86,7 @@ function initialState(): EngineState {
     correct: 0,
     missed: 0,
     stageBounds: { width: 0, height: 0, bottom: 0 },
-    promptWord: { char: "", translation: "" },
+    promptWord: { wordId: "", char: "", translation: "" },
     waveStatus: "lead-in",
     leadInEnd: 0,
     waveEndTime: null,
@@ -97,14 +97,22 @@ function initialState(): EngineState {
 }
 
 export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEngineOptions) {
-  // Memoize config so effects have stable dependencies
-  const fullConfig = useMemo(
-    () => ({ ...DEFAULT_CONFIG, ...config }),
-    [JSON.stringify(config)] // config is typically {} so this is safe
-  );
+  // Memoize config so effects have stable dependencies. Stringify first into
+  // its own variable — react-hooks/exhaustive-deps requires simple
+  // expressions in the dependency array, not inline calls.
+  const configKey = JSON.stringify(config);
+  // configKey is a stable serialization of config; config itself is
+  // typically a fresh {} literal every render, so depending on it directly
+  // would defeat the memo.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fullConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [configKey]);
 
   const stateRef = useRef<EngineState>(initialState());
-  const [view, setView] = useState<NinjaView>(projectView(stateRef.current));
+  // Build the initial view from a fresh initialState() rather than reading
+  // stateRef.current here — react-hooks/refs disallows reading a ref during
+  // render. initialState() is a pure constructor, so this is equivalent to
+  // projecting the ref (both start from the same default shape).
+  const [view, setView] = useState<NinjaView>(() => projectView(initialState()));
   const rngRef = useRef(makeRng());
   const stageRef = useRef<HTMLDivElement | null>(null);
   const tileElRefs = useRef(new Map<string, HTMLDivElement>());
@@ -276,7 +284,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
                 translation: promptAtStep.translation,
               };
               onWaveOutcome?.({
-                wordId: "",
+                wordId: promptAtStep.wordId,
                 slicedTarget: false,
                 slicedDistractor: false,
                 missed: true,

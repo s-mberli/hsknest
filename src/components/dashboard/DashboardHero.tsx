@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   ListChecks,
   MessageSquareText,
+  Swords,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -15,6 +16,7 @@ import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
+import { ninjaEnabled } from "@/lib/ninja/flag";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -90,6 +92,10 @@ export function DashboardHero({
     ? ROMANIZED_READING_LANGS.has(languageCode)
     : false;
 
+  // Hanzi Ninja is hanzi-specific (falling tiles, slice gesture) and still
+  // behind a flag short of the shipped-mode bar — gate on both.
+  const showNinja = ninjaEnabled() && languageCode === "zh";
+
   const PRACTICE_MODES = [
     { key: "quiz", label: "Meaning Quiz", icon: ListChecks },
     { key: "match", label: "Word Match", icon: LayoutGrid },
@@ -98,6 +104,18 @@ export function DashboardHero({
       : []),
     ...(hasSentences
       ? [{ key: "sentences", label: "Sentences", icon: MessageSquareText } as const]
+      : []),
+    ...(showNinja
+      ? [
+          {
+            key: "ninja",
+            label: "Hanzi Ninja",
+            icon: Swords,
+            // Fast-paced and motion-heavy — say so up front so nobody is
+            // ambushed by falling tiles when they expected a flashcard.
+            subtitle: "Fast-paced, motion-heavy",
+          } as const,
+        ]
       : []),
   ] as const;
 
@@ -204,32 +222,41 @@ export function DashboardHero({
                 "sm:flex sm:flex-wrap sm:justify-center"
             )}
           >
-            {PRACTICE_MODES.map(({ key, label, icon: Icon }, i) => (
-              <motion.div
-                key={key}
-                initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.2,
-                  delay: reducedMotion ? 0 : i * 0.05,
-                }}
-                className="sm:w-32"
-              >
-                <Link
-                  href={`/study/${key}?mode=practice`}
-                  className={cn(
-                    "flex aspect-square min-h-11 flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-3 text-center text-sm font-medium",
-                    "transition-transform hover:-translate-y-0.5 hover:bg-accent motion-reduce:hover:translate-y-0",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  )}
+            {PRACTICE_MODES.map(({ key, label, icon: Icon, ...rest }, i) => {
+              const subtitle = "subtitle" in rest ? rest.subtitle : undefined;
+              return (
+                <motion.div
+                  key={key}
+                  initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.2,
+                    delay: reducedMotion ? 0 : i * 0.05,
+                  }}
+                  className="sm:w-32"
                 >
-                  <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="leading-tight">{label}</span>
-                </Link>
-              </motion.div>
-            ))}
+                  <Link
+                    href={`/study/${key}?mode=practice`}
+                    title={subtitle}
+                    className={cn(
+                      "flex aspect-square min-h-11 flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-3 text-center text-sm font-medium",
+                      "transition-transform hover:-translate-y-0.5 hover:bg-accent motion-reduce:hover:translate-y-0",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    )}
+                  >
+                    <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="leading-tight">{label}</span>
+                    {subtitle && (
+                      <span className="text-[10px] font-normal leading-tight text-muted-foreground">
+                        {subtitle}
+                      </span>
+                    )}
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}

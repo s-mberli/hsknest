@@ -54,7 +54,11 @@ export function spawnWave(
 ): void {
   const layout = laneLayout(state.stageBounds, waveSize);
 
-  state.promptWord = { char: targetWord.term, translation: targetWord.translation };
+  state.promptWord = {
+    wordId: targetWord.wordId,
+    char: targetWord.term,
+    translation: targetWord.translation,
+  };
   state.tiles = [];
   state.leadInEnd = now + state.leadInMs;
   state.waveEndTime = null;
@@ -156,15 +160,19 @@ export function stepHitTests(
       const hit = sweptSliceHit(p1, p2, tile.position, tile.position, radius);
       if (!hit) continue;
 
-      // Slice occurred
+      // Slice occurred. Grading is always against the target word — a wrong
+      // slice means "didn't recognise the target", not "knows the
+      // distractor", so the SRS write always targets promptWord.wordId,
+      // never the sliced distractor's own id.
       tile.sliced = true;
       const msToSlice = now - state.leadInEnd;
+      const wordId = state.promptWord.wordId;
 
       if (tile.isTarget) {
         state.combo += 1;
         state.correct += 1;
         const quality = qualityForOutcome({
-          wordId: "dummy", // filled by caller
+          wordId,
           slicedTarget: true,
           slicedDistractor: false,
           missed: false,
@@ -173,7 +181,7 @@ export function stepHitTests(
         });
         resolveWave(state, "correct", now);
         return {
-          wordId: "dummy",
+          wordId,
           slicedTarget: true,
           slicedDistractor: false,
           missed: false,
@@ -185,7 +193,7 @@ export function stepHitTests(
         state.combo = 0;
         resolveWave(state, "wrong", now);
         return {
-          wordId: "dummy",
+          wordId,
           slicedTarget: false,
           slicedDistractor: true,
           missed: false,

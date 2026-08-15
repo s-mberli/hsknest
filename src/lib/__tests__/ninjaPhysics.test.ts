@@ -105,10 +105,12 @@ describe("ninjaPhysics", () => {
 
       stepTile(tile, bounds, 0.1);
 
-      // stepTile applies gravity first: vy = 100 + 420*0.1 = 142
-      // Then updates position: y = 100 + 142*0.1 = 114.2
+      // stepTile applies gravity first: vy = 100 + GRAVITY*0.1
+      // Then updates position: y = 100 + vy*0.1
+      const expectedVy = 100 + GRAVITY * 0.1;
+      const expectedY = 100 + expectedVy * 0.1;
       expect(tile.position.x).toBe(105); // 100 + 50*0.1
-      expect(tile.position.y).toBeCloseTo(114.2, 1);
+      expect(tile.position.y).toBeCloseTo(expectedY, 5);
     });
 
     it("clamps tile to horizontal stage bounds", () => {
