@@ -3,7 +3,7 @@
  * Fixed timestep, coalesced pointer events, ResizeObserver for stage bounds.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spawnWave,
   stepPhysics,
@@ -17,6 +17,7 @@ import {
 import type { EngineState, StageBounds, TrailPoint } from "@/lib/ninja/types";
 import type { NinjaWord } from "@/lib/ninja/distractors";
 import { makeRng } from "@/lib/ninja/physics";
+import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
 
 export interface NinjaView {
   lives: number;
@@ -39,6 +40,7 @@ export interface UseNinjaEngineOptions {
 
 /**
  * Project engine state into a React view (only interactive fields).
+ * Copy position by value to prevent React holding a mutating object.
  */
 function projectView(state: EngineState): NinjaView {
   return {
@@ -53,7 +55,7 @@ function projectView(state: EngineState): NinjaView {
     tiles: state.tiles.map((t) => ({
       id: t.id,
       char: t.char,
-      position: t.position,
+      position: { x: t.position.x, y: t.position.y },
       sliced: t.sliced,
     })),
     pointer: state.pointer,
@@ -83,7 +85,11 @@ function initialState(): EngineState {
 }
 
 export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEngineOptions) {
-  const fullConfig = { ...DEFAULT_CONFIG, ...config };
+  // Memoize config so effects have stable dependencies
+  const fullConfig = useMemo(
+    () => ({ ...DEFAULT_CONFIG, ...config }),
+    [JSON.stringify(config)] // config is typically {} so this is safe
+  );
 
   const stateRef = useRef<EngineState>(initialState());
   const [view, setView] = useState<NinjaView>(projectView(stateRef.current));
@@ -92,6 +98,38 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
   const tileElRefs = useRef(new Map<string, HTMLDivElement>());
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const spawnedRef = useRef(false);
+
+  /**
+   * Paint tiles into the DOM by writing transforms based on current engine state.
+   * Called once per RAF frame to move tiles without triggering React re-renders.
+   * The visible circle is 1.8x the character size; center it on tile.position.
+   */
+  function paint(state: EngineState) {
+    if (!stageRef.current) return;
+
+    // Compute tile size (matches NinjaTile.tsx sizing logic)
+    const tileSizePx = Math.min(
+      Math.max(
+        fullConfig.tileSizePxMin,
+        (fullConfig.tileSizeVw / 100) * state.stageBounds.width
+      ),
+      fullConfig.tileSizePxMax
+    );
+
+    // Visual circle diameter is 1.8x the character size
+    const circleDiameter = tileSizePx * 1.8;
+
+    for (const tile of state.tiles) {
+      const el = tileElRefs.current.get(tile.id);
+      if (!el) continue;
+
+      // Center the circle on its position
+      const offsetX = tile.position.x - circleDiameter / 2;
+      const offsetY = tile.position.y - circleDiameter / 2;
+
+      el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    }
+  }
 
   // Pointer capture + trail recording, ResizeObserver for stage bounds
   useEffect(() => {
@@ -205,6 +243,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       }
 
       decayTrail(state, fullConfig, now);
+      paint(state);
 
       if (state.waveStatus === "resolved" || state.waveStatus === "game-over") {
         setView((prev) => {
@@ -222,13 +261,13 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
             advanceTimerRef.current = null;
             const s = stateRef.current;
             const nextIndex = s.waveIndex + 1;
-            if (nextIndex >= fullConfig.advancePauseMs || s.lives <= 0) {
+            if (nextIndex >= WAVES_PER_SESSION || s.lives <= 0) {
               s.waveStatus = "game-over";
             } else {
               s.waveIndex = nextIndex;
               const targetWord = words[nextIndex % words.length];
               const distractorPool = words.filter((_, i) => i !== (nextIndex % words.length));
-              spawnWave(s, targetWord, distractorPool, rngRef.current, performance.now());
+              spawnWave(s, targetWord, distractorPool, rngRef.current, performance.now(), fullConfig.waveSize);
             }
             setView(projectView(s));
           }, fullConfig.advancePauseMs);
@@ -243,12 +282,14 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       cancelAnimationFrame(raf);
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     };
+    // paint is stable internal logic, don't include in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullConfig, words, onWaveOutcome]);
 
   return {
     stageRef,
     tileElRefs,
     view,
-    state: stateRef.current,
+    stateRef,
   };
 }

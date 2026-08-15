@@ -7,6 +7,7 @@
 
 import { useRef, useEffect } from "react";
 import type { NinjaView } from "@/hooks/useNinjaEngine";
+import type { EngineState } from "@/lib/ninja/types";
 import NinjaTile from "./NinjaTile";
 import InkCanvas from "./InkCanvas";
 
@@ -14,6 +15,7 @@ export interface NinjaStageProps {
   view: NinjaView;
   stageRef: React.RefObject<HTMLDivElement | null>;
   tileElRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
+  stateRef: React.MutableRefObject<EngineState>;
   onTileFaded?: (tileId: string) => void;
 }
 
@@ -21,6 +23,7 @@ export default function NinjaStage({
   view,
   stageRef,
   tileElRefs,
+  stateRef,
   onTileFaded,
 }: NinjaStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,7 +61,7 @@ export default function NinjaStage({
         ))}
 
         {/* Ink canvas renders last so trail is on top */}
-        <InkCanvas ref={canvasRef} />
+        <InkCanvas ref={canvasRef} stateRef={stateRef} />
 
         {view.waveStatus === "game-over" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/90">

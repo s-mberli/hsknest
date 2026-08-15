@@ -24,9 +24,9 @@ const TEST_WORDS: NinjaWord[] = [
 ];
 
 export default function NinjaEngineTestPage() {
-  const { stageRef, tileElRefs, view } = useNinjaEngine({
+  const { stageRef, tileElRefs, view, stateRef } = useNinjaEngine({
     words: TEST_WORDS,
   });
 
-  return <NinjaStage view={view} stageRef={stageRef} tileElRefs={tileElRefs} />;
+  return <NinjaStage view={view} stageRef={stageRef} tileElRefs={tileElRefs} stateRef={stateRef} />;
 }

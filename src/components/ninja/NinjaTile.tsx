@@ -1,6 +1,7 @@
 /**
  * Single tile: circular backdrop + hanzi character.
- * Position and opacity managed by the engine, rendered via DOM transform.
+ * Position managed by useNinjaEngine.paint() per-frame.
+ * Opacity managed here to fade out when sliced.
  */
 
 import { forwardRef, useEffect } from "react";
@@ -20,6 +21,7 @@ export interface NinjaTileProps {
 
 const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
   ({ tile, tileElRefs, onFaded }, ref) => {
+    // Handle sliced state (fade out and callback)
     useEffect(() => {
       const el = tileElRefs.current.get(tile.id);
       if (!el) return;
@@ -32,10 +34,8 @@ const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
         return () => clearTimeout(timer);
       }
 
-      // No rotation — spinning tiles were hard to read at speed
-      el.style.transform = `translate(${tile.position.x}px, ${tile.position.y}px) translate(-50%, -50%)`;
       el.style.opacity = "1";
-    }, [tile, tileElRefs, onFaded]);
+    }, [tile.sliced, tile.id, tileElRefs, onFaded]);
 
     return (
       <div
