@@ -23,20 +23,32 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
       if (!ctx) return;
 
       const dpr = window.devicePixelRatio || 1;
+      let lastCssWidth = -1;
+      let lastCssHeight = -1;
 
-      // Set canvas size based on container (full stage)
+      // Set canvas backing-store size based on the CSS box (clientWidth/Height).
+      // IMPORTANT: observe the parent, not this canvas — writing element.width/height
+      // on the canvas itself would otherwise re-trigger a ResizeObserver watching the
+      // canvas, compounding into a runaway feedback loop (each write grows the box).
       const resize = () => {
-        element.width = element.clientWidth * dpr;
-        element.height = element.clientHeight * dpr;
+        const cssWidth = element.clientWidth;
+        const cssHeight = element.clientHeight;
+        if (cssWidth === lastCssWidth && cssHeight === lastCssHeight) return;
+        lastCssWidth = cssWidth;
+        lastCssHeight = cssHeight;
+        element.width = cssWidth * dpr;
+        element.height = cssHeight * dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       };
       resize();
 
-      // ResizeObserver to handle viewport changes
+      // Observe the parent (stage) so canvas attribute writes can't feed back into
+      // the observer that triggered them.
+      const observedEl = element.parentElement ?? element;
       const observer = new ResizeObserver(() => {
         resize();
       });
-      observer.observe(element);
+      observer.observe(observedEl);
 
       const tick = () => {
         const state = stateRef.current;
@@ -100,6 +112,8 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
         className="absolute inset-0 pointer-events-none"
         style={{
           touchAction: "none",
+          width: "100%",
+          height: "100%",
         }}
       />
     );
