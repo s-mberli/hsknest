@@ -60,6 +60,7 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
           translation: c.translation,
           phonetic: c.phonetic ?? undefined,
           pos: extractPos(c.metadata),
+          frequencyRank: extractFrequencyRank(c.metadata),
         })),
     [cards]
   );
@@ -141,4 +142,10 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
 function extractPos(metadata: Record<string, unknown> | null): string[] | undefined {
   const pos = metadata?.pos;
   return Array.isArray(pos) ? pos.filter((p): p is string => typeof p === "string") : undefined;
+}
+
+/** metadata.frequencyRank — lower is more common. Missing on non-HSK/custom words. */
+function extractFrequencyRank(metadata: Record<string, unknown> | null): number | undefined {
+  const rank = metadata?.frequencyRank;
+  return typeof rank === "number" && Number.isFinite(rank) ? rank : undefined;
 }
