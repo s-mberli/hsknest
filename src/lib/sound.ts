@@ -90,3 +90,29 @@ export function playCelebrate(): void {
   const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
   notes.forEach((f, i) => tone(f, 0.16, "sine", 0.08, i * 0.07));
 }
+
+/**
+ * Correct slice in Hanzi Ninja. Pitch climbs a semitone per combo step,
+ * capping at a minor sixth (8 semitones) above the base — keeps escalating
+ * runs satisfying without sliding into an unpleasant register.
+ */
+export function playSlice(combo: number): void {
+  if (!enabled) return;
+  const base = 523.25; // C5
+  const semitoneStep = Math.min(Math.max(combo - 1, 0), 8);
+  const freq = base * Math.pow(2, semitoneStep / 12);
+  tone(freq, 0.1, "sine", 0.09);
+}
+
+/** Distractor sliced — short, clearly-wrong buzz. Not punishing, just distinct. */
+export function playSliceWrong(): void {
+  if (!enabled) return;
+  tone(180, 0.14, "sawtooth", 0.06);
+}
+
+/** Target missed (fell off-stage) — soft descending sigh, not a penalty tone. */
+export function playMiss(): void {
+  if (!enabled) return;
+  tone(392, 0.1, "sine", 0.05);
+  tone(294, 0.16, "sine", 0.05, 0.08);
+}

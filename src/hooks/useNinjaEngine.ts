@@ -19,6 +19,12 @@ import type { NinjaWord } from "@/lib/ninja/distractors";
 import { makeRng } from "@/lib/ninja/physics";
 import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
 
+export interface NinjaOutcomeFeedback {
+  kind: "correct" | "wrong" | "missed";
+  char: string;
+  translation: string;
+}
+
 export interface NinjaView {
   lives: number;
   waveIndex: number;
@@ -30,6 +36,8 @@ export interface NinjaView {
   waveStatus: EngineState["waveStatus"];
   tiles: Array<{ id: string; char: string; position: { x: number; y: number }; sliced: boolean }>;
   pointer: { x: number; y: number } | null;
+  /** Corrective feedback for the wave that just resolved; null before any wave ends. */
+  lastOutcome: NinjaOutcomeFeedback | null;
 }
 
 export interface UseNinjaEngineOptions {
@@ -42,7 +50,10 @@ export interface UseNinjaEngineOptions {
  * Project engine state into a React view (only interactive fields).
  * Copy position by value to prevent React holding a mutating object.
  */
-function projectView(state: EngineState): NinjaView {
+function projectView(
+  state: EngineState,
+  lastOutcome: NinjaOutcomeFeedback | null = null
+): NinjaView {
   return {
     lives: state.lives,
     waveIndex: state.waveIndex,
@@ -59,6 +70,7 @@ function projectView(state: EngineState): NinjaView {
       sliced: t.sliced,
     })),
     pointer: state.pointer,
+    lastOutcome,
   };
 }
 
@@ -98,6 +110,8 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
   const tileElRefs = useRef(new Map<string, HTMLDivElement>());
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const spawnedRef = useRef(false);
+  const lastOutcomeRef = useRef<NinjaOutcomeFeedback | null>(null);
+  const prevMissedRef = useRef(0);
 
   /**
    * Paint tiles into the DOM by writing transforms based on current engine state.
@@ -245,9 +259,39 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
           const step = Math.min(FIXED, remaining);
           stepWaveLogic(state, now);
           if (state.waveStatus === "live") {
+            // Capture the prompt before stepPhysics can resolve a "missed" wave
+            // and stepHitTests can resolve a "correct"/"wrong" wave — both only
+            // flip waveStatus, they don't hand back what the right answer was.
+            const promptAtStep = state.promptWord;
+
             stepPhysics(state, step, now);
+
+            // stepPhysics resolves "missed" directly (target fell off-stage)
+            // without returning a WaveOutcome — detect it via the counter.
+            if (state.missed > prevMissedRef.current) {
+              prevMissedRef.current = state.missed;
+              lastOutcomeRef.current = {
+                kind: "missed",
+                char: promptAtStep.char,
+                translation: promptAtStep.translation,
+              };
+              onWaveOutcome?.({
+                wordId: "",
+                slicedTarget: false,
+                slicedDistractor: false,
+                missed: true,
+                msToSlice: null,
+                quality: 1,
+              });
+            }
+
             const outcome = stepHitTests(state, fullConfig, now);
             if (outcome) {
+              lastOutcomeRef.current = {
+                kind: outcome.slicedTarget ? "correct" : "wrong",
+                char: promptAtStep.char,
+                translation: promptAtStep.translation,
+              };
               onWaveOutcome?.(outcome);
             }
           }
@@ -262,11 +306,12 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
 
       if (state.waveStatus === "resolved" || state.waveStatus === "game-over") {
         setView((prev) => {
-          const next = projectView(state);
+          const next = projectView(state, lastOutcomeRef.current);
           return prev.waveStatus === next.waveStatus &&
             prev.correct === next.correct &&
             prev.missed === next.missed &&
-            prev.lives === next.lives
+            prev.lives === next.lives &&
+            prev.lastOutcome === next.lastOutcome
             ? prev
             : next;
         });
@@ -283,8 +328,11 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
               const targetWord = words[nextIndex % words.length];
               const distractorPool = words.filter((_, i) => i !== (nextIndex % words.length));
               spawnWave(s, targetWord, distractorPool, rngRef.current, performance.now(), fullConfig.waveSize);
+              // Clear corrective feedback now that a fresh wave is live — the
+              // previous outcome's flash/toast should not linger past its wave.
+              lastOutcomeRef.current = null;
             }
-            setView(projectView(s));
+            setView(projectView(s, lastOutcomeRef.current));
           }, fullConfig.advancePauseMs);
         }
       }
