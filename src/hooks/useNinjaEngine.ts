@@ -105,10 +105,13 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
    * The visible circle is 1.8x the character size; center it on tile.position.
    */
   function paint(state: EngineState) {
-    if (!stageRef.current) return;
+    if (!stageRef.current || state.tiles.length === 0) return;
+    if (state.stageBounds.width <= 0) return; // stageBounds not ready yet
 
-    // Compute tile size (matches NinjaTile.tsx sizing logic)
-    const tileSizePx = Math.min(
+    // Compute tile size (matches NinjaTile.tsx sizing logic exactly)
+    // NinjaTile uses: clamp(79.2px, 14.4vw, 129.6px) for width
+    // which is 1.8 * clamp(44px, 8vw, 72px)
+    const charSizePx = Math.min(
       Math.max(
         fullConfig.tileSizePxMin,
         (fullConfig.tileSizeVw / 100) * state.stageBounds.width
@@ -116,16 +119,17 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       fullConfig.tileSizePxMax
     );
 
-    // Visual circle diameter is 1.8x the character size
-    const circleDiameter = tileSizePx * 1.8;
+    // Visual circle diameter is 1.8x the character size (the backdrop)
+    const circleDiameter = charSizePx * 1.8;
+    const radius = circleDiameter / 2;
 
     for (const tile of state.tiles) {
       const el = tileElRefs.current.get(tile.id);
       if (!el) continue;
 
-      // Center the circle on its position
-      const offsetX = tile.position.x - circleDiameter / 2;
-      const offsetY = tile.position.y - circleDiameter / 2;
+      // Center the circle on tile.position (x,y is the center point)
+      const offsetX = tile.position.x - radius;
+      const offsetY = tile.position.y - radius;
 
       el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
     }
@@ -136,7 +140,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
     const stage = stageRef.current;
     if (!stage) return;
 
-    const observer = new ResizeObserver(() => {
+    const updateBounds = () => {
       const rect = stage.getBoundingClientRect();
       stateRef.current.stageBounds = {
         width: rect.width,
@@ -155,8 +159,13 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
         spawnWave(state, targetWord, distractorPool, rngRef.current, performance.now(), fullConfig.waveSize);
         setView(projectView(state));
       }
-    });
+    };
+
+    const observer = new ResizeObserver(updateBounds);
     observer.observe(stage);
+
+    // Fire once synchronously so tiles spawn immediately if stage has size
+    updateBounds();
 
     function pushTrailPoint(clientX: number, clientY: number) {
       const rect = stage!.getBoundingClientRect();
