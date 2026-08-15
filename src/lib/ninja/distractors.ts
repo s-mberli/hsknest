@@ -7,6 +7,7 @@ export interface NinjaWord {
   wordId: string;
   term: string; // the hanzi
   translation: string;
+  phonetic?: string; // space-separated syllables with tone marks (e.g. "wǒ men")
   pos?: string[]; // part of speech tags from metadata.pos
 }
 

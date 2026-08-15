@@ -105,7 +105,8 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
    * The visible circle is 1.8x the character size; center it on tile.position.
    */
   function paint(state: EngineState) {
-    if (!stageRef.current || state.tiles.length === 0) return;
+    if (!stageRef.current) return;
+    if (state.tiles.length === 0) return;
     if (state.stageBounds.width <= 0) return; // stageBounds not ready yet
 
     // Compute tile size (matches NinjaTile.tsx sizing logic exactly)
