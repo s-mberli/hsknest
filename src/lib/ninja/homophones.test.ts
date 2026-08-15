@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import {
   buildHomophoneGroups,
   pickHomophoneWave,
+  pickListenWaveTarget,
   getHomophonePrompt,
   type HomophoneGroup,
 } from "./homophones";
@@ -158,6 +159,86 @@ describe("homophone groups", () => {
       for (const word of wave) {
         expect(word.phonetic).not.toMatch(/^jì$/);
       }
+    });
+  });
+
+  describe("pickListenWaveTarget()", () => {
+    it("returns null when there are no eligible groups", () => {
+      const result = pickListenWaveTarget(new Map(), () => 0.5, 4);
+      expect(result).toBeNull();
+    });
+
+    it("picks a target and distractors that all share the target's toneless pronunciation", () => {
+      const groups = buildHomophoneGroups(MOCK_WORDS);
+      // rng()=>0 deterministically lands on the "ji" group (index 0) — the
+      // "jian" group is all tone 4, so excluding the target's own tone
+      // would leave no distractors and legitimately return null. See the
+      // dedicated null-case test below for that.
+      const rng = () => 0;
+      const result = pickListenWaveTarget(groups, rng, 4);
+      expect(result).not.toBeNull();
+      const { target, distractors } = result!;
+      const targetToneless = target.phonetic!.normalize("NFD").replace(/[́̀̌̄]/g, "");
+      for (const d of distractors) {
+        const dToneless = d.phonetic!.normalize("NFD").replace(/[́̀̌̄]/g, "");
+        expect(dToneless.normalize("NFC")).toBe(targetToneless.normalize("NFC"));
+      }
+    });
+
+    it("never returns the target as one of its own distractors", () => {
+      const groups = buildHomophoneGroups(MOCK_WORDS);
+      const result = pickListenWaveTarget(groups, () => 0, 4);
+      expect(result).not.toBeNull();
+      const { target, distractors } = result!;
+      expect(distractors.some((d) => d.wordId === target.wordId)).toBe(false);
+    });
+
+    it("a wave never mixes in a tile matching the target's own tone", () => {
+      const groups = buildHomophoneGroups(MOCK_WORDS);
+      const result = pickListenWaveTarget(groups, () => 0, 4);
+      expect(result).not.toBeNull();
+      const { target, distractors } = result!;
+      const targetTone = target.phonetic!.normalize("NFD").match(/[́̀̌̄]/)?.[0];
+      for (const d of distractors) {
+        const dTone = d.phonetic!.normalize("NFD").match(/[́̀̌̄]/)?.[0];
+        expect(dTone).not.toBe(targetTone);
+      }
+    });
+
+    it("caps distractors at waveSize - 1", () => {
+      const groups = buildHomophoneGroups(MOCK_WORDS);
+      const result = pickListenWaveTarget(groups, () => 0, 3);
+      expect(result).not.toBeNull();
+      expect(result!.distractors.length).toBeLessThanOrEqual(2);
+    });
+
+    it("is deterministic with a seeded RNG", () => {
+      const seededRng = (seed: number) => {
+        return () => {
+          seed = (seed * 1103515245 + 12345) % 2147483648;
+          return seed / 2147483648;
+        };
+      };
+      const groups = buildHomophoneGroups(MOCK_WORDS);
+      const result1 = pickListenWaveTarget(groups, seededRng(7), 4);
+      const result2 = pickListenWaveTarget(groups, seededRng(7), 4);
+      expect(result1?.target.wordId).toBe(result2?.target.wordId);
+      expect(result1?.distractors.map((d) => d.wordId)).toEqual(
+        result2?.distractors.map((d) => d.wordId)
+      );
+    });
+
+    it("returns null when the only eligible group can't produce a distractor (single tone present)", () => {
+      // jianGroup is all tone 4 — excluding tone 4 leaves nothing.
+      const words: NinjaWord[] = [
+        { wordId: "1", term: "建", translation: "build", phonetic: "jiàn", pos: ["verb"] },
+        { wordId: "2", term: "舰", translation: "warship", phonetic: "jiàn", pos: ["noun"] },
+        { wordId: "3", term: "贱", translation: "cheap", phonetic: "jiàn", pos: ["adjective"] },
+        { wordId: "4", term: "践", translation: "practice", phonetic: "jiàn", pos: ["verb"] },
+      ];
+      const groups = buildHomophoneGroups(words);
+      const result = pickListenWaveTarget(groups, () => 0.5, 4);
+      expect(result).toBeNull();
     });
   });
 

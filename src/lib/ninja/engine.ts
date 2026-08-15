@@ -25,6 +25,9 @@ export interface EngineConfig {
   advancePauseMs: number;
 }
 
+/** Lifetime of an ink-splatter particle burst, in ms — purely decorative. */
+export const SLICE_BURST_MS = 220;
+
 export const DEFAULT_CONFIG: EngineConfig = {
   leadInMs: 1300,
   waveSize: 4,
@@ -42,32 +45,25 @@ export const DEFAULT_CONFIG: EngineConfig = {
 };
 
 /**
- * Spawn a wave with one target and (waveSize-1) distractors.
+ * Lay out and launch tiles for a wave: target first, then the given
+ * distractors filling the remaining lanes. Shared by every wave-spawning
+ * function below — only how the distractors get chosen differs.
  */
-export function spawnWave(
+function launchWaveTiles(
   state: EngineState,
   targetWord: NinjaWord,
-  distractorPool: NinjaWord[],
+  distractors: NinjaWord[],
   rng: () => number,
   now: number,
-  waveSize: number = 4
+  waveSize: number
 ): void {
   const layout = laneLayout(state.stageBounds, waveSize);
 
-  state.promptWord = {
-    wordId: targetWord.wordId,
-    char: targetWord.term,
-    translation: targetWord.translation,
-  };
   state.tiles = [];
   state.leadInEnd = now + state.leadInMs;
   state.waveEndTime = null;
   state.waveStatus = "lead-in";
 
-  // Pick distractors
-  const distractors = pickDistractors(targetWord, distractorPool, rng, layout.laneCount - 1);
-
-  // Spawn tiles: target in first lane, distractors in remaining lanes
   const allWords = [targetWord, ...distractors];
   for (let i = 0; i < allWords.length; i++) {
     const tile = launchTile(
@@ -82,6 +78,56 @@ export function spawnWave(
     );
     state.tiles.push(tile);
   }
+}
+
+/**
+ * Spawn a wave with one target and (waveSize-1) distractors, prompted by
+ * the target's English gloss.
+ */
+export function spawnWave(
+  state: EngineState,
+  targetWord: NinjaWord,
+  distractorPool: NinjaWord[],
+  rng: () => number,
+  now: number,
+  waveSize: number = 4
+): void {
+  state.promptWord = {
+    wordId: targetWord.wordId,
+    char: targetWord.term,
+    translation: targetWord.translation,
+    isAudioPrompt: false,
+  };
+
+  const layout = laneLayout(state.stageBounds, waveSize);
+  const distractors = pickDistractors(targetWord, distractorPool, rng, layout.laneCount - 1);
+  launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
+}
+
+/**
+ * Spawn a "Listen & Slice" wave: the prompt is the target's pronunciation
+ * audio (played by the caller, not here — this only sets up state), and
+ * the tiles are homophones/near-homophones of the target rather than
+ * frequency-matched distractors. `distractors` is pre-picked by the caller
+ * (see `pickHomophoneWave` in `homophones.ts`) since the pool comes from a
+ * pronunciation group, not the general word pool.
+ */
+export function spawnListenWave(
+  state: EngineState,
+  targetWord: NinjaWord,
+  distractors: NinjaWord[],
+  rng: () => number,
+  now: number,
+  waveSize: number = 4
+): void {
+  state.promptWord = {
+    wordId: targetWord.wordId,
+    char: targetWord.term,
+    translation: targetWord.translation,
+    isAudioPrompt: true,
+  };
+
+  launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
 }
 
 export interface WaveOutcome {
@@ -171,6 +217,7 @@ export function stepHitTests(
       if (tile.isTarget) {
         state.combo += 1;
         state.correct += 1;
+        state.sliceBursts.push({ x: tile.position.x, y: tile.position.y, t: now });
         const quality = qualityForOutcome({
           wordId,
           slicedTarget: true,
@@ -242,6 +289,12 @@ export function decayTrail(state: EngineState, config: EngineConfig, now: number
   while (state.trail.length && now - state.trail[0].t > config.trailMs) {
     state.trail.shift();
   }
+}
+
+/** Drop ink-splatter bursts older than SLICE_BURST_MS. */
+export function decaySliceBursts(state: EngineState, now: number): void {
+  if (state.sliceBursts.length === 0) return;
+  state.sliceBursts = state.sliceBursts.filter((b) => now - b.t < SLICE_BURST_MS);
 }
 
 /**

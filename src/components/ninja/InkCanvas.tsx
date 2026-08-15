@@ -6,6 +6,11 @@
 
 import { forwardRef, useEffect, useRef } from "react";
 import type { EngineState } from "@/lib/ninja/types";
+import { SLICE_BURST_MS } from "@/lib/ninja/engine";
+
+// A handful of streaks radiating from the slice point, at fixed angles so
+// the burst reads as a deliberate splatter rather than random noise.
+const BURST_ANGLES = [0, 51, 102, 153, 204, 255, 306] as const;
 
 export interface InkCanvasProps {
   stateRef: React.MutableRefObject<EngineState>;
@@ -52,13 +57,13 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
 
       const tick = () => {
         const state = stateRef.current;
+        const now = performance.now();
 
         // Clear canvas
         ctx.clearRect(0, 0, element.clientWidth, element.clientHeight);
 
         // Draw trail as tapered polyline
         if (state.trail.length > 1) {
-          const now = performance.now();
           const trail = state.trail;
 
           // Draw line segments, tapering based on age
@@ -91,6 +96,31 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+
+        // Ink-splatter burst on each successful slice — a handful of short
+        // streaks radiating outward, growing and fading over SLICE_BURST_MS.
+        for (const burst of state.sliceBursts) {
+          const age = now - burst.t;
+          if (age < 0 || age >= SLICE_BURST_MS) continue;
+          const progress = age / SLICE_BURST_MS;
+          const alpha = 1 - progress;
+          const innerR = 4 + progress * 6;
+          const outerR = innerR + 10 + progress * 14;
+
+          ctx.strokeStyle = `rgba(234, 88, 12, ${alpha * 0.85})`;
+          ctx.lineWidth = Math.max(1, 3 * (1 - progress));
+          ctx.lineCap = "round";
+
+          for (const deg of BURST_ANGLES) {
+            const rad = (deg * Math.PI) / 180;
+            const cos = Math.cos(rad);
+            const sin = Math.sin(rad);
+            ctx.beginPath();
+            ctx.moveTo(burst.x + cos * innerR, burst.y + sin * innerR);
+            ctx.lineTo(burst.x + cos * outerR, burst.y + sin * outerR);
             ctx.stroke();
           }
         }

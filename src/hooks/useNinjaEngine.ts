@@ -6,9 +6,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spawnWave,
+  spawnListenWave,
   stepPhysics,
   stepHitTests,
   decayTrail,
+  decaySliceBursts,
   stepWaveLogic,
   DEFAULT_CONFIG,
   type EngineConfig,
@@ -16,8 +18,37 @@ import {
 } from "@/lib/ninja/engine";
 import type { EngineState, StageBounds, TrailPoint } from "@/lib/ninja/types";
 import type { NinjaWord } from "@/lib/ninja/distractors";
+import { buildHomophoneGroups, pickListenWaveTarget, type HomophoneGroup } from "@/lib/ninja/homophones";
 import { makeRng } from "@/lib/ninja/physics";
 import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
+
+// Roughly 1 in 4 waves try a "Listen & Slice" (homophone/tone) wave instead
+// of a gloss prompt, when the session's own queue has an eligible group.
+// Flat probability, no adaptive weighting — see plan. Target/distractor
+// selection itself lives in pickListenWaveTarget (lib/ninja/homophones.ts,
+// pure + tested); this just rolls the dice and wires the result into state.
+const LISTEN_WAVE_CHANCE = 0.25;
+
+/**
+ * Roll for and, if eligible, spawn a "Listen & Slice" wave. Returns true if
+ * one was spawned; false means the caller should fall back to a normal
+ * gloss wave (either the roll missed, or no group had a usable distractor).
+ */
+function trySpawnListenWave(
+  state: EngineState,
+  homophoneGroups: Map<string, HomophoneGroup>,
+  rng: () => number,
+  now: number,
+  waveSize: number
+): boolean {
+  if (rng() >= LISTEN_WAVE_CHANCE) return false;
+
+  const picked = pickListenWaveTarget(homophoneGroups, rng, waveSize);
+  if (!picked) return false; // thin/empty groups — fall back to gloss
+
+  spawnListenWave(state, picked.target, picked.distractors, rng, now, waveSize);
+  return true;
+}
 
 export interface NinjaOutcomeFeedback {
   kind: "correct" | "wrong" | "missed";
@@ -32,7 +63,7 @@ export interface NinjaView {
   bestCombo: number;
   correct: number;
   missed: number;
-  promptWord: { char: string; translation: string };
+  promptWord: EngineState["promptWord"];
   waveStatus: EngineState["waveStatus"];
   tiles: Array<{ id: string; char: string; position: { x: number; y: number }; sliced: boolean }>;
   pointer: { x: number; y: number } | null;
@@ -78,6 +109,7 @@ function initialState(): EngineState {
   return {
     tiles: [],
     trail: [],
+    sliceBursts: [],
     pointer: null,
     lives: 3,
     waveIndex: 0,
@@ -106,6 +138,12 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
   // would defeat the memo.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fullConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [configKey]);
+
+  // Built once per session word pool — groups words that sound identical
+  // (same toneless pronunciation) but differ by tone, for "Listen & Slice"
+  // waves. Empty on most sessions (needs ≥4 single-character words sharing a
+  // pronunciation), in which case those waves just never roll.
+  const homophoneGroups = useMemo(() => buildHomophoneGroups(words), [words]);
 
   const stateRef = useRef<EngineState>(initialState());
   // Build the initial view from a fresh initialState() rather than reading
@@ -173,13 +211,16 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
 
       if (!spawnedRef.current && rect.width > 0 && words.length > 0) {
         spawnedRef.current = true;
-        const targetWord = words[0];
-        const distractorPool = words.slice(1);
         const state = stateRef.current;
         state.leadInMs = fullConfig.leadInMs;
         state.waveSize = fullConfig.waveSize;
         state.trailMs = fullConfig.trailMs;
-        spawnWave(state, targetWord, distractorPool, rngRef.current, performance.now(), fullConfig.waveSize);
+        const now = performance.now();
+        if (!trySpawnListenWave(state, homophoneGroups, rngRef.current, now, fullConfig.waveSize)) {
+          const targetWord = words[0];
+          const distractorPool = words.slice(1);
+          spawnWave(state, targetWord, distractorPool, rngRef.current, now, fullConfig.waveSize);
+        }
         setView(projectView(state));
       }
     };
@@ -246,7 +287,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       stage.removeEventListener("pointerup", onPointerUp);
       stage.removeEventListener("pointercancel", onPointerUp);
     };
-  }, [fullConfig, words]);
+  }, [fullConfig, words, homophoneGroups]);
 
   // Main RAF loop
   useEffect(() => {
@@ -310,6 +351,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       }
 
       decayTrail(state, fullConfig, now);
+      decaySliceBursts(state, now);
       paint(state);
 
       if (state.waveStatus === "resolved" || state.waveStatus === "game-over") {
@@ -333,9 +375,12 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
               s.waveStatus = "game-over";
             } else {
               s.waveIndex = nextIndex;
-              const targetWord = words[nextIndex % words.length];
-              const distractorPool = words.filter((_, i) => i !== (nextIndex % words.length));
-              spawnWave(s, targetWord, distractorPool, rngRef.current, performance.now(), fullConfig.waveSize);
+              const now = performance.now();
+              if (!trySpawnListenWave(s, homophoneGroups, rngRef.current, now, fullConfig.waveSize)) {
+                const targetWord = words[nextIndex % words.length];
+                const distractorPool = words.filter((_, i) => i !== (nextIndex % words.length));
+                spawnWave(s, targetWord, distractorPool, rngRef.current, now, fullConfig.waveSize);
+              }
               // Clear corrective feedback now that a fresh wave is live — the
               // previous outcome's flash/toast should not linger past its wave.
               lastOutcomeRef.current = null;
@@ -355,7 +400,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
     };
     // paint is stable internal logic, don't include in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullConfig, words, onWaveOutcome]);
+  }, [fullConfig, words, homophoneGroups, onWaveOutcome]);
 
   return {
     stageRef,

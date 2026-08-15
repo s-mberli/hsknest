@@ -93,12 +93,8 @@ export function DashboardHero({
     : false;
 
   // Hanzi Ninja is hanzi-specific (falling tiles, slice gesture) and still
-  // behind a flag short of the shipped-mode bar — gate on both. There is no
-  // Static/reduced-motion twin for this mode (that was scoped as a variant
-  // of Sweep mode, which is out of scope) — a twitch game cannot be made
-  // accessible by slowing it down, so the honest answer for
-  // prefers-reduced-motion is to not offer it at all rather than degrade it.
-  const showNinja = ninjaEnabled() && languageCode === "zh" && !reducedMotion;
+  // behind a flag short of the shipped-mode bar — gate on both.
+  const showNinja = ninjaEnabled() && languageCode === "zh";
 
   const PRACTICE_MODES = [
     { key: "quiz", label: "Meaning Quiz", icon: ListChecks },

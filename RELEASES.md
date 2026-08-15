@@ -13,11 +13,11 @@ default. A fast-paced slice-practice mode: falling hanzi tiles, swipe to
 slice the one matching the prompt gloss. Practice-only (never touches the
 review schedule), frequency-matched distractors, real pronunciation audio
 on feedback. Sweep (multi-target) mode is descoped — not building it.
-No reduced-motion alternative exists for this mode, so `prefers-reduced-motion`
-users don't see the dashboard entry and are redirected if they hit the URL
-directly. Still missing: homophone/tone-confusion waves, device-matrix
-testing. `/prototype/ninja-slice` and `/test/ninja-engine` are throwaway
-routes to delete once the mode is considered done.
+Motion-heavy by design; no reduced-motion variant exists or is planned —
+shown to everyone whenever the flag is on. Still missing: homophone/tone-
+confusion waves, device-matrix testing. `/prototype/ninja-slice` and
+`/test/ninja-engine` are throwaway routes to delete once the mode is
+considered done.
 
 ## v0.2.4 — 2026-08-14
 

@@ -7,16 +7,17 @@
 
 import { useRef, useEffect } from "react";
 import Link from "next/link";
-import { Check, X as XIcon, ArrowDown, Heart, Flame } from "lucide-react";
+import { Check, X as XIcon, ArrowDown, Heart, Flame, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { NinjaView } from "@/hooks/useNinjaEngine";
 import type { EngineState } from "@/lib/ninja/types";
 import { playSliceWrong, playMiss, setSoundEnabled } from "@/lib/sound";
 import { playAudio } from "@/lib/audio";
+import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
 import NinjaTile from "./NinjaTile";
 import InkCanvas from "./InkCanvas";
 
-const TOTAL_WAVES = 12;
+const TOTAL_WAVES = WAVES_PER_SESSION;
 const TOTAL_LIVES = 3;
 
 export interface NinjaStageProps {
@@ -76,8 +77,24 @@ export default function NinjaStage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.lastOutcome]);
 
+  // "Listen & Slice" waves lead with audio instead of a gloss. Fire it once
+  // per new prompt, right when the wave spawns (still lead-in, tiles static
+  // — see useNinjaEngine) rather than waiting for "live", so the full
+  // lead-in doubles as listening time. promptWord is a fresh object each
+  // spawn (see engine.ts), so this effect fires once per wave, not once per
+  // unrelated re-render. Guard the empty initial-state prompt.
+  useEffect(() => {
+    if (!view.promptWord.isAudioPrompt || !view.promptWord.char) return;
+    void playAudio(view.promptWord.char, "word", langCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.promptWord]);
+
   const wavePct = Math.min(100, (view.waveIndex / TOTAL_WAVES) * 100);
   const livesLeft = Math.max(view.lives, 0);
+  // Background warms toward amber as combo climbs, capped well below full
+  // saturation so it stays a mood cue, not a color swap. Resets with combo
+  // (state.combo already zeroes on miss/wrong — see engine.ts).
+  const comboWarmth = Math.min(view.combo, 8) / 8;
 
   return (
     <div
@@ -89,6 +106,12 @@ export default function NinjaStage({
         paddingRight: "env(safe-area-inset-right)",
       }}
     >
+      <div
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500"
+        style={{ background: "var(--secondary)", opacity: comboWarmth * 0.12 }}
+        aria-hidden="true"
+      />
+
       {/* Session progress — waves cleared, not time. Matches SessionHud's
           thin vermilion bar so the mode still feels like part of the app. */}
       <div className="h-0.5 w-full shrink-0 bg-muted">
@@ -181,8 +204,25 @@ export default function NinjaStage({
             </p>
             <p className="text-sm font-medium opacity-90">{view.lastOutcome.translation}</p>
           </div>
+        ) : view.promptWord.isAudioPrompt ? (
+          <button
+            key={`${view.waveIndex}-${view.promptWord.wordId}`}
+            type="button"
+            className="animate-in fade-in zoom-in-95 flex flex-col items-center gap-1 rounded-xl duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            onClick={() => void playAudio(view.promptWord.char, "word", langCode)}
+            aria-label="Replay pronunciation"
+          >
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Slice the word you hear
+            </p>
+            <Volume2 className="size-8 text-primary sm:size-9" aria-hidden="true" />
+            <span className="text-[11px] font-medium text-muted-foreground">Tap to replay</span>
+          </button>
         ) : (
-          <div>
+          <div
+            key={`${view.waveIndex}-${view.promptWord.wordId}`}
+            className="animate-in fade-in zoom-in-95 duration-200"
+          >
             <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Slice the word for
             </p>

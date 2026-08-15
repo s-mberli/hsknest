@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense, useEffect, useMemo } from "react";
 
-import { Button } from "@/components/ui/button";
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import NinjaStage from "@/components/ninja/NinjaStage";
 import { SessionComplete } from "@/components/study/SessionComplete";
@@ -14,7 +12,6 @@ import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useSessionTiming } from "@/hooks/useSessionTiming";
 import type { NinjaWord } from "@/lib/ninja/distractors";
-import { usePrefersReducedMotion } from "@/lib/motion";
 import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
 import { setSoundEnabled } from "@/lib/sound";
 
@@ -33,7 +30,6 @@ export function NinjaScreen(props: NinjaScreenProps) {
 
 function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
   const { query, scoped, listIds } = useQueueQuery();
-  const reducedMotion = usePrefersReducedMotion();
 
   // NinjaScreen.tsx's own gotcha, same as StudyScreen: sound defaults to
   // enabled at the module level, and only the screens that read a user
@@ -92,32 +88,6 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
   const { elapsedMs } = useSessionTiming(gameOver);
 
   const empty = !loading && words.length < 2; // need a target + at least one distractor
-
-  // A twitch game cannot be made accessible by slowing it down — that's a
-  // degraded experience dressed up as inclusion, not real support. The
-  // honest answer would be a genuinely different, motion-free task (the
-  // Sweep-based "Static Sweep" mode from the original plan), but that mode
-  // is out of scope. Until an alternative exists, don't offer this one to
-  // prefers-reduced-motion users at all — DashboardHero already hides the
-  // entry point, this is the defensive backstop for anyone who bookmarked
-  // or typed the URL directly.
-  if (reducedMotion) {
-    return (
-      <StudyShell studyTheme={studyTheme}>
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-          <h2 className="text-xl font-bold tracking-tight">Not available with reduced motion</h2>
-          <p className="max-w-sm text-muted-foreground">
-            Hanzi Ninja is a fast-paced, motion-heavy game with no reduced-motion
-            alternative yet. Your device is set to prefer reduced motion, so this
-            mode is hidden — try Word Match or the Meaning Quiz instead.
-          </p>
-          <Button asChild>
-            <Link href="/dashboard">Back to dashboard</Link>
-          </Button>
-        </div>
-      </StudyShell>
-    );
-  }
 
   if (loading) {
     return (

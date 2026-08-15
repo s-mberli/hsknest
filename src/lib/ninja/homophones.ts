@@ -107,6 +107,33 @@ export function pickHomophoneWave(
 }
 
 /**
+ * Pick a target + distractors for a "Listen & Slice" wave: a random member
+ * of a random eligible group is the target, and the tiles are its
+ * tone-mismatched groupmates (never the target's own tone) — so every tile
+ * sounds the same but only one matches what played. Returns null when no
+ * group can produce at least one distractor (thin session pool), in which
+ * case the caller should fall back to a normal gloss wave.
+ */
+export function pickListenWaveTarget(
+  homophoneGroups: Map<string, HomophoneGroup>,
+  rng: () => number,
+  waveSize: number
+): { target: NinjaWord; distractors: NinjaWord[] } | null {
+  if (homophoneGroups.size === 0) return null;
+
+  const groups = [...homophoneGroups.values()];
+  const group = groups[Math.floor(rng() * groups.length)];
+  const target = group.members[Math.floor(rng() * group.members.length)];
+  const tone = toneOf(syllables(target.phonetic || "")[0] || "");
+  const distractors = pickHomophoneWave(group, tone, true, waveSize - 1, rng).filter(
+    (w) => w.wordId !== target.wordId
+  );
+
+  if (distractors.length === 0) return null;
+  return { target, distractors };
+}
+
+/**
  * Get a prompt string for a homophone tone-discrimination wave.
  * @example getHomophonePrompt("jian", 3, false) → "jiàn — slice every 3rd tone"
  */
