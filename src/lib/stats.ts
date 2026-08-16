@@ -84,7 +84,7 @@ export async function getDashboardStats(
     prisma.userProgress.count({ where: { userId, state: "ASSUMED", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, ...langFilter } }),
     prisma.reviewLog.findMany({
-      where: { userId },
+      where: { userId, source: "srs" },
       select: { reviewedAt: true },
       orderBy: { reviewedAt: "desc" },
       take: 500,
@@ -166,7 +166,7 @@ export async function getLifetimeStats(
 
   const [reviewRows, learnedCount, firstLog] = await Promise.all([
     prisma.reviewLog.findMany({
-      where: { userId },
+      where: { userId, source: "srs" },
       select: { reviewedAt: true, quality: true },
     }),
     // Deliberately NOT `DUE_STATES` (LEARNING/REVIEW/LAPSED) — this is the
@@ -177,7 +177,7 @@ export async function getLifetimeStats(
       where: { userId, state: { in: ["LEARNING", "REVIEW", "MASTERED"] }, ...langFilter },
     }),
     prisma.reviewLog.findFirst({
-      where: { userId },
+      where: { userId, source: "srs" },
       orderBy: { reviewedAt: "asc" },
       select: { reviewedAt: true },
     }),

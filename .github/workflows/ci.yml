@@ -16,6 +16,10 @@ jobs:
       DATABASE_URL: file:./ci.db
       NEXTAUTH_SECRET: ci-secret
       NEXTAUTH_URL: http://localhost:3000
+      # Build the flag-on path too — this is a build-time-inlined flag (see
+      # src/lib/ninja/flag.ts), so a build with it unset never actually
+      # compiles the enabled code path.
+      NEXT_PUBLIC_ENABLE_NINJA: "true"
 
     steps:
       - name: Checkout
@@ -61,6 +65,12 @@ jobs:
       # src/lib/registration.ts). Reopen registration so the suite still
       # covers the self-hosted path end-to-end.
       ALLOW_REGISTRATION: "true"
+      # Word Ninja is a build-time-inlined flag (src/lib/ninja/flag.ts) —
+      # without this, CI never builds or exercises the flag-on path at all.
+      # Inherited by both `npm run dev` (via playwright.config.ts's
+      # webServer, which merges into process.env) and the test file itself
+      # (journey.spec.ts reads it to decide which ninja tests to run).
+      NEXT_PUBLIC_ENABLE_NINJA: "true"
 
     steps:
       - name: Checkout
