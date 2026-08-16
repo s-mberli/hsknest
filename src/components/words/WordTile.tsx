@@ -56,12 +56,17 @@ export function WordTile({ word, tabIndex, onKeyDown, tileRef }: WordTileProps) 
       onKeyDown={onKeyDown}
       triggerRef={tileRef}
       className={cn(
-        "relative flex h-12 w-full flex-col items-center justify-center gap-1 rounded-md border px-1.5 text-sm leading-tight",
+        "relative flex h-16 w-full flex-col items-center justify-center gap-0.5 rounded-md border px-1.5 text-sm leading-tight",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         TILE[word.strength]
       )}
     >
       <span data-term className="max-w-full truncate">{word.term}</span>
+      {word.phonetic && (
+        <span className="max-w-full truncate text-[10px] text-muted-foreground">
+          {word.phonetic}
+        </span>
+      )}
       <span aria-hidden className="h-[2px] w-3/4 max-w-8 rounded-full bg-current/25">
         <span
           className="block h-full rounded-full bg-current"

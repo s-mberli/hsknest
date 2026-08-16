@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { parseMeanings, primaryGloss } from "@/lib/meanings";
+import { relativeDueLabel } from "@/lib/horizon";
 import { STRENGTH_META, wordStrength, type Strength } from "@/lib/strength";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export interface WordRow {
   state: string | null;
   intervalDays: number | null;
   lapses: number | null;
+  dueAt?: string | null;
 }
 
 /** Strength band for a row, or null when the word has no progress snapshot. */
@@ -179,7 +181,8 @@ export function WordTable({ words }: { words: WordRow[] }) {
               <TableHead>Term</TableHead>
               <TableHead>Reading</TableHead>
               <TableHead>Meaning</TableHead>
-              <TableHead className="text-right">Strength</TableHead>
+              <TableHead>Strength</TableHead>
+              <TableHead className="text-right">Due</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -204,8 +207,11 @@ export function WordTable({ words }: { words: WordRow[] }) {
                 <TableCell>
                   <MeaningCell word={w} />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell>
                   <StrengthCell word={w} />
+                </TableCell>
+                <TableCell className="text-right text-xs tabular-nums text-muted-foreground">
+                  {w.dueAt ? relativeDueLabel(w.dueAt, "in").replace(/^in /, "") : "—"}
                 </TableCell>
               </TableRow>
             ))}

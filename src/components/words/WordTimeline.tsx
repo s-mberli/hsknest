@@ -333,7 +333,7 @@ function Lane({
       </h3>
       <ul
         role="list"
-        className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5"
+        className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-1.5"
       >
         <AnimatePresence initial={false}>
           {words.map((w, i) => (

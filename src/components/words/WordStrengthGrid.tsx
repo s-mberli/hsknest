@@ -12,7 +12,8 @@ import {
   type Strength,
 } from "@/lib/strength";
 import { type WordDetail, WordHoverCard } from "@/components/words/WordHoverCard";
-import { TILE, WordTile } from "@/components/words/WordTile";
+import { TILE } from "@/components/words/WordTile";
+import { WordTable } from "@/components/lists/WordTable";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
 /** Legend swatches — five buckets ("shaky" folds into the Trouble marker). */
@@ -87,7 +88,7 @@ export function WordStrengthGrid({
   }
 
   // Capping only kicks in above BUBBLE_CAP; below it the bubble view already
-  // shows every word, so the grid escape hatch would be redundant.
+  // shows every word, so the table escape hatch would be redundant.
   const capped = sorted.length > BUBBLE_CAP;
   const showGrid = capped && asGrid;
 
@@ -121,22 +122,25 @@ export function WordStrengthGrid({
             onClick={() => setAsGrid((v) => !v)}
             className="ml-auto rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {asGrid ? "Show as bubbles" : "Show all as grid"}
+            {asGrid ? "Show as bubbles" : "Show as table"}
           </button>
         )}
       </div>
 
       {showGrid ? (
-        <ul
-          role="list"
-          className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5"
-        >
-          {sorted.map((w) => (
-            <li key={w.wordId} className="min-w-0">
-              <WordTile word={w} />
-            </li>
-          ))}
-        </ul>
+        <WordTable
+          words={sorted.map((w) => ({
+            id: w.wordId,
+            term: w.term,
+            translation: w.translation,
+            metadata: w.metadata,
+            phonetic: w.phonetic,
+            state: w.state,
+            intervalDays: w.intervalDays,
+            lapses: w.lapses,
+            dueAt: w.dueAt,
+          }))}
+        />
       ) : (
         <BubbleCloud words={sorted} />
       )}
