@@ -17,14 +17,24 @@ export async function POST(req: Request) {
   const userId = await requirePaidUser();
   if (userId instanceof NextResponse) return userId;
 
-  if (!rateLimit(`review:${userId}`, 1000, 60 * 60 * 1000)) {
-    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
-  }
-
+  // Auth is enforced above, so this can't be reached anonymously. Body must
+  // be parsed before rate-limiting, though: practice-mode traffic (Word
+  // Ninja's per-wave posts, plus its requeue re-tests) needs its own bucket.
+  // A real SRS review must never be throttled by how much someone played a
+  // practice mode in the same hour — a dropped SRS grade silently stalls
+  // that card's schedule, where a dropped practice log costs nothing.
   const parsed = await parseBody(req, reviewSchema);
   if (parsed instanceof NextResponse) return parsed;
 
   const { wordId, quality, practice, source, latencyMs } = parsed;
+
+  const rateLimitOk = practice
+    ? rateLimit(`practice-review:${userId}`, 4000, 60 * 60 * 1000)
+    : rateLimit(`review:${userId}`, 1000, 60 * 60 * 1000);
+  if (!rateLimitOk) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+  }
+
   const now = new Date();
   const submittedAt = new Date();
 

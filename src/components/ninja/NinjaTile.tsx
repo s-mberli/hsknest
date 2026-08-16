@@ -30,7 +30,6 @@ type FlingHalfStyle = React.CSSProperties & {
 export interface NinjaTileProps {
   tile: TileData;
   tileElRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
-  onFaded?: (tileId: string) => void;
 }
 
 /** Deterministic 0..1 hash off the tile id, used to vary slice angle and
@@ -42,28 +41,19 @@ function hash01(id: string): number {
 }
 
 const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
-  ({ tile, tileElRefs, onFaded }, ref) => {
-    // Handle sliced state: fire onFaded once the split-half fling animation
-    // (450ms, see .ninja-tile-half in globals.css) finishes. The outer
-    // container itself must stay at full opacity while sliced — it's the
-    // wrapper both flying halves live in, and zeroing its opacity here
-    // would hide the fling before it plays (each half fades out on its own
-    // via the keyframe's own opacity:0 endpoint instead).
+  ({ tile, tileElRefs }, ref) => {
     useEffect(() => {
       const el = tileElRefs.current.get(tile.id);
       if (!el) return;
 
-      if (tile.sliced) {
-        // Matches .ninja-tile-half's 650ms fling animation (globals.css) plus
-        // a small buffer so the halves finish flying before removal.
-        const timer = setTimeout(() => {
-          onFaded?.(tile.id);
-        }, 670);
-        return () => clearTimeout(timer);
+      if (!tile.sliced) {
+        el.style.opacity = "1";
       }
-
-      el.style.opacity = "1";
-    }, [tile.sliced, tile.id, tileElRefs, onFaded]);
+      // Sliced tiles are retained (unconditionally, by stepPhysics) until the
+      // next launchWaveTiles clears them — no per-tile fade-complete callback
+      // needed; the .ninja-tile-half fling animation in globals.css handles
+      // its own visual cleanup independently.
+    }, [tile.sliced, tile.id, tileElRefs]);
 
     // Slice angle varies per tile (deterministic from id) so a wave of
     // simultaneous slices doesn't all split the same way.

@@ -14,23 +14,16 @@ import type { EngineState } from "@/lib/ninja/types";
 import { playSliceWrong, playCelebrate } from "@/lib/sound";
 import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
+import { TOTAL_LIVES } from "@/lib/ninja/scoring";
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import NinjaTile from "./NinjaTile";
 import InkCanvas from "./InkCanvas";
-
-// Expanded from 3 to reduce "unlucky early death" noise and to give the
-// expanding-gap requeue mechanic (see useNinjaEngine.ts) enough waves to
-// actually schedule its re-tests before game-over. Must match
-// useNinjaEngine.ts's initialState().lives — no shared constant module
-// exists between engine state and this display, so keep them in sync by hand.
-const TOTAL_LIVES = 5;
 
 export interface NinjaStageProps {
   view: NinjaView;
   stageRef: React.RefObject<HTMLDivElement | null>;
   tileElRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
   stateRef: React.MutableRefObject<EngineState>;
-  onTileFaded?: (tileId: string) => void;
   /** BCP-47ish language code for pronunciation audio, e.g. "zh". Defaults to
    * "zh" for the throwaway test route; NinjaScreen (Phase 5) must pass the
    * word's real Language.code instead. */
@@ -46,7 +39,6 @@ export default function NinjaStage({
   stageRef,
   tileElRefs,
   stateRef,
-  onTileFaded,
   langCode = "zh",
   exitHref = "/dashboard",
 }: NinjaStageProps) {
@@ -129,9 +121,10 @@ export default function NinjaStage({
     if (delta <= 0) return;
     const id = floatingIdRef.current++;
     setFloatingScores((prev) => [...prev, { id, points: delta, combo: view.combo }]);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setFloatingScores((prev) => prev.filter((f) => f.id !== id));
     }, 900);
+    return () => clearTimeout(timer);
   }, [view.score, view.combo]);
 
   // Hit-stop + screen shake on correct slice. Intensity scales with combo.
@@ -147,9 +140,10 @@ export default function NinjaStage({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setShakeIntensity(intensity);
     setShakeOffset(Math.random() * 4 - 2);
-    setTimeout(() => setShakeIntensity(0), 100);
+    const timer = setTimeout(() => setShakeIntensity(0), 100);
     // playSlice (whoosh) removed — hit-stop, splatter, and floating score
     // already carry the feedback.
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.lastOutcome]);
 
@@ -226,8 +220,9 @@ export default function NinjaStage({
 
       {/* Ink-wash ground: a faint fibrous texture so the stage reads as
           paper rather than a flat UI panel. Pure CSS (two overlapping radial-
-          gradient grains) — no image asset. Swap for a real washi texture
-          under public/images/ninja/ when one lands; see the Ninja asset brief. */}
+          gradient grains) — no image asset. A raw washi-texture JPEG was
+          tried and dropped (2.7MB, unreferenced dead weight) — if a real
+          texture is wanted later it needs to be pre-optimized, not raw. */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.05]"
         style={{
@@ -372,7 +367,6 @@ export default function NinjaStage({
             key={tile.id}
             tile={tile}
             tileElRefs={tileElRefs}
-            onFaded={onTileFaded}
           />
         ))}
 

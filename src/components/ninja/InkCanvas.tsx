@@ -69,6 +69,19 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
         const state = stateRef.current;
         const now = performance.now();
 
+        // Game-over + nothing left to draw: the engine's own RAF loop stops
+        // simulating at this point (see useNinjaEngine.ts), and Play Again is
+        // a full page reload, so there is nothing that will ever populate the
+        // trail/bursts again this mount. Stop polling instead of clearing an
+        // already-blank canvas 60x/sec forever on the game-over screen.
+        if (
+          state.waveStatus === "game-over" &&
+          state.trail.length === 0 &&
+          state.sliceBursts.length === 0
+        ) {
+          return;
+        }
+
         // Clear canvas
         ctx.clearRect(0, 0, element.clientWidth, element.clientHeight);
 

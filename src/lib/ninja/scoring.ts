@@ -9,7 +9,13 @@ import type { WaveOutcome } from "./types";
 // From Phase 0 tuning
 export const FAST_MS = 1200; // quality 5 if sliced faster than this
 export const SLOW_MS = 3000; // quality 4 if sliced between FAST and SLOW
-export const LIVES = 3;
+
+// Expanded from 3 to reduce "unlucky early death" noise and to give the
+// expanding-gap requeue mechanic (see useNinjaEngine.ts) enough waves to
+// actually schedule its re-tests before game-over. Single source of truth —
+// useNinjaEngine.ts's initialState() and NinjaStage.tsx's heart row both
+// import this instead of hand-syncing their own copies.
+export const TOTAL_LIVES = 5;
 
 /**
  * Map a wave outcome (target sliced, distractor sliced, miss) and response time

@@ -133,27 +133,6 @@ export function playCelebrate(): void {
   notes.forEach((f, i) => tone(f, 0.16, "sine", 0.08, i * 0.07));
 }
 
-/**
- * Correct slice in Word Ninja — whoosh sound effect (ElevenLabs),
- * or pitch-shifted synth tone as fallback.
- * Synth variant: pitch climbs a semitone per combo step, capping at a minor sixth
- * (8 semitones) — keeps escalating runs satisfying without an unpleasant register.
- */
-export function playSlice(combo: number): void {
-  if (!enabled) return;
-  void loadAudio("/sounds/ninja/slice-whoosh.mp3").then((buf) => {
-    if (buf) {
-      playAudioBuffer(buf, 0.7);
-    } else {
-      // Fallback: pitch-shifted tone
-      const base = 523.25; // C5
-      const semitoneStep = Math.min(Math.max(combo - 1, 0), 8);
-      const freq = base * Math.pow(2, semitoneStep / 12);
-      tone(freq, 0.1, "sine", 0.09);
-    }
-  });
-}
-
 /** Distractor sliced — impact thud sound effect (ElevenLabs) or synth buzz fallback. */
 export function playSliceWrong(): void {
   if (!enabled) return;
@@ -163,20 +142,6 @@ export function playSliceWrong(): void {
     } else {
       // Fallback: short buzz
       tone(180, 0.14, "sawtooth", 0.06);
-    }
-  });
-}
-
-/** Target missed (fell off-stage) — paper tear sound effect (ElevenLabs) or synth sigh. */
-export function playMiss(): void {
-  if (!enabled) return;
-  void loadAudio("/sounds/ninja/paper-tear.mp3").then((buf) => {
-    if (buf) {
-      playAudioBuffer(buf, 0.5);
-    } else {
-      // Fallback: descending sigh
-      tone(392, 0.1, "sine", 0.05);
-      tone(294, 0.16, "sine", 0.05, 0.08);
     }
   });
 }

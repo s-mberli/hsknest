@@ -18,6 +18,7 @@ import {
 import type { EngineState, TrailPoint } from "@/lib/ninja/types";
 import type { NinjaWord } from "@/lib/ninja/distractors";
 import { makeRng } from "@/lib/ninja/physics";
+import { TOTAL_LIVES } from "@/lib/ninja/scoring";
 import {
   initialDifficultyState,
   nextDifficulty,
@@ -99,7 +100,13 @@ export interface NinjaView {
 
 export interface UseNinjaEngineOptions {
   words: NinjaWord[];
-  config?: Partial<EngineConfig>;
+  // waveSize/leadInMs are deliberately excluded from the override surface:
+  // initialState() seeds them from DEFAULT_CONFIG and every subsequent wave
+  // overwrites leadInMs from the difficulty curve (see paramsForLevel) and
+  // waveSize from the same source — an override here would be silently
+  // discarded. Difficulty owns both; if a caller genuinely needs to force a
+  // fixed wave size/lead-in, that belongs in difficulty.ts, not here.
+  config?: Partial<Omit<EngineConfig, "waveSize" | "leadInMs">>;
   onWaveOutcome?: (outcome: EngineWaveOutcome) => void;
 }
 
@@ -141,8 +148,7 @@ function initialState(): EngineState {
     trail: [],
     sliceBursts: [],
     pointer: null,
-    lives: 5, // Expanded from 3 to reduce "unlucky early death" noise
-              // and preserve expanding-gap requeue mechanics.
+    lives: TOTAL_LIVES,
     waveIndex: 0,
     combo: 0,
     bestCombo: 0,
@@ -373,6 +379,30 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       last = now;
       dt = Math.min(dt, 0.25); // clamp tab-switch gaps
 
+      // Game-over is a terminal state until Play Again remounts this effect
+      // (a full page reload today) — nothing left to simulate. Render once
+      // more so the final trail/burst decay settles, then stop rescheduling
+      // instead of running a 60fps loop against a static screen forever;
+      // that was pure battery/thermal waste on the phones this mode targets.
+      if (state.waveStatus === "game-over") {
+        decayTrail(state, fullConfig, now);
+        decaySliceBursts(state, now);
+        paint(state);
+        setView((prev) => {
+          const next = projectView(state, lastOutcomeRef.current);
+          return prev.waveStatus === next.waveStatus &&
+            prev.correct === next.correct &&
+            prev.missed === next.missed &&
+            prev.lives === next.lives &&
+            prev.lastOutcome === next.lastOutcome
+            ? prev
+            : next;
+        });
+        if (state.trail.length === 0 && state.sliceBursts.length === 0) return;
+        raf = requestAnimationFrame(loop);
+        return;
+      }
+
       if (state.waveStatus === "lead-in" || state.waveStatus === "live") {
         const FIXED = 1 / 60;
         let remaining = dt;
@@ -435,7 +465,10 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       decaySliceBursts(state, now);
       paint(state);
 
-      if (state.waveStatus === "resolved" || state.waveStatus === "game-over") {
+      // "game-over" can't reach here — the early-return branch above already
+      // caught it (it's only ever set from the setTimeout closure below,
+      // between animation frames, never synchronously within this function).
+      if (state.waveStatus === "resolved") {
         setView((prev) => {
           const next = projectView(state, lastOutcomeRef.current);
           return prev.waveStatus === next.waveStatus &&
@@ -447,7 +480,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
             : next;
         });
 
-        if (state.waveStatus === "resolved" && !advanceTimerRef.current) {
+        if (!advanceTimerRef.current) {
           // Asymmetric pause: correct answers advance quickly (preserving flow),
           // but misses/wrong slices get extra time to read the corrective banner.
           // This helps retention (delay-retention effect from learning research)

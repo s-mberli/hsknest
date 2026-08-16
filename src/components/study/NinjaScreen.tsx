@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo } from "react";
 
+import { Button } from "@/components/ui/button";
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import NinjaStage from "@/components/ninja/NinjaStage";
 import { StudyShell } from "@/components/study/StudyShell";
@@ -42,7 +43,7 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
     return `/api/study/queue?${practiceQuery}`;
   }, [query]);
 
-  const { cards, loading } = useQueueFetcher(fetchUrl);
+  const { cards, loading, error } = useQueueFetcher(fetchUrl);
 
   // Cards without a Chinese term can't be sliced meaningfully (no glyph to
   // paint on a tile) — filter to words with a usable term, same spirit as
@@ -71,9 +72,9 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
 
   // usePracticeSession's grade() writes ReviewLog rows for the SRS side
   // effect only — it does NOT drive any UI here. NinjaStage owns its own
-  // game-over screen (seal-stamp grade, score, toughest-this-round) and
-  // renders it internally once view.waveStatus flips to "game-over"; this
-  // screen must not intercept that state and swap in a different UI, or
+  // game-over screen (waves survived, best combo, "New Best!") and renders
+  // it internally once view.waveStatus flips to "game-over"; this screen
+  // must not intercept that state and swap in a different UI, or
   // NinjaStage's game-over branch never gets a chance to render.
   const { grade } = usePracticeSession({ practice: true, source: "ninja" });
 
@@ -90,13 +91,31 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
     },
   });
 
-  const empty = !loading && words.length < 2; // need a target + at least one distractor
+  const empty = !loading && !error && words.length < 2; // need a target + at least one distractor
 
   if (loading) {
     return (
       <StudyShell studyTheme={studyTheme}>
         <div className="flex flex-1 items-center justify-center">
           <p className="text-sm text-muted-foreground">Loading your words…</p>
+        </div>
+      </StudyShell>
+    );
+  }
+
+  // Distinct from "empty deck": useQueueFetcher already toasted the failure.
+  // Rendering EmptyQueue here would tell the user their deck is empty when
+  // the request actually failed — misleading, and the wrong recovery action.
+  if (error) {
+    return (
+      <StudyShell studyTheme={studyTheme}>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Couldn&apos;t load your words. Check your connection and try again.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            Retry
+          </Button>
         </div>
       </StudyShell>
     );

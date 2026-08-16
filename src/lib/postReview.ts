@@ -25,8 +25,11 @@ export interface PostReviewOptions {
  * `onRequeue` to hook the shared retry logic into its own session state
  * (activation tracking, optimistic requeue) without duplicating the fetch.
  *
- * `practice: true` logs the grade for streak/stats but does NOT advance the SRS
- * schedule (no interval/dueAt/cap change) — used by the practice-only games.
+ * `practice: true` logs the grade to ReviewLog (retained for future FSRS
+ * parameter fitting) but does NOT advance the SRS schedule (no interval/
+ * dueAt/cap change), and is deliberately excluded from streak and lifetime
+ * stats (see stats.ts's `source: "srs"` filters) — a practice-mode session
+ * should not read as real review work.
  */
 export async function postReview(
   wordId: string,
@@ -60,8 +63,12 @@ export async function postReview(
     }
     // Stale card (progress wiped elsewhere): drop silently, no requeue.
     if (res.status === 404) return;
-    // 4xx: client/validation error, non-retriable.
-    if (res.status >= 400 && res.status < 500) {
+    // 429 (rate limited) is retriable — a burst of practice-mode traffic
+    // can trip the limiter even with its own bucket (see route.ts), and an
+    // SRS grade must not be dropped just because the window was momentarily
+    // full. Falls through to the retry below instead of returning here.
+    // Every other 4xx: client/validation error, non-retriable.
+    if (res.status >= 400 && res.status < 500 && res.status !== 429) {
       try {
         const errorData = await res.json();
         toast.error("Review failed: " + (errorData.error || "Invalid input"));
