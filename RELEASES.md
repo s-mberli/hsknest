@@ -8,6 +8,49 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Follow-up from the Word Ninja release below: `QuizScreen.tsx`,
+  `SentenceScreen.tsx`, and `MatchScreen.tsx` all discard the `error` field
+  from `useQueueFetcher`, so a failed queue fetch on those screens also
+  renders the empty-deck state instead of a retry prompt (same pattern
+  fixed in `NinjaScreen.tsx` for v0.2.5). House-wide, not urgent.
+
+## v0.2.5 — 2026-08-16
+
+**Word Ninja** ships — a fast-paced slice-practice mode: falling word tiles
+(any language, not Chinese-specific), swipe to slice the one matching the
+prompt gloss. Endless run with adaptive difficulty (auto-tunes toward ~85%
+accuracy, no fixed wave count), points score with a combo multiplier,
+confusable (not just frequency-matched) distractors, real pronunciation
+audio and pinyin on the corrective-feedback banner. **Practice-only** —
+writes `ReviewLog` rows tagged `source: "ninja"` for future FSRS parameter
+fitting, and is deliberately excluded from streak/lifetime stats; it never
+touches a card's real schedule.
+
+Behind `NEXT_PUBLIC_ENABLE_NINJA`, off by default — a **build-time** flag
+(now correctly wired through `Dockerfile` and `docker-compose.yml`; earlier
+builds silently ignored it). Self-hosters: set it before building the image,
+not just at container runtime.
+
+Go-live QA pass, ahead of turning it on:
+- Practice-mode review traffic now has its own rate-limit bucket, separate
+  from real SRS reviews — a long Ninja session could previously exhaust the
+  shared budget and cause a genuine flashcard grade to be silently dropped.
+- Both of Ninja's animation loops now stop once a run ends, instead of
+  polling at 60fps against a static game-over screen indefinitely.
+- Removed ~5MB of unreferenced image assets and four unreachable sound
+  files that shipped but were never loaded by any code path.
+- Added engine-level test coverage (life loss on a wrong slice and on a
+  missed tile, grading always targets the prompt word) and e2e coverage for
+  the route, including the flag-off redirect.
+- Failed queue loads in Ninja now show a retry prompt instead of the
+  "empty deck" message.
+
+Known gaps, unchanged from the original build: motion-heavy by design, no
+reduced-motion variant; pointer/touch only, no keyboard-accessible play
+path. Listen & Slice (tone-confusion waves) was built, playtested, and
+removed — unfun, too hard, no clear learning benefit. Sweep (multi-target)
+mode is descoped — not building it.
+
 ## v0.2.4 — 2026-08-14
 
 Self-host first-run and recovery polish, ahead of the r/selfhosted launch.

@@ -186,6 +186,8 @@ model ReviewLog {
   intervalBefore Float
   intervalAfter  Float
   reviewedAt     DateTime         @default(now())
+  source         String           @default("srs") // "srs" | "quiz" | "match" | "sentences" | "ninja"
+  latencyMs      Int? // time-to-response in milliseconds; null for untimed modes
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

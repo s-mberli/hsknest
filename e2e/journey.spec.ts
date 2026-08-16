@@ -440,6 +440,34 @@ test("match mode loads a round", async ({ page }) => {
   });
 });
 
+// Word Ninja is behind NEXT_PUBLIC_ENABLE_NINJA (build-time flag, see
+// src/lib/ninja/flag.ts). These two tests only make sense together: the
+// server-side route gate (flag off → redirect) can be exercised regardless
+// of how the app was built, but the "loads and plays" case needs the flag
+// baked into this build — see NINJA_FLAG_ON below, set from the env var the
+// CI workflow passes through.
+const NINJA_FLAG_ON = process.env.NEXT_PUBLIC_ENABLE_NINJA === "true";
+
+(NINJA_FLAG_ON ? test : test.skip)(
+  "word ninja loads and the stage renders",
+  async ({ page }) => {
+    await logIn(page);
+    await page.goto("/study/ninja");
+    // Confirms the engine mounted with a live wave: full hearts, per
+    // NinjaStage's aria-label pattern "${livesLeft} of ${TOTAL_LIVES} lives left".
+    await expect(
+      page.getByRole("status", { name: /\d+ of \d+ lives left/ })
+    ).toBeVisible({ timeout: 15_000 });
+  }
+);
+
+test("word ninja redirects away when the flag is off", async ({ page }) => {
+  test.skip(NINJA_FLAG_ON, "this build has the flag on — nothing to redirect");
+  await logIn(page);
+  await page.goto("/study/ninja");
+  await page.waitForURL("**/dashboard", { timeout: 10_000 });
+});
+
 test("failed card repeats in-session until graded Good", async ({ page }) => {
   await logIn(page);
 

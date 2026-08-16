@@ -39,6 +39,10 @@ export const reviewSchema = z.object({
   // Practice/refresh mode: log the review for streak/stats but do NOT advance
   // the SRS schedule (no interval/dueAt/cap change).
   practice: z.boolean().optional(),
+  source: z
+    .enum(["srs", "quiz", "match", "sentences", "ninja"])
+    .optional(),
+  latencyMs: z.number().int().positive().optional(),
 });
 
 export const enrollSchema = z.object({

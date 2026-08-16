@@ -3,6 +3,93 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Word Ninja: floating "+N ×combo" score popup with wave motion. */
+@keyframes float-score {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + 0px), 0) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(calc(-50% + 0px), 0) scale(1.05);
+  }
+  50% {
+    transform: translate(calc(-50% + 12px), -30px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% - 12px), -60px) scale(1);
+  }
+}
+
+/* Word Ninja: tile split-in-half fling. --fling-x/-y/-r are set per-half
+ * inline (NinjaTile.tsx) so both halves share one keyframe but travel
+ * opposite directions. A big, snappy separation in the first third (the
+ * "cut" read), then gravity takes over and drags the half down and off —
+ * a straight ease-out to the end point read as barely moving; a punchy
+ * early separation plus a falling tail is what actually sells "split". */
+@keyframes ninja-tile-half-fling {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: brightness(1.6);
+  }
+  30% {
+    transform: translate(var(--fling-x), calc(var(--fling-y) * 0.3)) rotate(calc(var(--fling-r) * 0.6)) scale(0.96);
+    filter: brightness(1.1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(var(--fling-x) * 1.6), calc(var(--fling-y) * 3.2)) rotate(var(--fling-r)) scale(0.7);
+    opacity: 0;
+    filter: brightness(0.7);
+  }
+}
+.ninja-tile-half {
+  animation: ninja-tile-half-fling 650ms cubic-bezier(0.15, 0.6, 0.35, 1) forwards;
+  z-index: 20;
+}
+
+/* Bright slice-line flash across the cut angle, on top of the halves for
+ * one quick beat — the "blade connected" moment a subtle fling alone can't
+ * sell on its own. */
+@keyframes ninja-slice-flash {
+  0% {
+    opacity: 1;
+    transform: scaleX(0.2);
+  }
+  40% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+.ninja-slice-flash {
+  animation: ninja-slice-flash 220ms ease-out forwards;
+}
+
+/* Impact glow: a red flash sitting BEHIND both flying halves, not clipped
+ * to either one. A box-shadow on the clipped halves themselves gets cut off
+ * along the straight clip-path edge (same clip that makes the semicircle
+ * also chops the shadow), which read as a weird half-smear rather than a
+ * clean glow — this is a separate, unclipped circle instead. */
+@keyframes ninja-slice-glow {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+.ninja-slice-glow {
+  animation: ninja-slice-glow 380ms ease-out forwards;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.55) 0%, rgba(220, 38, 38, 0) 70%);
+}
+
 /* ── Palette: "Paper & Ink" ─────────────────────────────────────────────
    Warm paper light theme, warm-charcoal night-study dark theme.
    Vermilion/cinnabar primary, amber secondary. All shadcn var names kept

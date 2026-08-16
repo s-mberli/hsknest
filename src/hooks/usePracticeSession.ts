@@ -3,10 +3,11 @@
 import { useCallback, useRef, useState } from "react";
 
 import { breaksStreak, isPass, requeuesInSession } from "@/lib/grading";
-import { postReview } from "@/lib/postReview";
+import { postReview, type PostReviewOptions } from "@/lib/postReview";
 
 interface UsePracticeSessionOptions {
   practice?: boolean;
+  source?: "quiz" | "match" | "sentences" | "ninja";
 }
 
 export function usePracticeSession(
@@ -43,9 +44,13 @@ export function usePracticeSession(
         relearning.current.add(wordId);
       }
 
-      void postReview(wordId, quality, opts.practice || isRepeat);
+      const reviewOpts: PostReviewOptions = {
+        practice: opts.practice || isRepeat,
+        ...(opts.source ? { source: opts.source } : {}),
+      };
+      void postReview(wordId, quality, reviewOpts);
     },
-    [opts.practice]
+    [opts.practice, opts.source]
   );
 
   const isRelearning = useCallback(

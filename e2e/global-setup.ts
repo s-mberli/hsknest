@@ -31,6 +31,7 @@ const ROUTES = [
   "/study/match",
   "/study/pronounce",
   "/study/sentences",
+  "/study/ninja",
   "/lists",
   "/words",
   "/pricing",
