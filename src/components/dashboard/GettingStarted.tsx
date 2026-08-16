@@ -42,6 +42,14 @@ export function GettingStarted() {
         <CardDescription>Three steps to your first review.</CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Mini card preview — show what studying looks like. */}
+        <div className="mx-auto mb-5 w-full max-w-[180px]">
+          <div className="aspect-[3/4] w-full rounded-xl border bg-card p-4 text-center shadow-sm">
+            <p className="text-4xl font-bold leading-tight tracking-tight">猫</p>
+            <p className="mt-2 text-sm text-muted-foreground">māo — cat</p>
+          </div>
+        </div>
+
         <ol className="space-y-4">
           {STEPS.map((step, i) => (
             <li key={step.title} className="flex gap-3">

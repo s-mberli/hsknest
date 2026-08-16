@@ -85,10 +85,12 @@ export default async function DashboardPage({
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-8">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Today</h1>
-        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Flame className="size-4 text-amber" />
-          {stats.streakDays} {stats.streakDays === 1 ? "day" : "days"}
-        </span>
+        {stats.streakDays > 0 && (
+          <span className="flex items-center gap-1.5 rounded-full bg-amber/10 px-3 py-1 text-sm font-medium text-amber">
+            <Flame className="size-4" />
+            {stats.streakDays} {stats.streakDays === 1 ? "day" : "days"}
+          </span>
+        )}
       </header>
 
       {isGuest && (
@@ -111,6 +113,7 @@ export default async function DashboardPage({
         checks={stats.checkCount}
         fresh={fresh}
         learnedCount={stats.learnedTotal + stats.masteredTotal}
+        weakCount={stats.weakCount}
         dailyNewWords={stats.dailyNewWords}
         newBacklog={Math.max(0, stats.newCount - fresh)}
         languageCode={user.targetLanguage?.code}
