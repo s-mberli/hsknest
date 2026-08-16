@@ -1,5 +1,5 @@
 import { computeDailyCaps } from "@/lib/buildQueue";
-import { DUE_STATES } from "@/lib/horizon";
+import { DUE_STATES, SOLID_STATES, LIFETIME_LEARNED_STATES } from "@/lib/cardStates";
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
 import type { CardState } from "@/lib/srs";
@@ -10,6 +10,8 @@ import { startOfLocalDay } from "@/lib/utils";
 // DUE_STATES is a plain Set<string> there — cast to the Prisma enum type here
 // at the boundary where it's actually used in a `where` clause.
 const DUE_STATES_LIST = [...DUE_STATES] as CardState[];
+const SOLID_STATES_LIST = [...SOLID_STATES] as CardState[];
+const LIFETIME_LEARNED_LIST = [...LIFETIME_LEARNED_STATES] as CardState[];
 
 export interface DashboardStats {
   dueCount: number;
@@ -76,7 +78,7 @@ export async function getDashboardStats(
       },
     }),
     prisma.userProgress.count({ where: { userId, state: "NEW", ...langFilter } }),
-    prisma.userProgress.count({ where: { userId, state: "REVIEW", ...langFilter } }),
+    prisma.userProgress.count({ where: { userId, state: { in: SOLID_STATES_LIST }, ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: "MASTERED", ...langFilter } }),
     prisma.userProgress.count({
       where: { ...weakProgressWhere(userId), ...langFilter },
@@ -169,12 +171,13 @@ export async function getLifetimeStats(
       where: { userId, source: "srs" },
       select: { reviewedAt: true, quality: true },
     }),
-    // Deliberately NOT `DUE_STATES` (LEARNING/REVIEW/LAPSED) — this is the
-    // lifetime "learned" denominator for wordsPerDay, which excludes LAPSED
-    // (a card currently struggling isn't "learned" yet) but includes
-    // MASTERED. Different concept, not a duplicate to unify.
+    // LIFETIME_LEARNED_LIST (LEARNING/REVIEW/MASTERED) is the lifetime
+    // "learned" denominator for wordsPerDay: excludes LAPSED (a card
+    // currently struggling isn't "learned" yet) and ASSUMED (never
+    // reviewed). Different concept from the list-card rollup / dashboard
+    // hero — see src/lib/cardStates.ts.
     prisma.userProgress.count({
-      where: { userId, state: { in: ["LEARNING", "REVIEW", "MASTERED"] }, ...langFilter },
+      where: { userId, state: { in: LIFETIME_LEARNED_LIST }, ...langFilter },
     }),
     prisma.reviewLog.findFirst({
       where: { userId, source: "srs" },

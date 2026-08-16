@@ -55,6 +55,17 @@ describe("buildListSections — rollup", () => {
     expect(byList.get("l1")).toEqual({ enrolled: 1, learned: 1, due: 0 });
   });
 
+  it("counts MASTERED as learned but never due (matches queue/horizon)", () => {
+    const { byList } = run({
+      lists: [list("l1", "HSK 1")],
+      progress: [
+        prog("l1", "MASTERED", PAST), // even an overdue-at-promotion mastered card
+        prog("l1", "LAPSED", PAST), // a struggling card IS due
+      ],
+    });
+    expect(byList.get("l1")).toEqual({ enrolled: 2, learned: 2, due: 1 });
+  });
+
   it("starts at learned 0 for a fresh enroll (all NEW)", () => {
     const { byList } = run({
       lists: [list("l1", "HSK 1")],

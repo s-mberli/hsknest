@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { logApiError, requireUser } from "@/lib/apiRoute";
 import { ownedListWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 import { bulkWordsSchema, wordInputSchema } from "@/lib/validation";
 import type { WordInput } from "@/lib/validation";
 
@@ -40,6 +41,21 @@ export async function POST(
       );
     }
     words = [single.data];
+  }
+
+  // Abuse bound, not a manual-work choke: bulk adds can write up to 2000
+  // rows per request, so keep them on the strict bucket (like the import
+  // route). Single-word adds are the AddWordRow UI path — one POST per word
+  // — so give them a generous bucket a human hand-building a list won't hit.
+  const isBulk = words.length > 1;
+  if (
+    !rateLimit(
+      isBulk ? `words-bulk:${userId}` : `words-single:${userId}`,
+      isBulk ? 20 : 120,
+      60 * 60 * 1000
+    )
+  ) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
   // Owner-only: seeded lists are read-only.

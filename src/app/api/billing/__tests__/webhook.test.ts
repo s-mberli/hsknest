@@ -31,6 +31,7 @@ let mockEvent: { type: string; data: { object: Record<string, unknown> } } | nul
 let constructEventShouldThrow = false;
 
 const sendCancellationSurveyEmail = vi.fn(async () => ({ success: true, data: null }));
+const sendUpgradeConfirmationEmail = vi.fn(async () => ({ success: true, data: null }));
 
 vi.mock("@/lib/prisma", () => ({
   get prisma() {
@@ -49,6 +50,7 @@ vi.mock("@/lib/stripe", () => ({
 }));
 vi.mock("@/lib/email", () => ({
   sendCancellationSurveyEmail,
+  sendUpgradeConfirmationEmail,
 }));
 
 const originalSelfHosted = process.env.SELF_HOSTED;
@@ -98,6 +100,7 @@ describe(
       mockEvent = null;
       constructEventShouldThrow = false;
       sendCancellationSurveyEmail.mockClear();
+      sendUpgradeConfirmationEmail.mockClear();
       await testPrisma.user.deleteMany();
     });
 
@@ -213,3 +216,150 @@ describe(
   },
   60000
 );
+
+describe("POST /api/billing/webhook — checkout.session.completed", () => {
+  beforeAll(() => {
+    // The first describe's afterAll restored these; this block needs the
+    // paid (non-self-hosted) path active again.
+    process.env.SELF_HOSTED = "false";
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+    deleteTestDbFiles();
+    execSync("npx prisma db push --skip-generate --accept-data-loss", {
+      env: { ...process.env, DATABASE_URL: TEST_DB_URL },
+      cwd: process.cwd(),
+      stdio: "pipe",
+    });
+    testPrisma = new PrismaClient({ datasources: { db: { url: TEST_DB_URL } } });
+  }, 60000);
+
+  afterAll(async () => {
+    await testPrisma?.$disconnect();
+    deleteTestDbFiles();
+    process.env.SELF_HOSTED = originalSelfHosted;
+    process.env.STRIPE_WEBHOOK_SECRET = originalWebhookSecret;
+  });
+
+  beforeEach(async () => {
+    mockEvent = null;
+    constructEventShouldThrow = false;
+    sendCancellationSurveyEmail.mockClear();
+    sendUpgradeConfirmationEmail.mockClear();
+    await testPrisma.user.deleteMany();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function completedEvent(object: Record<string, unknown>) {
+    return {
+      type: "checkout.session.completed",
+      data: { object },
+    };
+  }
+
+  it("activates the user, clears the trial clock, stores the customer, and emails them", async () => {
+    const user = await testPrisma.user.create({
+      data: {
+        email: `upgrade-${Date.now()}@test.local`,
+        passwordHash: "x",
+        subscriptionStatus: "trialing",
+        trialEndsAt: new Date(Date.now() + 86_400_000),
+      },
+    });
+    mockEvent = completedEvent({
+      metadata: { userId: user.id },
+      customer: "cus_after_checkout",
+      mode: "subscription",
+    });
+
+    const res = await webhookPOST(webhookRequest());
+    expect(res.status).toBe(200);
+
+    const updated = await testPrisma.user.findUnique({ where: { id: user.id } });
+    expect(updated?.subscriptionStatus).toBe("active");
+    expect(updated?.trialEndsAt).toBeNull(); // stale countdown must not survive an upgrade
+    expect(updated?.stripeCustomerId).toBe("cus_after_checkout");
+
+    expect(sendUpgradeConfirmationEmail).toHaveBeenCalledTimes(1);
+    expect(sendUpgradeConfirmationEmail).toHaveBeenCalledWith(user.email);
+  });
+
+  it("falls back to the Stripe customer when no userId is in metadata", async () => {
+    const user = await testPrisma.user.create({
+      data: {
+        email: `bycustomer-upgrade-${Date.now()}@test.local`,
+        passwordHash: "x",
+        subscriptionStatus: "trialing",
+        stripeCustomerId: "cus_lookup_upgrade",
+      },
+    });
+    mockEvent = completedEvent({
+      metadata: {},
+      customer: "cus_lookup_upgrade",
+      mode: "subscription",
+    });
+
+    const res = await webhookPOST(webhookRequest());
+    expect(res.status).toBe(200);
+
+    const updated = await testPrisma.user.findUnique({ where: { id: user.id } });
+    expect(updated?.subscriptionStatus).toBe("active");
+    expect(updated?.trialEndsAt).toBeNull();
+    expect(sendUpgradeConfirmationEmail).toHaveBeenCalledWith(user.email);
+  });
+
+  it("acknowledges a checkout that matches no user (no crash, no retry storm)", async () => {
+    mockEvent = completedEvent({
+      metadata: {},
+      customer: "cus_no_such_customer",
+      mode: "subscription",
+    });
+
+    const res = await webhookPOST(webhookRequest());
+    expect(res.status).toBe(200);
+    expect(sendUpgradeConfirmationEmail).not.toHaveBeenCalled();
+  });
+
+  it("activates but does NOT email a guest account", async () => {
+    const user = await testPrisma.user.create({
+      data: {
+        email: `guest-${Date.now()}@guest.local`,
+        passwordHash: "x",
+        subscriptionStatus: "trialing",
+      },
+    });
+    mockEvent = completedEvent({
+      metadata: { userId: user.id },
+      customer: "cus_guest",
+      mode: "subscription",
+    });
+
+    const res = await webhookPOST(webhookRequest());
+    expect(res.status).toBe(200);
+    expect(sendUpgradeConfirmationEmail).not.toHaveBeenCalled();
+    const updated = await testPrisma.user.findUnique({ where: { id: user.id } });
+    expect(updated?.subscriptionStatus).toBe("active");
+  });
+
+  it("ignores non-subscription checkout sessions (e.g. one-time payment)", async () => {
+    const user = await testPrisma.user.create({
+      data: {
+        email: `single-${Date.now()}@test.local`,
+        passwordHash: "x",
+        subscriptionStatus: "trialing",
+      },
+    });
+    mockEvent = completedEvent({
+      metadata: { userId: user.id },
+      customer: "cus_single",
+      mode: "payment",
+    });
+
+    const res = await webhookPOST(webhookRequest());
+    expect(res.status).toBe(200);
+    const updated = await testPrisma.user.findUnique({ where: { id: user.id } });
+    expect(updated?.subscriptionStatus).toBe("trialing"); // untouched
+    expect(sendUpgradeConfirmationEmail).not.toHaveBeenCalled();
+  });
+});
