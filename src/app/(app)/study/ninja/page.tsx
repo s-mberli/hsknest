@@ -2,13 +2,10 @@ import { redirect } from "next/navigation";
 
 import { NinjaScreen } from "@/components/study/NinjaScreen";
 import { prisma } from "@/lib/prisma";
-import { ninjaEnabled } from "@/lib/ninja/flag";
 import { getCurrentUserId } from "@/lib/session";
 import { getSubscriptionInfo } from "@/lib/subscription";
 
 export default async function NinjaPage() {
-  if (!ninjaEnabled()) redirect("/dashboard");
-
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 

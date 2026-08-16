@@ -16,7 +16,6 @@ import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
-import { ninjaEnabled } from "@/lib/ninja/flag";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -94,10 +93,7 @@ export function DashboardHero({
 
   // The engine is language-agnostic (term/translation, no pinyin
   // assumptions) — works for German, Chinese, or any other language in the
-  // queue. Still behind the flag, still short of the shipped-mode bar —
-  // gate on that alone.
-  const showNinja = ninjaEnabled();
-
+  // queue.
   const PRACTICE_MODES = [
     { key: "quiz", label: "Meaning Quiz", icon: ListChecks },
     { key: "match", label: "Word Match", icon: LayoutGrid },
@@ -107,18 +103,14 @@ export function DashboardHero({
     ...(hasSentences
       ? [{ key: "sentences", label: "Sentences", icon: MessageSquareText } as const]
       : []),
-    ...(showNinja
-      ? [
-          {
-            key: "ninja",
-            label: "Word Ninja",
-            icon: Swords,
-            // Fast-paced and motion-heavy — say so up front so nobody is
-            // ambushed by falling tiles when they expected a flashcard.
-            subtitle: "Fast-paced, motion-heavy",
-          } as const,
-        ]
-      : []),
+    {
+      key: "ninja",
+      label: "Word Ninja",
+      icon: Swords,
+      // Fast-paced and motion-heavy — say so up front so nobody is
+      // ambushed by falling tiles when they expected a flashcard.
+      subtitle: "Fast-paced, motion-heavy",
+    } as const,
   ] as const;
 
   return (
