@@ -64,7 +64,7 @@ export function MeaningCell({ word }: { word: WordRow }) {
             e.stopPropagation();
             setExpanded((v) => !v);
           }}
-          className="inline-flex min-h-11 items-center gap-0.5 rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex min-h-11 items-center gap-0.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           +{extraCount}
           <ChevronDown
@@ -152,7 +152,7 @@ export function WordCard({
               </span>
             )}
           </div>
-          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
             {strength
               ? `${STRENGTH_META[strength].label}${days > 0 ? ` · ${days}d` : ""}`
               : "—"}

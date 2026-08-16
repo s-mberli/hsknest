@@ -161,7 +161,7 @@ function FocusHeader({
                       {w.phonetic}
                     </span>
                   )}
-                  <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">
+                  <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">
                     {relativeDueLabel(w.dueAt, "in")}
                   </span>
                 </WordHoverCard>
