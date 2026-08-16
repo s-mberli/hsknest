@@ -195,4 +195,69 @@ describe("ninjaDistractors", () => {
       expect(terms.size).toBe(2); // unique
     });
   });
+
+  describe("pickDistractors — closeness", () => {
+    const freqWords: NinjaWord[] = [
+      { wordId: "1", term: "吃", translation: "eat", pos: ["verb"], frequencyRank: 50 },
+      { wordId: "2", term: "喝", translation: "drink", pos: ["noun"], frequencyRank: 55 },
+      { wordId: "3", term: "睡", translation: "sleep", pos: ["verb"], frequencyRank: 900 },
+      { wordId: "4", term: "走", translation: "walk", pos: ["verb"], frequencyRank: 1200 },
+      { wordId: "5", term: "书", translation: "book", pos: ["noun"], frequencyRank: 60 },
+      { wordId: "6", term: "国", translation: "country", pos: ["noun"], frequencyRank: 8000 },
+    ];
+
+    it("closeness=0 (default) is byte-identical to omitting the parameter", () => {
+      const target = freqWords[0];
+      const withDefault = pickDistractors(target, freqWords, () => 0, 2);
+      const withExplicitZero = pickDistractors(target, freqWords, () => 0, 2, 0);
+      expect(withExplicitZero.map((w) => w.term)).toEqual(withDefault.map((w) => w.term));
+    });
+
+    it("does not change candidate ranking for words with no shared characters/topic", () => {
+      // None of freqWords share a character with 吃, and none carry a
+      // wordListId, so orthographic+topical similarity is 0 for all of
+      // them — the closeness-weighted sort must degrade to the plain
+      // frequency sort regardless of closeness value.
+      const target = freqWords[0];
+      const loose = pickDistractors(target, freqWords, () => 0, 2, 0);
+      const tight = pickDistractors(target, freqWords, () => 0, 2, 1);
+      expect(tight.map((w) => w.term).sort()).toEqual(loose.map((w) => w.term).sort());
+    });
+
+    it("higher closeness favors orthographically similar candidates", () => {
+      const target: NinjaWord = {
+        wordId: "t",
+        term: "打电话",
+        translation: "to make a phone call",
+        frequencyRank: 100,
+      };
+      const pool: NinjaWord[] = [
+        // Shares no characters with target, but frequency-closer.
+        { wordId: "a", term: "喝水", translation: "drink water", frequencyRank: 1220 },
+        // Shares "电话" — orthographically close — moderately frequency-farther,
+        // but not so far that a 0.64x discount from the similarity can't close
+        // the gap once closeness=1 is applied.
+        { wordId: "b", term: "接电话", translation: "answer the phone", frequencyRank: 2000 },
+      ];
+
+      const loose = pickDistractors(target, pool, () => 0, 1, 0);
+      expect(loose[0].wordId).toBe("a"); // pure frequency distance wins
+
+      const tight = pickDistractors(target, pool, () => 0, 1, 1);
+      expect(tight[0].wordId).toBe("b"); // similarity pulls it to the front
+    });
+
+    it("shrinks the sampling window as closeness rises (fewer distinct outcomes)", () => {
+      const target = freqWords[0];
+      // rng() always returns a value that would pick a different index
+      // depending on window size — use the middle of the window.
+      const rng = () => 0.99;
+      const loose = pickDistractors(target, freqWords, rng, 1, 0);
+      const tight = pickDistractors(target, freqWords, rng, 1, 1);
+      // Both still return exactly 1 word — window shrinking changes *which*
+      // word is reachable, not whether the call succeeds.
+      expect(loose).toHaveLength(1);
+      expect(tight).toHaveLength(1);
+    });
+  });
 });

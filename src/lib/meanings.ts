@@ -53,20 +53,34 @@ export function primaryGloss(word: WordLike): string {
 }
 
 /**
- * Short game-surface gloss (quiz options, match tiles): the primary gloss with
- * a trailing parenthetical stripped — "you (informal…)" → "you" — unless the
- * whole gloss is parenthetical, which is unwrapped instead: "(completed action
- * marker)" → "completed action marker". Longer results are cut at a word
- * boundary with an ellipsis.
+ * Short game-surface gloss (quiz options, match tiles, ninja prompts): the
+ * primary gloss with parentheticals stripped.
+ *
+ * Rules, in order:
+ * 1. If fully wrapped: "(xyz)" → "xyz"
+ * 2. Strip trailing parenthetical: "abc (xyz)" → "abc"
+ * 3. Strip leading parenthetical: "(xyz) abc" → "abc"
+ * 4. Cut at word boundary if longer than max.
  */
 export function gameGloss(word: WordLike, max = 40): string {
   let gloss = primaryGloss(word).trim();
+
+  // Fully wrapped
   const wrapped = gloss.match(/^\((.+)\)$/);
   if (wrapped) {
     gloss = wrapped[1].trim();
   } else {
-    gloss = gloss.replace(/\s*\([^()]*\)\s*$/, "").trim() || gloss;
+    // Strip trailing parenthetical
+    gloss = gloss.replace(/\s*\([^()]*\)\s*$/, "").trim();
+    // If result was all parens, recover original; otherwise strip leading parens
+    if (gloss.length === 0) {
+      gloss = primaryGloss(word).trim();
+    } else {
+      // Strip leading parenthetical
+      gloss = gloss.replace(/^\s*\([^()]*\)\s*/, "").trim() || gloss;
+    }
   }
+
   if (gloss.length <= max) return gloss;
   const cut = gloss.slice(0, max);
   const lastSpace = cut.lastIndexOf(" ");

@@ -8,9 +8,19 @@ import { forwardRef, useEffect, useRef } from "react";
 import type { EngineState } from "@/lib/ninja/types";
 import { SLICE_BURST_MS } from "@/lib/ninja/engine";
 
-// A handful of streaks radiating from the slice point, at fixed angles so
-// the burst reads as a deliberate splatter rather than random noise.
-const BURST_ANGLES = [0, 51, 102, 153, 204, 255, 306] as const;
+// A handful of streaks radiating from the slice point. Base angles keep the
+// burst evenly spread (not clumped); a small deterministic-per-burst jitter
+// on top makes each splatter read as organic ink rather than a symmetric
+// sunburst icon.
+const BURST_BASE_ANGLES = [0, 51, 102, 153, 204, 255, 306] as const;
+
+function jitterAngles(seed: number): number[] {
+  return BURST_BASE_ANGLES.map((deg, i) => {
+    const n = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453;
+    const jitter = (n - Math.floor(n)) * 26 - 13; // ±13°
+    return deg + jitter;
+  });
+}
 
 export interface InkCanvasProps {
   stateRef: React.MutableRefObject<EngineState>;
@@ -62,23 +72,39 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
         // Clear canvas
         ctx.clearRect(0, 0, element.clientWidth, element.clientHeight);
 
-        // Draw trail as tapered polyline
+        // Draw trail as a tapered, smoothed stroke
         if (state.trail.length > 1) {
           const trail = state.trail;
 
-          // Draw line segments, tapering based on age
+          // Raw point-to-point lineTo segments read as jagged/stair-stepped
+          // at typical pointermove sampling rates — each segment is its own
+          // straight line with a hard seam at the joint. Smooth by curving
+          // through the midpoint of each consecutive pair (a standard
+          // freehand-drawing technique): quadraticCurveTo bows the segment
+          // toward the real point p2 while landing on midpoints, which
+          // rounds out the seams instead of leaving visible corners.
           for (let i = 1; i < trail.length; i++) {
             const p1 = trail[i - 1];
             const p2 = trail[i];
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2;
+            const prevMidX = i > 1 ? (trail[i - 2].x + p1.x) / 2 : p1.x;
+            const prevMidY = i > 1 ? (trail[i - 2].y + p1.y) / 2 : p1.y;
 
             // Taper: older points are thinner
             const ageP1 = now - p1.t;
             const ageP2 = now - p2.t;
             const maxAge = state.trailMs;
 
-            // Width starts at 8px and tapers to 1px
-            const widthP1 = Math.max(1, 8 * (1 - ageP1 / maxAge));
-            const widthP2 = Math.max(1, 8 * (1 - ageP2 / maxAge));
+            const segDt = Math.max(1, p2.t - p1.t);
+            const segSpeed = Math.hypot(p2.x - p1.x, p2.y - p1.y) / (segDt / 1000);
+            // Normalize against a "brisk slice" reference speed; clamp so a
+            // very fast flick doesn't blow the stroke out past readability.
+            const speedScale = Math.min(1.6, Math.max(0.6, segSpeed / 900));
+
+            // Width starts at 8px * speedScale and tapers to 1px
+            const widthP1 = Math.max(1, 8 * speedScale * (1 - ageP1 / maxAge));
+            const widthP2 = Math.max(1, 8 * speedScale * (1 - ageP2 / maxAge));
 
             // Opacity also fades
             const alphaP1 = Math.max(0, 1 - ageP1 / maxAge);
@@ -94,8 +120,8 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
             ctx.lineJoin = "round";
 
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(prevMidX, prevMidY);
+            ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
             ctx.stroke();
           }
         }
@@ -125,7 +151,9 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
           ctx.lineWidth = Math.max(1, 3 * (1 - progress) * qualityScale);
           ctx.lineCap = "round";
 
-          for (const deg of BURST_ANGLES) {
+          // Seed jitter off the burst's own timestamp so repeated bursts at
+          // the same spot (a fast combo) still look distinct from each other.
+          for (const deg of jitterAngles(burst.t)) {
             const rad = (deg * Math.PI) / 180;
             const cos = Math.cos(rad);
             const sin = Math.sin(rad);

@@ -8,16 +8,18 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
-**Hanzi Ninja** (Recall mode) — behind `NEXT_PUBLIC_ENABLE_NINJA`, off by
-default. A fast-paced slice-practice mode: falling hanzi tiles, swipe to
-slice the one matching the prompt gloss. Practice-only (never touches the
-review schedule), frequency-matched distractors, real pronunciation audio
-on feedback. Sweep (multi-target) mode is descoped — not building it.
-Motion-heavy by design; no reduced-motion variant exists or is planned —
-shown to everyone whenever the flag is on. Still missing: homophone/tone-
-confusion waves, device-matrix testing. `/prototype/ninja-slice` and
-`/test/ninja-engine` are throwaway routes to delete once the mode is
-considered done.
+**Word Ninja** (Recall mode) — behind `NEXT_PUBLIC_ENABLE_NINJA`, off by
+default. A fast-paced slice-practice mode: falling word tiles (any
+language), swipe to slice the one matching the prompt gloss. Endless run
+with adaptive difficulty (auto-tunes toward ~85% accuracy, no fixed wave
+count), points score with a combo multiplier, confusable (not just
+frequency-matched) distractors. Practice-only (never touches the review
+schedule), real pronunciation audio on feedback. Listen & Slice
+(tone-confusion waves) was built, playtested, and removed — unfun, too
+hard, no clear learning benefit. Sweep (multi-target) mode is descoped —
+not building it. Motion-heavy by design; no reduced-motion variant exists
+or is planned — shown to everyone whenever the flag is on. Still missing:
+device-matrix testing, real SFX (currently synthesized).
 
 ## v0.2.4 — 2026-08-14
 

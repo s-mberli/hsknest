@@ -92,9 +92,11 @@ export function DashboardHero({
     ? ROMANIZED_READING_LANGS.has(languageCode)
     : false;
 
-  // Hanzi Ninja is hanzi-specific (falling tiles, slice gesture) and still
-  // behind a flag short of the shipped-mode bar — gate on both.
-  const showNinja = ninjaEnabled() && languageCode === "zh";
+  // The engine is language-agnostic (term/translation, no pinyin
+  // assumptions) — works for German, Chinese, or any other language in the
+  // queue. Still behind the flag, still short of the shipped-mode bar —
+  // gate on that alone.
+  const showNinja = ninjaEnabled();
 
   const PRACTICE_MODES = [
     { key: "quiz", label: "Meaning Quiz", icon: ListChecks },
@@ -109,7 +111,7 @@ export function DashboardHero({
       ? [
           {
             key: "ninja",
-            label: "Hanzi Ninja",
+            label: "Word Ninja",
             icon: Swords,
             // Fast-paced and motion-heavy — say so up front so nobody is
             // ambushed by falling tiles when they expected a flashcard.

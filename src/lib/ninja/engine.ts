@@ -3,11 +3,11 @@
  * State is mutated in place on the engine; React only re-renders on discrete outcomes.
  */
 
-import { GRAVITY, makeRng, launchTile, stepTile, tileIsOffStage } from "./physics";
+import { launchTile, stepTile, tileIsOffStage } from "./physics";
 import { laneLayout } from "./layout";
 import { sweptSliceHit, pointerSpeedPx_s } from "./geometry";
-import { qualityForOutcome, FAST_MS, SLOW_MS, LIVES, WAVES_PER_SESSION } from "./scoring";
-import type { EngineState, NinjaItem, StageBounds, TrailPoint } from "./types";
+import { qualityForOutcome, pointsForSlice } from "./scoring";
+import type { EngineState, NinjaItem } from "./types";
 import type { NinjaWord } from "./distractors";
 import { pickDistractors } from "./distractors";
 
@@ -29,7 +29,7 @@ export interface EngineConfig {
 export const SLICE_BURST_MS = 220;
 
 export const DEFAULT_CONFIG: EngineConfig = {
-  leadInMs: 1300,
+  leadInMs: 700, // Prompt-first beat: show prompt ~700ms, then launch tiles
   waveSize: 4,
   trailMs: 250,
   minSliceSpeed: 160,
@@ -39,10 +39,22 @@ export const DEFAULT_CONFIG: EngineConfig = {
   tileSizePxMin: 44,
   tileSizePxMax: 72,
   trailCap: 32,
-  // 900ms was too short to read "Missed — X was Y" before the next wave spawned.
-  // Bumped to give the corrective-feedback banner room to actually be read.
-  advancePauseMs: 1700,
+  // Asymmetric pause: correct answers advance quickly (preserved flow);
+  // misses/wrong slices get ~3s to read the correction. Read below how this
+  // is applied in useNinjaEngine.ts:advanceTimerRef.
+  advancePauseMs: 1700, // Now the base (for correct). Misses get ~3000ms.
 };
+
+/** Same step ladder Part B replaced per-tile sizing with, now applied once
+ * per wave (to the longest term) instead of once per tile — see
+ * launchWaveTiles below. */
+function waveFontSize(longestTerm: string): string {
+  const len = longestTerm.length;
+  if (len <= 2) return "clamp(44px, 8vw, 72px)";
+  if (len <= 4) return "clamp(26px, 6vw, 42px)";
+  if (len <= 8) return "clamp(17px, 4.2vw, 28px)";
+  return "clamp(12px, 3.2vw, 20px)";
+}
 
 /**
  * Lay out and launch tiles for a wave: target first, then the given
@@ -64,7 +76,21 @@ function launchWaveTiles(
   state.waveEndTime = null;
   state.waveStatus = "lead-in";
 
+  // Shuffle lane order (Fisher-Yates, driven by the session's seeded rng so
+  // it stays deterministic/testable) — otherwise the target is always
+  // allWords[0], i.e. always the leftmost tile, every single wave.
   const allWords = [targetWord, ...distractors];
+  for (let i = allWords.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
+  }
+
+  // One size for the whole wave, derived from its longest term — sizing
+  // each tile independently by its own term length made same-wave tiles
+  // look randomly mismatched (a 72px tile next to a 20px one).
+  const longestTerm = allWords.reduce((a, b) => (b.term.length > a.length ? b.term : a), "");
+  const fontSize = waveFontSize(longestTerm);
+
   for (let i = 0; i < allWords.length; i++) {
     const tile = launchTile(
       rng,
@@ -72,9 +98,10 @@ function launchWaveTiles(
       i,
       layout.laneCount,
       allWords[i].term,
-      i === 0, // first tile is target
+      allWords[i].wordId === targetWord.wordId,
       now,
-      state.stageBounds.width / layout.laneCount
+      state.stageBounds.width / layout.laneCount,
+      fontSize
     );
     state.tiles.push(tile);
   }
@@ -90,68 +117,24 @@ export function spawnWave(
   distractorPool: NinjaWord[],
   rng: () => number,
   now: number,
-  waveSize: number = 4
+  waveSize: number = 4,
+  distractorCloseness: number = 0
 ): void {
   state.promptWord = {
     wordId: targetWord.wordId,
     char: targetWord.term,
     translation: targetWord.translation,
-    isAudioPrompt: false,
+    phonetic: targetWord.phonetic,
   };
 
   const layout = laneLayout(state.stageBounds, waveSize);
-  const distractors = pickDistractors(targetWord, distractorPool, rng, layout.laneCount - 1);
-  launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
-}
-
-/**
- * Spawn a "Listen & Slice" wave: the prompt is the target's pronunciation
- * audio (played by the caller, not here — this only sets up state), and
- * the tiles are homophones/near-homophones of the target rather than
- * frequency-matched distractors. `distractors` is pre-picked by the caller
- * (see `pickHomophoneWave` in `homophones.ts`) since the pool comes from a
- * pronunciation group, not the general word pool.
- */
-export function spawnListenWave(
-  state: EngineState,
-  targetWord: NinjaWord,
-  distractors: NinjaWord[],
-  rng: () => number,
-  now: number,
-  waveSize: number = 4
-): void {
-  state.promptWord = {
-    wordId: targetWord.wordId,
-    char: targetWord.term,
-    translation: targetWord.translation,
-    isAudioPrompt: true,
-  };
-
-  launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
-}
-
-/**
- * Spawn a "Reverse" wave: the prompt is the target's hanzi, and the tiles
- * show English glosses (translations) instead of hanzi. Player slices the
- * meaning/translation that matches the prompt hanzi. Distractors are
- * frequency-matched translations from the word pool (not homophones).
- */
-export function spawnReverseWave(
-  state: EngineState,
-  targetWord: NinjaWord,
-  distractors: NinjaWord[],
-  rng: () => number,
-  now: number,
-  waveSize: number = 4
-): void {
-  state.promptWord = {
-    wordId: targetWord.wordId,
-    char: targetWord.term,
-    translation: targetWord.translation,
-    isAudioPrompt: false,
-    isReverseWave: true,
-  };
-
+  const distractors = pickDistractors(
+    targetWord,
+    distractorPool,
+    rng,
+    layout.laneCount - 1,
+    distractorCloseness
+  );
   launchWaveTiles(state, targetWord, distractors, rng, now, waveSize);
 }
 
@@ -250,6 +233,7 @@ export function stepHitTests(
           msToSlice,
           quality: 3,
         });
+        state.score += pointsForSlice(quality, state.combo);
         state.sliceBursts.push({ x: tile.position.x, y: tile.position.y, t: now, quality });
         resolveWave(state, "correct", now);
         return {

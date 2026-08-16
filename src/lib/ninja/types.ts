@@ -1,5 +1,5 @@
 /**
- * Core types for the Hanzi Ninja slice-practice mode.
+ * Core types for the Word Ninja slice-practice mode.
  * Seeded with Phase 0 prototype constants; all units are pixels/ms.
  */
 
@@ -27,6 +27,12 @@ export interface NinjaItem {
   spinRate: number; // degrees/sec (currently 0; no rotation)
   sliced: boolean;
   spawnTime: number; // ms, performance.now()
+  /** CSS font-size, uniform across every tile in a wave (see launchWaveTiles
+   * in engine.ts) — sized off the wave's longest term so a 4-tile wave never
+   * mixes wildly different text sizes. Optional so physics-only test
+   * fixtures that build a NinjaItem by hand don't all need updating;
+   * launchTile (physics.ts) and NinjaTile.tsx both default it when absent. */
+  fontSize?: string;
 }
 
 export interface WaveOutcome {
@@ -57,18 +63,14 @@ export interface EngineState {
   bestCombo: number;
   correct: number;
   missed: number;
+  /** Points score for the endless run — see pointsForSlice in scoring.ts. */
+  score: number;
   stageBounds: StageBounds;
   promptWord: {
     wordId: string;
     char: string;
     translation: string;
-    /** True for a "Listen & Slice" wave: the prompt is audio, not a gloss —
-     * `translation` still carries text (used as game-over/history copy and
-     * as a fallback), but the UI shows a speaker icon instead of it. */
-    isAudioPrompt?: boolean;
-    /** True for a "Reverse" wave: tiles show translations, not hanzi —
-     * the prompt shows the hanzi and the player slices the meaning. */
-    isReverseWave?: boolean;
+    phonetic?: string;
   };
   waveStatus: "lead-in" | "live" | "resolved" | "game-over";
   leadInEnd: number; // ms timestamp when lead-in ends
@@ -76,7 +78,12 @@ export interface EngineState {
   leadInMs: number;
   waveSize: number;
   trailMs: number;
-  /** Words to requeue (missed/wrong slices) — Map of wordId to requeue count.
-   * A word requeues at most 1 time per session. */
+  /** Words to requeue (missed/wrong slices) — Map of wordId to how many
+   * times it has already been requeued. Expanding gaps: reappears at +2
+   * waves after the 1st miss, +5 after the 2nd, then stops (max 2 requeues
+   * per word per run). See scheduleRequeue in useNinjaEngine.ts. */
   requeuePool: Map<string, number>;
+  /** wordId -> waveIndex at which it becomes eligible to be dequeued again.
+   * Paired with requeuePool to implement the expanding-gap schedule. */
+  requeueReadyAt: Map<string, number>;
 }

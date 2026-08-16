@@ -7,18 +7,22 @@
 
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, X as XIcon, ArrowDown, Heart, Flame, Volume2 } from "lucide-react";
+import { Check, X as XIcon, ArrowDown, Heart, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { NinjaView } from "@/hooks/useNinjaEngine";
 import type { EngineState } from "@/lib/ninja/types";
-import { playSliceWrong, playMiss, setSoundEnabled, playCelebrate, playSlice } from "@/lib/sound";
+import { playSliceWrong, playMiss, playCelebrate } from "@/lib/sound";
 import { playAudio } from "@/lib/audio";
-import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
+import { gameGloss } from "@/lib/meanings";
+import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import NinjaTile from "./NinjaTile";
 import InkCanvas from "./InkCanvas";
 
-const TOTAL_WAVES = WAVES_PER_SESSION;
 const TOTAL_LIVES = 3;
+/** Combo multiplier meter fills toward this cap — matches the 10-step cap
+ * in pointsForSlice (scoring.ts) so the meter and the actual multiplier
+ * agree. */
+const COMBO_METER_CAP = 10;
 
 export interface NinjaStageProps {
   view: NinjaView;
@@ -49,28 +53,34 @@ export default function NinjaStage({
   const [shakeIntensity, setShakeIntensity] = useState(0);
   const [shakeOffset, setShakeOffset] = useState(0);
   const prevComboRef = useRef(0);
-  const [bestStats, setBestStats] = useState<{ correct: number; combo: number } | null>(null);
-  const [isNewBest, setIsNewBest] = useState(false);
-
-  // This test/prototype route has no user settings to read soundEffects from —
-  // default sound on. NinjaScreen (Phase 5, real app wiring) must call
-  // setSoundEnabled(user.soundEffects) instead, same gotcha StudyScreen hit.
-  useEffect(() => {
-    setSoundEnabled(true);
-  }, []);
-
-  // Load best stats from localStorage on mount
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // Lazy initializer, not an effect + setState — avoids react-hooks/set-state-in-effect
+  // and is strictly simpler: localStorage is read once, synchronously, as the
+  // initial value, not synchronized in after mount.
+  const [bestStats, setBestStats] = useState<{ score: number; combo: number; waves?: number } | null>(() => {
+    if (typeof window === "undefined") return null;
     try {
-      const stored = localStorage.getItem("ninja-best-stats");
-      if (stored) {
-        setBestStats(JSON.parse(stored));
-      }
+      const stored = localStorage.getItem("ninja-best-run");
+      return stored ? JSON.parse(stored) : null;
     } catch {
-      // Silently ignore parse errors
+      return null;
     }
-  }, []);
+  });
+  const [isNewBest, setIsNewBest] = useState(false);
+  // Missed/wrong words this run, deduped by char with a miss count — shown
+  // as "Toughest this round" at game-over so the corrective value of a miss
+  // doesn't evaporate the moment the session ends. Mirrored into
+  // toughestList state (below) because the render below needs the sorted
+  // top-3 and reading a ref's value during render is disallowed.
+  const toughestRef = useRef(new Map<string, { char: string; translation: string; count: number }>());
+  const [toughestList, setToughestList] = useState<
+    Array<{ char: string; translation: string; count: number }>
+  >([]);
+  const [floatingScores, setFloatingScores] = useState<
+    Array<{ id: number; points: number; combo: number }>
+  >([]);
+  const floatingIdRef = useRef(0);
+  const [confettiFire, setConfettiFire] = useState(0);
+  const prevScoreRef = useRef(0);
 
   // Feedback per resolved wave. lastOutcome is a fresh object identity each
   // time a wave resolves (see useNinjaEngine), so this effect fires once per
@@ -84,28 +94,41 @@ export default function NinjaStage({
   // "retrieve first, then confirm" flow from MatchScreen.
   useEffect(() => {
     if (!view.lastOutcome) return;
-    const { kind, char } = view.lastOutcome;
+    const { kind, char, translation } = view.lastOutcome;
     if (kind === "correct") {
       void playAudio(char, "word", langCode);
     } else {
       if (kind === "wrong") playSliceWrong();
       else playMiss();
       void playAudio(char, "word", langCode);
+
+      const existing = toughestRef.current.get(char);
+      toughestRef.current.set(char, {
+        char,
+        translation,
+        count: (existing?.count ?? 0) + 1,
+      });
+      // Mirrors an external ref mutation (toughestRef, kept for O(1) dedup
+      // lookup) into render-safe state; render must not read ref.current
+      // directly.
+      setToughestList([...toughestRef.current.values()].sort((a, b) => b.count - a.count));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.lastOutcome]);
 
-  // "Listen & Slice" waves lead with audio instead of a gloss. Fire it once
-  // per new prompt, right when the wave spawns (still lead-in, tiles static
-  // — see useNinjaEngine) rather than waiting for "live", so the full
-  // lead-in doubles as listening time. promptWord is a fresh object each
-  // spawn (see engine.ts), so this effect fires once per wave, not once per
-  // unrelated re-render. Guard the empty initial-state prompt.
+  // Floating "+N ×combo" score number on every correct slice. score only
+  // ever increases mid-run, so a rising delta always means a fresh slice —
+  // reset to 0 by the game-over/replay flow along with prevScoreRef.
   useEffect(() => {
-    if (!view.promptWord.isAudioPrompt || !view.promptWord.char) return;
-    void playAudio(view.promptWord.char, "word", langCode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view.promptWord]);
+    const delta = view.score - prevScoreRef.current;
+    prevScoreRef.current = view.score;
+    if (delta <= 0) return;
+    const id = floatingIdRef.current++;
+    setFloatingScores((prev) => [...prev, { id, points: delta, combo: view.combo }]);
+    setTimeout(() => {
+      setFloatingScores((prev) => prev.filter((f) => f.id !== id));
+    }, 900);
+  }, [view.score, view.combo]);
 
   // Hit-stop + screen shake on correct slice. Intensity scales with combo.
   // The shake auto-decays over 100ms via a separate effect.
@@ -113,16 +136,23 @@ export default function NinjaStage({
     if (!view.lastOutcome || view.lastOutcome.kind !== "correct") return;
     // Intensity from 0.8 (combo 0–2) to 1.0 (combo 5+)
     const intensity = Math.min(1, 0.8 + view.combo / 20);
+    // This is synchronizing a transient DOM shake with an external event
+    // (the game engine resolving a slice), not deriving render state from
+    // props; the setTimeout reset below is the actual "subscribe to
+    // external system" half of the pattern the lint rule wants.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShakeIntensity(intensity);
     setShakeOffset(Math.random() * 4 - 2);
     setTimeout(() => setShakeIntensity(0), 100);
-    playSlice(view.combo);
+    // playSlice (whoosh) removed — hit-stop, splatter, and floating score
+    // already carry the feedback.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.lastOutcome]);
 
-  // Combo milestone rewards (5/10/15) — fire celebratory arpeggio.
+  // Combo milestone rewards (10/15) — fire celebratory arpeggio.
+  // Milestone 5 removed to reduce sound density per wave.
   useEffect(() => {
-    const milestones = [5, 10, 15];
+    const milestones = [10, 15];
     if (view.combo > prevComboRef.current && milestones.includes(view.combo)) {
       playCelebrate();
     }
@@ -134,26 +164,44 @@ export default function NinjaStage({
     if (view.waveStatus !== "game-over") return;
     if (typeof window === "undefined") return;
 
-    const newBest = !bestStats || view.correct > bestStats.correct || view.bestCombo > bestStats.combo;
+    const currentWaves = view.waveIndex + 1;
+    const bestWaves = bestStats?.waves ?? 0;
+    const newBest = !bestStats || currentWaves > bestWaves;
+    // Reacting to the engine (external system) transitioning to game-over
+    // and, below, persisting to localStorage (another external system) —
+    // not deriving state purely from props/state, so this isn't the pattern
+    // the rule targets.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsNewBest(newBest);
 
     if (newBest) {
       const updated = {
-        correct: Math.max(bestStats?.correct ?? 0, view.correct),
+        score: Math.max(bestStats?.score ?? 0, view.score),
         combo: Math.max(bestStats?.combo ?? 0, view.bestCombo),
+        waves: Math.max(bestWaves, currentWaves),
       };
       setBestStats(updated);
       try {
-        localStorage.setItem("ninja-best-stats", JSON.stringify(updated));
+        localStorage.setItem("ninja-best-run", JSON.stringify(updated));
       } catch {
         // Silently ignore storage errors
       }
     }
+
+    // Confetti on a fresh personal best — the screenshot-worthy moment.
+    if (newBest) {
+      setConfettiFire((c) => c + 1);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.waveStatus]);
 
-  const wavePct = Math.min(100, (view.waveIndex / TOTAL_WAVES) * 100);
+  // Endless run has no fixed length, so the thin top bar is repurposed from
+  // "waves cleared" to a combo-multiplier meter — legible progress toward
+  // the next 10% score bump instead of a denominator that no longer exists.
+  const comboMeterPct = Math.min(100, (view.combo / COMBO_METER_CAP) * 100);
   const livesLeft = Math.max(view.lives, 0);
+  const TOTAL_LIVES = 5; // Expanded from 3 to reduce "unlucky early death" noise
+                          // and preserve expanding-gap requeue mechanics.
   // Background warms toward amber as combo climbs, capped well below full
   // saturation so it stays a mood cue, not a color swap. Resets with combo
   // (state.combo already zeroes on miss/wrong — see engine.ts).
@@ -178,40 +226,61 @@ export default function NinjaStage({
         aria-hidden="true"
       />
 
-      {/* Session progress — waves cleared, not time. Matches SessionHud's
-          thin vermilion bar so the mode still feels like part of the app. */}
+      {/* Ink-wash ground: a faint fibrous texture so the stage reads as
+          paper rather than a flat UI panel. Pure CSS (two overlapping radial-
+          gradient grains) — no image asset. Swap for a real washi texture
+          under public/images/ninja/ when one lands; see the Ninja asset brief. */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035] dark:opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 30%, var(--foreground) 0.5px, transparent 0.5px), radial-gradient(circle at 70% 65%, var(--foreground) 0.5px, transparent 0.5px)",
+          backgroundSize: "3px 3px, 5px 5px",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Combo-multiplier meter. Matches SessionHud's thin vermilion bar so
+          the mode still feels like part of the app. */}
       <div className="h-0.5 w-full shrink-0 bg-muted">
         <div
           className="h-full bg-primary transition-[width] duration-300"
-          style={{ width: `${wavePct}%` }}
+          style={{ width: `${comboMeterPct}%` }}
         />
       </div>
 
-      {/* HUD — no exit button here: it looked clickable but the game never
-          wired an exit-mid-session flow, and a button that appears to do
-          nothing is worse than no button. Exit lives on the game-over screen
-          instead, where it actually does something. */}
+      {/* HUD — X exits mid-session, same affordance/placement as
+          SessionHud's flashcard HUD (Link to exitHref, no confirm dialog:
+          Ninja is practice-only and never touches the review schedule, so
+          there's nothing to lose by leaving). */}
       <header className="grid shrink-0 grid-cols-3 items-center px-3 py-2 sm:px-6 sm:py-3">
-        <div
-          className="flex items-center gap-0.5 justify-self-start"
-          role="status"
-          aria-label={`${livesLeft} of ${TOTAL_LIVES} lives left`}
-        >
-          {Array.from({ length: TOTAL_LIVES }).map((_, i) => (
-            <Heart
-              key={i}
-              aria-hidden="true"
-              className={
-                i < livesLeft
-                  ? "size-4 fill-destructive text-destructive sm:size-5"
-                  : "size-4 text-muted-foreground/25 sm:size-5"
-              }
-            />
-          ))}
+        <div className="flex items-center gap-1 justify-self-start">
+          <Button asChild variant="ghost" size="icon" className="size-7 sm:size-8">
+            <Link href={exitHref} aria-label="Exit session">
+              <XIcon className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
+          <div
+            className="flex items-center gap-0.5"
+            role="status"
+            aria-label={`${livesLeft} of ${TOTAL_LIVES} lives left`}
+          >
+            {Array.from({ length: TOTAL_LIVES }).map((_, i) => (
+              <Heart
+                key={i}
+                aria-hidden="true"
+                className={
+                  i < livesLeft
+                    ? "size-4 fill-destructive text-destructive sm:size-5"
+                    : "size-4 text-muted-foreground/25 sm:size-5"
+                }
+              />
+            ))}
+          </div>
         </div>
 
-        <span className="justify-self-center text-xs font-medium tabular-nums text-muted-foreground sm:text-sm">
-          Wave {Math.min(view.waveIndex + 1, TOTAL_WAVES)}/{TOTAL_WAVES}
+        <span className="justify-self-center text-sm font-bold tabular-nums text-foreground sm:text-base">
+          {view.waveIndex + 1}
         </span>
 
         <div className="flex items-center justify-self-end gap-1 text-sm font-semibold text-primary">
@@ -246,7 +315,7 @@ export default function NinjaStage({
         {view.waveStatus === "resolved" && view.lastOutcome ? (
           <div
             key={`${view.waveIndex}-${view.lastOutcome.kind}`}
-            className="animate-in fade-in zoom-in-95 flex flex-col items-center gap-0.5 duration-200"
+            className="animate-in fade-in zoom-in-95 flex flex-col items-center gap-1.5 duration-200"
           >
             <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider">
               {view.lastOutcome.kind === "correct" && (
@@ -265,58 +334,49 @@ export default function NinjaStage({
                 </>
               )}
             </p>
-            <p className="text-5xl font-bold font-serif leading-tight sm:text-6xl">
-              {view.lastOutcome.char}
-            </p>
-            <p className="text-sm font-medium opacity-90">{view.lastOutcome.translation}</p>
+            <div className="flex flex-col items-center gap-0.5">
+              <p data-term className="text-5xl font-bold leading-tight sm:text-6xl">
+                {view.lastOutcome.char}
+              </p>
+              {/* No explicit color: the banner sets `color` on this subtree
+                  (--success-foreground / --destructive-foreground), and those
+                  invert between themes. An explicit text-* color class opts
+                  out of that swap and lands near-white on light-green in dark
+                  mode (2:1). Same reason there's no opacity here — these token
+                  pairs have too little luminance margin to absorb an alpha cut
+                  and still clear AA. */}
+              {view.lastOutcome.phonetic && (
+                <p className="text-sm font-medium sm:text-base">
+                  {view.lastOutcome.phonetic}
+                </p>
+              )}
+            </div>
+            <p className="text-sm font-medium">{view.lastOutcome.translation}</p>
           </div>
-        ) : view.promptWord.isAudioPrompt ? (
-          <button
-            key={`${view.waveIndex}-${view.promptWord.wordId}`}
-            type="button"
-            className="animate-in fade-in zoom-in-95 flex flex-col items-center gap-1 rounded-xl duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            onClick={() => void playAudio(view.promptWord.char, "word", langCode)}
-            aria-label="Replay pronunciation"
-          >
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Slice the word you hear
-            </p>
-            <Volume2 className="size-8 text-primary sm:size-9" aria-hidden="true" />
-            <span className="text-[11px] font-medium text-muted-foreground">Tap to replay</span>
-          </button>
         ) : (
           <div
             key={`${view.waveIndex}-${view.promptWord.wordId}`}
             className="animate-in fade-in zoom-in-95 duration-200"
           >
-            {view.promptWord.isReverseWave ? (
-              <>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Slice the meaning for
-                </p>
-                <p className="mt-0.5 text-3xl font-bold font-serif leading-tight sm:text-4xl">
-                  {view.promptWord.char}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Slice the word for
-                </p>
-                <p className="mt-0.5 text-3xl font-bold font-serif leading-tight sm:text-4xl">
-                  {view.promptWord.translation}
-                </p>
-              </>
-            )}
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Slice the word for
+            </p>
+            <p className="mt-0.5 text-3xl font-bold font-serif leading-tight sm:text-4xl">
+              {gameGloss({ translation: view.promptWord.translation }, 80)}
+            </p>
           </div>
         )}
       </div>
 
-      {/* Stage */}
+      {/* Stage — darker background for contrast with light tiles */}
       <div
         ref={stageRef}
         className="relative min-h-0 flex-1 overflow-hidden"
-        style={{ touchAction: "none", overscrollBehavior: "contain" }}
+        style={{
+          touchAction: "none",
+          overscrollBehavior: "contain",
+          backgroundColor: "oklch(0.88 0.012 85)", // slightly darker than page background
+        }}
       >
         {view.tiles.map((tile) => (
           <NinjaTile
@@ -324,41 +384,47 @@ export default function NinjaStage({
             tile={tile}
             tileElRefs={tileElRefs}
             onFaded={onTileFaded}
-            isReverse={view.promptWord.isReverseWave}
           />
         ))}
 
         {/* Ink canvas renders last so trail is on top */}
         <InkCanvas ref={canvasRef} stateRef={stateRef} />
 
+        {/* Floating "+N ×combo" score popups, one per correct slice. */}
+        {floatingScores.map((f) => (
+          <div
+            key={f.id}
+            className="pointer-events-none absolute left-1/2 top-1/3 z-40 -translate-x-1/2 animate-[float-score_900ms_ease-out_forwards] text-2xl font-bold text-primary sm:text-3xl"
+            aria-hidden="true"
+          >
+            +{f.points}
+            {f.combo >= 2 && <span className="ml-1 text-base opacity-80">×{f.combo}</span>}
+          </div>
+        ))}
+
+        <ConfettiCannon fire={confettiFire} intensity={160} />
+
         {view.waveStatus === "game-over" && (
           <div className="animate-in fade-in absolute inset-0 flex flex-col items-center justify-center gap-5 bg-background/95 px-6 text-center backdrop-blur-sm duration-300">
             <div className="space-y-3">
-              {/* Session grade — prominent display */}
-              {view.grade && (
-                <div className="flex flex-col items-center gap-1">
-                  <p className="text-7xl font-bold text-primary">{view.grade}</p>
-                  <p className="text-xs uppercase font-semibold tracking-wider text-muted-foreground">
-                    {view.grade === "S"
-                      ? "Outstanding"
-                      : view.grade === "A"
-                        ? "Excellent"
-                        : view.grade === "B"
-                          ? "Good"
-                          : "Keep Going"}
+              {/* Session stats — waves as the primary metric (reps = effort),
+                  with personal best alongside. */}
+              <div className="space-y-2">
+                <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-4">
+                  <p className="text-4xl font-bold font-serif tabular-nums text-primary sm:text-5xl">
+                    {view.waveIndex + 1}
                   </p>
+                  <div className="flex flex-col items-start gap-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      waves
+                    </p>
+                    {bestStats?.waves && bestStats.waves > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Best: {bestStats.waves}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              )}
-
-              {/* Session stats */}
-              <div className="space-y-1 pt-2 border-t border-muted">
-                <p className="text-2xl font-bold font-serif sm:text-3xl">
-                  {view.correct}/{TOTAL_WAVES} correct
-                </p>
-                <p className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-                  <Flame className="size-4 text-primary" aria-hidden="true" />
-                  Best combo: {view.bestCombo}
-                </p>
 
                 {/* New Best! indicator */}
                 {isNewBest && (
@@ -367,6 +433,35 @@ export default function NinjaStage({
                   </p>
                 )}
               </div>
+
+              {/* Session details */}
+              <div className="space-y-1 pt-2 border-t border-muted text-sm">
+                <p className="text-muted-foreground">
+                  {view.correct} of {view.waveIndex + 1} correct
+                </p>
+                <p className="flex items-center justify-center gap-1.5 text-muted-foreground">
+                  <Flame className="size-4 text-primary" aria-hidden="true" />
+                  Best combo: {view.bestCombo}
+                </p>
+              </div>
+
+              {/* Toughest this round — the words that cost a life, so the
+                  session's corrective value survives past the pause banner. */}
+              {toughestList.length > 0 && (
+                <div className="space-y-1 pt-2 border-t border-muted text-left">
+                  <p className="text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Toughest this round
+                  </p>
+                  <ul className="space-y-0.5">
+                    {toughestList.slice(0, 3).map((w) => (
+                        <li key={w.char} className="flex items-center justify-between gap-3 text-sm">
+                          <span data-term className="font-semibold">{w.char}</span>
+                          <span className="truncate text-muted-foreground">{w.translation}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3">

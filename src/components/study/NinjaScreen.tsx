@@ -4,15 +4,12 @@ import { Suspense, useEffect, useMemo } from "react";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import NinjaStage from "@/components/ninja/NinjaStage";
-import { SessionComplete } from "@/components/study/SessionComplete";
 import { StudyShell } from "@/components/study/StudyShell";
 import { useNinjaEngine } from "@/hooks/useNinjaEngine";
 import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
-import { useSessionTiming } from "@/hooks/useSessionTiming";
 import type { NinjaWord } from "@/lib/ninja/distractors";
-import { WAVES_PER_SESSION } from "@/lib/ninja/scoring";
 import { setSoundEnabled } from "@/lib/sound";
 
 interface NinjaScreenProps {
@@ -72,7 +69,13 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
   // outcome's clip is silent or in the wrong accent, not a crash.
   const langCode = cards[0]?.languageCode ?? "zh";
 
-  const { grade, bestCombo, correct, missed } = usePracticeSession({ practice: true });
+  // usePracticeSession's grade() writes ReviewLog rows for the SRS side
+  // effect only — it does NOT drive any UI here. NinjaStage owns its own
+  // game-over screen (seal-stamp grade, score, toughest-this-round) and
+  // renders it internally once view.waveStatus flips to "game-over"; this
+  // screen must not intercept that state and swap in a different UI, or
+  // NinjaStage's game-over branch never gets a chance to render.
+  const { grade } = usePracticeSession({ practice: true, source: "ninja" });
 
   const engine = useNinjaEngine({
     words,
@@ -80,12 +83,12 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
       if (!outcome.wordId) return; // no target resolved yet (shouldn't happen)
       const word = words.find((w) => w.wordId === outcome.wordId);
       if (!word) return;
-      grade(word.wordId, outcome.quality, word.term, word.translation);
+      // Map speed-tiered quality (1|3|4|5) to pass/fail (1|4) for the SRS write.
+      // Speed under motor pressure is not evidence of recall strength.
+      const srsQuality = outcome.quality === 1 ? 1 : 4;
+      grade(word.wordId, srsQuality, word.term, word.translation);
     },
   });
-
-  const gameOver = engine.view.waveStatus === "game-over";
-  const { elapsedMs } = useSessionTiming(gameOver);
 
   const empty = !loading && words.length < 2; // need a target + at least one distractor
 
@@ -103,22 +106,6 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
     return (
       <StudyShell studyTheme={studyTheme}>
         <EmptyQueue scoped={scoped} practice listIds={listIds} />
-      </StudyShell>
-    );
-  }
-
-  if (gameOver) {
-    return (
-      <StudyShell studyTheme={studyTheme}>
-        <SessionComplete
-          reviewed={Math.min(engine.view.waveIndex + 1, WAVES_PER_SESSION)}
-          correct={correct}
-          bestCombo={bestCombo}
-          elapsedMs={elapsedMs}
-          missed={missed}
-          practice
-          note="Ninja practice never changes your review schedule."
-        />
       </StudyShell>
     );
   }

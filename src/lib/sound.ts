@@ -1,6 +1,6 @@
 /**
- * Tiny, dependency-free sound effects via the Web Audio API. No asset files —
- * every blip is synthesised from oscillators with a short gain envelope.
+ * Sound effects via Web Audio API. ElevenLabs SFX files preferred when available,
+ * falling back to synthesized oscillator tones for compatibility.
  *
  * Design notes:
  * - The AudioContext is created lazily on first playback (a user gesture), which
@@ -9,11 +9,14 @@
  * - A module-level `enabled` flag mirrors the user's `soundEffects` setting so
  *   callers don't have to thread it everywhere. Default true; study screens set
  *   it from the loaded user setting.
+ * - Audio files are fetched once and cached in an in-memory Map to avoid repeated
+ *   network calls and decode latency.
  * - Every entry point no-ops safely when disabled or unsupported.
  */
 
 let enabled = true;
 let ctx: AudioContext | null = null;
+const audioCache = new Map<string, AudioBuffer>();
 
 export function setSoundEnabled(on: boolean): void {
   enabled = on;
@@ -36,6 +39,46 @@ function audio(): AudioContext | null {
   // Contexts can start suspended until a gesture; resume best-effort.
   if (ctx.state === "suspended") void ctx.resume();
   return ctx;
+}
+
+/**
+ * Fetch and decode an audio file, caching the AudioBuffer for reuse.
+ * Returns null if fetch/decode fails — callers fall back to synth.
+ */
+async function loadAudio(path: string): Promise<AudioBuffer | null> {
+  const ac = audio();
+  if (!ac) return null;
+
+  if (audioCache.has(path)) {
+    return audioCache.get(path) ?? null;
+  }
+
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    const arrayBuf = await res.arrayBuffer();
+    const decoded = await ac.decodeAudioData(arrayBuf);
+    audioCache.set(path, decoded);
+    return decoded;
+  } catch {
+    return null; // Network error, CORS, or decode failure
+  }
+}
+
+/**
+ * Play a pre-loaded AudioBuffer with optional gain.
+ * Called after loadAudio succeeds.
+ */
+function playAudioBuffer(buffer: AudioBuffer, gain = 0.8): void {
+  const ac = audio();
+  if (!ac) return;
+
+  const source = ac.createBufferSource();
+  const gainNode = ac.createGain();
+  source.buffer = buffer;
+  gainNode.gain.setValueAtTime(gain, ac.currentTime);
+  source.connect(gainNode).connect(ac.destination);
+  source.start(ac.currentTime);
 }
 
 /**
@@ -68,13 +111,11 @@ function tone(
 /** Soft positive blip for a correct grade — higher/brighter for "Easy". */
 export function playGrade(quality: number): void {
   if (!enabled) return;
-  if (quality >= 5) {
-    // Easy — bright two-note lift.
+
+  if (quality >= 4) {
+    // Bright two-note lift
     tone(660, 0.1, "sine", 0.09);
     tone(880, 0.12, "sine", 0.08, 0.06);
-  } else if (quality >= 4) {
-    // Good — single warm blip.
-    tone(620, 0.11, "sine", 0.09);
   } else if (quality >= 3) {
     // Hard-but-got-it — muted lower blip.
     tone(430, 0.12, "triangle", 0.07);
@@ -84,35 +125,58 @@ export function playGrade(quality: number): void {
   }
 }
 
-/** Celebratory rising arpeggio for combo milestones / confetti moments. */
+/** Celebratory moment for combo milestones — rising arpeggio. */
 export function playCelebrate(): void {
   if (!enabled) return;
+  // Rising arpeggio
   const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
   notes.forEach((f, i) => tone(f, 0.16, "sine", 0.08, i * 0.07));
 }
 
 /**
- * Correct slice in Hanzi Ninja. Pitch climbs a semitone per combo step,
- * capping at a minor sixth (8 semitones) above the base — keeps escalating
- * runs satisfying without sliding into an unpleasant register.
+ * Correct slice in Word Ninja — whoosh sound effect (ElevenLabs),
+ * or pitch-shifted synth tone as fallback.
+ * Synth variant: pitch climbs a semitone per combo step, capping at a minor sixth
+ * (8 semitones) — keeps escalating runs satisfying without an unpleasant register.
  */
 export function playSlice(combo: number): void {
   if (!enabled) return;
-  const base = 523.25; // C5
-  const semitoneStep = Math.min(Math.max(combo - 1, 0), 8);
-  const freq = base * Math.pow(2, semitoneStep / 12);
-  tone(freq, 0.1, "sine", 0.09);
+  void loadAudio("/sounds/ninja/slice-whoosh.mp3").then((buf) => {
+    if (buf) {
+      playAudioBuffer(buf, 0.7);
+    } else {
+      // Fallback: pitch-shifted tone
+      const base = 523.25; // C5
+      const semitoneStep = Math.min(Math.max(combo - 1, 0), 8);
+      const freq = base * Math.pow(2, semitoneStep / 12);
+      tone(freq, 0.1, "sine", 0.09);
+    }
+  });
 }
 
-/** Distractor sliced — short, clearly-wrong buzz. Not punishing, just distinct. */
+/** Distractor sliced — impact thud sound effect (ElevenLabs) or synth buzz fallback. */
 export function playSliceWrong(): void {
   if (!enabled) return;
-  tone(180, 0.14, "sawtooth", 0.06);
+  void loadAudio("/sounds/ninja/impact-thud.mp3").then((buf) => {
+    if (buf) {
+      playAudioBuffer(buf, 0.6);
+    } else {
+      // Fallback: short buzz
+      tone(180, 0.14, "sawtooth", 0.06);
+    }
+  });
 }
 
-/** Target missed (fell off-stage) — soft descending sigh, not a penalty tone. */
+/** Target missed (fell off-stage) — paper tear sound effect (ElevenLabs) or synth sigh. */
 export function playMiss(): void {
   if (!enabled) return;
-  tone(392, 0.1, "sine", 0.05);
-  tone(294, 0.16, "sine", 0.05, 0.08);
+  void loadAudio("/sounds/ninja/paper-tear.mp3").then((buf) => {
+    if (buf) {
+      playAudioBuffer(buf, 0.5);
+    } else {
+      // Fallback: descending sigh
+      tone(392, 0.1, "sine", 0.05);
+      tone(294, 0.16, "sine", 0.05, 0.08);
+    }
+  });
 }

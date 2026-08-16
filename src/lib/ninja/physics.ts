@@ -5,11 +5,15 @@
 
 import type { NinjaItem, StageBounds } from "./types";
 
-// 420 px/s² was the Phase 0 tuned value. Dropped ~30% (not 20% — flight time
-// scales with 1/sqrt(gravity), so a 20%-longer hangtime needs gravity down by
-// ~1/1.2² ≈ 0.69x) per playtest feedback that waves felt too fast to read.
-export const GRAVITY = 290; // px/s²
-export const APEX_RATIO = 0.58; // apex height as fraction of stage height
+// Gravity tuned for pacing fix: the prompt-first beat shortens the dead-ascent
+// time to 700ms (from 1300ms), so tiles need longer hangtime near apex to fill
+// the newly readable window. Lowering gravity extends flight time without making
+// gravity feel floaty — the slower descent near apex is what sells readability.
+// 420→290→250 (.6x original) makes flight time ~3.0s→3.5s, and the slow part
+// of the arc (near apex where the readable zone is) is now inside the slice window.
+export const GRAVITY = 250; // px/s²
+// Higher apex ratio means tiles spend more time in the slow, readable zone.
+export const APEX_RATIO = 0.62; // apex height as fraction of stage height (was 0.58)
 
 /** Simple mulberry32 PRNG for seeded, deterministic waves. */
 export function makeRng(seed = 0): () => number {
@@ -35,7 +39,8 @@ export function launchTile(
   char: string,
   isTarget: boolean,
   spawnTime: number,
-  derivedLaneWidth?: number
+  derivedLaneWidth?: number,
+  fontSize?: string
 ): NinjaItem {
   const laneWidth = derivedLaneWidth || bounds.width / laneCount;
   const startX = laneWidth * laneIndex + laneWidth / 2;
@@ -55,6 +60,7 @@ export function launchTile(
     spinRate,
     sliced: false,
     spawnTime,
+    fontSize: fontSize ?? "clamp(26px, 6vw, 42px)",
   };
 }
 

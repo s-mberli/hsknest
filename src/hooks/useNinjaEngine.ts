@@ -6,8 +6,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   spawnWave,
-  spawnListenWave,
-  spawnReverseWave,
   stepPhysics,
   stepHitTests,
   decayTrail,
@@ -17,96 +15,64 @@ import {
   type EngineConfig,
   type WaveOutcome as EngineWaveOutcome,
 } from "@/lib/ninja/engine";
-import type { EngineState, StageBounds, TrailPoint } from "@/lib/ninja/types";
+import type { EngineState, TrailPoint } from "@/lib/ninja/types";
 import type { NinjaWord } from "@/lib/ninja/distractors";
-import { pickDistractors } from "@/lib/ninja/distractors";
-import { buildHomophoneGroups, pickListenWaveTarget, type HomophoneGroup } from "@/lib/ninja/homophones";
 import { makeRng } from "@/lib/ninja/physics";
-import { WAVES_PER_SESSION, gradeForSession, getDifficultyParams } from "@/lib/ninja/scoring";
+import {
+  initialDifficultyState,
+  nextDifficulty,
+  paramsForLevel,
+  type DifficultyState,
+} from "@/lib/ninja/difficulty";
 
-// Wave-type distribution:
-// - ~25% "Listen & Slice" (audio → hanzi, homophone tiles)
-// - ~25% "Reverse" (hanzi → audio/gloss, translation tiles)
-// - ~50% "Gloss" (hanzi prompt, english gloss → hanzi, frequency-matched tiles)
-// Flat probabilities, no adaptive weighting.
-const LISTEN_WAVE_CHANCE = 0.25;
-const REVERSE_WAVE_CHANCE = 0.25;
+// Expanding-gap requeue: a missed/wrong word reappears REQUEUE_GAPS[n] waves
+// after its (n+1)-th miss, then stops requeuing (max 2 re-tests per word per
+// run). Expanding retrieval practice beats a single immediate re-test —
+// spacing the second re-test out further is what makes it stick.
+const REQUEUE_GAPS = [2, 5];
 
 /**
- * Roll for and, if eligible, spawn a "Listen & Slice" wave. Returns true if
- * one was spawned; false means the caller should fall back to a normal
- * gloss wave (either the roll missed, or no group had a usable distractor).
+ * Mark a word as due for requeue after its schedule's next gap. Call this
+ * whenever a wave resolves as wrong/missed.
  */
-function trySpawnListenWave(
-  state: EngineState,
-  homophoneGroups: Map<string, HomophoneGroup>,
-  rng: () => number,
-  now: number,
-  waveSize: number,
-  listenChance: number = LISTEN_WAVE_CHANCE
-): boolean {
-  if (rng() >= listenChance) return false;
-
-  const picked = pickListenWaveTarget(homophoneGroups, rng, waveSize);
-  if (!picked) return false; // thin/empty groups — fall back to gloss
-
-  spawnListenWave(state, picked.target, picked.distractors, rng, now, waveSize);
-  return true;
+function scheduleRequeue(state: EngineState, wordId: string): void {
+  const count = state.requeuePool.get(wordId) ?? 0;
+  if (count >= REQUEUE_GAPS.length) return; // already used both re-tests
+  state.requeuePool.set(wordId, count + 1);
+  state.requeueReadyAt.set(wordId, state.waveIndex + REQUEUE_GAPS[count]);
 }
 
 /**
- * Try to spawn a "Reverse" wave: hanzi prompt, English translation tiles.
- * Returns true if spawned, false otherwise.
- */
-function trySpawnReverseWave(
-  state: EngineState,
-  words: NinjaWord[],
-  rng: () => number,
-  now: number,
-  waveSize: number,
-  reverseChance: number = REVERSE_WAVE_CHANCE
-): boolean {
-  if (rng() >= reverseChance) return false;
-  if (words.length < waveSize) return false;
-
-  const targetWord = words[Math.floor(rng() * words.length)];
-  const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
-  const distractors = pickDistractors(targetWord, distractorPool, rng, waveSize - 1);
-
-  if (distractors.length === 0) return false;
-  spawnReverseWave(state, targetWord, distractors, rng, now, waveSize);
-  return true;
-}
-
-/**
- * Try to pull a word from the requeue pool. Returns the word if one was
- * dequeued, null otherwise. A word can only requeue once per session.
+ * Try to pull a word from the requeue pool whose gap has elapsed. Returns
+ * the word if one was dequeued, null otherwise. Dequeues the longest-waiting
+ * word (earliest readyAt) to prevent later-scheduled words from jumping the queue.
  */
 function tryDequeuRequeueWord(state: EngineState, words: NinjaWord[]): NinjaWord | null {
-  if (state.requeuePool.size === 0) return null;
+  let earliestWordId: string | null = null;
+  let earliestReadyAt = Infinity;
 
-  // Get the first word in the requeue pool
-  const entry = state.requeuePool.entries().next().value;
-  if (!entry) return null;
-
-  const [wordId, count] = entry as [string, number];
-
-  // Each word requeues at most once (count = 1). Don't dequeue if already requeued.
-  if (count >= 1) {
-    state.requeuePool.delete(wordId);
-    return null;
+  for (const [wordId, readyAt] of state.requeueReadyAt) {
+    if (state.waveIndex < readyAt) continue;
+    if (readyAt < earliestReadyAt) {
+      earliestWordId = wordId;
+      earliestReadyAt = readyAt;
+    }
   }
 
-  // Increment requeue count and find the word in the pool
-  state.requeuePool.set(wordId, count + 1);
-  const word = words.find((w) => w.wordId === wordId);
-  return word ?? null;
+  if (earliestWordId) {
+    state.requeueReadyAt.delete(earliestWordId);
+    const word = words.find((w) => w.wordId === earliestWordId);
+    if (word) return word;
+  }
+
+  return null;
 }
 
 export interface NinjaOutcomeFeedback {
   kind: "correct" | "wrong" | "missed";
   char: string;
   translation: string;
+  phonetic?: string;
 }
 
 export interface NinjaView {
@@ -116,14 +82,19 @@ export interface NinjaView {
   bestCombo: number;
   correct: number;
   missed: number;
+  score: number;
   promptWord: EngineState["promptWord"];
   waveStatus: EngineState["waveStatus"];
-  tiles: Array<{ id: string; char: string; position: { x: number; y: number }; sliced: boolean }>;
+  tiles: Array<{
+    id: string;
+    char: string;
+    position: { x: number; y: number };
+    sliced: boolean;
+    fontSize?: string;
+  }>;
   pointer: { x: number; y: number } | null;
   /** Corrective feedback for the wave that just resolved; null before any wave ends. */
   lastOutcome: NinjaOutcomeFeedback | null;
-  /** Session grade (S/A/B/C) computed at game-over. */
-  grade?: "S" | "A" | "B" | "C";
 }
 
 export interface UseNinjaEngineOptions {
@@ -147,6 +118,7 @@ function projectView(
     bestCombo: state.bestCombo,
     correct: state.correct,
     missed: state.missed,
+    score: state.score,
     promptWord: state.promptWord,
     waveStatus: state.waveStatus,
     tiles: state.tiles.map((t) => ({
@@ -154,15 +126,11 @@ function projectView(
       char: t.char,
       position: { x: t.position.x, y: t.position.y },
       sliced: t.sliced,
+      fontSize: t.fontSize,
     })),
     pointer: state.pointer,
     lastOutcome,
   };
-
-  // Compute grade at game-over
-  if (state.waveStatus === "game-over") {
-    view.grade = gradeForSession(state.correct, state.bestCombo);
-  }
 
   return view;
 }
@@ -173,12 +141,14 @@ function initialState(): EngineState {
     trail: [],
     sliceBursts: [],
     pointer: null,
-    lives: 3,
+    lives: 5, // Expanded from 3 to reduce "unlucky early death" noise
+              // and preserve expanding-gap requeue mechanics.
     waveIndex: 0,
     combo: 0,
     bestCombo: 0,
     correct: 0,
     missed: 0,
+    score: 0,
     stageBounds: { width: 0, height: 0, bottom: 0 },
     promptWord: { wordId: "", char: "", translation: "" },
     waveStatus: "lead-in",
@@ -188,6 +158,7 @@ function initialState(): EngineState {
     waveSize: DEFAULT_CONFIG.waveSize,
     trailMs: DEFAULT_CONFIG.trailMs,
     requeuePool: new Map(),
+    requeueReadyAt: new Map(),
   };
 }
 
@@ -202,25 +173,50 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fullConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [configKey]);
 
-  // Built once per session word pool — groups words that sound identical
-  // (same toneless pronunciation) but differ by tone, for "Listen & Slice"
-  // waves. Empty on most sessions (needs ≥4 single-character words sharing a
-  // pronunciation), in which case those waves just never roll.
-  const homophoneGroups = useMemo(() => buildHomophoneGroups(words), [words]);
-
   const stateRef = useRef<EngineState>(initialState());
+  // Adaptive difficulty: tracks rolling accuracy and nudges leadInMs /
+  // distractorCloseness toward the ~85% band. Plain ref, not React state —
+  // it's read/written every wave, same lifetime rules as stateRef.
+  const difficultyRef = useRef<DifficultyState>(initialDifficultyState());
   // Build the initial view from a fresh initialState() rather than reading
   // stateRef.current here — react-hooks/refs disallows reading a ref during
   // render. initialState() is a pure constructor, so this is equivalent to
   // projecting the ref (both start from the same default shape).
   const [view, setView] = useState<NinjaView>(() => projectView(initialState()));
-  const rngRef = useRef(makeRng());
+  // Reseeded with a random value on mount (see the effect below) instead of
+  // staying at the default seed=0 — a fixed seed made every session replay
+  // the exact same distractor sampling (and, combined with the fixed
+  // target-word walk below, the exact same overall wave order) on every
+  // restart. Date.now/Math.random can't run here directly (impure calls
+  // during render — react-hooks/purity); makeRng(0) is just the placeholder
+  // until the mount effect below reseeds it, before wave 0 ever spawns.
+  const rngRef = useRef(makeRng(0));
+  useEffect(() => {
+    rngRef.current = makeRng((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0);
+  }, []);
+  // Target-word order: a shuffled copy of `words`, built once per session
+  // (populated lazily below, right before wave 0 spawns) rather than reused
+  // as `words[nextIndex % words.length]` directly. The API returns `words`
+  // in a stable order every fetch, so walking it unshuffled meant the exact
+  // same target sequence on every restart — this is what actually fixes the
+  // "same order every time" report, not just the RNG reseed above (which
+  // only randomizes distractor sampling, not which word comes up when).
+  const shuffledWordsRef = useRef<NinjaWord[]>([]);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const tileElRefs = useRef(new Map<string, HTMLDivElement>());
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const spawnedRef = useRef(false);
   const lastOutcomeRef = useRef<NinjaOutcomeFeedback | null>(null);
   const prevMissedRef = useRef(0);
+  // Callers (e.g. NinjaScreen) typically pass an inline onWaveOutcome that's
+  // a fresh function identity every render. Read it via a ref that's kept
+  // current below, rather than putting it in the game-loop effect's
+  // dependency array — otherwise every wave outcome (which triggers a
+  // parent re-render) tears down and restarts the whole RAF loop.
+  const onWaveOutcomeRef = useRef(onWaveOutcome);
+  useEffect(() => {
+    onWaveOutcomeRef.current = onWaveOutcome;
+  }, [onWaveOutcome]);
 
   /**
    * Paint tiles into the DOM by writing transforms based on current engine state.
@@ -278,22 +274,25 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
         state.trailMs = fullConfig.trailMs;
         const now = performance.now();
 
-        // Apply difficulty curve for wave 0
-        const diffParams = getDifficultyParams(0);
-        state.leadInMs = diffParams.leadInMs;
-        state.waveSize = diffParams.waveSize;
+        // Fisher-Yates, seeded by this session's own rngRef so it's a
+        // different order every restart — built once, right before it's
+        // first needed.
+        const shuffled = [...words];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(rngRef.current() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        shuffledWordsRef.current = shuffled;
 
-        // Try wave types in order: Listen > Reverse > Gloss
-        let spawned = trySpawnListenWave(state, homophoneGroups, rngRef.current, now, diffParams.waveSize, diffParams.listenChance);
-        if (!spawned) {
-          spawned = trySpawnReverseWave(state, words, rngRef.current, now, diffParams.waveSize, diffParams.reverseChance);
-        }
-        if (!spawned) {
-          const requeueWord = tryDequeuRequeueWord(state, words);
-          const targetWord = requeueWord || words[0];
-          const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
-          spawnWave(state, targetWord, distractorPool, rngRef.current, now, diffParams.waveSize);
-        }
+        // Apply difficulty curve for wave 0 (level 0 — the controller hasn't
+        // seen any outcomes yet).
+        const diffParams = paramsForLevel(difficultyRef.current.level);
+        state.leadInMs = diffParams.leadInMs;
+
+        const requeueWord = tryDequeuRequeueWord(state, words);
+        const targetWord = requeueWord || shuffledWordsRef.current[0];
+        const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
+        spawnWave(state, targetWord, distractorPool, rngRef.current, now, state.waveSize, diffParams.distractorCloseness);
 
         setView(projectView(state));
       }
@@ -361,7 +360,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       stage.removeEventListener("pointerup", onPointerUp);
       stage.removeEventListener("pointercancel", onPointerUp);
     };
-  }, [fullConfig, words, homophoneGroups]);
+  }, [fullConfig, words]);
 
   // Main RAF loop
   useEffect(() => {
@@ -397,10 +396,11 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
                 kind: "missed",
                 char: promptAtStep.char,
                 translation: promptAtStep.translation,
+                phonetic: promptAtStep.phonetic,
               };
-              // Add missed words to requeue pool for immediate re-test
-              state.requeuePool.set(promptAtStep.wordId, (state.requeuePool.get(promptAtStep.wordId) ?? 0));
-              onWaveOutcome?.({
+              scheduleRequeue(state, promptAtStep.wordId);
+              difficultyRef.current = nextDifficulty(difficultyRef.current, false);
+              onWaveOutcomeRef.current?.({
                 wordId: promptAtStep.wordId,
                 slicedTarget: false,
                 slicedDistractor: false,
@@ -416,12 +416,13 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
                 kind: outcome.slicedTarget ? "correct" : "wrong",
                 char: promptAtStep.char,
                 translation: promptAtStep.translation,
+                phonetic: promptAtStep.phonetic,
               };
-              // Add missed/wrong words to requeue pool for immediate re-test
               if (!outcome.slicedTarget) {
-                state.requeuePool.set(outcome.wordId, (state.requeuePool.get(outcome.wordId) ?? 0));
+                scheduleRequeue(state, outcome.wordId);
               }
-              onWaveOutcome?.(outcome);
+              difficultyRef.current = nextDifficulty(difficultyRef.current, outcome.slicedTarget);
+              onWaveOutcomeRef.current?.(outcome);
             }
           }
           stepWaveLogic(state, now);
@@ -447,38 +448,41 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
         });
 
         if (state.waveStatus === "resolved" && !advanceTimerRef.current) {
+          // Asymmetric pause: correct answers advance quickly (preserving flow),
+          // but misses/wrong slices get extra time to read the corrective banner.
+          // This helps retention (delay-retention effect from learning research)
+          // without interrupting the arcade rhythm on the dominant case (correct).
+          // Expanding-gap requeue mechanics also benefit: more waves = more
+          // re-tests get scheduled before game-over.
+          const pauseMs = lastOutcomeRef.current?.kind === "correct"
+            ? fullConfig.advancePauseMs // 1700ms
+            : 3000; // ~3s for wrong/missed to read the correction
+
           advanceTimerRef.current = setTimeout(() => {
             advanceTimerRef.current = null;
             const s = stateRef.current;
             const nextIndex = s.waveIndex + 1;
-            if (nextIndex >= WAVES_PER_SESSION || s.lives <= 0) {
+            if (s.lives <= 0) {
               s.waveStatus = "game-over";
             } else {
               s.waveIndex = nextIndex;
               const now = performance.now();
 
-              // Apply difficulty curve for this wave index
-              const diffParams = getDifficultyParams(nextIndex);
+              // Apply the adaptive difficulty curve for this wave.
+              const diffParams = paramsForLevel(difficultyRef.current.level);
               s.leadInMs = diffParams.leadInMs;
-              s.waveSize = diffParams.waveSize;
 
-              // Try wave types in order: Listen > Reverse > Gloss
-              let spawned = trySpawnListenWave(s, homophoneGroups, rngRef.current, now, diffParams.waveSize, diffParams.listenChance);
-              if (!spawned) {
-                spawned = trySpawnReverseWave(s, words, rngRef.current, now, diffParams.waveSize, diffParams.reverseChance);
-              }
-              if (!spawned) {
-                const requeueWord = tryDequeuRequeueWord(s, words);
-                const targetWord = requeueWord || words[nextIndex % words.length];
-                const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
-                spawnWave(s, targetWord, distractorPool, rngRef.current, now, diffParams.waveSize);
-              }
+              const requeueWord = tryDequeuRequeueWord(s, words);
+              const shuffled = shuffledWordsRef.current;
+              const targetWord = requeueWord || shuffled[nextIndex % shuffled.length];
+              const distractorPool = words.filter((w) => w.wordId !== targetWord.wordId);
+              spawnWave(s, targetWord, distractorPool, rngRef.current, now, s.waveSize, diffParams.distractorCloseness);
               // Clear corrective feedback now that a fresh wave is live — the
               // previous outcome's flash/toast should not linger past its wave.
               lastOutcomeRef.current = null;
             }
             setView(projectView(s, lastOutcomeRef.current));
-          }, fullConfig.advancePauseMs);
+          }, pauseMs);
         }
       }
 
@@ -488,11 +492,21 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
     raf = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(raf);
-      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+      // Must null the ref, not just clear the timer — advanceTimerRef
+      // survives this effect's teardown (it's a ref), so leaving a stale
+      // non-null value here permanently blocks `!advanceTimerRef.current`
+      // from re-arming the next wave's advance timer if this effect ever
+      // restarts while a wave is "resolved" and waiting to advance.
+      if (advanceTimerRef.current) {
+        clearTimeout(advanceTimerRef.current);
+        advanceTimerRef.current = null;
+      }
     };
+    // onWaveOutcome intentionally excluded — read via onWaveOutcomeRef so an
+    // inline callback identity doesn't restart the whole RAF loop every wave.
     // paint is stable internal logic, don't include in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullConfig, words, homophoneGroups, onWaveOutcome]);
+  }, [fullConfig, words]);
 
   return {
     stageRef,

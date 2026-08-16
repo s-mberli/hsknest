@@ -1,5 +1,5 @@
 /**
- * Feature flag for Hanzi Ninja. Fail-closed (opposite of isSelfHosted's
+ * Feature flag for Word Ninja. Fail-closed (opposite of isSelfHosted's
  * fail-open default) — this is a young, twitch-input mode still short of
  * the shipped-mode bar (device matrix, docs), so an unset or malformed env
  * var must never turn it on by accident. Only the exact literal "true"

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { FAST_MS, SLOW_MS, qualityForOutcome, isValidQuality } from "@/lib/ninja/scoring";
+import { FAST_MS, qualityForOutcome, isValidQuality, pointsForSlice } from "@/lib/ninja/scoring";
 import type { WaveOutcome } from "@/lib/ninja/types";
 
 describe("ninjaScoring", () => {
@@ -125,4 +125,28 @@ describe("ninjaScoring", () => {
       expect(isValidQuality(undefined)).toBe(false);
     });
   });
+
+  describe("pointsForSlice", () => {
+    it("scores higher quality tiers higher at the same combo", () => {
+      const p5 = pointsForSlice(5, 1);
+      const p4 = pointsForSlice(4, 1);
+      const p3 = pointsForSlice(3, 1);
+      expect(p5).toBeGreaterThan(p4);
+      expect(p4).toBeGreaterThan(p3);
+    });
+
+    it("scores 0 for a miss/wrong (quality 1)", () => {
+      expect(pointsForSlice(1, 1)).toBe(0);
+    });
+
+    it("increases with combo, capped at 1.9x base (min(combo-1, 9) steps of +10%)", () => {
+      const base = pointsForSlice(5, 1);
+      const atCombo5 = pointsForSlice(5, 5);
+      const atCombo50 = pointsForSlice(5, 50);
+      expect(atCombo5).toBeGreaterThan(base);
+      expect(atCombo50).toBe(Math.round(base * 1.9)); // multiplier caps at combo-1=9 steps
+      expect(pointsForSlice(5, 11)).toBe(atCombo50); // same cap beyond 10
+    });
+  });
+
 });

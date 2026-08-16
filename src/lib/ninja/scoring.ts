@@ -1,5 +1,6 @@
 /**
- * Scoring: map outcomes (slice speed, hit target/distractor/miss) to SRS quality grades.
+ * Scoring: map outcomes (slice speed, hit target/distractor/miss) to SRS quality grades,
+ * plus points/grade calculation for the endless run.
  * Reuses QUALITY_BY_DIRECTION values from src/lib/grading.ts to stay in sync.
  */
 
@@ -9,7 +10,6 @@ import type { WaveOutcome } from "./types";
 export const FAST_MS = 1200; // quality 5 if sliced faster than this
 export const SLOW_MS = 3000; // quality 4 if sliced between FAST and SLOW
 export const LIVES = 3;
-export const WAVES_PER_SESSION = 12;
 
 /**
  * Map a wave outcome (target sliced, distractor sliced, miss) and response time
@@ -47,54 +47,13 @@ export function isValidQuality(q: unknown): q is 1 | 3 | 4 | 5 {
 }
 
 /**
- * Compute a session grade (S/A/B/C) from session stats.
- * S: 11–12 correct, best combo ≥ 5
- * A: 9–10 correct, or 11–12 correct with combo < 5
- * B: 6–8 correct
- * C: ≤ 5 correct
+ * Points for a single correct slice: a base value scaled by speed tier
+ * (quality 5/4/3 — see qualityForOutcome) and the combo multiplier at the
+ * moment of the slice (combo already includes this slice, i.e. >=1).
  */
-export function gradeForSession(correct: number, combo: number): "S" | "A" | "B" | "C" {
-  if (correct >= 11 && combo >= 5) return "S";
-  if (correct >= 9) return "A";
-  if (correct >= 6) return "B";
-  return "C";
+export function pointsForSlice(quality: 1 | 3 | 4 | 5, combo: number): number {
+  const base = quality === 5 ? 100 : quality === 4 ? 70 : quality === 3 ? 40 : 0;
+  const multiplier = 1 + Math.min(combo - 1, 9) * 0.1; // +10%/combo step, capped at 2x
+  return Math.round(base * multiplier);
 }
 
-/**
- * Difficulty curve parameters for the session.
- * As waveIndex advances, escalate cognitive load:
- * - waveSize steps from 4 to 5
- * - leadInMs tightens from 1300 to ~1050
- * - Wave-type odds shift toward Listen & Slice + Reverse waves
- * - Distractors get closer to target (higher difficulty)
- */
-export interface DifficultyParams {
-  waveSize: number;
-  leadInMs: number;
-  listenChance: number;
-  reverseChance: number;
-  distractorCloseness: number; // 0=loose frequency match, 1=tight
-}
-
-export function getDifficultyParams(waveIndex: number, totalWaves: number = WAVES_PER_SESSION): DifficultyParams {
-  // Normalize waveIndex to 0–1 range
-  const progress = Math.min(1, waveIndex / Math.max(totalWaves - 1, 1));
-
-  // waveSize: 4 for first 8 waves, steps to 5 for waves 9+
-  const waveSize = waveIndex >= 9 ? 5 : 4;
-
-  // leadInMs: linear tighten from 1300 to 1050
-  const leadInMs = Math.max(1050, 1300 - progress * 250);
-
-  // Wave-type odds: shift toward Listen & Slice + Reverse as session progresses
-  // Early game: 20% Listen, 15% Reverse (65% Gloss)
-  // Late game: 35% Listen, 30% Reverse (35% Gloss)
-  const listenChance = 0.2 + progress * 0.15;
-  const reverseChance = 0.15 + progress * 0.15;
-
-  // Distractor closeness: as waveIndex increases, prefer tighter frequency neighbors
-  // This is used by pickDistractors to bias selection (0=any, 1=very close)
-  const distractorCloseness = Math.min(1, progress * 0.5);
-
-  return { waveSize, leadInMs, listenChance, reverseChance, distractorCloseness };
-}
