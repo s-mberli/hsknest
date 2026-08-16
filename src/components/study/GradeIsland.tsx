@@ -16,16 +16,16 @@ function outcomeFor(grade: LastGrade): { text: string; className: string } {
     case "right":
       return {
         text:
-          grade.combo >= 2 ? `Nice · ${grade.combo} in a row` : "Nice",
+          grade.combo >= 2 ? `Good · ${grade.combo} in a row` : "Good",
         className: "text-success",
       };
     case "up":
-      return { text: "Easy", className: "text-success" };
+      return { text: "Easy", className: "text-sky-600 dark:text-sky-400" };
     case "down":
-      return { text: "Hard, but got it", className: "text-amber" };
+      return { text: "Hard", className: "text-amber" };
     case "left":
     default:
-      return { text: "Again", className: "text-destructive" };
+      return { text: "Again — back soon", className: "text-destructive" };
   }
 }
 

@@ -115,7 +115,12 @@ export function DashboardHero({
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="flex w-full flex-col items-center gap-4 rounded-3xl border bg-card p-6 shadow-card">
+      <div className="relative flex w-full flex-col items-center gap-4 rounded-3xl border bg-card p-6 shadow-card">
+        {/* Paper grain — ink identity carried from the study card + Ninja. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-3xl opacity-[0.04] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:20px_20px]"
+        />
         <FocusRing due={due} checks={checks} fresh={fresh}>
           {hasCards ? (
             <>
@@ -170,7 +175,7 @@ export function DashboardHero({
 
             {/* The real "how fast do I grow" lever lives in Settings. */}
             {dailyNewWords > 0 && (
-              <p className="text-center text-[11px] text-muted-foreground">
+              <p className="text-center text-xs text-muted-foreground">
                 {dailyNewWords} new words/day
                 {newBacklog > 0 && ` · ${newBacklog} more waiting`} ·{" "}
                 <Link
@@ -243,7 +248,7 @@ export function DashboardHero({
                     </span>
                     <span className="leading-tight">{label}</span>
                     {subtitle && (
-                      <span className="text-[10px] font-normal leading-tight text-muted-foreground">
+                      <span className="text-xs font-normal leading-tight text-muted-foreground">
                         {subtitle}
                       </span>
                     )}

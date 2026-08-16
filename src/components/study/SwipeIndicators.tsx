@@ -25,17 +25,17 @@ export function SwipeIndicators({
         style={{ opacity: forgotOpacity }}
         className={`${pill} left-5 top-1/2 -translate-y-1/2 border-destructive text-destructive`}
       >
-        Forgot
+        Again
       </motion.div>
       <motion.div
         style={{ opacity: knewOpacity }}
         className={`${pill} right-5 top-1/2 -translate-y-1/2 border-success text-success`}
       >
-        Knew
+        Good
       </motion.div>
       <motion.div
         style={{ opacity: easyOpacity }}
-        className={`${pill} left-1/2 top-5 -translate-x-1/2 border-success text-success`}
+        className={`${pill} left-1/2 top-5 -translate-x-1/2 border-sky-500 text-sky-600 dark:text-sky-400`}
       >
         Easy
       </motion.div>

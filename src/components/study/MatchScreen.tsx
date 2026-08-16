@@ -218,9 +218,9 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
 
       <main className="flex flex-1 flex-col justify-center px-6 pb-16">
         {loading && (
-          <p className="text-center text-sm text-muted-foreground">
-            Loading your matching round…
-          </p>
+          <div className="mx-auto w-full max-w-sm animate-pulse">
+            <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />
+          </div>
         )}
 
         {done && rounds.length === 0 && (

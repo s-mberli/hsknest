@@ -70,6 +70,9 @@ next-env.d.ts
 /agent/
 /skills-lock.json
 
+# impeccable design skill working dir — critique snapshots, live-mode state, caches
+/.impeccable/
+
 # private launch/ops notes
 /LAUNCH-CHECKLIST.md
 /docs/marketing/

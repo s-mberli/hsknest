@@ -68,7 +68,7 @@ export function SessionHud({
         <div className="flex items-center gap-4">
           {practice && (
             <span
-              className="rounded-full border border-dashed px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+              className="rounded-full border border-dashed px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
               title="Practice doesn't change when your words come up for review."
             >
               Practice — doesn&apos;t count toward reviews

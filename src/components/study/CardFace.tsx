@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { TriangleAlert, Volume2, VolumeX } from "lucide-react";
 import {
@@ -150,10 +151,19 @@ export function CardFace({
   const primary = meanings[0];
   const primaryText = primary?.gloss ?? card.translation;
 
+  // Sentence expander: hide behind a tap to keep FULL reveal clean.
+  // Reset on card change via render-time pattern (no effect needed).
+  const [showSentence, setShowSentence] = useState(false);
+  const [prevWordId, setPrevWordId] = useState(card.wordId);
+  if (card.wordId !== prevWordId) {
+    setShowSentence(false);
+    setPrevWordId(card.wordId);
+  }
+
   return (
     <div
       className={cn(
-        "flex h-full w-full select-none flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border bg-card p-8 text-center shadow-sm",
+        "relative flex h-full w-full select-none flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border bg-card p-8 text-center shadow-sm",
         interactive && "pb-16",
         // Brand-new word previews get a sky-blue treatment so it's obvious
         // this is a first look, not a test.
@@ -161,6 +171,12 @@ export function CardFace({
           "border-sky-500/50 shadow-[0_0_36px_-10px_rgba(14,165,233,0.55)]"
       )}
     >
+      {/* Ink-on-paper: a faint paper grain so the study card carries the same
+          identity as Ninja/landing — kept near-invisible on purpose. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-2xl opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:16px_16px]"
+      />
       {card.preview && (
         <span className="absolute left-4 top-4 rounded-full bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
           New word
@@ -247,35 +263,51 @@ export function CardFace({
               </span>
             )}
 
-            {/* Example sentence in its own block: sentence → reading → meaning,
-                on real (non-preview) cards only. */}
+            {/* Example sentence — behind a tap to keep the FULL reveal clean.
+                Expanded once per card, resets on card change. */}
             {card.sentence && !card.preview && (
-              <div className="mt-2 w-full max-w-sm rounded-xl bg-muted/40 px-4 py-3 text-left">
-                <div className="flex items-start justify-between gap-2">
-                  <HighlightedSentence
-                    text={card.sentence.text}
-                    term={card.term}
-                    className="text-base font-medium leading-relaxed text-foreground/90"
-                  />
-                  {(canSpeak || hasClips) && speakLive && (
-                    <button
-                      type="button"
-                      onClick={onSpeakSentence}
-                      aria-label="Play sentence"
-                      className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                    >
-                      <Volume2 className="size-4" />
-                    </button>
-                  )}
-                </div>
-                {card.sentence.phonetic && (
-                  <p className="mt-1 text-xs text-muted-foreground/80">
-                    {card.sentence.phonetic}
-                  </p>
+              <div className="mt-2 w-full max-w-sm">
+                {!showSentence ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowSentence(true)}
+                    className="w-full rounded-xl border border-dashed border-muted-foreground/20 px-4 py-2 text-xs text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
+                  >
+                    Example sentence
+                  </button>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-xl bg-muted/40 px-4 py-3 text-left"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <HighlightedSentence
+                        text={card.sentence.text}
+                        term={card.term}
+                        className="text-base font-medium leading-relaxed text-foreground/90"
+                      />
+                      {(canSpeak || hasClips) && speakLive && (
+                        <button
+                          type="button"
+                          onClick={onSpeakSentence}
+                          aria-label="Play sentence"
+                          className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        >
+                          <Volume2 className="size-4" />
+                        </button>
+                      )}
+                    </div>
+                    {card.sentence.phonetic && (
+                      <p className="mt-1 text-xs text-muted-foreground/80">
+                        {card.sentence.phonetic}
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {card.sentence.translation}
+                    </p>
+                  </motion.div>
                 )}
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {card.sentence.translation}
-                </p>
               </div>
             )}
           </motion.div>
@@ -299,7 +331,7 @@ export function CardFace({
           {struggling && (
             <p className="flex items-center gap-1 text-xs font-medium text-amber">
               <TriangleAlert className="size-3.5" />
-              You keep missing this one — slow down.
+              Tricky one — it&apos;ll come back a little sooner.
             </p>
           )}
         </div>

@@ -121,9 +121,9 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
         }}
       >
         {loading && (
-          <p className="text-center text-sm text-muted-foreground">
-            Loading your quiz…
-          </p>
+          <div className="mx-auto w-full max-w-sm animate-pulse">
+            <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />
+          </div>
         )}
 
         {done && cards.length === 0 && (
