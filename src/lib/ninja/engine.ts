@@ -279,6 +279,10 @@ export function resolveWave(
   if (kind === "missed") {
     state.missed += 1;
     state.combo = 0;
+    // Letting the target fall must cost a life same as slicing the wrong
+    // tile — otherwise standing still is a safe strategy and lives only
+    // track wrong slices, not "didn't answer at all".
+    state.lives -= 1;
   }
 
   state.bestCombo = Math.max(state.bestCombo, state.combo);

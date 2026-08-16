@@ -18,7 +18,12 @@ import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import NinjaTile from "./NinjaTile";
 import InkCanvas from "./InkCanvas";
 
-const TOTAL_LIVES = 3;
+// Expanded from 3 to reduce "unlucky early death" noise and to give the
+// expanding-gap requeue mechanic (see useNinjaEngine.ts) enough waves to
+// actually schedule its re-tests before game-over. Must match
+// useNinjaEngine.ts's initialState().lives — no shared constant module
+// exists between engine state and this display, so keep them in sync by hand.
+const TOTAL_LIVES = 5;
 /** Combo multiplier meter fills toward this cap — matches the 10-step cap
  * in pointsForSlice (scoring.ts) so the meter and the actual multiplier
  * agree. */
@@ -200,8 +205,6 @@ export default function NinjaStage({
   // the next 10% score bump instead of a denominator that no longer exists.
   const comboMeterPct = Math.min(100, (view.combo / COMBO_METER_CAP) * 100);
   const livesLeft = Math.max(view.lives, 0);
-  const TOTAL_LIVES = 5; // Expanded from 3 to reduce "unlucky early death" noise
-                          // and preserve expanding-gap requeue mechanics.
   // Background warms toward amber as combo climbs, capped well below full
   // saturation so it stays a mood cue, not a color swap. Resets with combo
   // (state.combo already zeroes on miss/wrong — see engine.ts).
