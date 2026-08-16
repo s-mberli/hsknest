@@ -1,4 +1,6 @@
 import { rankListIds } from "@/lib/listPriority";
+import { DUE_STATES, TRACKED_STATES } from "@/lib/cardStates";
+import type { CardState } from "@/lib/srs";
 
 /**
  * Pure data-shaping for the Lists page: turns the user's visible lists +
@@ -54,10 +56,13 @@ export function buildListSections<L extends BaseList>(input: {
     const key = p.word.wordListId;
     const entry = byList.get(key) ?? { enrolled: 0, learned: 0, due: 0 };
     entry.enrolled += 1;
-    if (p.state !== "NEW") entry.learned += 1;
-    if (p.state !== "NEW" && p.state !== "ASSUMED" && p.dueAt <= now) {
-      entry.due += 1;
-    }
+    if (TRACKED_STATES.has(p.state as CardState)) entry.learned += 1;
+    // DUE_STATES (LEARNING/REVIEW/LAPSED) deliberately excludes MASTERED and
+    // ASSUMED — matching the study queue and horizon lanes. This is a slight
+    // change from the old hand-rolled `!== "NEW" && !== "ASSUMED"` predicate,
+    // which counted MASTERED as due; a mastered card is never surfaced as
+    // due anywhere else in the app.
+    if (DUE_STATES.has(p.state) && p.dueAt <= now) entry.due += 1;
     byList.set(key, entry);
   }
 
