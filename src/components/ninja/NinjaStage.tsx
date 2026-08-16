@@ -11,7 +11,7 @@ import { Check, X as XIcon, ArrowDown, Heart, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { NinjaView } from "@/hooks/useNinjaEngine";
 import type { EngineState } from "@/lib/ninja/types";
-import { playSliceWrong, playMiss, playCelebrate } from "@/lib/sound";
+import { playSliceWrong, playCelebrate } from "@/lib/sound";
 import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
@@ -24,10 +24,6 @@ import InkCanvas from "./InkCanvas";
 // useNinjaEngine.ts's initialState().lives — no shared constant module
 // exists between engine state and this display, so keep them in sync by hand.
 const TOTAL_LIVES = 5;
-/** Combo multiplier meter fills toward this cap — matches the 10-step cap
- * in pointsForSlice (scoring.ts) so the meter and the actual multiplier
- * agree. */
-const COMBO_METER_CAP = 10;
 
 export interface NinjaStageProps {
   view: NinjaView;
@@ -103,8 +99,11 @@ export default function NinjaStage({
     if (kind === "correct") {
       void playAudio(char, "word", langCode);
     } else {
+      // Wrong slice keeps its cue; a missed (fallen) target no longer plays
+      // the paper-tear sound — it read as random noise since nothing else
+      // was tied to it before the life-loss fix, and now the heart dropping
+      // + red banner already carry that signal without an extra sting.
       if (kind === "wrong") playSliceWrong();
-      else playMiss();
       void playAudio(char, "word", langCode);
 
       const existing = toughestRef.current.get(char);
@@ -200,10 +199,6 @@ export default function NinjaStage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.waveStatus]);
 
-  // Endless run has no fixed length, so the thin top bar is repurposed from
-  // "waves cleared" to a combo-multiplier meter — legible progress toward
-  // the next 10% score bump instead of a denominator that no longer exists.
-  const comboMeterPct = Math.min(100, (view.combo / COMBO_METER_CAP) * 100);
   const livesLeft = Math.max(view.lives, 0);
   // Background warms toward amber as combo climbs, capped well below full
   // saturation so it stays a mood cue, not a color swap. Resets with combo
@@ -242,15 +237,6 @@ export default function NinjaStage({
         }}
         aria-hidden="true"
       />
-
-      {/* Combo-multiplier meter. Matches SessionHud's thin vermilion bar so
-          the mode still feels like part of the app. */}
-      <div className="h-0.5 w-full shrink-0 bg-muted">
-        <div
-          className="h-full bg-primary transition-[width] duration-300"
-          style={{ width: `${comboMeterPct}%` }}
-        />
-      </div>
 
       {/* HUD — X exits mid-session, same affordance/placement as
           SessionHud's flashcard HUD (Link to exitHref, no confirm dialog:
