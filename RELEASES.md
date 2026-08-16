@@ -26,12 +26,11 @@ writes `ReviewLog` rows tagged `source: "ninja"` for future FSRS parameter
 fitting, and is deliberately excluded from streak/lifetime stats; it never
 touches a card's real schedule.
 
-Behind `NEXT_PUBLIC_ENABLE_NINJA`, off by default — a **build-time** flag
-(now correctly wired through `Dockerfile` and `docker-compose.yml`; earlier
-builds silently ignored it). Self-hosters: set it before building the image,
-not just at container runtime.
+Shipped on by default — no flag, no build-time var to configure. Word Ninja
+just shows up in "More ways to practice" once you've learned a couple words,
+same as every other practice mode.
 
-Go-live QA pass, ahead of turning it on:
+Go-live QA pass:
 - Practice-mode review traffic now has its own rate-limit bucket, separate
   from real SRS reviews — a long Ninja session could previously exhaust the
   shared budget and cause a genuine flashcard grade to be silently dropped.
@@ -41,7 +40,7 @@ Go-live QA pass, ahead of turning it on:
   files that shipped but were never loaded by any code path.
 - Added engine-level test coverage (life loss on a wrong slice and on a
   missed tile, grading always targets the prompt word) and e2e coverage for
-  the route, including the flag-off redirect.
+  the route.
 - Failed queue loads in Ninja now show a retry prompt instead of the
   "empty deck" message.
 
