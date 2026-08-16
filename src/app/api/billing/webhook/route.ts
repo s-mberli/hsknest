@@ -37,26 +37,50 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object;
         const userId = session.metadata?.userId;
-        if (userId && session.mode === "subscription") {
-          // updateMany: a deleted account must not 500-loop Stripe retries.
-          await prisma.user.updateMany({
-            where: { id: userId },
-            data: {
-              subscriptionStatus: "active",
-              stripeCustomerId:
-                typeof session.customer === "string"
-                  ? session.customer
-                  : undefined,
-            },
-          });
-
-          // Send upgrade confirmation email — best-effort, isolated in its own try/catch
-          // so an email failure never 500s and triggers a Stripe retry storm.
-          try {
-            const user = await prisma.user.findUnique({
+        let updated: { count: number } | undefined;
+        if (session.mode === "subscription") {
+          const data = {
+            subscriptionStatus: "active" as const,
+            // Clear the trial clock on upgrade so the "X days left" UI can't
+            // render a stale countdown after payment.
+            trialEndsAt: null,
+            stripeCustomerId:
+              typeof session.customer === "string"
+                ? session.customer
+                : undefined,
+          };
+          if (userId) {
+            // updateMany: a deleted account must not 500-loop Stripe retries.
+            updated = await prisma.user.updateMany({
               where: { id: userId },
-              select: { email: true },
+              data,
             });
+          } else if (typeof session.customer === "string") {
+            // Same fallback the updated/deleted handlers use: a checkout with
+            // no userId metadata (manual Stripe dashboard test, webhook
+            // misconfig) must not silently leave the user on "trialing".
+            updated = await prisma.user.updateMany({
+              where: { stripeCustomerId: session.customer },
+              data,
+            });
+          }
+        }
+
+        // Send upgrade confirmation email — best-effort, isolated in its own try/catch
+        // so an email failure never 500s and triggers a Stripe retry storm.
+        if (updated?.count) {
+          try {
+            const user = userId
+              ? await prisma.user.findUnique({
+                  where: { id: userId },
+                  select: { email: true },
+                })
+              : typeof session.customer === "string"
+                ? await prisma.user.findFirst({
+                    where: { stripeCustomerId: session.customer },
+                    select: { email: true },
+                  })
+                : null;
             if (user?.email && !user.email.endsWith("@guest.local")) {
               await sendUpgradeConfirmationEmail(user.email);
             }

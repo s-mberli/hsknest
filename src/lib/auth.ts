@@ -54,22 +54,10 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
       }
 
-      // JWT sessions are stateless, so consult the account timestamp to
-      // revoke tokens issued before a password reset.
-      if (token.id && token.iat) {
-        const authState = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { passwordChangedAt: true },
-        });
-        if (
-          !authState ||
-          Math.floor(authState.passwordChangedAt.getTime() / 1000) >
-            Number(token.iat)
-        ) {
-          return {};
-        }
-      }
-
+      // Password-reset revocation no longer happens here: the DB hit this
+      // callback used to make ran on EVERY authenticated request, doubling
+      // session validation cost (see session.ts / PERF-1). getCurrentUserId
+      // now reads passwordChangedAt in its own single lookup.
       return token;
     },
     async session({ session, token }) {

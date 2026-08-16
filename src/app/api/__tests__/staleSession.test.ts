@@ -9,9 +9,9 @@
  * Deliberately does NOT mock @/lib/session — the fix lives inside
  * getCurrentUserId(), so mocking that module would bypass the code under
  * test and this loop would prove nothing. Mocks next-auth's
- * getServerSession() instead, one level below, so the real
- * getCurrentUserId() runs for real against a session pointing at a user
- * that has since been deleted.
+ * getToken() (the session source getCurrentUserId reads) instead, one
+ * level below, so the real getCurrentUserId() runs for real against a
+ * session pointing at a user that has since been deleted.
  *
  * Uses its own DB file so this file's `prisma db push` doesn't race
  * ownership.test.ts / authz.test.ts when Vitest runs files in parallel.
@@ -34,10 +34,18 @@ const TEST_DB_PATH = path.join(
 const TEST_DB_URL = `file:${TEST_DB_PATH}`;
 
 let testPrisma: PrismaClient;
-let mockSession: { user: { id: string } } | null = null;
+let mockToken: { id: string; iat: number } | null = null;
 
-vi.mock("next-auth", () => ({
-  getServerSession: () => mockSession,
+vi.mock("next-auth/jwt", () => ({
+  getToken: () => mockToken,
+}));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    has: (name: string) => name === "next-auth.session-token",
+    get: () => undefined,
+    getAll: () => [{ name: "next-auth.session-token", value: "jwt" }],
+    toString: () => "next-auth.session-token=jwt",
+  }),
 }));
 vi.mock("@/lib/prisma", () => ({
   get prisma() {
@@ -49,7 +57,7 @@ vi.mock("@/lib/rateLimit", () => ({
 }));
 
 // Imported after the mocks above so the routes (and getCurrentUserId, via
-// requireUser) pick up the mocked getServerSession/prisma.
+// requireUser) pick up the mocked getToken/prisma.
 const { PATCH: settingsPATCH } = await import("@/app/api/settings/route");
 const { POST: enrollPOST } = await import("@/app/api/lists/[id]/enroll/route");
 
@@ -87,7 +95,7 @@ describe(
     });
 
     beforeEach(async () => {
-      mockSession = null;
+      mockToken = null;
       await testPrisma.userProgress.deleteMany();
       await testPrisma.word.deleteMany();
       await testPrisma.wordList.deleteMany();
@@ -96,7 +104,7 @@ describe(
     });
 
     /**
-     * Creates then deletes a user, and points the mocked session at the
+     * Creates then deletes a user, and points the mocked token at the
      * (now-gone) id — reproducing exactly what a pruned guest's still-valid
      * JWT looks like server-side.
      */
@@ -105,7 +113,7 @@ describe(
         data: { email: `ghost-${Date.now()}@guest.local`, passwordHash: "x" },
       });
       await testPrisma.user.delete({ where: { id: user.id } });
-      mockSession = { user: { id: user.id } };
+      mockToken = { id: user.id, iat: Math.floor(Date.now() / 1000) };
       return user.id;
     }
 
@@ -151,7 +159,7 @@ describe(
           targetLanguageId: lang.id,
         },
       });
-      mockSession = { user: { id: user.id } };
+      mockToken = { id: user.id, iat: Math.floor(Date.now() / 1000) };
       const res = await settingsPATCH(jsonRequest({}));
       expect(res.status).toBe(200);
     });

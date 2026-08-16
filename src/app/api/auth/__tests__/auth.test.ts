@@ -4,7 +4,7 @@ import { POST as resetPasswordPOST } from "../reset-password/route";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rateLimit";
-import { authOptions } from "@/lib/auth";
+import { getCurrentUserId } from "@/lib/session";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -32,6 +32,19 @@ vi.mock("@/lib/rateLimit", () => ({
 
 vi.mock("bcryptjs", () => ({
   hash: vi.fn(async () => "hashed_password"),
+}));
+
+let mockToken: { id: string; iat: number } | null = null;
+vi.mock("next-auth/jwt", () => ({
+  getToken: () => mockToken,
+}));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    has: (name: string) => name === "next-auth.session-token",
+    get: () => undefined,
+    getAll: () => [{ name: "next-auth.session-token", value: "jwt" }],
+    toString: () => "next-auth.session-token=jwt",
+  }),
 }));
 
 function createRequest(body: Record<string, unknown>) {
@@ -153,35 +166,42 @@ describe("Auth Routes", () => {
     });
   });
 
-  describe("JWT session invalidation", () => {
+  describe("JWT session invalidation (via getCurrentUserId)", () => {
+    beforeEach(() => {
+      mockToken = null;
+    });
+
     it("rejects a token issued before the password change", async () => {
+      mockToken = { id: "user-1", iat: 100 };
       vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
-        passwordChangedAt: new Date(200_000),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+        id: "user-1",
+        passwordChangedAt: new Date(200_000), // 200s > iat 100s → revoked
+      } as never);
 
-      const token = await authOptions.callbacks!.jwt!({
-        token: { id: "user-1", iat: 100 },
-        user: undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
-
-      expect(token.id).toBeUndefined();
+      expect(await getCurrentUserId()).toBeNull();
     });
 
     it("keeps a token issued after the password change", async () => {
+      mockToken = { id: "user-1", iat: 200 };
       vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
-        passwordChangedAt: new Date(100_000),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+        id: "user-1",
+        passwordChangedAt: new Date(100_000), // 100s < iat 200s → valid
+      } as never);
 
-      const token = await authOptions.callbacks!.jwt!({
-        token: { id: "user-1", iat: 200 },
-        user: undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      expect(await getCurrentUserId()).toBe("user-1");
+    });
 
-      expect(token.id).toBe("user-1");
+    it("returns null when the user row is gone (stale session)", async () => {
+      mockToken = { id: "ghost", iat: 999 };
+      vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null);
+
+      expect(await getCurrentUserId()).toBeNull();
+    });
+
+    it("returns null when there is no session token", async () => {
+      mockToken = null;
+      expect(await getCurrentUserId()).toBeNull();
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
     });
   });
 });
