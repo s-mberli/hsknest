@@ -32,8 +32,8 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
     dayMap.set(d.date, d);
   }
 
-  // Generate 9 months of cells (270 days = ~39 weeks), fills card width.
-  const weeks = buildWeeks(270);
+  // 6 months of cells (26 weeks). Centered in card for intentional whitespace.
+  const weeks = buildWeeks(180);
 
   return (
     <div className="space-y-4">
@@ -43,8 +43,9 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
         </p>
       </div>
 
-      {/* Grid — full width with breathing room */}
-      <div className="px-1">
+      {/* Grid — centered for intentional whitespace, overflow-x for mobile */}
+      <div className="overflow-x-auto overflow-y-hidden">
+        <div className="mx-auto w-fit px-1">
         <div className="flex gap-[3px]">
           {weeks.map((week, wi) => (
             <div key={wi} className="flex flex-col gap-[3px]">
