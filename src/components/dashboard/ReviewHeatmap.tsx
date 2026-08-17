@@ -37,9 +37,8 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
   // Generate the last 180 days of cells, grouped by week (column).
   const weeks = buildWeeks(180);
 
-  // Compute daily average.
-  const activeDays = days.length;
-  const avgPerDay = activeDays > 0 ? Math.round(totalReviews / activeDays) : 0;
+  // Rolling average over visible window (total ÷ days in range), not per active day.
+  const avgPerDay = Math.round(totalReviews / 180);
 
   return (
     <Card className="relative">
@@ -64,7 +63,7 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
           </div>
 
           {/* Grid */}
-          <div className="flex-1 overflow-x-auto">
+          <div className="flex-1 overflow-x-auto overflow-y-hidden">
             <div className="flex gap-[3px]">
               {weeks.map((week, wi) => (
                 <div key={wi} className="flex flex-col gap-[3px]">
