@@ -25,8 +25,6 @@ interface DashboardHeroProps {
   fresh: number;
   /** Words the user has already learned — gates the Practice/Refresh action. */
   learnedCount?: number;
-  /** Words struggling (low strength) — gates the weak-words shortcut. */
-  weakCount?: number;
   /** Daily new-word limit, for the "how fast do I grow" hint. */
   dailyNewWords?: number;
   /** New words enrolled but held back today by the daily cap (0 = none). */
@@ -69,7 +67,6 @@ export function DashboardHero({
   checks,
   fresh,
   learnedCount = 0,
-  weakCount = 0,
   dailyNewWords = 0,
   newBacklog = 0,
   languageCode,
@@ -173,19 +170,6 @@ export function DashboardHero({
                 <Link href={STUDY_HREF}>
                   <GraduationCap className="size-4" />
                   Start studying
-                </Link>
-              </Button>
-            )}
-
-            {weakCount > 0 && (
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="w-full max-w-xs rounded-full border-amber/30 text-amber hover:bg-amber/10"
-              >
-                <Link href="/words">
-                  Focus on {weakCount} {weakCount === 1 ? "weak word" : "weak words"}
                 </Link>
               </Button>
             )}
