@@ -32,8 +32,8 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
     dayMap.set(d.date, d);
   }
 
-  // Generate the last 180 days of cells, grouped by week (column).
-  const weeks = buildWeeks(180);
+  // Generate 9 months of cells (270 days = ~39 weeks), fills card width.
+  const weeks = buildWeeks(270);
 
   return (
     <div className="space-y-4">
