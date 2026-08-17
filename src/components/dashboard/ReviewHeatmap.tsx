@@ -55,7 +55,7 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
         <div className="flex gap-2">
           {/* Day labels: Mon, Wed, Fri */}
           <div className="flex flex-col gap-[3px] pt-0">
-            {["", "Mon", "", "Wed", "", "Fri", ""].map((label, i) => (
+            {["Mon", "", "Wed", "", "Fri", "", ""].map((label, i) => (
               <span key={i} className="h-3 text-[10px] leading-3 text-muted-foreground">
                 {label}
               </span>
@@ -124,7 +124,7 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
             {[0, 3, 10, 20].map((count) => (
               <span
                 key={count}
-                className={cn("h-2.5 w-2.5 rounded-[1px] border", heatColor(count))}
+                className={cn("h-2.5 w-2.5 rounded-[1px]", heatColor(count))}
               />
             ))}
             <span>More</span>
@@ -154,9 +154,9 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
   );
 }
 
-/** Color scale: 0 → muted, 1-5 → light primary, 6-15 → mid primary, 16+ → full primary. */
+/** Color scale: empty cells barely visible, filled cells pop. */
 function heatColor(count: number): string {
-  if (count === 0) return "bg-muted/30 border-muted/40";
+  if (count === 0) return "bg-border/20";
   if (count <= 5) return "bg-primary/25 border-primary/20";
   if (count <= 15) return "bg-primary/50 border-primary/40";
   return "bg-primary border-primary";
