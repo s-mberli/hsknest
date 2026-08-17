@@ -43,7 +43,19 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
     return dates;
   }, []);
 
-  const dayMap = useMemo(() => {
+  // Month labels: which months appear in the grid data.
+  const monthLabels = useMemo(() => {
+    const seen = new Set<string>();
+    const labels: string[] = [];
+    for (const date of allDates) {
+      const month = new Date(date + "T12:00:00").toLocaleDateString("en-US", { month: "short" });
+      if (!seen.has(month)) {
+        seen.add(month);
+        labels.push(month);
+      }
+    }
+    return labels;
+  }, [allDates]);
     const m = new Map<string, DayData>();
     for (const d of days) m.set(d.date, d);
     return m;
@@ -79,6 +91,13 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
             />
           );
         })}
+      </div>
+
+      {/* Month labels legend */}
+      <div className="flex justify-center gap-2 text-[10px] text-muted-foreground">
+        {monthLabels.map((m) => (
+          <span key={m}>{m}</span>
+        ))}
       </div>
 
       {/* Legend + streak */}
