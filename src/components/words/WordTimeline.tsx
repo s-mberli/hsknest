@@ -273,6 +273,7 @@ function Lane({
     state: w.state,
     intervalDays: w.intervalDays,
     lapses: w.lapses,
+    languageCode: w.languageCode,
   }));
 
   return (

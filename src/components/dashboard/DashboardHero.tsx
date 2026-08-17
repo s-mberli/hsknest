@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";

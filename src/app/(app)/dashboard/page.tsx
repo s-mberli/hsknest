@@ -208,7 +208,6 @@ async function HeatmapSection({
     ...data,
   }));
 
-  const totalReviews = reviews.length;
   // Streak from the heatmap's own data (consistent with the day-bucketing).
   let streakDays = 0;
   const today = startOfLocalDay(now).toISOString().slice(0, 10);

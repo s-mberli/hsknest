@@ -28,7 +28,13 @@
 
 # misc
 .DS_Store
+Thumbs.db
+desktop.ini
 *.pem
+
+# IDE
+.idea/
+.vscode/
 
 # debug
 npm-debug.log*

@@ -29,6 +29,7 @@ export interface WordRow {
   intervalDays: number | null;
   lapses: number | null;
   dueAt?: string | null;
+  languageCode?: string;
 }
 
 /** Strength band for a row, or null when the word has no progress snapshot. */
@@ -110,9 +111,11 @@ export function StrengthCell({ word }: { word: WordRow }) {
 export function WordCard({
   word,
   children,
+  languageCode,
 }: {
   word: WordRow;
   children?: React.ReactNode;
+  languageCode?: string;
 }) {
   const strength = strengthOf(word);
   const days = Math.round(word.intervalDays ?? 0);
@@ -140,7 +143,7 @@ export function WordCard({
               <button
                 type="button"
                 className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => void playAudio(word.term, "word", "zh")}
+                onClick={() => void playAudio(word.term, "word", languageCode ?? word.languageCode ?? "zh")}
                 title="Pronounce"
               >
                 <Volume2 className="h-4 w-4" />
@@ -194,7 +197,7 @@ export function WordTable({ words }: { words: WordRow[] }) {
                     <button
                       type="button"
                       className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={() => void playAudio(w.term, "word", "zh")}
+                      onClick={() => void playAudio(w.term, "word", w.languageCode ?? "zh")}
                       title="Pronounce"
                     >
                       <Volume2 className="h-4 w-4" />

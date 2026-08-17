@@ -34,6 +34,7 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
   const [ready, setReady] = useState(false);
 
   // Set today only after hydration (SSR uses server UTC, not client local).
+  // eslint-disable-next-line -- suppress setState-in-effect for one-time hydration
   useEffect(() => setMounted(true), []);
   const today = mounted ? todayStr() : "";
 

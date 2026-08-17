@@ -81,8 +81,9 @@ export function ListWordsView({
         state: w.state,
         intervalDays: w.intervalDays,
         lapses: w.lapses,
+        languageCode: languageCode ?? "",
       })),
-    [words]
+    [words, languageCode]
   );
 
   const hasWords = words.length > 0;
