@@ -36,9 +36,6 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
   // Generate the last 180 days of cells, grouped by week (column).
   const weeks = buildWeeks(180);
 
-  // Rolling average over visible window (total ÷ days in range), not per active day.
-  const avgPerDay = Math.round(totalReviews / 180);
-
   return (
     <div className="space-y-4">
       <div className="flex items-baseline justify-between">
@@ -46,7 +43,7 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
           Review activity
         </p>
         <span className="text-xs text-muted-foreground">
-          {totalReviews.toLocaleString()} reviews · {avgPerDay}/day
+          {totalReviews.toLocaleString()} reviews
         </span>
       </div>
 
@@ -107,14 +104,6 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
 
       {/* Streak + legend row */}
       <div className="flex items-center justify-between">
-        {streakDays > 0 ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
-            <span className="size-1.5 rounded-full bg-amber" />
-            {streakDays}-day streak
-          </span>
-        ) : (
-          <span />
-        )}
         {/* Color legend */}
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
           <span>Less</span>
@@ -126,6 +115,12 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
           ))}
           <span>More</span>
         </div>
+        {streakDays > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
+            <span className="size-1.5 rounded-full bg-amber" />
+            {streakDays}-day streak
+          </span>
+        )}
       </div>
 
       {/* Click popover */}
