@@ -28,9 +28,14 @@ const COL = CELL + GAP;
  */
 export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
   const [selected, setSelected] = useState<DayData | null>(null);
-  const [today] = useState(todayStr);
+  const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [numWeeks, setNumWeeks] = useState(26);
+  const [ready, setReady] = useState(false);
+
+  // Set today only after hydration (SSR uses server UTC, not client local).
+  useEffect(() => setMounted(true), []);
+  const today = mounted ? todayStr() : "";
 
   // All dates: 1 year (365 days), Mon-aligned.
   const allDates = useMemo(() => {
@@ -60,7 +65,10 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       const w = entry.contentRect.width;
-      if (w > 0) setNumWeeks(Math.max(4, Math.min(52, Math.floor(w / COL))));
+      if (w > 0) {
+        setNumWeeks(Math.max(4, Math.min(52, Math.floor(w / COL))));
+        setReady(true);
+      }
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -110,8 +118,9 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
           ))}
         </div>
 
-        {/* Grid — flex columns (each = 1 week), scroll fallback for narrow screens */}
+        {/* Grid — flex columns, render only after measurement */}
         <div ref={containerRef} className="flex-1 overflow-x-auto overflow-y-hidden">
+          {ready && (
           <div className="flex gap-[3px]">
             {weeks.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-[3px]">
@@ -136,8 +145,9 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
               </div>
             ))}
           </div>
-
+          )}
           {/* Month labels — aligned to week columns */}
+          {ready && (
           <div className="mt-1 flex gap-[3px]">
             {monthLabels.map((label, i) => (
               <span key={i} className="w-3 text-[10px] leading-3 text-muted-foreground">
@@ -145,6 +155,7 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
               </span>
             ))}
           </div>
+          )}
         </div>
       </div>
 
