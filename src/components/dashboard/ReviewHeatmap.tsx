@@ -84,6 +84,7 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
             );
           })}
         </div>
+        </div>
       </div>
 
       {/* Legend + streak — centered below grid */}
