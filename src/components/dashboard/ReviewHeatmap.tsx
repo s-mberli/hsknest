@@ -56,6 +56,8 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
     }
     return labels;
   }, [allDates]);
+
+  const dayMap = useMemo(() => {
     const m = new Map<string, DayData>();
     for (const d of days) m.set(d.date, d);
     return m;
