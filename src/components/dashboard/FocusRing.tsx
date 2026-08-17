@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 
 interface FocusRingProps {
-  due: number; // vermilion
-  checks: number; // amber
-  fresh: number; // ink gray
+  due: number; // review
+  checks: number; // assumed known
+  fresh: number; // new
 }
 
 const SIZE = 240;

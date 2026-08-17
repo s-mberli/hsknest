@@ -35,7 +35,7 @@ export function Forecast({ forecast }: { forecast: number[] }) {
           >
             <div className="flex h-16 w-full flex-col items-center justify-end gap-0.5">
               {day.count > 0 && (
-                <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
+                <span className="text-xs font-medium tabular-nums text-muted-foreground">
                   {day.count}
                 </span>
               )}
@@ -49,9 +49,9 @@ export function Forecast({ forecast }: { forecast: number[] }) {
             </div>
             <span
               className={
-                day.isToday
-                  ? "text-[11px] font-semibold text-foreground"
-                  : "text-[11px] text-muted-foreground"
+                  day.isToday
+                    ? "text-xs font-semibold text-foreground"
+                    : "text-xs text-muted-foreground"
               }
             >
               {day.label}

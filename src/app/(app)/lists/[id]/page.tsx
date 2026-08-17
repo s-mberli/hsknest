@@ -1,4 +1,4 @@
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -115,18 +115,22 @@ export default async function ListDetailPage({
                   </Button>
                 )}
                 <EnrollButton listId={list.id} allEnrolled={allEnrolled} />
-              </div>
-              {!allEnrolled && (
-                <p className="max-w-xs text-right text-xs text-muted-foreground">
-                  Adds these words to your daily study rotation.
-                </p>
-              )}
-              <div className="flex flex-wrap items-center justify-end gap-1">
-                <AssumeButton listId={list.id} />
-                <UnenrollButton
-                  listId={list.id}
-                  enrolledCount={progress.length}
-                />
+                {/* Secondary actions: Assume + Unenroll behind a kebab. */}
+                {(progress.length > 0 || !allEnrolled) && (
+                  <details className="relative group/actions">
+                    <summary className="cursor-pointer list-none rounded-full p-1.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      <MoreHorizontal className="size-4 text-muted-foreground" />
+                    </summary>
+                    <div className="absolute right-0 z-10 mt-1 w-56 rounded-lg border bg-card p-2 shadow-md">
+                      <div className="space-y-2">
+                        <AssumeButton listId={list.id} />
+                        {progress.length > 0 && (
+                          <UnenrollButton listId={list.id} enrolledCount={progress.length} />
+                        )}
+                      </div>
+                    </div>
+                  </details>
+                )}
               </div>
             </>
           ) : (

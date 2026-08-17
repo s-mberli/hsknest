@@ -43,7 +43,7 @@ All paths relative to the repo root. The repo directory name contains a space �
 | `docs/ARCHITECTURE.md` | Must track code: data model (`prisma/schema.prisma`), ownership rules (`src/lib/ownership.ts`), SRS strategy pattern (`src/lib/srs/`), queue & cap logic (`/api/study/queue`), request flow, strength display (`src/lib/strength.ts`). |
 | `docs/CONFIGURATION.md` | Must track env vars (`.env.example`) and every per-user setting on the `User` model (theme, studyTheme, dailyNewWords, assumedCheckPerDay, preferredAlgorithm, intervalModifier, lapseModifier, masteryThresholdDays, fuzzIntervals, card text size), plus audio and feedback instructions. |
 | `docs/DEPLOYMENT.md` | Must track `Dockerfile`, the container entrypoint (migrate → seed-once via `/data/.seeded` marker → `node server.js`), `docker-compose.yml`, Coolify flow, Caddy/HSTS, backups. |
-| `CLAUDE.md` | Project constitution. Docs may never contradict it (language-agnostic schema, no hardcoded pinyin, SM-2 in `src/lib/srs.ts`-lineage, UI rules). |
+| `CLAUDE.md` | Project constitution. Docs may never contradict it (language-agnostic schema, no hardcoded pinyin, SM-2 in `src/lib/srs/`-lineage, UI rules). |
 | `.claude/skills/*/SKILL.md` | Skills are docs of record too. Each carries a Provenance section that must be kept fresh when its subject changes. |
 
 ### README roadmap structure (strict)

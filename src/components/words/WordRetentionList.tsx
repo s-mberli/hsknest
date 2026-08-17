@@ -154,17 +154,11 @@ export function WordRetentionList({
         const meta = STRENGTH_META[w.strength];
         const ariaLabel = `${w.term}, ${meta.label}, ${relativeDueLabel(w.dueAt)}`;
         return (
-          // contain-intrinsic-size is required: without it, a skipped
-          // (off-screen) row collapses to 0 height, so the browser reserves
-          // no space for it — this breaks scroll height and makes the
-          // scrollbar jump. "auto 64px" seeds the pre-render estimate at the
-          // button's real 64px height; `auto` lets the browser remember the
-          // actual size after first paint.
           <li
             key={w.wordId}
             style={{
               contentVisibility: "auto",
-              containIntrinsicSize: "auto 64px",
+              containIntrinsicSize: "auto 72px",
             }}
           >
             <WordHoverCard

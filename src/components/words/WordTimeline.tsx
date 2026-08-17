@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DUE_STATES, HORIZON_META, HORIZON_ORDER, isDueNow, matches, relativeDueLabel, wordHorizon, type Horizon } from "@/lib/horizon";
 import { type WordDetail, WordHoverCard } from "@/components/words/WordHoverCard";
-import { WordTile } from "@/components/words/WordTile";
+import { WordCard, type WordRow } from "@/components/lists/WordTable";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { STRENGTH_META, type Strength } from "@/lib/strength";
 import { mastery, streak } from "@/lib/wordStats";
@@ -161,7 +161,7 @@ function FocusHeader({
                       {w.phonetic}
                     </span>
                   )}
-                  <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground">
+                  <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">
                     {relativeDueLabel(w.dueAt, "in")}
                   </span>
                 </WordHoverCard>
@@ -249,10 +249,8 @@ function Lane({
 }) {
   const meta = HORIZON_META[horizon];
   const headingId = `horizon-${horizon}-heading`;
-  const tileRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   if (words.length === 0) {
-    // Empty lanes collapse to a thin muted rule rather than six empty boxes.
     return (
       <div
         aria-hidden
@@ -265,56 +263,20 @@ function Lane({
     );
   }
 
-  function focusTile(index: number) {
-    const clamped = Math.max(0, Math.min(words.length - 1, index));
-    tileRefs.current[clamped]?.focus();
-  }
-
-  function onKeyDown(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
-    const cols = Math.max(
-      1,
-      Math.floor(
-        (e.currentTarget.closest("ul")?.clientWidth ?? 0) /
-          (e.currentTarget.offsetWidth || 64)
-      )
-    );
-    switch (e.key) {
-      case "ArrowRight":
-        e.preventDefault();
-        focusTile(index + 1);
-        break;
-      case "ArrowLeft":
-        e.preventDefault();
-        focusTile(index - 1);
-        break;
-      case "ArrowDown":
-        e.preventDefault();
-        focusTile(index + cols);
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        focusTile(index - cols);
-        break;
-      case "Home":
-        e.preventDefault();
-        focusTile(0);
-        break;
-      case "End":
-        e.preventDefault();
-        focusTile(words.length - 1);
-        break;
-      default:
-        break;
-    }
-  }
+  // Map WordDetail to WordRow for WordCard reuse.
+  const rows: WordRow[] = words.map((w) => ({
+    id: w.wordId,
+    term: w.term,
+    translation: w.translation,
+    metadata: w.metadata,
+    phonetic: w.phonetic,
+    state: w.state,
+    intervalDays: w.intervalDays,
+    lapses: w.lapses,
+    languageCode: w.languageCode,
+  }));
 
   return (
-    // contain-intrinsic-size is required: without it, a skipped (off-screen)
-    // section collapses to 0 height, so the browser reserves no space for
-    // it — this breaks scroll height and makes the scrollbar jump. These
-    // horizon groups are variable height, so "auto 400px" is only a
-    // pre-render estimate; `auto` lets the browser self-correct after the
-    // first real layout.
     <section
       aria-labelledby={headingId}
       style={{
@@ -331,33 +293,22 @@ function Lane({
           {meta.sublabel}
         </span>
       </h3>
-      <ul
-        role="list"
-        className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5"
-      >
+      <div className="space-y-1.5">
         <AnimatePresence initial={false}>
-          {words.map((w, i) => (
-            <motion.li
-              key={w.wordId}
+          {rows.map((w) => (
+            <motion.div
+              key={w.id}
               layout={animateLayout ? "position" : false}
-              initial={animateLayout ? { opacity: 0, scale: 0.9 } : false}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={animateLayout ? { opacity: 0, scale: 0.9 } : undefined}
-              transition={{ duration: 0.2, delay: animateLayout ? Math.min(i, 8) * 0.02 : 0 }}
-              className="min-w-0"
+              initial={animateLayout ? { opacity: 0, y: 4 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              exit={animateLayout ? { opacity: 0, y: 4 } : undefined}
+              transition={{ duration: 0.2 }}
             >
-              <WordTile
-                word={w}
-                tabIndex={i === 0 ? 0 : -1}
-                tileRef={(el) => {
-                  tileRefs.current[i] = el;
-                }}
-                onKeyDown={(e) => onKeyDown(e, i)}
-              />
-            </motion.li>
+              <WordCard word={w} />
+            </motion.div>
           ))}
         </AnimatePresence>
-      </ul>
+      </div>
     </section>
   );
 }
