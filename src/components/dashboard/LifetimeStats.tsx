@@ -1,20 +1,14 @@
-import Link from "next/link";
-
 import { Card, CardContent } from "@/components/ui/card";
 import type { LifetimeStats as LifetimeStatsData } from "@/lib/stats";
 
 /**
  * "All time" lifetime stats card — server-rendered, no client JS needed.
- * A tight four-across stat strip (two-up on mobile). `weakCount` is a
- * current-state count, not lifetime, so it lives below the divider as an
- * actionable link rather than mixed into the strip.
+ * A tight four-across stat strip (two-up on mobile).
  */
 export function LifetimeStats({
   stats,
-  weakCount = 0,
 }: {
   stats: LifetimeStatsData;
-  weakCount?: number;
 }) {
   const items = [
     { value: stats.reviews.toLocaleString(), label: "reviews" },
@@ -51,22 +45,6 @@ export function LifetimeStats({
           and practice rounds alike.
         </p>
 
-        {weakCount > 0 && (
-          <Link
-            href="/words"
-            className="mt-4 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm transition-colors hover:bg-accent"
-          >
-            <span>
-              <span className="font-semibold tabular-nums">{weakCount}</span>{" "}
-              <span className="text-muted-foreground">
-                {weakCount === 1 ? "word needs" : "words need"} another look
-              </span>
-            </span>
-            <span aria-hidden className="text-muted-foreground">
-              →
-            </span>
-          </Link>
-        )}
       </CardContent>
     </Card>
   );

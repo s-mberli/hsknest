@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WordStrengthGrid } from "@/components/words/WordStrengthGrid";
@@ -40,7 +37,6 @@ type Filter = "all" | Strength;
 type View = "timeline" | "cards" | "list";
 
 export function WordBrowser() {
-  const router = useRouter();
   const [words, setWords] = useState<WordDetail[] | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
@@ -245,14 +241,6 @@ export function WordBrowser() {
         className="max-w-xs"
       />
 
-      {filter === "shaky" && (
-        <ShakyBulkBar
-          disabled={counts.shaky === 0}
-          onDone={() => router.refresh()}
-          reload={() => setWords(null)}
-        />
-      )}
-
       {inLanguage.length === 0 && language !== "all" ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center">
           <p className="text-sm text-muted-foreground">
@@ -342,86 +330,5 @@ function FilterChip({
       {label}
       <span className="ml-1.5 tabular-nums opacity-70">{count}</span>
     </button>
-  );
-}
-
-/** Bulk actions for shaky/trouble words — reuses /api/words/weak/* endpoints. */
-function ShakyBulkBar({
-  disabled,
-  onDone,
-  reload,
-}: {
-  disabled: boolean;
-  onDone: () => void;
-  reload: () => void;
-}) {
-  const [pending, setPending] = useState<"assume" | "reset" | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function run(action: "assume" | "reset") {
-    setBusy(true);
-    const res = await fetch(`/api/words/weak/${action}`, { method: "POST" });
-    setBusy(false);
-    setPending(null);
-    if (!res.ok) {
-      toast.error("Could not update these words. Please try again.");
-      return;
-    }
-    const data = await res.json();
-    toast.success(
-      action === "assume"
-        ? `Set ${data.updated} words aside as known.`
-        : `Reset ${data.updated} words to fresh.`
-    );
-    reload();
-    onDone();
-  }
-
-  return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card p-3">
-      {pending ? (
-        <>
-          <span className="text-sm text-muted-foreground">
-            {pending === "assume"
-              ? "Set all shaky words as known and stop scheduling them?"
-              : "Reset all shaky words back to new? Progress is lost."}
-          </span>
-          <Button variant="ghost" size="sm" onClick={() => setPending(null)} disabled={busy}>
-            Cancel
-          </Button>
-          <Button
-            variant={pending === "reset" ? "destructive" : "default"}
-            size="sm"
-            onClick={() => run(pending)}
-            disabled={busy}
-          >
-            {busy ? "Working…" : pending === "assume" ? "Yes, mark known" : "Yes, reset"}
-          </Button>
-        </>
-      ) : (
-        <>
-          <span className="text-sm text-muted-foreground">
-            Give these a fresh start, or set them aside as known.
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={disabled}
-            onClick={() => setPending("assume")}
-          >
-            Mark all as known
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={disabled}
-            className="border-destructive/40 text-destructive hover:bg-destructive/10"
-            onClick={() => setPending("reset")}
-          >
-            Reset all progress
-          </Button>
-        </>
-      )}
-    </div>
   );
 }

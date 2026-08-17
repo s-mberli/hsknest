@@ -20,7 +20,6 @@ export interface DashboardStats {
   newCount: number;
   learnedTotal: number;
   masteredTotal: number;
-  weakCount: number;
   streakDays: number;
   dailyNewWords: number;
   newIntroducedToday: number;
@@ -58,7 +57,7 @@ export async function getDashboardStats(
     newCount,
     learnedTotal,
     masteredTotal,
-    weakCount,
+    , // weakCount — kept for API routes, not exposed to dashboard UI
     assumedTotal,
     enrolledTotal,
     logs,
@@ -131,7 +130,6 @@ export async function getDashboardStats(
     newCount,
     learnedTotal,
     masteredTotal,
-    weakCount,
     streakDays: computeStreak(logs.map((l) => l.reviewedAt)),
     dailyNewWords: user?.dailyNewWords ?? 0,
     newIntroducedToday,
