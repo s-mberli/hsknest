@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { parseMeanings, primaryGloss } from "@/lib/meanings";
+import { relativeDueLabel } from "@/lib/horizon";
 import { STRENGTH_META, wordStrength, type Strength } from "@/lib/strength";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,8 @@ export interface WordRow {
   state: string | null;
   intervalDays: number | null;
   lapses: number | null;
+  dueAt?: string | null;
+  languageCode?: string;
 }
 
 /** Strength band for a row, or null when the word has no progress snapshot. */
@@ -62,7 +65,7 @@ export function MeaningCell({ word }: { word: WordRow }) {
             e.stopPropagation();
             setExpanded((v) => !v);
           }}
-          className="inline-flex min-h-11 items-center gap-0.5 rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex min-h-11 items-center gap-0.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           +{extraCount}
           <ChevronDown
@@ -108,9 +111,11 @@ export function StrengthCell({ word }: { word: WordRow }) {
 export function WordCard({
   word,
   children,
+  languageCode,
 }: {
   word: WordRow;
   children?: React.ReactNode;
+  languageCode?: string;
 }) {
   const strength = strengthOf(word);
   const days = Math.round(word.intervalDays ?? 0);
@@ -138,7 +143,7 @@ export function WordCard({
               <button
                 type="button"
                 className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => void playAudio(word.term, "word", "zh")}
+                onClick={() => void playAudio(word.term, "word", languageCode ?? word.languageCode ?? "zh")}
                 title="Pronounce"
               >
                 <Volume2 className="h-4 w-4" />
@@ -150,7 +155,7 @@ export function WordCard({
               </span>
             )}
           </div>
-          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
             {strength
               ? `${STRENGTH_META[strength].label}${days > 0 ? ` · ${days}d` : ""}`
               : "—"}
@@ -179,7 +184,8 @@ export function WordTable({ words }: { words: WordRow[] }) {
               <TableHead>Term</TableHead>
               <TableHead>Reading</TableHead>
               <TableHead>Meaning</TableHead>
-              <TableHead className="text-right">Strength</TableHead>
+              <TableHead>Strength</TableHead>
+              <TableHead className="text-right">Due</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -191,7 +197,7 @@ export function WordTable({ words }: { words: WordRow[] }) {
                     <button
                       type="button"
                       className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={() => void playAudio(w.term, "word", "zh")}
+                      onClick={() => void playAudio(w.term, "word", w.languageCode ?? "zh")}
                       title="Pronounce"
                     >
                       <Volume2 className="h-4 w-4" />
@@ -204,8 +210,11 @@ export function WordTable({ words }: { words: WordRow[] }) {
                 <TableCell>
                   <MeaningCell word={w} />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell>
                   <StrengthCell word={w} />
+                </TableCell>
+                <TableCell className="text-right text-xs tabular-nums text-muted-foreground">
+                  {w.dueAt ? relativeDueLabel(w.dueAt, "in").replace(/^in /, "") : "—"}
                 </TableCell>
               </TableRow>
             ))}

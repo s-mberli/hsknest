@@ -8,12 +8,14 @@ import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { LifetimeStats } from "@/components/dashboard/LifetimeStats";
+import { ReviewHeatmap } from "@/components/dashboard/ReviewHeatmap";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
 import { isSelfHosted } from "@/lib/selfHosted";
 import { getCurrentUserId } from "@/lib/session";
-import { getDashboardStats, getLifetimeStats } from "@/lib/stats";
+import { getDashboardStats, getLifetimeStats, type LifetimeStats as LifetimeStatsData } from "@/lib/stats";
+import { startOfLocalDay } from "@/lib/utils";
 import {
   getSubscriptionInfo,
   syncSubscriptionFromStripe,
@@ -35,6 +37,7 @@ export default async function DashboardPage({
     redirect("/dashboard");
   }
 
+  const now = new Date();
   const [user] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -85,10 +88,12 @@ export default async function DashboardPage({
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-8">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Today</h1>
-        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Flame className="size-4 text-amber" />
-          {stats.streakDays} {stats.streakDays === 1 ? "day" : "days"}
-        </span>
+        {stats.streakDays > 0 && (
+          <span className="flex items-center gap-1.5 rounded-full bg-amber/10 px-3 py-1 text-sm font-medium text-amber">
+            <Flame className="size-4" />
+            {stats.streakDays} {stats.streakDays === 1 ? "day" : "days"}
+          </span>
+        )}
       </header>
 
       {isGuest && (
@@ -111,6 +116,7 @@ export default async function DashboardPage({
         checks={stats.checkCount}
         fresh={fresh}
         learnedCount={stats.learnedTotal + stats.masteredTotal}
+        weakCount={stats.weakCount}
         dailyNewWords={stats.dailyNewWords}
         newBacklog={Math.max(0, stats.newCount - fresh)}
         languageCode={user.targetLanguage?.code}
@@ -132,12 +138,7 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
 
-      {lifetimeStats && (
-        <div className="mt-6">
-          <LifetimeStats stats={lifetimeStats} weakCount={stats.weakCount} />
-        </div>
-      )}
-
+      <HeatmapSection userId={userId} learnedTotal={stats.learnedTotal} now={now} lifetimeStats={lifetimeStats} weakCount={stats.weakCount} />
 
       {isNewUser && <div className="mt-6"><GettingStarted /></div>}
 
@@ -154,5 +155,85 @@ export default async function DashboardPage({
         </p>
       )}
     </main>
+  );
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Server-side heatmap data fetcher. Hidden when the user has 0 reviews
+ * (progressive disclosure — the heatmap appears as a reward for studying).
+ * Uses startOfLocalDay for bucketing so the heatmap and the streak flame
+ * always agree on which day "today" is.
+ *
+ * Merges the heatmap + LifetimeStats into one "Study Activity" card.
+ */
+async function HeatmapSection({
+  userId,
+  learnedTotal,
+  now,
+  lifetimeStats,
+  weakCount,
+}: {
+  userId: string;
+  learnedTotal: number;
+  now: Date;
+  lifetimeStats?: LifetimeStatsData | null;
+  weakCount?: number;
+}) {
+  if (learnedTotal === 0) return null;
+
+  const oneYearAgo = startOfLocalDay(new Date(now.getTime() - 365 * DAY_MS));
+
+  const reviews = await prisma.reviewLog.findMany({
+    where: { userId, source: "srs", reviewedAt: { gte: oneYearAgo } },
+    select: { reviewedAt: true, quality: true },
+  });
+
+  if (reviews.length === 0) return null;
+
+  // Bucket by local calendar day using startOfLocalDay — same logic as
+  // computeStreak, so the heatmap and the streak flame always agree.
+  const dayMap = new Map<string, { count: number; correct: number }>();
+  for (const r of reviews) {
+    const dayKey = startOfLocalDay(r.reviewedAt).toISOString().slice(0, 10);
+    const entry = dayMap.get(dayKey) ?? { count: 0, correct: 0 };
+    entry.count += 1;
+    if (r.quality >= 3) entry.correct += 1;
+    dayMap.set(dayKey, entry);
+  }
+
+  const days = Array.from(dayMap, ([date, data]) => ({
+    date,
+    ...data,
+  }));
+
+  // Streak from the heatmap's own data (consistent with the day-bucketing).
+  let streakDays = 0;
+  const today = startOfLocalDay(now).toISOString().slice(0, 10);
+  const yesterday = startOfLocalDay(new Date(now.getTime() - DAY_MS)).toISOString().slice(0, 10);
+  let cursor = dayMap.has(today) ? today : dayMap.has(yesterday) ? yesterday : "";
+  while (cursor && dayMap.has(cursor)) {
+    streakDays += 1;
+    const d = new Date(cursor + "T12:00:00");
+    d.setDate(d.getDate() - 1);
+    cursor = d.toISOString().slice(0, 10);
+  }
+
+  return (
+    <Card className="mb-6 mt-6">
+      <CardContent className="pt-6">
+        <ReviewHeatmap
+          days={days}
+          streakDays={streakDays}
+        />
+        {lifetimeStats && (
+          <>
+            <div className="my-5 border-t border-border/40" />
+            <LifetimeStats stats={lifetimeStats} weakCount={weakCount} />
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

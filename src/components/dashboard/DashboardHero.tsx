@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ interface DashboardHeroProps {
   fresh: number;
   /** Words the user has already learned — gates the Practice/Refresh action. */
   learnedCount?: number;
+  /** Words struggling (low strength) — gates the weak-words shortcut. */
+  weakCount?: number;
   /** Daily new-word limit, for the "how fast do I grow" hint. */
   dailyNewWords?: number;
   /** New words enrolled but held back today by the daily cap (0 = none). */
@@ -45,10 +47,10 @@ interface DashboardHeroProps {
 const ROMANIZED_READING_LANGS = new Set(["zh"]);
 
 /** One breakdown chip: color-matched to its ring segment. */
-const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string }[] = [
-  { key: "due", label: "review", dot: "bg-primary" },
-  { key: "fresh", label: "new", dot: "bg-muted-foreground" },
-  { key: "checks", label: "checks", dot: "bg-amber" },
+const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string; tip: string }[] = [
+  { key: "due", label: "review", dot: "bg-primary", tip: "Cards the scheduler says are due today" },
+  { key: "fresh", label: "new", dot: "bg-muted-foreground", tip: "New words introduced today" },
+  { key: "checks", label: "assumed", dot: "bg-amber", tip: "Words you said you knew — checked sooner than reviewed cards" },
 ];
 
 // Studying always runs today's whole queue (all due + checks + capped new);
@@ -67,6 +69,7 @@ export function DashboardHero({
   checks,
   fresh,
   learnedCount = 0,
+  weakCount = 0,
   dailyNewWords = 0,
   newBacklog = 0,
   languageCode,
@@ -115,7 +118,12 @@ export function DashboardHero({
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="flex w-full flex-col items-center gap-4 rounded-3xl border bg-card p-6 shadow-card">
+      <div className="relative flex w-full flex-col items-center gap-4 rounded-3xl border bg-card p-6 shadow-card">
+        {/* Paper grain — ink identity carried from the study card + Ninja. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-3xl opacity-[0.04] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:20px_20px]"
+        />
         <FocusRing due={due} checks={checks} fresh={fresh}>
           {hasCards ? (
             <>
@@ -144,6 +152,7 @@ export function DashboardHero({
                 <span
                   key={s.key}
                   className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                  title={s.tip}
                 >
                   <span className={cn("size-2 rounded-full", s.dot)} />
                   <span className="font-semibold tabular-nums text-foreground">
@@ -168,9 +177,22 @@ export function DashboardHero({
               </Button>
             )}
 
+            {weakCount > 0 && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full max-w-xs rounded-full border-amber/30 text-amber hover:bg-amber/10"
+              >
+                <Link href="/words">
+                  Focus on {weakCount} {weakCount === 1 ? "weak word" : "weak words"}
+                </Link>
+              </Button>
+            )}
+
             {/* The real "how fast do I grow" lever lives in Settings. */}
             {dailyNewWords > 0 && (
-              <p className="text-center text-[11px] text-muted-foreground">
+              <p className="text-center text-xs text-muted-foreground">
                 {dailyNewWords} new words/day
                 {newBacklog > 0 && ` · ${newBacklog} more waiting`} ·{" "}
                 <Link
@@ -199,8 +221,9 @@ export function DashboardHero({
         )}
       </div>
 
-      {/* Specialized practice — pure practice, never moves the schedule. */}
-      {(hasCards || canPractice) && (
+      {/* Specialized practice — pure practice, never moves the schedule.
+          Hidden until the user has learned at least one word. */}
+      {learnedCount > 0 && (
         <div className="w-full max-w-xl space-y-2">
           <SectionLabel>More ways to practice</SectionLabel>
           <p className="text-xs text-muted-foreground">
@@ -243,7 +266,7 @@ export function DashboardHero({
                     </span>
                     <span className="leading-tight">{label}</span>
                     {subtitle && (
-                      <span className="text-[10px] font-normal leading-tight text-muted-foreground">
+                      <span className="text-xs font-normal leading-tight text-muted-foreground">
                         {subtitle}
                       </span>
                     )}

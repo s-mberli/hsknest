@@ -38,6 +38,10 @@ export function LandingHero() {
         aria-hidden="true"
         className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_60%)]"
       />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 opacity-[0.04] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:20px_20px]"
+      />
 
       <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 text-center lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:text-left">
         <div className="space-y-7">
@@ -77,13 +81,13 @@ export function LandingHero() {
           >
             <ul className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 lg:justify-start">
               <li className="flex items-center gap-2">
-                <span className="text-primary">•</span> 3,000+ example sentences & native audio
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> 3,000+ example sentences & native audio
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-primary">•</span> Powered by modern FSRS science
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Powered by modern FSRS science
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-primary">•</span> Gesture-first swipe UX
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Gesture-first swipe UX
               </li>
             </ul>
           </motion.div>

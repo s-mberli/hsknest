@@ -290,7 +290,7 @@ function OwnerWordRow({
           <button
             type="button"
             className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => void playAudio(word.term, "word", "zh")}
+            onClick={() => void playAudio(word.term, "word", word.languageCode ?? "zh")}
             title="Pronounce"
           >
             <Volume2 className="h-4 w-4" />
