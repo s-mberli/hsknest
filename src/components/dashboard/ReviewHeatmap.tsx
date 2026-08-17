@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export interface DayData {
@@ -21,8 +20,8 @@ interface ReviewHeatmapProps {
  * GitHub-style contribution heatmap for review activity. 6-month window,
  * vermilion color scale matching the ink/paper identity.
  *
- * Follows the same day-bucketing as computeStreak (startOfLocalDay) so
- * the heatmap and the streak flame always agree on which day "today" is.
+ * Client component — renders only the grid, legend, streak, and popover.
+ * The Card wrapper lives in the server parent (HeatmapSection).
  */
 export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapProps) {
   const [selected, setSelected] = useState<DayData | null>(null);
@@ -41,116 +40,125 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
   const avgPerDay = Math.round(totalReviews / 180);
 
   return (
-    <Card className="relative">
-      <CardContent className="pt-6">
-        <div className="mb-4 flex items-baseline justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Review activity
-          </p>
-          <span className="text-xs text-muted-foreground">
-            {totalReviews.toLocaleString()} reviews · {avgPerDay}/day
-          </span>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-baseline justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Review activity
+        </p>
+        <span className="text-xs text-muted-foreground">
+          {totalReviews.toLocaleString()} reviews · {avgPerDay}/day
+        </span>
+      </div>
 
-        <div className="flex gap-2">
-          {/* Day labels: Mon, Wed, Fri */}
-          <div className="flex flex-col gap-[3px] pt-0">
-            {["Mon", "", "Wed", "", "Fri", "", ""].map((label, i) => (
-              <span key={i} className="h-3 text-[10px] leading-3 text-muted-foreground">
-                {label}
-              </span>
-            ))}
-          </div>
-
-          {/* Grid */}
-          <div className="flex-1 overflow-x-auto overflow-y-hidden">
-            <div className="flex gap-[3px]">
-              {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col gap-[3px]">
-                  {week.map((date, di) => {
-                    const d = dayMap.get(date);
-                    const count = d?.count ?? 0;
-                    const isToday = date === today;
-                    return (
-                      <button
-                        key={di}
-                        type="button"
-                        title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
-                        onClick={() => setSelected(d ?? null)}
-                        className={cn(
-                          "h-3 w-3 rounded-[2px] border transition-colors",
-                          heatColor(count),
-                          isToday && "ring-1 ring-primary"
-                        )}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-
-            {/* Month labels */}
-            <div className="mt-1 flex gap-[3px]">
-              {weeks.map((week, wi) => {
-                const firstDate = week[0];
-                const month = firstDate
-                  ? new Date(firstDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
-                  : "";
-                // Show month label only on the first week of each month.
-                const showMonth = wi === 0 || (firstDate && month !== new Date(weeks[wi - 1][0] + "T12:00:00").toLocaleDateString("en-US", { month: "short" }));
-                return (
-                  <span key={wi} className="h-3 w-3 text-[10px] leading-3 text-muted-foreground">
-                    {showMonth ? month : ""}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Streak + legend */}
-        <div className="mt-3 flex items-center justify-between">
-          {streakDays > 0 ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
-              <span className="size-1.5 rounded-full bg-amber" />
-              {streakDays}-day streak
+      <div className="flex gap-2">
+        {/* Day labels: Mon, Wed, Fri, Sun */}
+        <div className="flex flex-col gap-[3px] pt-0">
+          {["Mon", "", "Wed", "", "Fri", "", "Sun"].map((label, i) => (
+            <span key={i} className="h-3 text-[10px] leading-3 text-muted-foreground">
+              {label}
             </span>
-          ) : (
-            <span />
-          )}
-          {/* Color legend */}
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <span>Less</span>
-            {[0, 3, 10, 20].map((count) => (
-              <span
-                key={count}
-                className={cn("h-2.5 w-2.5 rounded-[1px]", heatColor(count))}
-              />
-            ))}
-            <span>More</span>
-          </div>
+          ))}
         </div>
 
-        {/* Click popover */}
-        {selected && selected.count > 0 && (
-          <div className="mt-3 rounded-lg border bg-muted/50 p-3">
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm font-medium">{selected.date}</p>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                close
-              </button>
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {selected.count} review{selected.count !== 1 ? "s" : ""} · {selected.correct} correct · {selected.count - selected.correct} lapses
+        {/* Grid */}
+        <div className="flex-1 overflow-x-auto overflow-y-hidden">
+          <div className="flex gap-[3px]">
+            {weeks.map((week, wi) => (
+              <div key={wi} className="flex flex-col gap-[3px]">
+                {week.map((date, di) => {
+                  const d = dayMap.get(date);
+                  const count = d?.count ?? 0;
+                  const isToday = date === today;
+                  return (
+                    <button
+                      key={di}
+                      type="button"
+                      title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
+                      onClick={() => setSelected(d ?? null)}
+                      className={cn(
+                        "h-3 w-3 rounded-[2px] border transition-colors",
+                        heatColor(count),
+                        isToday && "ring-1 ring-primary"
+                      )}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* Month labels */}
+          <div className="mt-1 flex gap-[3px]">
+            {weeks.map((week, wi) => {
+              const firstDate = week[0];
+              const month = firstDate
+                ? new Date(firstDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
+                : "";
+              const showMonth = wi === 0 || (firstDate && month !== new Date(weeks[wi - 1][0] + "T12:00:00").toLocaleDateString("en-US", { month: "short" }));
+              return (
+                <span key={wi} className="h-3 w-3 text-[10px] leading-3 text-muted-foreground">
+                  {showMonth ? month : ""}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Streak + legend row */}
+      <div className="flex items-center justify-between">
+        {streakDays > 0 ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
+            <span className="size-1.5 rounded-full bg-amber" />
+            {streakDays}-day streak
+          </span>
+        ) : (
+          <span />
+        )}
+        {/* Color legend */}
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span>Less</span>
+          {[0, 3, 10, 20].map((count) => (
+            <span
+              key={count}
+              className={cn("h-2.5 w-2.5 rounded-[1px]", heatColor(count))}
+            />
+          ))}
+          <span>More</span>
+        </div>
+      </div>
+
+      {/* Click popover */}
+      {selected && selected.count > 0 && (
+        <div className="rounded-lg border bg-muted/50 p-3">
+          <div className="flex items-baseline justify-between">
+            <p className="text-sm font-medium">{selected.date}</p>
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              close
+            </button>
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              {selected.count} review{selected.count !== 1 ? "s" : ""}
+            </p>
+            <p className="text-xs font-medium text-foreground">
+              {Math.round((selected.correct / selected.count) * 100)}% correct
             </p>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          {/* Correct/lapses bar */}
+          <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-border/30">
+            <div
+              className="bg-primary"
+              style={{ width: `${(selected.correct / selected.count) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -14,7 +14,7 @@ import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
 import { isSelfHosted } from "@/lib/selfHosted";
 import { getCurrentUserId } from "@/lib/session";
-import { getDashboardStats, getLifetimeStats } from "@/lib/stats";
+import { getDashboardStats, getLifetimeStats, type LifetimeStats as LifetimeStatsData } from "@/lib/stats";
 import { startOfLocalDay } from "@/lib/utils";
 import {
   getSubscriptionInfo,
@@ -138,14 +138,7 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
 
-      <HeatmapSection userId={userId} learnedTotal={stats.learnedTotal} now={now} />
-
-      {lifetimeStats && (
-        <div className="mt-6">
-          <LifetimeStats stats={lifetimeStats} weakCount={stats.weakCount} />
-        </div>
-      )}
-
+      <HeatmapSection userId={userId} learnedTotal={stats.learnedTotal} now={now} lifetimeStats={lifetimeStats} weakCount={stats.weakCount} />
 
       {isNewUser && <div className="mt-6"><GettingStarted /></div>}
 
@@ -172,15 +165,21 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * (progressive disclosure — the heatmap appears as a reward for studying).
  * Uses startOfLocalDay for bucketing so the heatmap and the streak flame
  * always agree on which day "today" is.
+ *
+ * Merges the heatmap + LifetimeStats into one "Study Activity" card.
  */
 async function HeatmapSection({
   userId,
   learnedTotal,
   now,
+  lifetimeStats,
+  weakCount,
 }: {
   userId: string;
   learnedTotal: number;
   now: Date;
+  lifetimeStats?: LifetimeStatsData | null;
+  weakCount?: number;
 }) {
   if (learnedTotal === 0) return null;
 
@@ -223,12 +222,20 @@ async function HeatmapSection({
   }
 
   return (
-    <div className="mb-6 mt-6">
-      <ReviewHeatmap
-        days={days}
-        totalReviews={totalReviews}
-        streakDays={streakDays}
-      />
-    </div>
+    <Card className="mb-6 mt-6">
+      <CardContent className="pt-6">
+        <ReviewHeatmap
+          days={days}
+          totalReviews={totalReviews}
+          streakDays={streakDays}
+        />
+        {lifetimeStats && (
+          <>
+            <div className="my-5 border-t border-border/40" />
+            <LifetimeStats stats={lifetimeStats} weakCount={weakCount} />
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
