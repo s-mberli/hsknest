@@ -47,80 +47,77 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
         </span>
       </div>
 
-      <div className="flex gap-2">
-        {/* Day labels: Mon, Wed, Fri, Sun */}
-        <div className="flex flex-col gap-[3px] pt-0">
-          {["Mon", "", "Wed", "", "Fri", "", "Sun"].map((label, i) => (
-            <span key={i} className="h-3 text-[10px] leading-3 text-muted-foreground">
-              {label}
-            </span>
-          ))}
-        </div>
-
-        {/* Grid */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden">
-          <div className="flex gap-[3px]">
-            {weeks.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-[3px]">
-                {week.map((date, di) => {
-                  const d = dayMap.get(date);
-                  const count = d?.count ?? 0;
-                  const isToday = date === today;
-                  return (
-                    <button
-                      key={di}
-                      type="button"
-                      title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
-                      onClick={() => setSelected(d ?? null)}
-                      className={cn(
-                        "h-3 w-3 rounded-[2px] border transition-colors",
-                        heatColor(count),
-                        isToday && "ring-1 ring-primary"
-                      )}
-                    />
-                  );
-                })}
-              </div>
+      <div className="flex gap-4">
+        {/* Day labels + grid */}
+        <div className="flex gap-2 flex-1 min-w-0">
+          <div className="flex flex-col gap-[3px] pt-0">
+            {["Mon", "", "Wed", "", "Fri", "", "Sun"].map((label, i) => (
+              <span key={i} className="h-3 text-[10px] leading-3 text-muted-foreground">
+                {label}
+              </span>
             ))}
           </div>
-
-          {/* Month labels */}
-          <div className="mt-1 flex gap-[3px]">
-            {weeks.map((week, wi) => {
-              const firstDate = week[0];
-              const month = firstDate
-                ? new Date(firstDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
-                : "";
-              const showMonth = wi === 0 || (firstDate && month !== new Date(weeks[wi - 1][0] + "T12:00:00").toLocaleDateString("en-US", { month: "short" }));
-              return (
-                <span key={wi} className="h-3 w-3 text-[10px] leading-3 text-muted-foreground">
-                  {showMonth ? month : ""}
-                </span>
-              );
-            })}
+          <div className="flex-1 overflow-x-auto overflow-y-hidden">
+            <div className="flex gap-[3px]">
+              {weeks.map((week, wi) => (
+                <div key={wi} className="flex flex-col gap-[3px]">
+                  {week.map((date, di) => {
+                    const d = dayMap.get(date);
+                    const count = d?.count ?? 0;
+                    const isToday = date === today;
+                    return (
+                      <button
+                        key={di}
+                        type="button"
+                        title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
+                        onClick={() => setSelected(d ?? null)}
+                        className={cn(
+                          "h-3 w-3 rounded-[2px] border transition-colors",
+                          heatColor(count),
+                          isToday && "ring-1 ring-primary"
+                        )}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <div className="mt-1 flex gap-[3px]">
+              {weeks.map((week, wi) => {
+                const firstDate = week[0];
+                const month = firstDate
+                  ? new Date(firstDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
+                  : "";
+                const showMonth = wi === 0 || (firstDate && month !== new Date(weeks[wi - 1][0] + "T12:00:00").toLocaleDateString("en-US", { month: "short" }));
+                return (
+                  <span key={wi} className="h-3 w-3 text-[10px] leading-3 text-muted-foreground">
+                    {showMonth ? month : ""}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Streak + legend row */}
-      <div className="flex items-center justify-between">
-        {/* Color legend */}
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <span>Less</span>
-          {[0, 3, 10, 20].map((count) => (
-            <span
-              key={count}
-              className={cn("h-2.5 w-2.5 rounded-[1px]", heatColor(count))}
-            />
-          ))}
-          <span>More</span>
+        {/* Side: legend + streak */}
+        <div className="flex shrink-0 flex-col items-end justify-end gap-2">
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span>Less</span>
+            {[0, 3, 10, 20].map((count) => (
+              <span
+                key={count}
+                className={cn("h-2.5 w-2.5 rounded-[1px]", heatColor(count))}
+              />
+            ))}
+            <span>More</span>
+          </div>
+          {streakDays > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
+              <span className="size-1.5 rounded-full bg-amber" />
+              {streakDays}-day streak
+            </span>
+          )}
         </div>
-        {streakDays > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
-            <span className="size-1.5 rounded-full bg-amber" />
-            {streakDays}-day streak
-          </span>
-        )}
       </div>
 
       {/* Click popover */}
