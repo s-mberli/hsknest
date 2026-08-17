@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -15,86 +15,141 @@ interface ReviewHeatmapProps {
   streakDays: number;
 }
 
+/** Cell size in px. Gap is 3px. Week column width = CELL + GAP = 17px. */
+const CELL = 14;
+const GAP = 3;
+const COL = CELL + GAP;
+
 /**
- * GitHub-style contribution heatmap for review activity. 6-month window,
- * vermilion color scale matching the ink/paper identity.
+ * GitHub-style contribution heatmap for review activity. Responsive —
+ * computes the number of weeks from container width so the grid fills
+ * available space on both desktop and mobile without overflow or scroll.
  *
- * Client component — renders only the grid, legend, streak, and popover.
- * The Card wrapper lives in the server parent (HeatmapSection).
+ * Cell size: 14px. Vermilion color scale matching ink/paper identity.
  */
 export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
   const [selected, setSelected] = useState<DayData | null>(null);
   const [today] = useState(todayStr);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [numWeeks, setNumWeeks] = useState(26); // default, updated by ResizeObserver
 
-  // Build a lookup map: date → { count, correct }
-  const dayMap = new Map<string, DayData>();
-  for (const d of days) {
-    dayMap.set(d.date, d);
-  }
+  // Build lookup map: date → data
+  const dayMap = useMemo(() => {
+    const m = new Map<string, DayData>();
+    for (const d of days) m.set(d.date, d);
+    return m;
+  }, [days]);
 
-  // 6 months of cells (26 weeks). Centered in card for intentional whitespace.
-  const weeks = buildWeeks(180);
+  // All dates in the grid (most-recent N weeks, Mon-aligned).
+  const allDates = useMemo(() => {
+    const end = new Date();
+    const start = new Date(end);
+    start.setDate(start.getDate() - numWeeks * 7 + 1);
+    // Align to Monday.
+    const dow = start.getDay();
+    start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
+
+    const dates: string[] = [];
+    const cur = new Date(start);
+    while (cur <= end) {
+      dates.push(fmt(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  }, [numWeeks]);
+
+  // Measure container → compute how many weeks fit.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
+      if (w > 0) setNumWeeks(Math.max(4, Math.floor(w / COL)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Month labels — computed from the visible dates.
+  const monthLabels = useMemo(() => {
+    const labels: { month: string; index: number }[] = [];
+    let lastMonth = "";
+    for (let i = 0; i < allDates.length; i += 7) {
+      const d = allDates[i];
+      const month = d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short" }) : "";
+      if (month && month !== lastMonth) {
+        labels.push({ month, index: i });
+        lastMonth = month;
+      }
+    }
+    return labels;
+  }, [allDates]);
+
+  // Columns: each column is a day (Mon→Sun). 7 rows.
+  const columns = useMemo(() => {
+    const cols: string[][] = [];
+    for (let i = 0; i < allDates.length; i += 7) {
+      cols.push(allDates.slice(i, i + 7));
+    }
+    return cols;
+  }, [allDates]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-baseline justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Review activity
-        </p>
-      </div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Review activity
+      </p>
 
-      {/* Grid — centered for intentional whitespace, overflow-x for mobile */}
-      <div className="overflow-x-auto overflow-y-hidden">
-        <div className="mx-auto w-fit px-1">
+      {/* Responsive grid — fills available width */}
+      <div ref={containerRef}>
+        {/* Month labels */}
         <div className="flex gap-[3px]">
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]">
-              {week.map((date, di) => {
-                const d = dayMap.get(date);
-                const count = d?.count ?? 0;
-                const isToday = date === today;
-                return (
-                  <button
-                    key={di}
-                    type="button"
-                    title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
-                    onClick={() => setSelected(d ?? null)}
-                    className={cn(
-                      "h-3 w-3 rounded-[2px] border transition-colors",
-                      heatColor(count),
-                      isToday && "ring-1 ring-primary"
-                    )}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        <div className="mt-1 flex gap-[3px]">
-          {weeks.map((week, wi) => {
-            const firstDate = week[0];
-            const month = firstDate
-              ? new Date(firstDate + "T12:00:00").toLocaleDateString("en-US", { month: "short" })
-              : "";
-            const showMonth = wi === 0 || (firstDate && month !== new Date(weeks[wi - 1][0] + "T12:00:00").toLocaleDateString("en-US", { month: "short" }));
+          {columns.map((col, ci) => {
+            const ml = monthLabels.find((m) => m.index === ci * 7);
             return (
-              <span key={wi} className="h-3 w-3 text-[10px] leading-3 text-muted-foreground">
-                {showMonth ? month : ""}
+              <span key={ci} className="h-3 w-3.5 text-[10px] leading-3 text-muted-foreground">
+                {ml?.month ?? ""}
               </span>
             );
           })}
         </div>
+
+        {/* Day grid — CSS Grid with fixed cell size */}
+        <div
+          className="grid gap-[3px]"
+          style={{ gridTemplateColumns: `repeat(${columns.length}, ${CELL}px)` }}
+        >
+          {allDates.map((date, i) => {
+            const d = dayMap.get(date);
+            const count = d?.count ?? 0;
+            const isToday = date === today;
+            return (
+              <button
+                key={i}
+                type="button"
+                title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
+                onClick={() => setSelected(d ?? null)}
+                className={cn(
+                  "rounded-[2px] border transition-colors",
+                  heatColor(count),
+                  isToday && "ring-1 ring-primary"
+                )}
+                style={{ width: CELL, height: CELL }}
+              />
+            );
+          })}
         </div>
       </div>
 
-      {/* Legend + streak — centered below grid */}
+      {/* Legend + streak */}
       <div className="flex items-center justify-center gap-4">
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
           <span>Less</span>
           {[0, 3, 10, 20].map((count) => (
             <span
               key={count}
-              className={cn("h-2.5 w-2.5 rounded-[1px]", heatColor(count))}
+              className={cn("rounded-[1px]", heatColor(count))}
+              style={{ width: 10, height: 10 }}
             />
           ))}
           <span>More</span>
@@ -128,7 +183,6 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
               {Math.round((selected.correct / selected.count) * 100)}% correct
             </p>
           </div>
-          {/* Correct/lapses bar */}
           <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-border/30">
             <div
               className="bg-primary"
@@ -141,7 +195,6 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
   );
 }
 
-/** Color scale: empty cells barely visible, filled cells pop. */
 function heatColor(count: number): string {
   if (count === 0) return "bg-border/20";
   if (count <= 5) return "bg-primary/25 border-primary/20";
@@ -152,33 +205,6 @@ function heatColor(count: number): string {
 function todayStr(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-/** Build 6 months of weeks. Each week = array of YYYY-MM-DD strings (Mon-Sun). */
-function buildWeeks(daysBack: number): string[][] {
-  const weeks: string[][] = [];
-  const end = new Date();
-  // Start from today, go back daysBack days.
-  const start = new Date(end);
-  start.setDate(start.getDate() - daysBack + 1);
-
-  // Align start to Monday.
-  const dayOfWeek = start.getDay();
-  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  start.setDate(start.getDate() - mondayOffset);
-
-  const current = new Date(start);
-  while (current <= end) {
-    const week: string[] = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(current);
-      d.setDate(d.getDate() + i);
-      week.push(fmt(d));
-    }
-    weeks.push(week);
-    current.setDate(current.getDate() + 7);
-  }
-  return weeks;
 }
 
 function fmt(d: Date): string {
