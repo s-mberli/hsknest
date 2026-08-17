@@ -335,7 +335,7 @@ export default function NinjaStage({
                 </p>
               )}
             </div>
-            <p className="text-sm font-medium">{view.lastOutcome.translation}</p>
+            <p className="text-sm font-medium">{gameGloss({ translation: view.lastOutcome.translation })}</p>
           </div>
         ) : (
           <div
@@ -439,7 +439,7 @@ export default function NinjaStage({
                     {toughestList.slice(0, 3).map((w) => (
                         <li key={w.char} className="flex items-center justify-between gap-3 text-sm">
                           <span data-term className="font-semibold">{w.char}</span>
-                          <span className="truncate text-muted-foreground">{w.translation}</span>
+                          <span className="truncate text-muted-foreground">{gameGloss({ translation: w.translation })}</span>
                         </li>
                       ))}
                   </ul>

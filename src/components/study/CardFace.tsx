@@ -150,6 +150,7 @@ export function CardFace({
   const meanings = showFull ? parseMeanings(card) : [];
   const primary = meanings[0];
   const primaryText = primary?.gloss ?? card.translation;
+  const secondary = showFull ? meanings.slice(1, 3) : [];
 
   // Sentence expander: hide behind a tap to keep FULL reveal clean.
   // Reset on card change via render-time pattern (no effect needed).
@@ -256,6 +257,20 @@ export function CardFace({
             >
               {primaryText}
             </p>
+
+            {secondary.map((m, i) => (
+              <p
+                key={i}
+                className="max-w-full break-words text-sm text-muted-foreground/70 [overflow-wrap:anywhere]"
+              >
+                {m.gloss.length > 40 ? m.gloss.slice(0, 40) + "…" : m.gloss}
+              </p>
+            ))}
+            {meanings.length > 3 && (
+              <span className="text-xs text-muted-foreground/50 italic">
+                and {meanings.length - 3} more
+              </span>
+            )}
 
             {extras.length > 0 && (
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground/80">

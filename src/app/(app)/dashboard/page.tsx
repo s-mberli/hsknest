@@ -116,7 +116,6 @@ export default async function DashboardPage({
         checks={stats.checkCount}
         fresh={fresh}
         learnedCount={stats.learnedTotal + stats.masteredTotal}
-        weakCount={stats.weakCount}
         dailyNewWords={stats.dailyNewWords}
         newBacklog={Math.max(0, stats.newCount - fresh)}
         languageCode={user.targetLanguage?.code}
@@ -138,7 +137,7 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
 
-      <HeatmapSection userId={userId} learnedTotal={stats.learnedTotal} now={now} lifetimeStats={lifetimeStats} weakCount={stats.weakCount} />
+      <HeatmapSection userId={userId} learnedTotal={stats.learnedTotal} now={now} lifetimeStats={lifetimeStats} />
 
       {isNewUser && <div className="mt-6"><GettingStarted /></div>}
 
@@ -173,13 +172,11 @@ async function HeatmapSection({
   learnedTotal,
   now,
   lifetimeStats,
-  weakCount,
 }: {
   userId: string;
   learnedTotal: number;
   now: Date;
   lifetimeStats?: LifetimeStatsData | null;
-  weakCount?: number;
 }) {
   if (learnedTotal === 0) return null;
 
@@ -230,7 +227,7 @@ async function HeatmapSection({
         {lifetimeStats && (
           <>
             <div className="my-5 border-t border-border/40" />
-            <LifetimeStats stats={lifetimeStats} weakCount={weakCount} />
+            <LifetimeStats stats={lifetimeStats} />
           </>
         )}
       </CardContent>
