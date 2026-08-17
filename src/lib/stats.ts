@@ -3,7 +3,6 @@ import { DUE_STATES, SOLID_STATES, LIFETIME_LEARNED_STATES } from "@/lib/cardSta
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
 import type { CardState } from "@/lib/srs";
-import { weakProgressWhere } from "@/lib/strength";
 import { startOfLocalDay } from "@/lib/utils";
 
 // horizon.ts deliberately stays Prisma-free (pure/derivation module), so
@@ -57,7 +56,6 @@ export async function getDashboardStats(
     newCount,
     learnedTotal,
     masteredTotal,
-    , // weakCount — kept for API routes, not exposed to dashboard UI
     assumedTotal,
     enrolledTotal,
     logs,
@@ -79,9 +77,6 @@ export async function getDashboardStats(
     prisma.userProgress.count({ where: { userId, state: "NEW", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: { in: SOLID_STATES_LIST }, ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: "MASTERED", ...langFilter } }),
-    prisma.userProgress.count({
-      where: { ...weakProgressWhere(userId), ...langFilter },
-    }),
     prisma.userProgress.count({ where: { userId, state: "ASSUMED", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, ...langFilter } }),
     prisma.reviewLog.findMany({
