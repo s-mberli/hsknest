@@ -43,8 +43,8 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
         </p>
       </div>
 
-      {/* Grid — full width, no side panel */}
-      <div>
+      {/* Grid — full width with breathing room */}
+      <div className="px-1">
         <div className="flex gap-[3px]">
           {weeks.map((week, wi) => (
             <div key={wi} className="flex flex-col gap-[3px]">
