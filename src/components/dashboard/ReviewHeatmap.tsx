@@ -108,12 +108,28 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
           </div>
         </div>
 
-        {/* Streak */}
-        {streakDays > 0 && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            {streakDays}-day streak
-          </p>
-        )}
+        {/* Streak + legend */}
+        <div className="mt-3 flex items-center justify-between">
+          {streakDays > 0 ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-2.5 py-0.5 text-xs font-medium text-amber">
+              <span className="size-1.5 rounded-full bg-amber" />
+              {streakDays}-day streak
+            </span>
+          ) : (
+            <span />
+          )}
+          {/* Color legend */}
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span>Less</span>
+            {[0, 3, 10, 20].map((count) => (
+              <span
+                key={count}
+                className={cn("h-2.5 w-2.5 rounded-[1px] border", heatColor(count))}
+              />
+            ))}
+            <span>More</span>
+          </div>
+        </div>
 
         {/* Click popover */}
         {selected && selected.count > 0 && (
