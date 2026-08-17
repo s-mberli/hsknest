@@ -8,12 +8,14 @@ import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { Forecast } from "@/components/dashboard/Forecast";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { LifetimeStats } from "@/components/dashboard/LifetimeStats";
+import { ReviewHeatmap } from "@/components/dashboard/ReviewHeatmap";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
 import { isSelfHosted } from "@/lib/selfHosted";
 import { getCurrentUserId } from "@/lib/session";
 import { getDashboardStats, getLifetimeStats } from "@/lib/stats";
+import { startOfLocalDay } from "@/lib/utils";
 import {
   getSubscriptionInfo,
   syncSubscriptionFromStripe,
@@ -35,6 +37,7 @@ export default async function DashboardPage({
     redirect("/dashboard");
   }
 
+  const now = new Date();
   const [user] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -135,6 +138,8 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
 
+      <HeatmapSection userId={userId} learnedTotal={stats.learnedTotal} now={now} />
+
       {lifetimeStats && (
         <div className="mt-6">
           <LifetimeStats stats={lifetimeStats} weakCount={stats.weakCount} />
@@ -157,5 +162,73 @@ export default async function DashboardPage({
         </p>
       )}
     </main>
+  );
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Server-side heatmap data fetcher. Hidden when the user has 0 reviews
+ * (progressive disclosure — the heatmap appears as a reward for studying).
+ * Uses startOfLocalDay for bucketing so the heatmap and the streak flame
+ * always agree on which day "today" is.
+ */
+async function HeatmapSection({
+  userId,
+  learnedTotal,
+  now,
+}: {
+  userId: string;
+  learnedTotal: number;
+  now: Date;
+}) {
+  if (learnedTotal === 0) return null;
+
+  const sixMonthsAgo = startOfLocalDay(new Date(now.getTime() - 180 * DAY_MS));
+
+  const reviews = await prisma.reviewLog.findMany({
+    where: { userId, source: "srs", reviewedAt: { gte: sixMonthsAgo } },
+    select: { reviewedAt: true, quality: true },
+  });
+
+  if (reviews.length === 0) return null;
+
+  // Bucket by local calendar day using startOfLocalDay — same logic as
+  // computeStreak, so the heatmap and the streak flame always agree.
+  const dayMap = new Map<string, { count: number; correct: number }>();
+  for (const r of reviews) {
+    const dayKey = startOfLocalDay(r.reviewedAt).toISOString().slice(0, 10);
+    const entry = dayMap.get(dayKey) ?? { count: 0, correct: 0 };
+    entry.count += 1;
+    if (r.quality >= 3) entry.correct += 1;
+    dayMap.set(dayKey, entry);
+  }
+
+  const days = Array.from(dayMap, ([date, data]) => ({
+    date,
+    ...data,
+  }));
+
+  const totalReviews = reviews.length;
+  // Streak from the heatmap's own data (consistent with the day-bucketing).
+  let streakDays = 0;
+  const today = startOfLocalDay(now).toISOString().slice(0, 10);
+  const yesterday = startOfLocalDay(new Date(now.getTime() - DAY_MS)).toISOString().slice(0, 10);
+  let cursor = dayMap.has(today) ? today : dayMap.has(yesterday) ? yesterday : "";
+  while (cursor && dayMap.has(cursor)) {
+    streakDays += 1;
+    const d = new Date(cursor + "T12:00:00");
+    d.setDate(d.getDate() - 1);
+    cursor = d.toISOString().slice(0, 10);
+  }
+
+  return (
+    <div className="mb-6 mt-6">
+      <ReviewHeatmap
+        days={days}
+        totalReviews={totalReviews}
+        streakDays={streakDays}
+      />
+    </div>
   );
 }

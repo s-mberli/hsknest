@@ -50,6 +50,8 @@ interface WordStrengthGridProps {
   /** Limit to these bands (e.g. when a filter is active). */
   bands?: Strength[];
   emptyLabel?: string;
+  /** Hide the "Show as table" toggle (e.g. when a parent already provides a Table tab). */
+  hideTableToggle?: boolean;
 }
 
 /**
@@ -63,6 +65,7 @@ export function WordStrengthGrid({
   search = "",
   bands,
   emptyLabel = "No words to show.",
+  hideTableToggle = false,
 }: WordStrengthGridProps) {
   const allowed = bands ? new Set(bands) : null;
   const [asGrid, setAsGrid] = useState(false);
@@ -116,7 +119,7 @@ export function WordStrengthGrid({
             {l.label}
           </span>
         ))}
-        {capped && (
+        {capped && !hideTableToggle && (
           <button
             type="button"
             onClick={() => setAsGrid((v) => !v)}

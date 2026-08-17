@@ -151,6 +151,7 @@ export function ListWordsView({
           words={details}
           search={search}
           emptyLabel="No words match your search."
+          hideTableToggle
         />
       ) : isOwner ? (
         <OwnerWordTable words={filterTable(tableRows, search)} />
