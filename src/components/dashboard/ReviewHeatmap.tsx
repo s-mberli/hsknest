@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -15,40 +15,25 @@ interface ReviewHeatmapProps {
   streakDays: number;
 }
 
-/** Cell size in px. Gap is 3px. Week column width = CELL + GAP = 17px. */
+/** Cell size in px. CSS Grid auto-fill handles responsiveness. */
 const CELL = 14;
-const GAP = 3;
-const COL = CELL + GAP;
 
 /**
  * GitHub-style contribution heatmap for review activity. Responsive —
- * computes the number of weeks from container width so the grid fills
- * available space on both desktop and mobile without overflow or scroll.
- *
- * Cell size: 14px. Vermilion color scale matching ink/paper identity.
+ * CSS Grid auto-fill creates as many 14px columns as fit the container.
+ * No ResizeObserver, no fixed week count, no overflow. Works on any width.
  */
 export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
   const [selected, setSelected] = useState<DayData | null>(null);
   const [today] = useState(todayStr);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [numWeeks, setNumWeeks] = useState(26); // default, updated by ResizeObserver
 
-  // Build lookup map: date → data
-  const dayMap = useMemo(() => {
-    const m = new Map<string, DayData>();
-    for (const d of days) m.set(d.date, d);
-    return m;
-  }, [days]);
-
-  // All dates in the grid (most-recent N weeks, Mon-aligned).
+  // All dates: 1 year, Mon-aligned.
   const allDates = useMemo(() => {
     const end = new Date();
     const start = new Date(end);
-    start.setDate(start.getDate() - numWeeks * 7 + 1);
-    // Align to Monday.
+    start.setDate(start.getDate() - 364);
     const dow = start.getDay();
     start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
-
     const dates: string[] = [];
     const cur = new Date(start);
     while (cur <= end) {
@@ -56,43 +41,13 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
       cur.setDate(cur.getDate() + 1);
     }
     return dates;
-  }, [numWeeks]);
-
-  // Measure container → compute how many weeks fit.
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const w = entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
-      if (w > 0) setNumWeeks(Math.max(4, Math.floor(w / COL)));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
   }, []);
 
-  // Month labels — computed from the visible dates.
-  const monthLabels = useMemo(() => {
-    const labels: { month: string; index: number }[] = [];
-    let lastMonth = "";
-    for (let i = 0; i < allDates.length; i += 7) {
-      const d = allDates[i];
-      const month = d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short" }) : "";
-      if (month && month !== lastMonth) {
-        labels.push({ month, index: i });
-        lastMonth = month;
-      }
-    }
-    return labels;
-  }, [allDates]);
-
-  // Columns: each column is a day (Mon→Sun). 7 rows.
-  const columns = useMemo(() => {
-    const cols: string[][] = [];
-    for (let i = 0; i < allDates.length; i += 7) {
-      cols.push(allDates.slice(i, i + 7));
-    }
-    return cols;
-  }, [allDates]);
+  const dayMap = useMemo(() => {
+    const m = new Map<string, DayData>();
+    for (const d of days) m.set(d.date, d);
+    return m;
+  }, [days]);
 
   return (
     <div className="space-y-4">
@@ -100,45 +55,30 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
         Review activity
       </p>
 
-      {/* Responsive grid — fills available width */}
-      <div ref={containerRef}>
-        {/* Month labels */}
-        <div className="flex gap-[3px]">
-          {columns.map((col, ci) => {
-            const ml = monthLabels.find((m) => m.index === ci * 7);
-            return (
-              <span key={ci} className="h-3 w-3.5 text-[10px] leading-3 text-muted-foreground">
-                {ml?.month ?? ""}
-              </span>
-            );
-          })}
-        </div>
-
-        {/* Day grid — CSS Grid with fixed cell size */}
-        <div
-          className="grid gap-[3px]"
-          style={{ gridTemplateColumns: `repeat(${columns.length}, ${CELL}px)` }}
-        >
-          {allDates.map((date, i) => {
-            const d = dayMap.get(date);
-            const count = d?.count ?? 0;
-            const isToday = date === today;
-            return (
-              <button
-                key={i}
-                type="button"
-                title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
-                onClick={() => setSelected(d ?? null)}
-                className={cn(
-                  "rounded-[2px] border transition-colors",
-                  heatColor(count),
-                  isToday && "ring-1 ring-primary"
-                )}
-                style={{ width: CELL, height: CELL }}
-              />
-            );
-          })}
-        </div>
+      {/* Grid — auto-fill creates as many 14px columns as fit. No overflow. */}
+      <div
+        className="grid gap-[3px]"
+        style={{ gridTemplateColumns: `repeat(auto-fill, ${CELL}px)` }}
+      >
+        {allDates.map((date, i) => {
+          const d = dayMap.get(date);
+          const count = d?.count ?? 0;
+          const isToday = date === today;
+          return (
+            <button
+              key={i}
+              type="button"
+              title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
+              onClick={() => setSelected(d ?? null)}
+              className={cn(
+                "rounded-[2px] border transition-colors",
+                heatColor(count),
+                isToday && "ring-1 ring-primary"
+              )}
+              style={{ width: CELL, height: CELL }}
+            />
+          );
+        })}
       </div>
 
       {/* Legend + streak */}
