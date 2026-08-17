@@ -226,7 +226,6 @@ async function HeatmapSection({
       <CardContent className="pt-6">
         <ReviewHeatmap
           days={days}
-          totalReviews={totalReviews}
           streakDays={streakDays}
         />
         {lifetimeStats && (

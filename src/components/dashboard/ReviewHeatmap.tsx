@@ -12,7 +12,6 @@ export interface DayData {
 
 interface ReviewHeatmapProps {
   days: DayData[];
-  totalReviews: number;
   streakDays: number;
 }
 
@@ -23,7 +22,7 @@ interface ReviewHeatmapProps {
  * Client component — renders only the grid, legend, streak, and popover.
  * The Card wrapper lives in the server parent (HeatmapSection).
  */
-export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapProps) {
+export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
   const [selected, setSelected] = useState<DayData | null>(null);
   const [today] = useState(todayStr);
 
@@ -42,9 +41,6 @@ export function ReviewHeatmap({ days, totalReviews, streakDays }: ReviewHeatmapP
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Review activity
         </p>
-        <span className="text-xs text-muted-foreground">
-          {totalReviews.toLocaleString()} reviews
-        </span>
       </div>
 
       <div className="flex gap-4">
