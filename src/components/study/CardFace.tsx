@@ -152,12 +152,14 @@ export function CardFace({
   const primaryText = primary?.gloss ?? card.translation;
   const secondary = showFull ? meanings.slice(1, 3) : [];
 
-  // Sentence expander: hide behind a tap to keep FULL reveal clean.
+  // Sentence expander + meanings expand: hide behind taps to keep FULL clean.
   // Reset on card change via render-time pattern (no effect needed).
   const [showSentence, setShowSentence] = useState(false);
+  const [showAllMeanings, setShowAllMeanings] = useState(false);
   const [prevWordId, setPrevWordId] = useState(card.wordId);
   if (card.wordId !== prevWordId) {
     setShowSentence(false);
+    setShowAllMeanings(false);
     setPrevWordId(card.wordId);
   }
 
@@ -258,29 +260,63 @@ export function CardFace({
               {primaryText}
             </p>
 
-            {secondary.map((m, i) => (
-              <p
-                key={i}
-                className="max-w-full break-words text-sm text-muted-foreground/70 [overflow-wrap:anywhere]"
+            {!showAllMeanings ? (
+              <>
+                {secondary.map((m, i) => (
+                  <p
+                    key={i}
+                    className="max-w-full break-words text-sm text-muted-foreground/70 [overflow-wrap:anywhere]"
+                  >
+                    {m.gloss.length > 40 ? m.gloss.slice(0, 40) + "…" : m.gloss}
+                  </p>
+                ))}
+                {meanings.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllMeanings(true)}
+                    className="min-h-[44px] px-2 py-1.5 text-xs text-muted-foreground/60 underline underline-offset-2 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    and {meanings.length - 3} more
+                  </button>
+                )}
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-h-[160px] w-full overflow-y-auto"
+                onPointerDown={(e) => e.stopPropagation()}
               >
-                {m.gloss.length > 40 ? m.gloss.slice(0, 40) + "…" : m.gloss}
-              </p>
-            ))}
-            {meanings.length > 3 && (
-              <span className="text-xs text-muted-foreground/50 italic">
-                and {meanings.length - 3} more
-              </span>
+                {meanings.slice(1).map((m, i) => (
+                  <p
+                    key={i}
+                    className="max-w-full break-words py-[2px] text-sm text-muted-foreground/70 [overflow-wrap:anywhere]"
+                  >
+                    {m.gloss.length > 40 ? m.gloss.slice(0, 40) + "…" : m.gloss}
+                  </p>
+                ))}
+                <div className="sticky bottom-0 mt-1 bg-card py-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllMeanings(false)}
+                    className="min-h-[44px] px-2 py-1.5 text-xs text-muted-foreground/60 underline underline-offset-2 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    Show less
+                  </button>
+                </div>
+              </motion.div>
             )}
 
-            {extras.length > 0 && (
+            {!showAllMeanings && extras.length > 0 && (
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground/80">
                 {extras.join(" · ")}
               </span>
             )}
 
             {/* Example sentence — behind a tap to keep the FULL reveal clean.
-                Expanded once per card, resets on card change. */}
-            {card.sentence && !card.preview && (
+                Expanded once per card, resets on card change. Hidden when all
+                meanings are expanded to keep the card within its fixed height. */}
+            {!showAllMeanings && card.sentence && !card.preview && (
               <div className="mt-2 w-full max-w-sm">
                 {!showSentence ? (
                   <button
