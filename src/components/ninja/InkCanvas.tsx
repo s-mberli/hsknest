@@ -37,9 +37,35 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
       const ctx = element.getContext("2d");
       if (!ctx) return;
 
-      const dpr = window.devicePixelRatio || 1;
+      // Cap the backing-store DPR at 2 — full devicePixelRatio (3 on many
+      // phones) meant every trail/burst redraw touched 9x the logical pixel
+      // count for no visible sharpness gain on ink strokes this thin.
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       let lastCssWidth = -1;
       let lastCssHeight = -1;
+      // Ink colour: read once per resize from the --ninja-ink custom
+      // property NinjaStage sets on the stage element, so the trail/burst
+      // follow studyTheme instead of hardcoded black — an unreadable trail
+      // on a dark stage otherwise.
+      let inkColor = "0, 0, 0";
+      const readInkColor = () => {
+        const raw = getComputedStyle(element).getPropertyValue("--ninja-ink").trim();
+        if (!raw) return;
+        // Resolve the CSS value (which may itself be a var()) to an rgb
+        // triple via a throwaway probe element, so the canvas can compose
+        // rgba(...) strings with its own alpha.
+        const probe = document.createElement("span");
+        probe.style.color = raw;
+        probe.style.display = "none";
+        document.body.appendChild(probe);
+        const resolved = getComputedStyle(probe).color; // "rgb(r, g, b)"
+        document.body.removeChild(probe);
+        const match = resolved.match(/\d+(\.\d+)?/g);
+        if (match && match.length >= 3) {
+          inkColor = `${match[0]}, ${match[1]}, ${match[2]}`;
+        }
+      };
+      readInkColor();
 
       // Set canvas backing-store size based on the CSS box (clientWidth/Height).
       // IMPORTANT: observe the parent, not this canvas — writing element.width/height
@@ -65,21 +91,36 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
       });
       observer.observe(observedEl);
 
+      // Tracks whether the last tick actually painted anything, so an idle
+      // frame (nothing to draw, canvas already blank) can skip the
+      // clearRect + redraw entirely instead of doing it 60x/sec against a
+      // static canvas — the common case between slices, not just at
+      // game-over.
+      let wasIdle = false;
+
       const tick = () => {
         const state = stateRef.current;
         const now = performance.now();
+        const hasWork = state.trail.length > 0 || state.sliceBursts.length > 0;
 
         // Game-over + nothing left to draw: the engine's own RAF loop stops
         // simulating at this point (see useNinjaEngine.ts), and Play Again is
         // a full page reload, so there is nothing that will ever populate the
         // trail/bursts again this mount. Stop polling instead of clearing an
         // already-blank canvas 60x/sec forever on the game-over screen.
-        if (
-          state.waveStatus === "game-over" &&
-          state.trail.length === 0 &&
-          state.sliceBursts.length === 0
-        ) {
+        if (state.waveStatus === "game-over" && !hasWork) {
           return;
+        }
+
+        if (!hasWork) {
+          if (wasIdle) {
+            // Already blank, nothing to draw — skip the clear+redraw pass.
+            rafRef.current = requestAnimationFrame(tick);
+            return;
+          }
+          wasIdle = true;
+        } else {
+          wasIdle = false;
         }
 
         // Clear canvas
@@ -127,7 +168,7 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
             const avgWidth = (widthP1 + widthP2) / 2;
             const avgAlpha = (alphaP1 + alphaP2) / 2;
 
-            ctx.strokeStyle = `rgba(0, 0, 0, ${avgAlpha * 0.7})`;
+            ctx.strokeStyle = `rgba(${inkColor}, ${avgAlpha * 0.7})`;
             ctx.lineWidth = avgWidth;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";

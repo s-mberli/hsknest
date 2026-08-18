@@ -1,7 +1,64 @@
 import { describe, it, expect } from "vitest";
-import { GRAVITY, APEX_RATIO, makeRng, launchTile, stepTile, tileIsOffStage } from "@/lib/ninja/physics";
+import {
+  APEX_RATIO,
+  TARGET_FLIGHT_S,
+  gravityForBounds,
+  makeRng,
+  launchTile,
+  stepTile,
+  tileIsOffStage,
+} from "@/lib/ninja/physics";
 
 describe("ninjaPhysics", () => {
+  describe("gravityForBounds", () => {
+    it("keeps total flight time roughly constant across viewport heights", () => {
+      // A short (phone) stage and a tall (desktop) stage should each produce
+      // a launch that returns to the floor in ~TARGET_FLIGHT_S — the whole
+      // point of deriving gravity from bounds instead of a fixed constant,
+      // which made a phone's shorter rise fall in much less time.
+      const phone = { width: 390, height: 380, bottom: 380 };
+      const desktop = { width: 1280, height: 720, bottom: 720 };
+
+      function flightTime(bounds: typeof phone): number {
+        const gravity = gravityForBounds(bounds);
+        const tile = launchTile(() => 0.5, bounds, 0, 4, "测", true, 0);
+        let t = 0;
+        const dt = 1 / 240;
+        while (tile.position.y <= bounds.bottom + 40 + 1 && t < 10) {
+          tile.velocity.y += gravity * dt;
+          tile.position.y += tile.velocity.y * dt;
+          t += dt;
+          if (t > dt * 2 && tile.velocity.y > 0) break; // let it start falling first
+        }
+        // continue until it returns to launch height
+        while (tile.position.y < bounds.bottom + 40 && t < 10) {
+          tile.velocity.y += gravity * dt;
+          tile.position.y += tile.velocity.y * dt;
+          t += dt;
+        }
+        return t;
+      }
+
+      const phoneTime = flightTime(phone);
+      const desktopTime = flightTime(desktop);
+
+      expect(phoneTime).toBeCloseTo(TARGET_FLIGHT_S, 0);
+      expect(desktopTime).toBeCloseTo(TARGET_FLIGHT_S, 0);
+      // The old fixed-GRAVITY behavior made the phone flight much shorter
+      // than desktop; the fix keeps them within a fraction of a second.
+      expect(Math.abs(phoneTime - desktopTime)).toBeLessThan(0.5);
+    });
+
+    it("respects APEX_RATIO in the derived rise height", () => {
+      const bounds = { width: 400, height: 600, bottom: 600 };
+      const startY = bounds.bottom + 40;
+      const apexY = bounds.bottom - bounds.height * APEX_RATIO;
+      const risePx = startY - apexY;
+      const expectedGravity = (8 * risePx) / (TARGET_FLIGHT_S * TARGET_FLIGHT_S);
+      expect(gravityForBounds(bounds)).toBeCloseTo(expectedGravity, 5);
+    });
+  });
+
   describe("makeRng", () => {
     it("produces seeded, deterministic sequences", () => {
       const rng1 = makeRng(12345);
@@ -52,20 +109,25 @@ describe("ninjaPhysics", () => {
       const rng = makeRng(3);
       const tile = launchTile(rng, bounds, 0, 4, "测", true, 1000);
 
-      // vy0 = -sqrt(2 * GRAVITY * risePx)
-      // risePx = 640 - (600 - 600*0.58) = 640 - 252 = 388
-      // vy0 = -sqrt(2 * 420 * 388) ≈ -403.4
-      // But rng may vary risePx slightly; just check it's substantially upward
-      expect(tile.velocity.y).toBeLessThan(-350);
+      // vy0 = -sqrt(2 * gravityForBounds(bounds) * risePx), always
+      // substantially upward regardless of the derived gravity.
+      expect(tile.velocity.y).toBeLessThan(-100);
     });
 
-    it("assigns horizontal drift in ±50 px/s band", () => {
+    it("caps horizontal drift at a quarter of the lane width over the flight", () => {
       const bounds = { width: 400, height: 600, bottom: 600 };
+      const laneWidth = bounds.width / 4;
       const rng = makeRng(4);
-      const tile = launchTile(rng, bounds, 0, 4, "测", true, 1000);
+      const tile = launchTile(rng, bounds, 0, 4, "测", true, 1000, laneWidth);
 
-      expect(tile.velocity.x).toBeGreaterThanOrEqual(-50);
-      expect(tile.velocity.x).toBeLessThanOrEqual(50);
+      const maxVx = (laneWidth * 0.25 * 2) / TARGET_FLIGHT_S;
+      expect(tile.velocity.x).toBeGreaterThanOrEqual(-maxVx);
+      expect(tile.velocity.x).toBeLessThanOrEqual(maxVx);
+
+      // Total lateral travel over a full flight stays within a quarter lane —
+      // this is what actually prevents phone-width overlap (previously a
+      // fixed ±50px/s could drift ±150px over a ~3s flight on a ~97px lane).
+      expect(Math.abs(tile.velocity.x) * TARGET_FLIGHT_S).toBeLessThanOrEqual(laneWidth * 0.25);
     });
 
     it("stores tile as target or distractor", () => {
@@ -84,14 +146,16 @@ describe("ninjaPhysics", () => {
       const bounds = { width: 400, height: 600, bottom: 600 };
       const tile = launchTile(() => 0.5, bounds, 0, 4, "测", true, 1000);
       const vy0 = tile.velocity.y;
+      const gravity = gravityForBounds(bounds);
 
       stepTile(tile, bounds, 0.1);
 
-      expect(tile.velocity.y).toBe(vy0 + GRAVITY * 0.1);
+      expect(tile.velocity.y).toBe(vy0 + gravity * 0.1);
     });
 
     it("updates position based on velocity", () => {
       const bounds = { width: 400, height: 600, bottom: 600 };
+      const gravity = gravityForBounds(bounds);
       const tile = {
         id: "test",
         char: "测",
@@ -105,9 +169,9 @@ describe("ninjaPhysics", () => {
 
       stepTile(tile, bounds, 0.1);
 
-      // stepTile applies gravity first: vy = 100 + GRAVITY*0.1
+      // stepTile applies gravity first: vy = 100 + gravity*0.1
       // Then updates position: y = 100 + vy*0.1
-      const expectedVy = 100 + GRAVITY * 0.1;
+      const expectedVy = 100 + gravity * 0.1;
       const expectedY = 100 + expectedVy * 0.1;
       expect(tile.position.x).toBe(105); // 100 + 50*0.1
       expect(tile.position.y).toBeCloseTo(expectedY, 5);

@@ -12,10 +12,11 @@ interface TileData {
   char: string;
   position: { x: number; y: number };
   sliced: boolean;
-  /** CSS font-size, uniform across the whole wave — see launchWaveTiles in
-   * engine.ts. Falls back to the old mid-tier size for callers that don't
-   * pass it (e.g. any stale test fixture). */
-  fontSize?: string;
+  /** Font size in px, derived from the tile's real circle diameter and the
+   * wave's longest term (see waveFontSize in engine.ts) — uniform across the
+   * whole wave. Falls back to a readable default for callers that don't pass
+   * it (e.g. any stale test fixture). */
+  fontSize?: number;
 }
 
 /** CSSProperties plus the three custom properties .ninja-tile-half's
@@ -59,7 +60,7 @@ const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
     // simultaneous slices doesn't all split the same way.
     const angle = useMemo(() => -30 + hash01(tile.id) * 60, [tile.id]);
     const flingSign = useMemo(() => (hash01(tile.id + "f") > 0.5 ? 1 : -1), [tile.id]);
-    const fontSize = tile.fontSize ?? "clamp(26px, 6vw, 42px)";
+    const fontSize = tile.fontSize ?? 32;
 
     return (
       <div
@@ -126,7 +127,7 @@ const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
               >
                 <span
                   data-term
-                  className="px-1.5 text-center leading-tight [overflow-wrap:anywhere]"
+                  className="whitespace-nowrap px-1.5 text-center leading-tight"
                   style={{ fontSize, transform: `rotate(${-angle}deg)` }}
                 >
                   {tile.char}
@@ -157,7 +158,7 @@ const NinjaTile = forwardRef<HTMLDivElement, NinjaTileProps>(
                 recomputed per-tile — mixed sizes in one wave read as broken. */}
             <span
               data-term
-              className="px-1.5 text-center leading-tight [overflow-wrap:anywhere]"
+              className="whitespace-nowrap px-1.5 text-center leading-tight"
               style={{ fontSize }}
             >
               {tile.char}

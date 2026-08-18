@@ -140,6 +140,7 @@ function NinjaSession({ studyTheme, soundEffects }: NinjaScreenProps) {
       stateRef={engine.stateRef}
       langCode={langCode}
       exitHref="/dashboard"
+      studyTheme={studyTheme}
     />
   );
 }

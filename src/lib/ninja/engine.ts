@@ -45,15 +45,22 @@ export const DEFAULT_CONFIG: EngineConfig = {
   advancePauseMs: 1700, // Now the base (for correct). Misses get ~3000ms.
 };
 
-/** Same step ladder Part B replaced per-tile sizing with, now applied once
- * per wave (to the longest term) instead of once per tile — see
- * launchWaveTiles below. */
-function waveFontSize(longestTerm: string): string {
-  const len = longestTerm.length;
-  if (len <= 2) return "clamp(44px, 8vw, 72px)";
-  if (len <= 4) return "clamp(26px, 6vw, 42px)";
-  if (len <= 8) return "clamp(17px, 4.2vw, 28px)";
-  return "clamp(12px, 3.2vw, 20px)";
+/**
+ * Font size in px for the whole wave, derived from the tile's real inner
+ * width (the circle diameter laneLayout actually computed for this
+ * viewport) and the longest term in the wave — not a fixed vw clamp ladder,
+ * which ignored term length entirely and let 2-character terms (e.g. 我们)
+ * overflow a phone-sized circle onto two lines. One size for the whole wave
+ * — sizing each tile independently by its own term length made same-wave
+ * tiles look randomly mismatched.
+ */
+function waveFontSize(longestTerm: string, tileSizePx: number, circleDiameterPx: number): number {
+  const len = Math.max(longestTerm.length, 1);
+  // Inner usable width after the tile's px-1.5 padding; 0.78 leaves margin
+  // for descenders/wide glyphs so text never touches the circle edge.
+  const innerWidth = circleDiameterPx * 0.78;
+  const fitted = innerWidth / len;
+  return Math.max(12, Math.min(tileSizePx, fitted));
 }
 
 /**
@@ -85,23 +92,37 @@ function launchWaveTiles(
     [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
   }
 
-  // One size for the whole wave, derived from its longest term — sizing
-  // each tile independently by its own term length made same-wave tiles
-  // look randomly mismatched (a 72px tile next to a 20px one).
   const longestTerm = allWords.reduce((a, b) => (b.term.length > a.length ? b.term : a), "");
-  const fontSize = waveFontSize(longestTerm);
+  const fontSize = waveFontSize(longestTerm, layout.tileSizePx, layout.targetCircleDiameterPx);
 
-  for (let i = 0; i < allWords.length; i++) {
+  // Tiles are NOT launched yet — only queued. Launching immediately made the
+  // whole leadInMs window (the "prompt-first beat") un-sliceable dead flight
+  // time, since stepHitTests only tests hits while waveStatus === "live".
+  // stepWaveLogic performs the actual launchTile calls the instant the
+  // status flips lead-in -> live, so the entire visible arc is reachable.
+  state.pendingWave = { words: allWords, targetWordId: targetWord.wordId, laneCount: layout.laneCount, fontSize };
+}
+
+/** Actually place tiles on stage for a queued wave — called by stepWaveLogic
+ * the moment lead-in ends. Separated from launchWaveTiles so the lead-in
+ * beat shows only the prompt, not falling tiles. */
+export function launchPendingWave(state: EngineState, rng: () => number, now: number): void {
+  const pending = state.pendingWave;
+  if (!pending) return;
+  state.pendingWave = null;
+
+  const laneWidth = state.stageBounds.width / pending.laneCount;
+  for (let i = 0; i < pending.words.length; i++) {
     const tile = launchTile(
       rng,
       state.stageBounds,
       i,
-      layout.laneCount,
-      allWords[i].term,
-      allWords[i].wordId === targetWord.wordId,
+      pending.laneCount,
+      pending.words[i].term,
+      pending.words[i].wordId === pending.targetWordId,
       now,
-      state.stageBounds.width / layout.laneCount,
-      fontSize
+      laneWidth,
+      pending.fontSize
     );
     state.tiles.push(tile);
   }
@@ -153,6 +174,9 @@ export interface WaveOutcome {
 export function stepPhysics(state: EngineState, dt: number, now: number): void {
   const bounds = state.stageBounds;
   const kept: NinjaItem[] = [];
+  // Real tile radius for this viewport, so the horizontal clamp matches what
+  // is actually rendered instead of a hardcoded guess (see stepTile).
+  const layout = laneLayout(bounds, state.waveSize);
 
   for (const tile of state.tiles) {
     if (tile.sliced) {
@@ -160,7 +184,7 @@ export function stepPhysics(state: EngineState, dt: number, now: number): void {
       continue;
     }
 
-    stepTile(tile, bounds, dt);
+    stepTile(tile, bounds, dt, layout.tileRadiusPx);
 
     if (tileIsOffStage(tile, bounds)) {
       if (tile.isTarget && state.waveStatus === "live") {
@@ -311,11 +335,13 @@ export function decaySliceBursts(state: EngineState, now: number): void {
 }
 
 /**
- * Check if wave should transition to "live" (lead-in expired).
+ * Check if wave should transition to "live" (lead-in expired). Callers pass
+ * the session rng so tiles can be launched here — see launchPendingWave.
  */
-export function stepWaveLogic(state: EngineState, now: number): void {
+export function stepWaveLogic(state: EngineState, now: number, rng?: () => number): void {
   if (state.waveStatus === "lead-in" && now >= state.leadInEnd) {
     state.waveStatus = "live";
+    if (rng) launchPendingWave(state, rng, now);
   }
 
   // Game-over on lives<=0 is decided by useNinjaEngine's advance timer, not

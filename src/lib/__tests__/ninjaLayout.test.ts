@@ -19,15 +19,26 @@ describe("ninjaLayout", () => {
 
     it("reduces lane count on narrow viewports to prevent overlap", () => {
       // 300px width with 4 lanes: lane width = 75px
-      // tile circle ≈ 44 * 1.8 ≈ 79px, need 79*1.15 ≈ 91px per lane
-      // 75 < 91 → drop to 3 lanes
+      // tile circle ≈ 44 * 1.8 ≈ 79.2px, need 79.2*1.35 ≈ 107px per lane
+      // 75 < 107 → drop to 3 lanes
       let result = laneLayout({ width: 300, height: 600, bottom: 600 }, 4);
       expect(result.laneCount).toBe(3);
 
-      // 600px width: lane width = 150px, circle ≈ 86px, need ≈ 99px
-      // 150 > 99 → keep 4 lanes
-      result = laneLayout({ width: 600, height: 600, bottom: 600 }, 4);
+      // 900px width: lane width = 225px, circle ≈ 86.4px, need ≈ 117px
+      // 225 > 117 → keep 4 lanes
+      result = laneLayout({ width: 900, height: 600, bottom: 600 }, 4);
       expect(result.laneCount).toBe(4);
+    });
+
+    it("drops to 3 lanes on a real phone viewport (390px) — the exact size the fallback exists for", () => {
+      // 390px width, 4 lanes: lane width = 97.5px. Tile size clamps to 44px
+      // (8vw of 390 = 31.2, floored to min), circle = 79.2px, needs
+      // 79.2*1.35 ≈ 106.9px per lane. 97.5 < 106.9 → drop to 3 lanes.
+      // Previously the 1.15 threshold needed only 91.1px, so 4 lanes stayed
+      // on the exact viewport most likely to overlap — the regression this
+      // covers.
+      const result = laneLayout({ width: 390, height: 700, bottom: 700 }, 4);
+      expect(result.laneCount).toBe(3);
     });
 
     it("clamps lane centres to prevent off-screen tiles", () => {
