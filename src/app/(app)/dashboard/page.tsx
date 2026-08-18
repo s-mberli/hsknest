@@ -183,7 +183,7 @@ async function HeatmapSection({
   const oneYearAgo = startOfLocalDay(new Date(now.getTime() - 365 * DAY_MS));
 
   const reviews = await prisma.reviewLog.findMany({
-    where: { userId, source: "srs", reviewedAt: { gte: oneYearAgo } },
+    where: { userId, reviewedAt: { gte: oneYearAgo } },
     select: { reviewedAt: true, quality: true },
   });
 
