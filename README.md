@@ -23,6 +23,7 @@ Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
 |---|---|
 | 🧠 | **FSRS / SM-2 / Leitner** — Pluggable scheduling strategies. |
 | 🇨🇳 | **Mandarin-first** — Full New HSK 3.0 (1–9) + 3,000 example sentences with pinyin. |
+| 📖 | **Reading Mode** — Graded HSK 1–5 stories with karaoke audio, tap dictionary, and comprehensible-input matching that recommends what to read next. |
 | 👆 | **Gesture-first swipe deck** — Full-screen dark focus mode with keyboard fallback. |
 | 🔊 | **Hybrid TTS** — Pre-generated Azure neural clips served locally + Web Speech fallback. |
 | 📥 | **CSV / paste import** — Bring vocabulary from spreadsheets or other flashcard tools. |

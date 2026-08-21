@@ -14,6 +14,40 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
   renders the empty-deck state instead of a retry prompt (same pattern
   fixed in `NinjaScreen.tsx` for v0.2.5). House-wide, not urgent.
 
+## v0.3.0 — 2026-08-21
+
+**Reading Mode** ships — 17 graded HSK 1–5 stories (markdown-authored,
+ingested offline) with karaoke-synced Azure TTS audio, adaptive pinyin, and a
+zero-latency tap dictionary (CEDICT-backed, per-token pinyin/HSK level/senses
+pre-baked at ingest). Tap a word for its meaning and one-tap add-to-deck;
+look it up 3+ times and it nudges you to add it. Reading and the SRS deck
+stay linked but strictly separated: reading can promote a word into a deck
+or count toward your streak/heatmap, but never fabricates a graded review or
+touches `recallRate` — see `docs/ARCHITECTURE.md`'s Reading Mode section.
+
+Follow-up hardening pass on top of the initial ship:
+- Fixed a duplicate-card bug: re-tapping a word in a story that was already
+  tracked from a seeded list (not one you created) silently created a second
+  card on an independent schedule. Deck add now dedupes against every list
+  you track in that language, same rule as list enrollment.
+- Reading now counts toward streak and the heatmap (time-on-task + session
+  completion), closing the gap where finishing a story reported as zero
+  activity. Deliberately activity-only — `recallRate` and lifetime review
+  counts are untouched, since ungraded exposure isn't retrieval. Also fixed
+  a pre-existing inconsistency where the dashboard's streak flame and its
+  heatmap grid could silently disagree (two separate, differently-scoped
+  queries); both now read one shared helper.
+- Comprehensible-input matching: a coverage badge per story ("you know 82%
+  of its words") and a "best next read" recommendation, closest to a 90–98%
+  known-vocabulary comprehension band — using a per-story lemma index that
+  existed since the first ship but had no reader.
+- Post-read batch add: finishing a story now offers "you looked up N words —
+  add them all?" in one request, instead of one add per word against a
+  30/hour cap. Also fixed two quirks in deck-add: words always landed at
+  list position 0 (now increasing), and the "From Reading" list had no
+  queue priority (now ranked in after your other studying lists instead of
+  being silently treated as unranked).
+
 ## v0.2.5 — 2026-08-16
 
 **Word Ninja** ships — a fast-paced slice-practice mode: falling word tiles

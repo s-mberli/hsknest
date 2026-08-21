@@ -205,3 +205,61 @@ export type UpdateWordInput = z.infer<typeof updateWordSchema>;
 export type ImportInput = z.infer<typeof importSchema>;
 export type ListPriorityInput = z.infer<typeof listPrioritySchema>;
 export type CheckoutIntervalInput = z.infer<typeof checkoutIntervalSchema>;
+
+// ── Reading mode ────────────────────────────────────────────────────────────
+
+export const readingEncounterSchema = z.object({
+  lemma: z.string().min(1).max(50),
+  languageId: z.string().min(1),
+});
+
+export const readingDeckSchema = z.object({
+  lemma: z.string().min(1).max(50),
+  languageId: z.string().min(1),
+  pinyin: z.string().optional(),
+  level: z.number().int().optional(),
+  sentence: z.string().max(500).optional(),
+  storySlug: z.string().max(100).optional(),
+});
+
+export const readingProgressSchema = z.object({
+  textId: z.string().min(1),
+  position: z.number().int().min(0).max(100),
+  completed: z.boolean().optional(),
+});
+
+// Cap at 3 hours — a stale/backgrounded tab reporting elapsed wall-clock
+// time (not active reading time) should not be able to post an absurd
+// session length. See src/lib/readingActivity.ts for the noise floor on
+// the other end (sessions too short to count as activity).
+const MAX_READING_SESSION_MS = 3 * 60 * 60 * 1000;
+
+export const readingSessionSchema = z.object({
+  textId: z.string().min(1),
+  durationMs: z.number().int().min(0).max(MAX_READING_SESSION_MS),
+  completed: z.boolean().optional(),
+});
+
+// Post-read batch add ("you looked up N words — add them all?"). Capped at
+// 50 — a generous ceiling for one story's worth of lookups, well above what
+// a real reading session produces, while bounding transaction size.
+export const readingDeckBatchSchema = z.object({
+  languageId: z.string().min(1),
+  storySlug: z.string().max(100).optional(),
+  items: z
+    .array(
+      z.object({
+        lemma: z.string().min(1).max(50),
+        pinyin: z.string().optional(),
+        level: z.number().int().optional(),
+        sentence: z.string().max(500).optional(),
+      })
+    )
+    .min(1)
+    .max(50),
+});
+
+export type ReadingEncounterInput = z.infer<typeof readingEncounterSchema>;
+export type ReadingDeckInput = z.infer<typeof readingDeckSchema>;
+export type ReadingDeckBatchInput = z.infer<typeof readingDeckBatchSchema>;
+export type ReadingProgressInput = z.infer<typeof readingProgressSchema>;

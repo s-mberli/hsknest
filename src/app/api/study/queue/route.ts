@@ -14,13 +14,17 @@ import { startOfLocalDay } from "@/lib/utils";
 
 /**
  * Attach one example sentence per card, drawn from the seeded
- * Sentence/SentenceWord links, so any study surface can show it (flashcard
- * reveal, Sentence mode). Cards without a linked sentence are left unchanged.
+ * Sentence/SentenceWord links OR from Word.metadata.encounterSentence
+ * (set when a word was added from Reading Mode). Cards without a linked
+ * sentence are left unchanged.
  * Runs for every queue — game/practice modes simply ignore card.sentence.
+ *
+ * @param rand - RNG function for random selection (injectable for deterministic tests)
  */
-async function attachSentences(_url: URL, cards: QueueCard[]): Promise<QueueCard[]> {
+export async function attachSentences(_url: URL, cards: QueueCard[], rand: () => number = Math.random): Promise<QueueCard[]> {
   if (cards.length === 0) return cards;
 
+  // 1. Try seeded SentenceWord links first
   const links = await prisma.sentenceWord.findMany({
     where: { wordId: { in: cards.map((c) => c.wordId) } },
     select: {
@@ -36,10 +40,36 @@ async function attachSentences(_url: URL, cards: QueueCard[]): Promise<QueueCard
     if (list) list.push(link);
     else byWord.set(link.wordId, [link]);
   }
+
+  // 2. For cards without a seeded sentence, check encounterSentence in metadata
+  const unsentencedWordIds = cards.filter(c => !byWord.has(c.wordId)).map(c => c.wordId);
+  const encounterSentences: Map<string, string> = new Map();
+  if (unsentencedWordIds.length > 0) {
+    const words = await prisma.word.findMany({
+      where: { id: { in: unsentencedWordIds } },
+      select: { id: true, metadata: true },
+    });
+    for (const w of words) {
+      const meta = w.metadata as Record<string, unknown> | null;
+      const enc = meta?.encounterSentence;
+      if (typeof enc === "string" && enc.length > 0) {
+        encounterSentences.set(w.id, enc);
+      }
+    }
+  }
+
   for (const card of cards) {
+    // Prefer seeded sentence
     const options = byWord.get(card.wordId);
-    if (!options || options.length === 0) continue;
-    card.sentence = options[Math.floor(Math.random() * options.length)].sentence;
+    if (options && options.length > 0) {
+      card.sentence = options[Math.floor(rand() * options.length)].sentence;
+      continue;
+    }
+    // Fall back to encounter sentence from reading
+    const enc = encounterSentences.get(card.wordId);
+    if (enc) {
+      card.sentence = { text: enc, translation: "", phonetic: null, source: "reading" };
+    }
   }
   return cards;
 }
@@ -115,12 +145,20 @@ export async function GET(req: Request) {
   }
 
   const capLangFilter = targetLangFilter(user.targetLanguageId);
-  // Sentence mode only makes sense for words with a linked example sentence —
-  // narrow the pool so a session fills with usable cards instead of skipping
-  // most of them client-side. Pure narrowing filter; scheduling is untouched.
+  // Sentence mode only makes sense for words with a usable example sentence —
+  // either a seeded Sentence/SentenceWord link OR an encounter sentence stored
+  // in metadata (from Reading Mode "Add to vocabulary").  Pure narrowing
+  // filter; scheduling is untouched.
   const sentenceFilter =
     url.searchParams.get("sentences") === "1"
-      ? [{ word: { sentences: { some: {} } } }]
+      ? [
+          {
+            OR: [
+              { word: { sentences: { some: {} } } },
+              { word: { metadata: { path: ["encounterSentence"], not: "" } } },
+            ],
+          },
+        ]
       : [];
   const queueWhere = {
     AND: [scopeWhere, capLangFilter, ...sentenceFilter],

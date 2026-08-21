@@ -69,6 +69,9 @@ model User {
   verificationTokens  VerificationToken[]
   emailLogs           EmailLog[]
   listPriorities      ListPriority[]
+  readingProgress     ReadingProgress[]
+  readingSessions     ReadingSession[]
+  wordEncounters      WordEncounter[]
 
   targetLanguageId    String?
   targetLanguage      Language?  @relation("UserTargetLanguage", fields: [targetLanguageId], references: [id])
@@ -83,6 +86,8 @@ model Language {
   createdBy User?      @relation(fields: [createdById], references: [id])
   wordLists WordList[]
   sentences Sentence[]
+  readingTexts ReadingText[]
+  encounters WordEncounter[]
   targetedByUsers User[] @relation("UserTargetLanguage")
 
   @@index([createdById])
@@ -269,4 +274,124 @@ model VerificationToken {
   user User @relation(fields: [email], references: [email], onDelete: Cascade)
 
   @@index([email])
+}
+
+// Reading Mode — graded texts with karaoke audio and tap dictionary.
+// Level semantics belong to the language (HSK band for zh); the column stays
+// a plain Int so the model stays language-agnostic per the word contract.
+model ReadingText {
+  id           String   @id @default(cuid())
+  languageId   String
+  slug         String // stable filename-derived id, e.g. "hsk1-coffee-shop"
+  title        String
+  titleEn      String? // English translation for library browsing
+  level        Int // target level the text was written/graded for
+  topic        String?
+  topicEn      String?
+  bodyRaw      String // source-of-truth prose (matches content/reading/*.md)
+  bodyHydrated Json? // tokens, pinyin, senses, sentence spans (built at ingest)
+  gradeReport  Json? // verification snapshot: band histogram, verdict, metrics
+  source       String? // "original" | "storyweaver" | "wikipedia" | ...
+  license      String? // "CC-BY-4.0" | "CC-BY-SA-3.0" | "PD" | null = original
+  attribution  String?
+  status       String   @default("draft") // draft | verified | approved | published
+  estimatedMin Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  language Language             @relation(fields: [languageId], references: [id])
+  audio    ReadingAudio?
+  words    ReadingTextWord[]
+  progress ReadingProgress[]
+  sessions ReadingSession[]
+
+  @@unique([languageId, slug])
+  @@index([languageId, level])
+}
+
+// One row per distinct lemma in a text — the join index for per-user
+// vocabulary-coverage queries. Written at ingest only.
+model ReadingTextWord {
+  id       String @id @default(cuid())
+  textId   String
+  lemma    String // segmented surface form
+  level    Int? // HSK band; null = outside the vocabulary list
+  position Int // first-occurrence order, stable for listings
+
+  text ReadingText @relation(fields: [textId], references: [id], onDelete: Cascade)
+
+  @@unique([textId, lemma])
+  @@index([textId, level])
+}
+
+// Pre-generated narration: static MP3 + word-timing sidecar on the audio
+// volume. Generated offline (edge-tts); never synthesized at read time.
+model ReadingAudio {
+  id          String   @id @default(cuid())
+  textId      String   @unique
+  voice       String
+  audioUrl    String // path under the audio base URL
+  timingsUrl  String // JSON: { durationMs, marks: [{ s, e, t0, t1 }] }
+  durationMs  Int
+  generatedAt DateTime @default(now())
+
+  text ReadingText @relation(fields: [textId], references: [id], onDelete: Cascade)
+}
+
+// Reading position / completion per user.
+model ReadingProgress {
+  id           String    @id @default(cuid())
+  userId       String
+  textId       String
+  lastPosition Int       @default(0) // scroll percent 0-100 through bodyRaw, not a char index
+  completedAt  DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text ReadingText @relation(fields: [textId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, textId])
+}
+
+// One row per reading session (open a story -> leave/finish it). Unlike
+// ReadingProgress (single latest position per text), this is append-only and
+// repeatable, so it can drive activity metrics (streak, heatmap) and
+// preserve re-read history and time-on-task. Deliberately NOT a ReviewLog
+// row — ReviewLog's columns (wordId, quality, algorithm, interval deltas)
+// are retrieval-shaped and every performance metric (recallRate, lifetime
+// reviews) reads them; a reading session has no graded recall to report and
+// must never be mistaken for one. See src/lib/readingActivity.ts for the
+// union with ReviewLog that feeds streak/heatmap only.
+model ReadingSession {
+  id         String    @id @default(cuid())
+  userId     String
+  textId     String
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+  durationMs Int? // wall-clock time between startedAt and endedAt/last heartbeat
+  completed  Boolean   @default(false) // reached the completion threshold (see ReaderView)
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text ReadingText @relation(fields: [textId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+}
+
+// Lookup log: every tap of the tap dictionary increments lookups. Feeds the
+// "add to deck?" nudge (>= 3 lookups) and is deliberately NOT an SRS review —
+// reading never touches the scheduler.
+model WordEncounter {
+  id          String   @id @default(cuid())
+  userId      String
+  languageId  String
+  lemma       String
+  lookups     Int      @default(1)
+  lastSeenAt  DateTime @default(now())
+  addedWordId String? // set when the word was promoted into a deck (Word.id)
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, languageId, lemma])
+  @@index([userId, languageId])
 }
