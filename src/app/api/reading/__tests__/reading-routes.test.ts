@@ -11,6 +11,7 @@ import { existsSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaClient } from "@prisma/client";
+import { TRACKED_STATES } from "@/lib/cardStates";
 
 const TEST_DB_PATH = path.join(
   __dirname,
@@ -779,6 +780,73 @@ describe("Reading API routes", () => {
       const res = await knownWordsGET();
       const data = await res.json();
       expect(data.known).toHaveLength(0);
+    });
+  });
+
+  // ── /reading library page coverage query ────────────────────────────────
+  // Regression coverage for the "enrolled-but-unstudied words count as known"
+  // bug: enrolling a list bulk-creates a NEW-state UserProgress row per word
+  // (see enroll/route.ts), so a coverage query with no state filter counted
+  // every enrolled word as known — a story became "100% known" the moment
+  // its list was enrolled, without a single review. reading/page.tsx now
+  // filters by TRACKED_STATES; this asserts that filter's actual DB
+  // behavior directly (the page itself is a server component and isn't
+  // easily invoked from a unit test).
+  describe("Reading library page — coverage query", () => {
+    it("excludes NEW-state progress rows from the known-words set", async () => {
+      const user = await makeUser();
+      const list = await testPrisma.wordList.create({
+        data: { name: "Test", languageId: testLang.id, createdById: user.id },
+      });
+      const learningWord = await testPrisma.word.create({
+        data: { term: "你好", translation: "hello", wordListId: list.id },
+      });
+      const newWord = await testPrisma.word.create({
+        data: { term: "再见", translation: "goodbye", wordListId: list.id },
+      });
+      // Enrollment shape: a real review (LEARNING) alongside a bulk-enrolled,
+      // never-studied word (NEW) — the exact mix a real account has.
+      await testPrisma.userProgress.create({
+        data: { userId: user.id, wordId: learningWord.id, state: "LEARNING" },
+      });
+      await testPrisma.userProgress.create({
+        data: { userId: user.id, wordId: newWord.id, state: "NEW" },
+      });
+
+      const rows = await testPrisma.userProgress.findMany({
+        where: {
+          userId: user.id,
+          state: { in: [...TRACKED_STATES] },
+          word: { wordList: { languageId: testLang.id } },
+        },
+        select: { word: { select: { term: true } } },
+      });
+
+      expect(rows.map((r) => r.word.term)).toEqual(["你好"]);
+    });
+
+    it("includes ASSUMED — the user explicitly claimed the word", async () => {
+      const user = await makeUser();
+      const list = await testPrisma.wordList.create({
+        data: { name: "Test", languageId: testLang.id, createdById: user.id },
+      });
+      const word = await testPrisma.word.create({
+        data: { term: "谢谢", translation: "thanks", wordListId: list.id },
+      });
+      await testPrisma.userProgress.create({
+        data: { userId: user.id, wordId: word.id, state: "ASSUMED" },
+      });
+
+      const rows = await testPrisma.userProgress.findMany({
+        where: {
+          userId: user.id,
+          state: { in: [...TRACKED_STATES] },
+          word: { wordList: { languageId: testLang.id } },
+        },
+        select: { word: { select: { term: true } } },
+      });
+
+      expect(rows).toHaveLength(1);
     });
   });
 });

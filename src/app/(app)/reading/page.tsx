@@ -2,6 +2,7 @@ import { BookOpen, ChevronRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { TRACKED_STATES } from "@/lib/cardStates";
 import { prisma } from "@/lib/prisma";
 import { computeCoverage, fitLabel, pickBestFit, toKnownTermKeys, type FitLabel } from "@/lib/reading/coverage";
 import { getCurrentUserId } from "@/lib/session";
@@ -53,7 +54,17 @@ export default async function ReadingPage() {
       select: { textId: true, lemma: true },
     }),
     prisma.userProgress.findMany({
-      where: { userId, word: { wordList: { languageId: { in: languageIds } } } },
+      // Only words actually met, not merely enrolled — enrolling a list
+      // bulk-creates a NEW row per word (see enroll/route.ts), so without
+      // this filter every enrolled-but-unstudied word reads as "known" and
+      // coverage/pickBestFit degenerate toward 100% for anyone who enrolls
+      // curriculum lists upfront (the normal way to use the app). Matches
+      // /api/reading/known-words, which already scopes correctly.
+      where: {
+        userId,
+        state: { in: [...TRACKED_STATES] },
+        word: { wordList: { languageId: { in: languageIds } } },
+      },
       select: { word: { select: { term: true, wordList: { select: { languageId: true } } } } },
     }),
   ]);
