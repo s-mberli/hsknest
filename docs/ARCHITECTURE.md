@@ -30,6 +30,17 @@ Scheduling is a pluggable strategy behind a shared interface:
 
 Because `UserProgress` stores a superset of every strategy's needs, switching algorithms never discards state — existing accounts keep their `preferredAlgorithm` even when the new-account default changes.
 
+## Reading Mode (`src/app/(app)/reading/`, `src/lib/reading/`)
+
+Graded stories, ingested offline from markdown (`scripts/ingest-story.ts`) into a hydrated per-story token stream (`ReadingText.bodyHydrated`) with pinyin, HSK level, and CEDICT senses baked in — the reader does lookup, never synthesis, matching Product Principle 5.
+
+- **ReadingText** — one row per story: `bodyRaw`/`bodyHydrated`, `level`, `topic`, optional `titleEn`/`topicEn` for bilingual UI, one-to-one `ReadingAudio` (Azure TTS + word-level timing marks for karaoke).
+- **ReadingTextWord** — a per-text deduplicated lemma index (`{textId, lemma, level, position}`), written once at ingest. Feeds comprehensible-input matching (`src/lib/reading/coverage.ts`): joined against the reader's `UserProgress` terms, it computes "% of this story you already know" per text and recommends the closest fit to a 90–98% comprehension band — no per-token client work.
+- **ReadingProgress** — single latest scroll position (0–100%) + `completedAt` per (user, text); powers "Continue reading."
+- **ReadingSession** — append-only, one row per visit (`durationMs`, `completed`); unlike `ReadingProgress` it's repeatable, so it drives streak/heatmap without conflating with retrieval. `src/lib/readingActivity.ts` unions it with `ReviewLog` for activity metrics *only* — `recallRate` and lifetime `reviews` stay `ReviewLog(source: "srs")`-only, deliberately never inflated by ungraded exposure.
+- **WordEncounter** — per-user tap-dictionary lookup counter (`{userId, languageId, lemma}`), feeds the ≥3-lookup "add to deck?" nudge and the post-read batch-add prompt. `addedWordId` marks a lemma as promoted, so re-encountering an added word doesn't re-nudge. Deliberately **not** an SRS review.
+- **Add-to-deck** (`src/lib/reading/deckAdd.ts`, shared by `/api/reading/deck` and `/api/reading/deck/batch`) — dedupes by `termKey()` (`src/lib/progressMerge.ts`) against every list the user already tracks in that language, same rule as list enrollment, so a word met in a story never creates a second card for one already being studied from a seeded list.
+
 ## Queue & cap logic
 
 The study queue (`GET /api/study/queue`) blends **due reviews** with a capped trickle of **new** words:
