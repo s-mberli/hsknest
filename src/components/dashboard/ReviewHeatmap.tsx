@@ -8,6 +8,10 @@ export interface DayData {
   date: string; // YYYY-MM-DD
   count: number;
   correct: number;
+  /** Reading sessions that day. Separate from `count`/`correct` (reviews)
+   * since a reading session has no correctness to report — see
+   * src/lib/readingActivity.ts. */
+  readingCount?: number;
 }
 
 interface ReviewHeatmapProps {
@@ -127,17 +131,17 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
               <div key={wi} className="flex flex-col gap-[3px]">
                 {week.map((date, di) => {
                   const d = dayMap.get(date);
-                  const count = d?.count ?? 0;
+                  const activity = (d?.count ?? 0) + (d?.readingCount ?? 0);
                   const isToday = date === today;
                   return (
                     <button
                       key={di}
                       type="button"
-                      title={d ? `${d.count} review${d.count !== 1 ? "s" : ""} on ${date}` : date}
+                      title={d ? dayTitle(d, date) : date}
                       onClick={() => setSelected(d ?? null)}
                       className={cn(
                         "h-3 w-3 rounded-[2px] border transition-colors",
-                        heatColor(count),
+                        heatColor(activity),
                         isToday && "ring-1 ring-primary"
                       )}
                     />
@@ -182,7 +186,7 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
       </div>
 
       {/* Click popover */}
-      {selected && selected.count > 0 && (
+      {selected && (selected.count > 0 || (selected.readingCount ?? 0) > 0) && (
         <div className="rounded-lg border bg-muted/50 p-3">
           <div className="flex items-baseline justify-between">
             <p className="text-sm font-medium">{selected.date}</p>
@@ -194,24 +198,40 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
               close
             </button>
           </div>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
-              {selected.count} review{selected.count !== 1 ? "s" : ""}
+          {selected.count > 0 && (
+            <>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {selected.count} review{selected.count !== 1 ? "s" : ""}
+                </p>
+                <p className="text-xs font-medium text-foreground">
+                  {Math.round((selected.correct / selected.count) * 100)}% correct
+                </p>
+              </div>
+              <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-border/30">
+                <div
+                  className="bg-primary"
+                  style={{ width: `${(selected.correct / selected.count) * 100}%` }}
+                />
+              </div>
+            </>
+          )}
+          {(selected.readingCount ?? 0) > 0 && (
+            <p className={cn("text-xs text-muted-foreground", selected.count > 0 && "mt-2")}>
+              {selected.readingCount} reading session{selected.readingCount !== 1 ? "s" : ""}
             </p>
-            <p className="text-xs font-medium text-foreground">
-              {Math.round((selected.correct / selected.count) * 100)}% correct
-            </p>
-          </div>
-          <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-border/30">
-            <div
-              className="bg-primary"
-              style={{ width: `${(selected.correct / selected.count) * 100}%` }}
-            />
-          </div>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+function dayTitle(d: DayData, date: string): string {
+  const parts: string[] = [];
+  if (d.count > 0) parts.push(`${d.count} review${d.count !== 1 ? "s" : ""}`);
+  if ((d.readingCount ?? 0) > 0) parts.push(`${d.readingCount} reading session${d.readingCount !== 1 ? "s" : ""}`);
+  return parts.length > 0 ? `${parts.join(", ")} on ${date}` : date;
 }
 
 function heatColor(count: number): string {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Layers, ListChecks, Settings } from "lucide-react";
+import { BookOpen, Home, Layers, ListChecks, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 // so a study destination would be a redundant door that can dead-end.
 const items = [
   { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/reading", label: "Read", icon: BookOpen },
   { href: "/lists", label: "Lists", icon: Layers },
   { href: "/words", label: "Words", icon: ListChecks },
   { href: "/settings", label: "Settings", icon: Settings },

@@ -2,6 +2,7 @@ import { computeDailyCaps } from "@/lib/buildQueue";
 import { DUE_STATES, SOLID_STATES, LIFETIME_LEARNED_STATES } from "@/lib/cardStates";
 import { targetLangFilter } from "@/lib/langScope";
 import { prisma } from "@/lib/prisma";
+import { getActivityDates } from "@/lib/readingActivity";
 import type { CardState } from "@/lib/srs";
 import { startOfLocalDay } from "@/lib/utils";
 
@@ -43,6 +44,9 @@ export async function getDashboardStats(
   const windowEnd = new Date(dayStart.getTime() + FORECAST_DAYS * DAY_MS);
 
   const langFilter = targetLangFilter(targetLanguageId);
+  // Same 1-year window the dashboard heatmap uses, so this streak and the
+  // heatmap's own streak badge can never see a different activity history.
+  const oneYearAgo = startOfLocalDay(new Date(now.getTime() - 365 * DAY_MS));
 
   const { newIntroducedToday, assumedCheckedToday } = await computeDailyCaps(
     userId,
@@ -58,7 +62,7 @@ export async function getDashboardStats(
     masteredTotal,
     assumedTotal,
     enrolledTotal,
-    logs,
+    activityDates,
     forecastRows,
     sentenceCount,
   ] = await Promise.all([
@@ -79,12 +83,11 @@ export async function getDashboardStats(
     prisma.userProgress.count({ where: { userId, state: "MASTERED", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: "ASSUMED", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, ...langFilter } }),
-    prisma.reviewLog.findMany({
-      where: { userId, source: "srs" },
-      select: { reviewedAt: true },
-      orderBy: { reviewedAt: "desc" },
-      take: 500,
-    }),
+    // Streak activity = any review (any source, matching the heatmap's own
+    // query) union reading sessions — see src/lib/readingActivity.ts. Not
+    // the same scope as getLifetimeStats' recallRate/reviews, which stay
+    // source:"srs"-only on purpose.
+    getActivityDates(userId, oneYearAgo),
     // Single query for the forecast; bucket in JS by local day.
     prisma.userProgress.findMany({
       where: {
@@ -125,7 +128,7 @@ export async function getDashboardStats(
     newCount,
     learnedTotal,
     masteredTotal,
-    streakDays: computeStreak(logs.map((l) => l.reviewedAt)),
+    streakDays: computeStreak(activityDates),
     dailyNewWords: user?.dailyNewWords ?? 0,
     newIntroducedToday,
     enrolledTotal,
