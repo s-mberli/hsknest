@@ -104,7 +104,9 @@ export default async function ReadingPage() {
           <BookOpen className="mx-auto mb-3 size-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">No stories yet.</p>
           <p className="mt-1 text-xs text-muted-foreground/70">
-            Self-hosting? See docs/DEPLOYMENT.md to add Reading Mode content.
+            Running locally? Run{" "}
+            <code className="rounded bg-muted px-1 py-0.5">npx tsx scripts/ingest-story.ts --all --force</code>{" "}
+            to add stories.
           </p>
         </div>
       ) : (
