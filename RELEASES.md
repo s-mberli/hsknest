@@ -8,6 +8,16 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Reading Mode's story content now auto-provisions on container boot, closing
+  the self-hosting gap noted in v0.3.0 below: the Docker image now ships
+  `content/reading/**` and the `src/lib/reading` modules `ingest-story.ts`
+  needs, and the entrypoint ingests them idempotently on every boot, the same
+  pattern as starter-vocab seeding. `/reading` has a populated library out of
+  the box now, no manual step. New `READING_MODE_ENABLED` env var (default
+  `true`) skips the ingest for anyone who wants a stripped-down instance —
+  see `docs/CONFIGURATION.md`. Karaoke audio stays a separate, optional
+  mounted layer as before (`docs/AUDIO.md`) — text/pinyin/dictionary work
+  fully without it either way.
 - Follow-up from the Word Ninja release below: `QuizScreen.tsx`,
   `SentenceScreen.tsx`, and `MatchScreen.tsx` all discard the `error` field
   from `useQueueFetcher`, so a failed queue fetch on those screens also

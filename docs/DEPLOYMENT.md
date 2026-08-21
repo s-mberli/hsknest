@@ -54,26 +54,19 @@ The database lives in the named volume `recall-data`, mounted at `/data`.
 
 ### Reading Mode content
 
-Unlike word/list starter content, **Reading Mode's graded stories are not
-yet auto-provisioned by the entrypoint** — the runtime image doesn't ship
-`content/reading/**` or the TypeScript modules `scripts/ingest-story.ts`
-needs, so there's currently no in-container command for it. `/reading` will
-show an empty library until this is addressed; every other feature
-(flashcards, lists, all practice modes) is unaffected.
+Reading Mode's graded stories (text + pinyin + tap dictionary — small text
+files, no audio or fonts involved) are baked into the image and ingested on
+every boot, the same way starter vocabulary is seeded — idempotent, no
+manual step. `/reading` has a populated library out of the box.
 
-If you're building from source rather than pulling `ghcr.io`'s published
-image, you have the full repo checkout available and can ingest stories
-straight into the container's database from your host machine:
+Don't want it on a stripped-down instance? Set `READING_MODE_ENABLED=false`
+to skip the ingest step; see [CONFIGURATION.md](CONFIGURATION.md). Every
+other feature is unaffected either way.
 
-```bash
-DATABASE_URL="file:/path/to/your/recall-data/volume/recall.db" \
-  npx tsx scripts/ingest-story.ts --all --force
-```
-
-(Point `DATABASE_URL` at wherever your `recall-data` volume is mounted on
-the host — `docker volume inspect <project>_recall-data` finds it, same as
-the audio mount instructions in `docs/AUDIO.md`.) This is a one-time step;
-new stories added later need a re-run.
+Karaoke audio for stories is a separate, optional layer on top — it's
+generated offline and mounted like word/sentence audio, not shipped in the
+image. See [docs/AUDIO.md](AUDIO.md#reading-mode-story-audio-separate-pipeline)
+if you want it; stories read fine without it.
 
 ## Reverse proxy (Caddy) — automatic HTTPS + HSTS
 
