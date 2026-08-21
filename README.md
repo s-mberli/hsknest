@@ -93,6 +93,7 @@ docker compose up -d --build
 The container will:
 - Auto-generate a `NEXTAUTH_SECRET` and persist it to `/data/.nextauth-secret` (survives restarts)
 - Auto-seed starter content (HSK vocabulary + lists) on first boot
+- Auto-ingest Reading Mode's graded stories on every boot (idempotent; set `READING_MODE_ENABLED=false` to skip)
 - Apply any pending database migrations
 - Serve the app at `http://localhost:3000`
 
