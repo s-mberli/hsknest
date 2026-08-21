@@ -66,11 +66,20 @@ npm run db:migrate
 # 4. Seed starter content (sample languages + word lists)
 npm run db:seed
 
-# 5. Run the dev server
+# 5. Ingest Reading Mode's graded stories (optional — flashcards work without
+#    this; skip it and /reading just shows an empty library until you run it)
+npx tsx scripts/ingest-story.ts --all --force
+
+# 6. Run the dev server
 npm run dev
 ```
 
 Open http://localhost:3000, create an account, add or import a word list, and start studying.
+
+Reading Mode's karaoke audio is a separate, optional step — see
+[docs/AUDIO.md](docs/AUDIO.md#reading-mode-story-audio-separate-pipeline).
+Without it, stories still work fully (text, pinyin, tap dictionary) — no
+audio player just doesn't appear on a story that has none.
 
 ## Self-hosting
 

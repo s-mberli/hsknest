@@ -88,6 +88,13 @@ jobs:
           npx prisma migrate deploy
           npx prisma db seed
 
+      # Reading Mode stories are ingested from content/reading/**, not the
+      # seed script (see docs/ARCHITECTURE.md) — without this, e2e/reading.spec.ts
+      # finds an empty library. --force allows the repo's draft-status content
+      # (the human-review gate is for authoring workflow, not CI).
+      - name: Ingest reading stories
+        run: npx tsx scripts/ingest-story.ts --all --force
+
       # Chromium only — the suite runs against one browser (see
       # playwright.config.ts); installing the rest would just slow CI down.
       - name: Install Playwright browsers

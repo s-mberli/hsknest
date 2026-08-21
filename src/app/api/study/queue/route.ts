@@ -155,7 +155,11 @@ export async function GET(req: Request) {
           {
             OR: [
               { word: { sentences: { some: {} } } },
-              { word: { metadata: { path: ["encounterSentence"], not: "" } } },
+              // SQLite/MySQL take a dot-notation string path, not the
+              // Postgres-only string[] form — an array here throws a
+              // PrismaClientValidationError and 500s the whole queue
+              // whenever ?sentences=1 is passed.
+              { word: { metadata: { path: "$.encounterSentence", not: "" } } },
             ],
           },
         ]

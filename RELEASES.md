@@ -47,6 +47,17 @@ Follow-up hardening pass on top of the initial ship:
   list position 0 (now increasing), and the "From Reading" list had no
   queue priority (now ranked in after your other studying lists instead of
   being silently treated as unranked).
+- Fixed Sentence mode's queue filter (`?sentences=1`) 500ing on SQLite: the
+  encounter-sentence branch used Postgres-only array JSON-path syntax, which
+  Prisma rejects against SQLite/MySQL. Only reachable once a card carries an
+  `encounterSentence` (i.e. once Reading Mode is in use), which is exactly
+  why CI caught it here — no dedicated test had exercised that filter shape
+  before. Regression test added directly against SQLite.
+- Self-hosting note: Reading Mode's story content isn't auto-provisioned by
+  the Docker entrypoint yet (see `docs/DEPLOYMENT.md`) — `/reading` shows an
+  empty library out of the box until you run the ingest step. Every other
+  feature is unaffected; this is flagged as a known gap, not silently left
+  broken.
 
 ## v0.2.5 — 2026-08-16
 

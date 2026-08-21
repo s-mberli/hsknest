@@ -103,6 +103,9 @@ export default async function ReadingPage() {
         <div className="rounded-xl border border-dashed bg-muted/30 px-6 py-16 text-center">
           <BookOpen className="mx-auto mb-3 size-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">No stories yet.</p>
+          <p className="mt-1 text-xs text-muted-foreground/70">
+            Self-hosting? See docs/DEPLOYMENT.md to add Reading Mode content.
+          </p>
         </div>
       ) : (
         <>

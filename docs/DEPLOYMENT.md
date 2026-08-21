@@ -52,6 +52,29 @@ automatically the next time you redeploy — no manual re-seed step needed.
 
 The database lives in the named volume `recall-data`, mounted at `/data`.
 
+### Reading Mode content
+
+Unlike word/list starter content, **Reading Mode's graded stories are not
+yet auto-provisioned by the entrypoint** — the runtime image doesn't ship
+`content/reading/**` or the TypeScript modules `scripts/ingest-story.ts`
+needs, so there's currently no in-container command for it. `/reading` will
+show an empty library until this is addressed; every other feature
+(flashcards, lists, all practice modes) is unaffected.
+
+If you're building from source rather than pulling `ghcr.io`'s published
+image, you have the full repo checkout available and can ingest stories
+straight into the container's database from your host machine:
+
+```bash
+DATABASE_URL="file:/path/to/your/recall-data/volume/recall.db" \
+  npx tsx scripts/ingest-story.ts --all --force
+```
+
+(Point `DATABASE_URL` at wherever your `recall-data` volume is mounted on
+the host — `docker volume inspect <project>_recall-data` finds it, same as
+the audio mount instructions in `docs/AUDIO.md`.) This is a one-time step;
+new stories added later need a re-run.
+
 ## Reverse proxy (Caddy) — automatic HTTPS + HSTS
 
 The app ships baseline security headers (X-Frame-Options, X-Content-Type-Options,
