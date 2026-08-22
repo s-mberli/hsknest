@@ -48,9 +48,20 @@ export interface LastGrade {
   combo: number;
 }
 
+/** Cap/availability counts the queue route returns alongside `cards` — see
+ *  src/app/api/study/queue/route.ts. Lets the empty-queue state distinguish
+ *  "daily cap reached" from "genuinely nothing left". */
+export interface QueueCounts {
+  due: number;
+  newAllowedToday: number;
+  checksAllowedToday: number;
+}
+
 interface UseStudySession {
   loading: boolean;
   cards: StudyCard[];
+  /** null until the first fetch resolves. */
+  counts: QueueCounts | null;
   current: StudyCard | null;
   upcoming: StudyCard[];
   stage: Stage;
@@ -125,6 +136,7 @@ export function useStudySession(
   { showReading = true, practice = false }: StudySessionOptions = {}
 ): UseStudySession {
   const [cards, setCards] = useState<StudyCard[]>([]);
+  const [counts, setCounts] = useState<QueueCounts | null>(null);
   const [cursor, setCursor] = useState(0);
   const [stage, setStage] = useState<Stage>("TERM");
   const [loading, setLoading] = useState(true);
@@ -149,7 +161,10 @@ export function useStudySession(
         const res = await fetch(`/api/study/queue?${query}`);
         if (!res.ok) throw new Error("queue fetch failed");
         const data = await res.json();
-        if (active) setCards(markPreviews(data.cards ?? []));
+        if (active) {
+          setCards(markPreviews(data.cards ?? []));
+          setCounts(data.counts ?? null);
+        }
       } catch {
         if (active) toast.error("Could not load your study session.");
       } finally {
@@ -280,6 +295,7 @@ export function useStudySession(
   return {
     loading,
     cards,
+    counts,
     current,
     upcoming,
     stage,

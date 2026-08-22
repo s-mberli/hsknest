@@ -60,6 +60,7 @@ function StudySession({
   const {
     loading,
     cards,
+    counts,
     current,
     upcoming,
     stage,
@@ -213,7 +214,7 @@ function StudySession({
         )}
 
         {!loading && done && cards.length === 0 && (
-          <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} />
+          <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} counts={counts} />
         )}
 
         {!loading && done && cards.length > 0 && (

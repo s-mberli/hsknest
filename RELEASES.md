@@ -8,6 +8,21 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Fixed three places where the app conflated "in your deck" with "you know
+  it," or hit its own limits without saying so: (1) Reading Mode's coverage
+  badge counted enrolled-but-never-studied words as known, so enrolling a
+  curriculum list upfront made every story read as ~100% known / "too easy"
+  and broke "Best next read" — now filtered to actually-studied words. (2)
+  Hitting the daily new-word cap during a scoped study session showed "You've
+  crushed all your flashcards!" (untrue) and offered a "Practice this list"
+  button that dead-ended right back into "learn some words first" — now shows
+  the real reason with a link to adjust the limit. (3) The list detail page's
+  "300 of 300 in your queue" was enrollment count, not learning progress, so
+  it hit its max the instant you enrolled and never moved again — now shows
+  learned/total, matching the lists index page. (Checked, and *not* a bug:
+  multi-list queue mixing already interleaves new cards at the requested
+  N:(N-1):…:1 ratio — it just doesn't apply to due reviews, which are
+  correctly due-date ordered.)
 - Reading Mode's story content now auto-provisions on container boot, closing
   the self-hosting gap noted in v0.3.0 below: the Docker image now ships
   `content/reading/**` and the `src/lib/reading` modules `ingest-story.ts`
