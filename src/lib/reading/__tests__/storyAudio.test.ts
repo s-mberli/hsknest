@@ -137,4 +137,19 @@ describe("timingsMatchText", () => {
   it("hashes to 20 hex chars, matching src/lib/audio.ts's convention", () => {
     expect(hashStoryText(BODY)).toMatch(/^[0-9a-f]{20}$/);
   });
+
+  it("hashes CRLF and LF versions of the same text identically", () => {
+    // scripts/generate-story-audio.py computes textHash after reading the
+    // file with Python's Path.read_text(), which silently translates CRLF
+    // to LF; hashStoryText reads via fs.readFileSync, which does not. On a
+    // checkout with CRLF line endings (Windows, or any repo without
+    // .gitattributes forcing LF) the two would hash different bytes for
+    // byte-identical content — confirmed live: 15 of 17 stories reported
+    // "audio stale" immediately after generating their own audio, 0% of the
+    // text actually different. hashStoryText must normalize CRLF -> LF so
+    // it's invariant to the checkout's line-ending convention.
+    const lf = "第一行。\n\n第二行。";
+    const crlf = "第一行。\r\n\r\n第二行。";
+    expect(hashStoryText(crlf)).toBe(hashStoryText(lf));
+  });
 });

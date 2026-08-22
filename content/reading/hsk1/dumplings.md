@@ -12,12 +12,12 @@ sentencesEn:
   - "He says: \"I like dumplings. Do you like dumplings?\""
   - "I say: \"I don't really like dumplings. I like rice.\""
   - "He says: \"OK then, let's eat rice.\""
-  - "I make rice, and he makes some vegetables."
-  - "We eat. The rice is very tasty."
+  - "I made the rice, and he made some dishes."
+  - "We eat together. The rice is very tasty."
   - "He says: \"This rice is really good. Thank you!\""
   - "I say: \"You're welcome. Come again tomorrow!\""
   - "He says: \"OK, tomorrow we can eat dumplings.\""
-  - "I say: \"OK, tomorrow I'll eat dumplings.\""
+  - "I say: \"OK, tomorrow let's eat dumplings together.\""
 ---
 
 今天我的朋友小李来我家。
@@ -32,9 +32,9 @@ sentencesEn:
 
 他说：“好吧，那我们吃米饭。”
 
-我做米饭，他做一些菜。
+我做了米饭，他做了一些菜。
 
-我们吃。米饭很好吃。
+我们一起吃。米饭很好吃。
 
 他说：“这个米饭真好吃。谢谢！”
 
@@ -42,4 +42,4 @@ sentencesEn:
 
 他说：“好，明天我们可以吃饺子。”
 
-我说：“好，明天我吃饺子。”
+我说：“好，明天我们一起吃饺子。”

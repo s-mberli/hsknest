@@ -9,10 +9,10 @@ sentencesEn:
   - "I often go to a coffee shop near my home to study."
   - "The coffee shop is next to a bookstore, and not many people go there."
   - "Today my friend Xiao Li is already at the coffee shop when I arrive."
-  - "She's reading an English book, but she's very tired."
+  - "She's reading an English book, and she looks very focused."
   - "I ask: \"What are you doing?\""
   - "She says: \"I'm studying English. I have a test next week.\""
-  - "I say: \"Really? That sounds good.\""
+  - "I say: \"Really? Then you'd better prepare well.\""
   - "She says: \"Yes, but I want to travel abroad, so I have to learn English well.\""
   - "I say: \"I can help you. I've studied English too.\""
   - "She's very happy and says: \"Thank you! Can we study together every week?\""
@@ -30,13 +30,13 @@ sentencesEn:
 
 今天我到的时候，我的朋友小李已经在咖啡店了。
 
-她正在看一本英语书，但是她很累。
+她正在看一本英语书，看起来很认真。
 
 我问：“你在做什么？”
 
 她说：“我在学英语。我下星期有考试。”
 
-我说：“真的吗？听起来不错。”
+我说：“真的吗？那你要好好准备了。”
 
 她说：“是，但是我想出国旅游，所以我要学好英语。”
 
