@@ -13,9 +13,9 @@ sentencesEn:
   - "My little sister is ten years old; she's an elementary school student."
   - "She likes to read and also likes to sing."
   - "Our cat is called Xiaobai. It's two years old and very good."
-  - "In the morning, Xiaobai likes to sleep."
+  - "In the morning, Xiaobai likes to sleep. In the evening, it likes to play at home."
   - "In the evening, we all eat at home."
-  - "We love our family very much."
+  - "I love my family very much."
 ---
 
 我家有四口人：爸爸、妈妈、妹妹和我。
@@ -32,8 +32,8 @@ sentencesEn:
 
 我们的猫叫小白，它两岁了，很好。
 
-早上，小白喜欢睡觉。
+早上，小白喜欢睡觉，晚上它喜欢在家里玩。
 
 晚上，我们都在家吃饭。
 
-我们都很爱我们的家人。
+我很爱我的家人。
