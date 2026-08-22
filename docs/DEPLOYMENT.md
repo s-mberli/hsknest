@@ -68,6 +68,20 @@ generated offline and mounted like word/sentence audio, not shipped in the
 image. See [docs/AUDIO.md](AUDIO.md#reading-mode-story-audio-separate-pipeline)
 if you want it; stories read fine without it.
 
+**`/reading` shows "No stories yet." after a deploy?** The ingest step is
+non-fatal on purpose — a content problem shouldn't block boot — but it logs a
+loud warning when it fails:
+
+```bash
+docker compose logs app | grep -A20 "Ingesting Reading Mode"
+```
+
+Re-run it by hand once the underlying issue is fixed:
+
+```bash
+docker compose exec app node_modules/.bin/tsx scripts/ingest-story.ts --all --force
+```
+
 ## Reverse proxy (Caddy) — automatic HTTPS + HSTS
 
 The app ships baseline security headers (X-Frame-Options, X-Content-Type-Options,
