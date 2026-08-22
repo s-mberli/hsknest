@@ -104,3 +104,54 @@ test("word appears in study queue after adding from reader", async ({ page }) =>
   // scheduling (NEW words are capped), so just verify the page loads
   await page.waitForSelector("button", { timeout: 10_000 });
 });
+
+/**
+ * Reader text-size ladder: 25/28/31/35/39/44px, default 31. Regression guard
+ * for the header −/+ buttons and the settings-drawer slider disagreeing
+ * (src/lib/reading/fontSize.ts) and for the floor genuinely moving up from
+ * the old 18-25px range for a reader with no stored preference.
+ */
+async function readerFontSizePx(page: import("playwright/test").Page): Promise<number> {
+  const textContainer = page.locator("[data-sentence]").first().locator("..");
+  return Number((await textContainer.evaluate((el) => getComputedStyle(el).fontSize)).replace("px", ""));
+}
+
+test("reader text defaults to >= 25px with no stored preference", async ({ page }) => {
+  await logIn(page);
+  await page.evaluate(() => localStorage.removeItem("hn-reader-prefs"));
+  await openFirstStory(page);
+  expect(await readerFontSizePx(page)).toBeGreaterThanOrEqual(25);
+  expect(await readerFontSizePx(page)).toBe(31); // DEFAULT_READER_FONT_SIZE
+});
+
+test("header +/- buttons and settings slider agree on the same ladder", async ({ page }) => {
+  await logIn(page);
+  await page.evaluate(() => localStorage.removeItem("hn-reader-prefs"));
+  await openFirstStory(page);
+
+  const minus = page.getByRole("button", { name: "Decrease text size" });
+  const plus = page.getByRole("button", { name: "Increase text size" });
+
+  await plus.click();
+  await plus.click();
+  expect(await readerFontSizePx(page)).toBe(39); // 31 -> 35 -> 39
+  await minus.click();
+  expect(await readerFontSizePx(page)).toBe(35);
+
+  // Open the settings drawer and confirm the slider reports the same value —
+  // this is the exact disagreement the original bug produced.
+  await page.getByRole("button", { name: "Reading settings" }).click();
+  const slider = page.getByRole("slider");
+  await expect(slider).toBeVisible();
+  const sliderValue = await slider.evaluate((el) => (el as HTMLInputElement).value);
+  const sizes = [25, 28, 31, 35, 39, 44];
+  expect(sizes[Number(sliderValue)]).toBe(35);
+});
+
+test("a stale pre-migration font size in localStorage snaps up to the new floor", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/reading"); // any same-origin page so localStorage is settable first
+  await page.evaluate(() => localStorage.setItem("hn-reader-prefs", JSON.stringify({ fontSize: 18 })));
+  await openFirstStory(page);
+  expect(await readerFontSizePx(page)).toBeGreaterThanOrEqual(25);
+});
