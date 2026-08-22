@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { GuestButton } from "@/components/auth/GuestButton";
 import { Button } from "@/components/ui/button";
+import { confirmSession } from "@/lib/authClient";
 import {
   Card,
   CardContent,
@@ -40,6 +41,7 @@ export function LoginForm({ guestEnabled }: { guestEnabled: boolean }) {
       toast.error("Invalid email or password");
       return;
     }
+    await confirmSession();
     window.location.href = "/dashboard";
   }
 
