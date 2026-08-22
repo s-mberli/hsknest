@@ -1,5 +1,7 @@
 "use client";
 
+import { DEFAULT_READER_FONT_SIZE, READER_FONT_SIZES, readerFontSizeIndex, snapReaderFontSize } from "@/lib/reading/fontSize";
+
 /* ── Reader preferences (persisted to localStorage) ──────── */
 
 export type Prefs = {
@@ -11,11 +13,18 @@ export type Prefs = {
 };
 
 const KEY = "hn-reader-prefs";
-const defaults: Prefs = { pinyinMode: "full", fontSize: 20, speed: 1.0, showTranslations: false, hskUnderline: true };
+const defaults: Prefs = { pinyinMode: "full", fontSize: DEFAULT_READER_FONT_SIZE, speed: 1.0, showTranslations: false, hskUnderline: true };
 
 export const Prefs = {
   load: (): Prefs => {
-    try { return { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch { return defaults; }
+    try {
+      const parsed = { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") };
+      // Snap here, not just in the settings drawer: a value saved under the
+      // old 16-28 range (or any other stale/foreign value) must resolve to a
+      // real rung as soon as it's read, so ReaderView's initial render is
+      // correct too, not just the slider once it's opened.
+      return { ...parsed, fontSize: snapReaderFontSize(parsed.fontSize) };
+    } catch { return defaults; }
   },
   save: (p: Prefs) => {
     try { localStorage.setItem(KEY, JSON.stringify(p)); } catch {}
@@ -53,7 +62,7 @@ export function ReaderSettings({ open, onClose, prefs, onChange }: Props) {
         {/* Font size */}
         <div className="mb-3">
           <label className="text-xs text-muted-foreground block mb-1.5">Text size — {prefs.fontSize}px</label>
-          <input type="range" min={16} max={28} value={prefs.fontSize} onChange={e => onChange({ fontSize: Number(e.target.value) })} className="w-full accent-primary" />
+          <input type="range" min={0} max={READER_FONT_SIZES.length - 1} step={1} value={readerFontSizeIndex(prefs.fontSize)} onChange={e => onChange({ fontSize: READER_FONT_SIZES[Number(e.target.value)] })} className="w-full accent-primary" />
         </div>
 
         {/* Speed */}
