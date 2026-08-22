@@ -29,8 +29,18 @@ interface Timings {
   voice: string;
 }
 
+// Checks the SERVING location (public/audio), not audio-out (generation
+// scratch space that lives only on whoever's machine ran
+// generate-story-audio.py). audio-out is never shipped in the Docker image
+// and never mounted as a volume — public/audio is (see docs/AUDIO.md's
+// `docker cp .../public/audio` step) — so checking audio-out here meant
+// this auto-detection could never fire for a Docker deployment even when a
+// self-hoster followed the documented process to the letter: files would
+// sit correctly under public/audio/zh/r, and every boot's ingest would
+// still report "no audio yet" forever, because it was looking in a
+// directory that only ever exists on a dev machine mid-generation.
 function findAudio(slug: string): { mp3: string; timings: Timings } | null {
-  const dir = path.join(process.cwd(), "audio-out", "zh", "r");
+  const dir = path.join(process.cwd(), "public", "audio", "zh", "r");
   const mp3 = path.join(dir, `${slug}.mp3`);
   const timingsFile = path.join(dir, `${slug}.timings.json`);
   if (!fs.existsSync(mp3) || !fs.existsSync(timingsFile)) return null;
