@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { GuestButton } from "@/components/auth/GuestButton";
+import { useHydrated } from "@/hooks/useHydrated";
 import { Button } from "@/components/ui/button";
 import { confirmSession } from "@/lib/authClient";
 import {
@@ -26,6 +27,7 @@ export function LoginForm({ guestEnabled }: { guestEnabled: boolean }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const hydrated = useHydrated();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -99,7 +101,7 @@ export function LoginForm({ guestEnabled }: { guestEnabled: boolean }) {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || !hydrated}>
               {loading ? "Signing in…" : "Sign in"}
             </Button>
           </form>
