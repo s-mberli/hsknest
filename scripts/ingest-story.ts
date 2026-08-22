@@ -4,8 +4,9 @@
  * Accepts only `status: approved` stories (the human-review gate) unless
  * `--force` is passed (dev drafts). For each story: hydrate (segment +
  * annotate + CEDICT senses), grade against the target level, then upsert
- * ReadingText, rebuild the ReadingTextWord index, and register pre-generated
- * audio when the MP3 + timings files exist (scripts/generate-story-audio.py).
+ * ReadingText and rebuild the ReadingTextWord index. Narration is NOT
+ * registered here — audio availability is derived from the filesystem at read
+ * time (src/lib/reading/storyAudio.ts); this script only reports what it sees.
  *
  * Idempotent — re-run after edits; everything is rebuilt from the file.
  *
@@ -21,21 +22,19 @@ import { prisma } from "../src/lib/prisma";
 import { loadCedict } from "../src/lib/reading/cedict";
 import { hydrateText } from "../src/lib/reading/hydrate";
 import { loadHskLexicon } from "../src/lib/reading/lexicon";
+import { clearStoryAudioCache, resolveStoryAudio, timingsMatchText } from "../src/lib/reading/storyAudio";
 import type { StoryToken } from "../src/lib/reading/types";
 import { parseStory, slugFor } from "./reading-md";
 
-interface Timings {
-  durationMs: number;
-  voice: string;
-}
-
-function findAudio(slug: string): { mp3: string; timings: Timings } | null {
-  const dir = path.join(process.cwd(), "audio-out", "zh", "r");
-  const mp3 = path.join(dir, `${slug}.mp3`);
-  const timingsFile = path.join(dir, `${slug}.timings.json`);
-  if (!fs.existsSync(mp3) || !fs.existsSync(timingsFile)) return null;
-  return { mp3, timings: JSON.parse(fs.readFileSync(timingsFile, "utf-8")) as Timings };
-}
+// Audio presence is resolved by the SAME function the reader uses at render
+// time (src/lib/reading/storyAudio.ts) rather than a second copy of the path
+// logic here. A divergent copy is exactly what caused the outage this
+// replaces: this script stat-ed audio-out/ while the app served from
+// public/audio/, so audio could be correctly installed and still never appear.
+// This script no longer writes a ReadingAudio row — availability is derived
+// from the filesystem, never stored. It only REPORTS what it sees, which is
+// genuinely useful operator feedback and now reports the same truth the
+// reader will render.
 
 function wordIndex(tokens: StoryToken[]): { lemma: string; level: number | null; position: number }[] {
   const seen = new Map<string, { lemma: string; level: number | null; position: number }>();
@@ -141,30 +140,20 @@ async function main(): Promise<number> {
       data: wordIndex(hydrated.tokens).map((w) => ({ ...w, textId: row.id })),
     });
 
-    const audio = findAudio(slug);
-    if (audio) {
-      const rel = (name: string) => `zh/r/${name}`;
-      await prisma.readingAudio.upsert({
-        where: { textId: row.id },
-        create: {
-          textId: row.id,
-          voice: audio.timings.voice,
-          audioUrl: rel(`${slug}.mp3`),
-          timingsUrl: rel(`${slug}.timings.json`),
-          durationMs: Math.round(audio.timings.durationMs),
-        },
-        update: {
-          voice: audio.timings.voice,
-          audioUrl: rel(`${slug}.mp3`),
-          timingsUrl: rel(`${slug}.timings.json`),
-          durationMs: Math.round(audio.timings.durationMs),
-        },
-      });
-    }
+    // Report only — no row is written. The story just changed on disk, so
+    // drop any memoized lookup before asking (this process may have resolved
+    // the same slug earlier in the run).
+    clearStoryAudioCache();
+    const audio = resolveStoryAudio(slug);
+    const audioNote = !audio
+      ? ", no audio yet"
+      : timingsMatchText(audio.timings, story.body)
+        ? `, audio ✓ (${audio.timings.voice})`
+        : ", audio ⚠ stale (timings predate current text — narration plays, word highlighting off)";
 
     console.log(
       `${slug}: ${report.verdict.toUpperCase()} above ${(report.aboveLevelPct * 100).toFixed(1)}%` +
-        `, ${hydrated.words.unique} unique words${audio ? ", audio ✓" : ", no audio yet"}`
+        `, ${hydrated.words.unique} unique words${audioNote}`
     );
     ingested++;
   }

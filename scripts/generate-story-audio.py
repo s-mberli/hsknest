@@ -8,7 +8,7 @@ scripts/generate-audio.py, no API key) AND captures WordBoundary events,
 reconciling them to character offsets in the story body. Output per story:
 
     audio-out/zh/r/<slug>.mp3              whole-text narration
-    audio-out/zh/r/<slug>.timings.json     {v, voice, durationMs, marks:[{s,e,t0,t1}]}
+    audio-out/zh/r/<slug>.timings.json     {v, voice, durationMs, textHash, marks:[{s,e,t0,t1}]}
 
 marks are char spans (s,e) into the story body with millisecond spans
 (t0,t1) — the client's karaoke loop maps hydrated tokens to marks by offset
@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
 import re
 import sys
@@ -138,6 +139,12 @@ async def synth(slug: str, body: str, out_dir: Path, voice: str, sem: asyncio.Se
                     "voice": voice,
                     "durationMs": last_end / 1e4,
                     "marks": reconcile(body, boundaries),
+                    # Lets the reader detect timings generated against an older
+                    # revision of the story: marks are char offsets into `body`,
+                    # so editing the text silently desyncs the karaoke
+                    # highlight. Must match hashStoryText() in
+                    # src/lib/reading/storyAudio.ts (sha256, first 20 hex).
+                    "textHash": hashlib.sha256(body.encode("utf-8")).hexdigest()[:20],
                 }
                 timings.write_text(
                     json.dumps(payload, ensure_ascii=False), encoding="utf-8"
