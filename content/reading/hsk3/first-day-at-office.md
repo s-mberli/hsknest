@@ -22,7 +22,7 @@ sentencesEn:
   - "We eat at a small restaurant near the company; the food there isn't bad."
   - "In the afternoon, I start reading some documents, trying to understand the company's work."
   - "Although there's a lot I don't understand, I'm not in a hurry, because everyone is very patient."
-  - "In the afternoon, Li Hua comes to ask if I want to drink coffee together."
+  - "Later, Li Hua comes to ask if I want to drink coffee together."
   - "We chat while drinking coffee, and she tells me some things I should pay attention to at work."
   - "She says: \"When you first start, if you don't understand something, just ask, don't be afraid to bother others.\""
   - "I say: \"OK, I'll remember that.\""
@@ -30,7 +30,6 @@ sentencesEn:
   - "I say: \"That sounds fun, I'd like to go next time.\""
   - "When it's time to leave work, Li Hua says: \"See you tomorrow, if you have questions you can ask me anytime.\""
   - "I say: \"OK, see you tomorrow, thank you for taking care of me today.\""
-  - "Before I know it, it's almost time to leave work."
   - "Today was very busy, but I'm very happy, because I feel like I can slowly get used to this job here."
 ---
 
@@ -66,7 +65,7 @@ sentencesEn:
 
 虽然有很多看不懂的地方，但是我不着急，因为大家都很有耐心。
 
-下午，李华过来问我要不要一起喝咖啡。
+后来，李华过来问我要不要一起喝咖啡。
 
 我们边喝咖啡边聊天，她告诉我一些工作上应该注意的事。
 
@@ -81,7 +80,5 @@ sentencesEn:
 下班的时候，李华说：“明天见，有问题随时可以问我。”
 
 我说：“好，明天见，谢谢你今天照顾我。”
-
-不知不觉，快到下班的时间了。
 
 今天很忙，但是我很高兴，因为我觉得自己会慢慢习惯这里的工作。

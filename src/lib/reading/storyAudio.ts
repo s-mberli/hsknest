@@ -57,9 +57,22 @@ export interface StoryAudio {
   timings: StoryTimings;
 }
 
-/** SHA-256 of `text`, first 20 hex chars — same convention as src/lib/audio.ts. */
+/**
+ * SHA-256 of `text`, first 20 hex chars — same convention as src/lib/audio.ts.
+ *
+ * Normalizes CRLF to LF first. `scripts/generate-story-audio.py` computes
+ * this same hash after reading the story with Python's `Path.read_text()`,
+ * which does universal-newline translation (CRLF/CR → LF) invisibly; this
+ * function reads via `fs.readFileSync`, which does not. On a checkout with
+ * CRLF line endings (Windows, or any repo without `.gitattributes` forcing
+ * LF), the two would hash different bytes for byte-identical content,
+ * permanently marking freshly-generated audio "stale". Confirmed live: on a
+ * CRLF checkout, 15 of 17 stories reported stale immediately after
+ * regenerating their own audio, with 0% of the underlying text actually
+ * different. Must match the Python side's effective normalization exactly.
+ */
 export function hashStoryText(text: string): string {
-  return createHash("sha256").update(text, "utf8").digest("hex").slice(0, 20);
+  return createHash("sha256").update(text.replace(/\r\n/g, "\n"), "utf8").digest("hex").slice(0, 20);
 }
 
 /**

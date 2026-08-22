@@ -13,7 +13,7 @@ sentencesEn:
   - "He says: \"Not far, twenty minutes and we'll be there.\""
   - "On the way, he and I talk about the weather."
   - "He says: \"It rains a lot these days.\""
-  - "I say: \"I like rainy days too.\""
+  - "I say: \"Right, it's been raining every day lately.\""
   - "After a while, he says: \"We're here.\""
   - "I ask: \"How much is it?\""
   - "He says: \"Forty yuan.\""
@@ -36,7 +36,7 @@ sentencesEn:
 
 他说：“这几天雨很多。”
 
-我说：“我也喜欢下雨天。”
+我说：“对，这几天天天下雨。”
 
 过了一会儿，他说：“到了。”
 

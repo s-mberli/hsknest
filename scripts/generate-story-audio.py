@@ -143,8 +143,14 @@ async def synth(slug: str, body: str, out_dir: Path, voice: str, sem: asyncio.Se
                     # revision of the story: marks are char offsets into `body`,
                     # so editing the text silently desyncs the karaoke
                     # highlight. Must match hashStoryText() in
-                    # src/lib/reading/storyAudio.ts (sha256, first 20 hex).
-                    "textHash": hashlib.sha256(body.encode("utf-8")).hexdigest()[:20],
+                    # src/lib/reading/storyAudio.ts (sha256, first 20 hex) —
+                    # including the CRLF->LF normalize: `body` here already
+                    # went through Path.read_text()'s universal-newline
+                    # translation, but that's an implicit property of how
+                    # `collect()` reads files, not visible at this call site.
+                    # Normalizing explicitly here means this line stays
+                    # correct even if the read path changes.
+                    "textHash": hashlib.sha256(body.replace("\r\n", "\n").encode("utf-8")).hexdigest()[:20],
                 }
                 timings.write_text(
                     json.dumps(payload, ensure_ascii=False), encoding="utf-8"
