@@ -5,6 +5,7 @@ import { ArrowLeft, Bookmark, Copy, Minus, Play, Pause, Plus, Volume2, X } from 
 import Link from "next/link";
 import { stripTranslationCruft } from "@/lib/hskTransform";
 import { findSentenceForMark, findSentenceForToken, sentenceSurface } from "@/lib/reading/sentences";
+import type { StoryTimings } from "@/lib/reading/storyAudio";
 
 import { ReaderSettings, Prefs } from "./ReaderSettings";
 
@@ -29,12 +30,8 @@ interface HydratedText {
   words: { total: number; unique: number };
 }
 
-interface TimingsFile {
-  v: number;
-  voice: string;
-  durationMs: number;
-  marks: { s: number; e: number; t0: number; t1: number }[];
-}
+/** Shape of the narration sidecar; resolved server-side (see storyAudio.ts). */
+type TimingsFile = StoryTimings;
 
 interface ReaderViewProps {
   textId: string;
@@ -46,7 +43,8 @@ interface ReaderViewProps {
   topicEn: string | null;
   hydrated: Record<string, unknown> | null;
   audioUrl: string | null;
-  timingsUrl: string | null;
+  /** Parsed server-side and passed down — no client fetch, no loading race. */
+  timings: TimingsFile | null;
   estimatedMin: number | null;
   languageId: string;
   initialScrollPct?: number;
@@ -74,12 +72,11 @@ function cleanForDisplay(m: string): string {
 
 /* ── Component ──────────────────────────────────────────────── */
 
-export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn, hydrated, audioUrl, timingsUrl, estimatedMin, languageId, initialScrollPct }: ReaderViewProps) {
+export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn, hydrated, audioUrl, timings, estimatedMin, languageId, initialScrollPct }: ReaderViewProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [timings, setTimings] = useState<TimingsFile | null>(null);
   const [activeMark, setActiveMark] = useState(-1);
   const [activeSentence, setActiveSentence] = useState(-1);
   const [audioReady, setAudioReady] = useState(false);
@@ -129,7 +126,6 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
 
   /* ── data loading ─────────────────────────────────────────── */
   useEffect(() => { fetch("/api/reading/known-words").then(r => r.ok ? r.json() : null).then(d => { if (d?.known) setKnownWords(new Map(d.known.map((k: { lemma: string; strength: string }) => [k.lemma, k.strength]))); }).catch(() => {}); }, []);
-  useEffect(() => { if (!timingsUrl) return; fetch(`${(process.env.NEXT_PUBLIC_AUDIO_BASE_URL ?? "")}/${timingsUrl}`).then(r => r.ok ? r.json() : null).then(d => d && setTimings(d as TimingsFile)).catch(() => {}); }, [timingsUrl]);
 
   useEffect(() => {
     if (!audioUrl) return;
