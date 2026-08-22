@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Bookmark, Copy, Minus, Play, Pause, Plus, Volume2, X } from "lucide-react";
 import Link from "next/link";
 import { stripTranslationCruft } from "@/lib/hskTransform";
+import { DEFAULT_READER_FONT_SIZE, READER_FONT_SIZES, readerFontSizeIndex } from "@/lib/reading/fontSize";
 import { findSentenceForMark, findSentenceForToken, sentenceSurface } from "@/lib/reading/sentences";
 import type { StoryTimings } from "@/lib/reading/storyAudio";
 
@@ -53,7 +54,6 @@ interface ReaderViewProps {
 /* ── Constants ──────────────────────────────────────────────── */
 
 const SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5];
-const FONT_SIZES = [18, 20, 22, 25];
 const PY_LABEL: Record<Prefs["pinyinMode"], string> = { full: "Pinyin", off: "汉字", adaptive: "Auto" };
 const LONG_PRESS_MS = 300;
 const SWIPE_UP_PX = 30;
@@ -92,12 +92,21 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   const [batchPromptDismissed, setBatchPromptDismissed] = useState(false);
   const [batchAdding, setBatchAdding] = useState(false);
 
-  const initPrefs = typeof window !== "undefined" ? Prefs.load() : ({} as Partial<Prefs>);
-  const [pinyinMode, setPinyinMode] = useState<Prefs["pinyinMode"]>(() => initPrefs.pinyinMode ?? "full");
-  const [fontSize, setFontSize] = useState<number>(() => initPrefs.fontSize ?? 20);
-  const [speed, setSpeed] = useState<number>(() => { const s = initPrefs.speed ?? 1.0; return SPEEDS.includes(s) ? s : 1.0; });
-  const [showTranslations, setShowTranslations] = useState<boolean>(() => initPrefs.showTranslations ?? false);
-  const [hskUnderline, setHskUnderline] = useState<boolean>(() => initPrefs.hskUnderline ?? true);
+  // Deterministic initial state — matches ReaderSettings' `defaults` exactly
+  // — so server and the first client render agree. `localStorage` can't be
+  // read on the server, so seeding state from it here (as this used to do
+  // via `typeof window !== "undefined"`) produces a real value on the client
+  // and the placeholder on the server; React's hydration diff catches the
+  // mismatch but, per its own warning, "won't be patched up" — the DOM keeps
+  // the server value permanently. A reader with any saved preference (most
+  // readers, on their second story) would be silently stuck on the default
+  // until they touched a control. Instead, mount plain, then load the real
+  // prefs in an effect below (client-only, after hydration, so no mismatch).
+  const [pinyinMode, setPinyinMode] = useState<Prefs["pinyinMode"]>("full");
+  const [fontSize, setFontSize] = useState<number>(DEFAULT_READER_FONT_SIZE);
+  const [speed, setSpeed] = useState<number>(1.0);
+  const [showTranslations, setShowTranslations] = useState<boolean>(false);
+  const [hskUnderline, setHskUnderline] = useState<boolean>(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [knownWords, setKnownWords] = useState<Map<string, string>>(new Map());
   const [actionMenu, setActionMenu] = useState<{ x: number; y: number; token: StoryToken } | null>(null);
@@ -284,14 +293,44 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
 
   /* ── prefs ────────────────────────────────────────────────── */
   const prefs = { pinyinMode, fontSize, speed, showTranslations, hskUnderline };
+  // `updatePrefs` saves through this ref rather than through a separate
+  // "auto-save on any prefs change" effect. That was tried first and had a
+  // real race: on mount, the "sync from storage" effect below calls
+  // setFontSize etc, which doesn't apply until the next render — but a
+  // save-effect declared after it still fires in the SAME initial effect
+  // flush, using the pre-update closure (the plain defaults), and writes
+  // them over the just-loaded real value. React 18 dev double-invokes
+  // effects on mount, which made this reliably reproduce: logged sequence
+  // was sync-effect loads {fontSize:25} → stale save-effect immediately
+  // writes {fontSize:31} back over it. Mutating the ref inside `updatePrefs`
+  // itself (below) makes every write use the value at the moment of the
+  // call, not a stale render's closure — this effect just keeps the ref
+  // current for reads that don't go through `updatePrefs`.
+  const prefsRef = useRef(prefs);
+  useEffect(() => { prefsRef.current = prefs; }, [prefs]);
   const updatePrefs = useCallback((p: Partial<Prefs>) => {
     if (p.fontSize !== undefined) setFontSize(p.fontSize);
     if (p.pinyinMode !== undefined) setPinyinMode(p.pinyinMode);
     if (p.speed !== undefined) { setSpeed(p.speed); if (audioRef.current) audioRef.current.playbackRate = p.speed; }
     if (p.showTranslations !== undefined) setShowTranslations(p.showTranslations);
     if (p.hskUnderline !== undefined) setHskUnderline(p.hskUnderline);
+    const merged = { ...prefsRef.current, ...p };
+    prefsRef.current = merged;
+    Prefs.save(merged);
   }, []);
-  useEffect(() => Prefs.save(prefs), [pinyinMode, fontSize, speed, showTranslations, hskUnderline]);
+  // Client-only, post-hydration: loads the real saved prefs over the plain
+  // defaults state mounted with (localStorage can't be read on the server —
+  // see the comment on the useState block above). Runs once on mount.
+  useEffect(() => {
+    const saved = Prefs.load();
+    // updatePrefs doesn't re-validate speed (the useState initializer used
+    // to); a foreign/stale stored value must still fall back here.
+    // Reacting to an external system (localStorage, which the server can't
+    // read at all) becoming available post-hydration, not deriving state
+    // from props/state — the case this lint rule is meant to exempt.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    updatePrefs({ ...saved, speed: SPEEDS.includes(saved.speed) ? saved.speed : 1.0 });
+  }, [updatePrefs]);
   useEffect(() => { if (audioRef.current) audioRef.current.playbackRate = speed; }, [speed, audioReady]);
 
   if (!doc) return <main className="mx-auto w-full max-w-2xl px-6 py-8"><p className="text-muted-foreground">Loading…</p></main>;
@@ -307,10 +346,10 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
         <div className="mx-auto flex max-w-2xl items-center gap-1.5 px-3 py-2">
           <Link href={`/reading/${slug}`} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground" aria-label="Back"><ArrowLeft className="size-5" /></Link>
           <div className="min-w-0 flex-1"><h1 className="truncate text-sm font-semibold">{titleEn ?? title}</h1><p className="text-[11px] text-muted-foreground">HSK {level}{topicEn ? ` · ${topicEn}` : topic ? ` · ${topic}` : ""}{estimatedMin ? ` · ~${estimatedMin} min` : ""}</p></div>
-          <button onClick={() => setFontSize(s => FONT_SIZES[Math.max(0, FONT_SIZES.indexOf(s) - 1)])} className="rounded p-1 text-muted-foreground hover:text-foreground"><Minus className="size-4" /></button>
-          <button onClick={() => setFontSize(s => FONT_SIZES[Math.min(FONT_SIZES.length - 1, FONT_SIZES.indexOf(s) + 1)])} className="rounded p-1 text-muted-foreground hover:text-foreground"><Plus className="size-4" /></button>
+          <button aria-label="Decrease text size" onClick={() => setFontSize(s => READER_FONT_SIZES[Math.max(0, readerFontSizeIndex(s) - 1)])} className="rounded p-1 text-muted-foreground hover:text-foreground"><Minus className="size-4" /></button>
+          <button aria-label="Increase text size" onClick={() => setFontSize(s => READER_FONT_SIZES[Math.min(READER_FONT_SIZES.length - 1, readerFontSizeIndex(s) + 1)])} className="rounded p-1 text-muted-foreground hover:text-foreground"><Plus className="size-4" /></button>
           <button onClick={() => setPinyinMode(m => m === "full" ? "off" : m === "off" ? "adaptive" : "full")} className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">{PY_LABEL[pinyinMode]}</button>
-          <button onClick={() => setSettingsOpen(true)} className="rounded p-1.5 text-muted-foreground hover:text-foreground"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+          <button aria-label="Reading settings" onClick={() => setSettingsOpen(true)} className="rounded p-1.5 text-muted-foreground hover:text-foreground"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
         </div>
       </header>
 
