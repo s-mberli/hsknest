@@ -42,15 +42,20 @@ const AUTH_ROUTES = ["/api/auth/csrf", "/api/auth/providers", "/api/auth/session
 
 export default async function globalSetup() {
   const base = "http://localhost:3000";
-  // Redirects (307 → /login) are fine; we only need each route to compile.
-  await Promise.all(
-    [...ROUTES, ...AUTH_ROUTES].map((path) =>
-      fetch(base + path, { redirect: "manual" }).catch(() => {
-        // A route that errors here still compiled; tests will surface real
-        // failures. Warmup is best-effort.
-      })
-    )
-  );
+  // Sequential, not Promise.all: CI runners are 2 vCPUs, and firing every
+  // compile at once makes Turbopack contend with itself — the slowest
+  // routes (dashboard, the auth handlers) can end up queued behind each
+  // other and blow well past the ~25–30s single-route estimate this file
+  // is written against. One at a time costs a bit more wall-clock here but
+  // makes each compile's timing predictable, which is the whole point of
+  // warming up in the first place.
+  for (const path of [...ROUTES, ...AUTH_ROUTES]) {
+    // Redirects (307 → /login) are fine; we only need each route to compile.
+    await fetch(base + path, { redirect: "manual" }).catch(() => {
+      // A route that errors here still compiled; tests will surface real
+      // failures. Warmup is best-effort.
+    });
+  }
   // /api/auth/callback/credentials only accepts POST, and NextAuth's own
   // CSRF check 403s a request whose token doesn't match its own cookie — so
   // this can't reuse the csrf fetch above (different response, no cookie
