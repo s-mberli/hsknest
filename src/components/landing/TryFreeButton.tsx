@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { confirmSession } from "@/lib/authClient";
 import { cn } from "@/lib/utils";
 
 /**
@@ -41,6 +42,7 @@ export function TryFreeButton({
         toast.error("Could not start, please try again.");
         return;
       }
+      await confirmSession();
       router.push("/dashboard");
       router.refresh();
     } finally {

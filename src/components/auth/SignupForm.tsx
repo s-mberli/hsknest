@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackEventOnce } from "@/lib/analytics";
+import { confirmSession } from "@/lib/authClient";
 
 export function SignupForm({
   guestEnabled,
@@ -64,6 +65,7 @@ export function SignupForm({
       router.push("/login");
       return;
     }
+    await confirmSession();
     window.location.href = "/dashboard";
   }
 

@@ -83,7 +83,13 @@ fi
 # workflow, not for what self-hosters get out of the box.
 if [ "$READING_MODE_ENABLED" = "true" ]; then
   echo "→ Ingesting Reading Mode stories…"
-  node_modules/.bin/tsx scripts/ingest-story.ts --all --force || true
+  # Non-fatal by design (a content problem shouldn't block boot — the app is
+  # fully usable without Reading Mode) but loud on failure: a prior version
+  # of this line swallowed the exit code with a bare `|| true`, which let a
+  # broken ingest (missing runtime dep) ship silently to production.
+  if ! node_modules/.bin/tsx scripts/ingest-story.ts --all --force; then
+    echo "⚠ WARNING: Reading Mode ingest failed — /reading will be empty. See the error above." >&2
+  fi
 else
   echo "→ Skipping Reading Mode ingest (READING_MODE_ENABLED!=true)"
 fi
