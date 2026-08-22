@@ -103,11 +103,18 @@ export default async function ReadingPage() {
   );
   const bestFitText = bestFit ? texts.find((t) => t.id === bestFit.id) : null;
 
+  // Karaoke audio is a separate, optional pipeline (docs/AUDIO.md) — a fresh
+  // self-hosted instance has stories but no audio until someone runs it by
+  // hand. A blanket "with karaoke audio" tagline reads as a broken promise
+  // in that state, so only claim it once at least one story actually has it.
+  const hasAnyAudio = texts.some((t) => t.audio !== null);
+
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <h1 className="mb-1 text-2xl font-bold tracking-tight">Read</h1>
       <p className="mb-6 text-sm text-muted-foreground">
-        Graded Chinese stories with karaoke audio and tap dictionary.
+        Graded Chinese stories
+        {hasAnyAudio ? " with karaoke audio" : ""} and a tap dictionary.
       </p>
 
       {texts.length === 0 ? (
