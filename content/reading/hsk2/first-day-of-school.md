@@ -11,7 +11,7 @@ sentencesEn:
   - "Our teacher is surnamed Wang, we call her Teacher Wang."
   - "Teacher Wang says: \"Hello everyone! Let's all introduce ourselves.\""
   - "We each say our names and where we're from."
-  - "I say: \"My name is Xiao Tian, I'm from Beijing. I like sports.\""
+  - "I say: \"My name is Xiao Tian, I come from Beijing. I like sports.\""
   - "A classmate next to me smiles and says: \"I like sports too!\""
   - "After class, that classmate and I go play basketball together."
   - "We play for a long time, and we're both very happy."
@@ -33,7 +33,7 @@ sentencesEn:
 
 我们一个一个说名字和从哪儿来。
 
-我说：“我叫小天，我是北京人。我喜欢运动。”
+我说：”我叫小天，我来自北京。我喜欢运动。”
 
 旁边的一个同学笑着说：“我也喜欢运动！”
 
