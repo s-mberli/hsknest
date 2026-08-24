@@ -91,7 +91,7 @@ export interface NinjaView {
     char: string;
     position: { x: number; y: number };
     sliced: boolean;
-    fontSize?: string;
+    fontSize?: number;
   }>;
   pointer: { x: number; y: number } | null;
   /** Corrective feedback for the wave that just resolved; null before any wave ends. */
@@ -165,6 +165,7 @@ function initialState(): EngineState {
     trailMs: DEFAULT_CONFIG.trailMs,
     requeuePool: new Map(),
     requeueReadyAt: new Map(),
+    pendingWave: null,
   };
 }
 
@@ -388,15 +389,21 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
         decayTrail(state, fullConfig, now);
         decaySliceBursts(state, now);
         paint(state);
+        // Only build a fresh view when a scalar the view exposes actually
+        // changed — projectView also allocates a new array + object per
+        // tile, which used to happen every frame for the whole game-over
+        // screen just to be thrown away by the comparator below.
         setView((prev) => {
-          const next = projectView(state, lastOutcomeRef.current);
-          return prev.waveStatus === next.waveStatus &&
-            prev.correct === next.correct &&
-            prev.missed === next.missed &&
-            prev.lives === next.lives &&
-            prev.lastOutcome === next.lastOutcome
-            ? prev
-            : next;
+          if (
+            prev.waveStatus === state.waveStatus &&
+            prev.correct === state.correct &&
+            prev.missed === state.missed &&
+            prev.lives === state.lives &&
+            prev.lastOutcome === lastOutcomeRef.current
+          ) {
+            return prev;
+          }
+          return projectView(state, lastOutcomeRef.current);
         });
         if (state.trail.length === 0 && state.sliceBursts.length === 0) return;
         raf = requestAnimationFrame(loop);
@@ -409,7 +416,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
         let substeps = 0;
         while (remaining > 0 && substeps < 5) {
           const step = Math.min(FIXED, remaining);
-          stepWaveLogic(state, now);
+          stepWaveLogic(state, now, rngRef.current);
           if (state.waveStatus === "live") {
             // Capture the prompt before stepPhysics can resolve a "missed" wave
             // and stepHitTests can resolve a "correct"/"wrong" wave — both only
@@ -455,7 +462,7 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
               onWaveOutcomeRef.current?.(outcome);
             }
           }
-          stepWaveLogic(state, now);
+          stepWaveLogic(state, now, rngRef.current);
           remaining -= step;
           substeps += 1;
         }
@@ -470,14 +477,16 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
       // between animation frames, never synchronously within this function).
       if (state.waveStatus === "resolved") {
         setView((prev) => {
-          const next = projectView(state, lastOutcomeRef.current);
-          return prev.waveStatus === next.waveStatus &&
-            prev.correct === next.correct &&
-            prev.missed === next.missed &&
-            prev.lives === next.lives &&
-            prev.lastOutcome === next.lastOutcome
-            ? prev
-            : next;
+          if (
+            prev.waveStatus === state.waveStatus &&
+            prev.correct === state.correct &&
+            prev.missed === state.missed &&
+            prev.lives === state.lives &&
+            prev.lastOutcome === lastOutcomeRef.current
+          ) {
+            return prev;
+          }
+          return projectView(state, lastOutcomeRef.current);
         });
 
         if (!advanceTimerRef.current) {

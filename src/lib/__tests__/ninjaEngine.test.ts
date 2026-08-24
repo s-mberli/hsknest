@@ -3,9 +3,14 @@ import {
   stepPhysics,
   stepHitTests,
   resolveWave,
+  spawnWave,
+  stepWaveLogic,
   DEFAULT_CONFIG,
 } from "@/lib/ninja/engine";
+import { laneLayout } from "@/lib/ninja/layout";
+import { makeRng } from "@/lib/ninja/physics";
 import type { EngineState, NinjaItem } from "@/lib/ninja/types";
+import type { NinjaWord } from "@/lib/ninja/distractors";
 
 // These cover the two real bugs already caught by playtest (e3ad018,
 // af92b9c): a life must be lost whether the player slices the wrong tile
@@ -38,6 +43,7 @@ function baseState(overrides: Partial<EngineState> = {}): EngineState {
     trailMs: DEFAULT_CONFIG.trailMs,
     requeuePool: new Map(),
     requeueReadyAt: new Map(),
+    pendingWave: null,
     ...overrides,
   };
 }
@@ -154,6 +160,69 @@ describe("ninjaEngine", () => {
       expect(state.missed).toBe(0);
       expect(state.lives).toBe(5);
       expect(state.waveStatus).toBe("lead-in");
+    });
+  });
+
+  describe("spawnWave — deferred tile launch (pacing fix)", () => {
+    // Regression coverage for the "too fast / too hard" mobile report: tiles
+    // used to launch at spawn time, burning the whole leadInMs window as
+    // un-sliceable dead flight. Now a wave is queued (state.pendingWave) and
+    // only actually placed on stage once stepWaveLogic crosses leadInEnd.
+    const words: NinjaWord[] = [
+      { wordId: "w1", term: "试", translation: "test" },
+      { wordId: "w2", term: "测", translation: "check" },
+      { wordId: "w3", term: "验", translation: "verify" },
+      { wordId: "w4", term: "证", translation: "prove" },
+    ];
+
+    it("has zero tiles immediately after spawnWave, then exactly laneCount once live", () => {
+      const state = baseState({ waveStatus: "lead-in", stageBounds: BOUNDS });
+      const rng = makeRng(7);
+
+      spawnWave(state, words[0], words.slice(1), rng, 0, 4, 0);
+
+      expect(state.tiles.length).toBe(0);
+      expect(state.pendingWave).not.toBeNull();
+      expect(state.waveStatus).toBe("lead-in");
+
+      // Before leadInEnd: still nothing on stage.
+      stepWaveLogic(state, state.leadInEnd - 1, rng);
+      expect(state.tiles.length).toBe(0);
+      expect(state.waveStatus).toBe("lead-in");
+
+      // The instant lead-in ends: tiles appear, one per lane.
+      stepWaveLogic(state, state.leadInEnd, rng);
+      const layout = laneLayout(BOUNDS, 4);
+      expect(state.waveStatus).toBe("live");
+      expect(state.tiles.length).toBe(layout.laneCount);
+      expect(state.pendingWave).toBeNull();
+    });
+  });
+
+  describe("spawnWave — font size fits a multi-character term (我们 wrap fix)", () => {
+    it("sizes a 2-character term to fit the phone-width tile's inner circle", () => {
+      const phoneBounds = { width: 375, height: 700, bottom: 700 };
+      const state = baseState({ waveStatus: "lead-in", stageBounds: phoneBounds });
+      const rng = makeRng(11);
+      const twoCharWords: NinjaWord[] = [
+        { wordId: "women", term: "我们", translation: "we" },
+        { wordId: "w2", term: "测", translation: "check" },
+        { wordId: "w3", term: "验", translation: "verify" },
+      ];
+
+      spawnWave(state, twoCharWords[0], twoCharWords.slice(1), rng, 0, 4, 0);
+      stepWaveLogic(state, state.leadInEnd, rng);
+
+      const layout = laneLayout(phoneBounds, 4);
+      const targetTile = state.tiles.find((t) => t.isTarget)!;
+      expect(targetTile.fontSize).toBeDefined();
+      // The old fixed clamp ladder gave 2-char terms a 44px floor against a
+      // 79.2px phone tile inner box — with px-1.5 padding that overflowed
+      // onto two lines. The derived size must fit two glyphs inside 78% of
+      // the real circle diameter for this viewport.
+      const maxFit = (layout.targetCircleDiameterPx * 0.78) / 2;
+      expect(targetTile.fontSize!).toBeLessThanOrEqual(maxFit + 0.01);
+      expect(targetTile.fontSize!).toBeGreaterThan(0);
     });
   });
 

@@ -4,16 +4,32 @@
  */
 
 import type { NinjaItem, StageBounds } from "./types";
+import { clampTileX } from "./layout";
 
-// Gravity tuned for pacing fix: the prompt-first beat shortens the dead-ascent
-// time to 700ms (from 1300ms), so tiles need longer hangtime near apex to fill
-// the newly readable window. Lowering gravity extends flight time without making
-// gravity feel floaty — the slower descent near apex is what sells readability.
-// 420→290→250 (.6x original) makes flight time ~3.0s→3.5s, and the slow part
-// of the arc (near apex where the readable zone is) is now inside the slice window.
-export const GRAVITY = 250; // px/s²
+// GRAVITY used to be a fixed px/s² constant (420→290→250 across earlier
+// tuning passes). That made flight time scale with sqrt(stage height): a
+// short phone viewport (~380px) produced a proportionally *shorter*, faster
+// flight than the ~700px desktop stage this was tuned on — the mode played
+// noticeably harder on the device it targets. gravityForBounds derives
+// gravity per-session from the actual stage height instead, so total flight
+// time stays close to TARGET_FLIGHT_S on any viewport.
 // Higher apex ratio means tiles spend more time in the slow, readable zone.
 export const APEX_RATIO = 0.62; // apex height as fraction of stage height (was 0.58)
+/** Target total flight time (launch to apex to floor), seconds. Chosen to
+ * roughly match the desktop feel of the old fixed GRAVITY=250 tuning. */
+export const TARGET_FLIGHT_S = 4.0;
+
+/**
+ * Derive gravity from the stage bounds so flight time is viewport-independent.
+ * Apex sits at TARGET_FLIGHT_S / 2 (symmetric rise/fall of a ballistic arc):
+ * rise R = GRAVITY * (T/2)² / 2  =>  GRAVITY = 8R / T².
+ */
+export function gravityForBounds(bounds: StageBounds): number {
+  const startY = bounds.bottom + 40;
+  const apexY = bounds.bottom - bounds.height * APEX_RATIO;
+  const risePx = Math.max(startY - apexY, 10);
+  return (8 * risePx) / (TARGET_FLIGHT_S * TARGET_FLIGHT_S);
+}
 
 /** Simple mulberry32 PRNG for seeded, deterministic waves. */
 export function makeRng(seed = 0): () => number {
@@ -29,7 +45,12 @@ export function makeRng(seed = 0): () => number {
 
 /**
  * Launch a tile from a lane, arcing upward to APEX_RATIO of stage height
- * before gravity pulls it back down. Horizontal drift is ±50px/s.
+ * before gravity pulls it back down. Gravity is derived per-viewport (see
+ * gravityForBounds) so flight time — not raw speed — stays constant across
+ * screen sizes. Horizontal drift is capped at a quarter of the lane width
+ * over the whole flight, scaled to laneWidth so it can never exceed lane
+ * spacing regardless of viewport (previously a fixed ±50px/s, which dwarfed
+ * a ~97px phone lane over a ~3s flight and guaranteed overlap).
  */
 export function launchTile(
   rng: () => number,
@@ -40,15 +61,17 @@ export function launchTile(
   isTarget: boolean,
   spawnTime: number,
   derivedLaneWidth?: number,
-  fontSize?: string
+  fontSize?: number
 ): NinjaItem {
   const laneWidth = derivedLaneWidth || bounds.width / laneCount;
   const startX = laneWidth * laneIndex + laneWidth / 2;
   const startY = bounds.bottom + 40;
+  const gravity = gravityForBounds(bounds);
   const apexY = bounds.bottom - bounds.height * APEX_RATIO;
   const risePx = Math.max(startY - apexY, 10);
-  const vy0 = -Math.sqrt(2 * GRAVITY * risePx); // negative = upward
-  const vx = (rng() - 0.5) * 100; // ±50 px/s
+  const vy0 = -Math.sqrt(2 * gravity * risePx); // negative = upward
+  const maxDrift = laneWidth * 0.25;
+  const vx = (rng() - 0.5) * ((2 * maxDrift) / TARGET_FLIGHT_S);
   const spinRate = 0; // no rotation
 
   return {
@@ -60,25 +83,27 @@ export function launchTile(
     spinRate,
     sliced: false,
     spawnTime,
-    fontSize: fontSize ?? "clamp(26px, 6vw, 42px)",
+    fontSize,
   };
 }
 
 /**
  * Apply gravity and position update to a tile over dt seconds.
- * Clamp horizontal position to stay on-screen (mobile safety).
+ * Clamp horizontal position to stay on-screen (mobile safety) using the
+ * tile's real radius rather than a hardcoded guess.
  */
-export function stepTile(tile: NinjaItem, bounds: StageBounds, dt: number): void {
-  tile.velocity.y += GRAVITY * dt;
+export function stepTile(
+  tile: NinjaItem,
+  bounds: StageBounds,
+  dt: number,
+  tileRadiusPx = 70
+): void {
+  const gravity = gravityForBounds(bounds);
+  tile.velocity.y += gravity * dt;
   tile.position.x += tile.velocity.x * dt;
   tile.position.y += tile.velocity.y * dt;
 
-  // Clamp to stage bounds. Use 70px as a conservative tile radius.
-  const CLAMP_RADIUS = 70;
-  tile.position.x = Math.max(
-    CLAMP_RADIUS,
-    Math.min(tile.position.x, bounds.width - CLAMP_RADIUS)
-  );
+  tile.position.x = clampTileX(tile.position.x, tileRadiusPx, bounds.width);
 }
 
 /**

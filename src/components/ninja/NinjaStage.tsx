@@ -32,6 +32,11 @@ export interface NinjaStageProps {
    * the throwaway test route has no shell to return to, but a dead link is
    * worse than pointing at the real app entry. */
   exitHref?: string;
+  /** "dark" (Dark focus, the default) keeps the stage dark regardless of the
+   * user's app theme; "follow" makes it track the app theme via CSS vars, so
+   * a light app theme + Ninja no longer means a bright stage inverted
+   * against dark tiles/UI. See docs/CONFIGURATION.md "Study screen". */
+  studyTheme?: "dark" | "follow";
 }
 
 export default function NinjaStage({
@@ -41,6 +46,7 @@ export default function NinjaStage({
   stateRef,
   langCode = "zh",
   exitHref = "/dashboard",
+  studyTheme = "dark",
 }: NinjaStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shakeIntensity, setShakeIntensity] = useState(0);
@@ -201,15 +207,17 @@ export default function NinjaStage({
 
   return (
     <div
-      className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground transition-transform"
+      className="fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-background text-foreground"
       style={{
+        // 100dvh (dynamic viewport height), not `inset-0` — on mobile browsers
+        // `inset-0` against the large viewport extends behind the address/
+        // toolbar chrome, which pushed the tile launch point (near the stage
+        // floor) out of view. dvh tracks the *visible* viewport instead.
+        height: "100dvh",
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
         paddingLeft: "env(safe-area-inset-left)",
         paddingRight: "env(safe-area-inset-right)",
-        transform:
-          shakeIntensity > 0 ? `translate(${shakeOffset * shakeIntensity}px, ${shakeOffset * shakeIntensity}px)` : undefined,
-        transitionDuration: "60ms",
       }}
     >
       <div
@@ -352,15 +360,33 @@ export default function NinjaStage({
         )}
       </div>
 
-      {/* Stage — darker background for contrast with light tiles */}
+      {/* Stage — darker than the page background for contrast with tiles.
+          The shake transform lives here, not on the outer fixed shell, so a
+          hit-stop shake only re-composites the stage subtree, not the two
+          full-viewport grain overlays + HUD above it. */}
       <div
         ref={stageRef}
-        className="relative min-h-0 flex-1 overflow-hidden"
-        style={{
-          touchAction: "none",
-          overscrollBehavior: "contain",
-          backgroundColor: "oklch(0.88 0.012 85)", // slightly darker than page background
-        }}
+        className="relative min-h-0 flex-1 overflow-hidden transition-transform"
+        style={
+          {
+            touchAction: "none",
+            overscrollBehavior: "contain",
+            // Dark focus (default): a fixed dark tone regardless of app
+            // theme — Ninja stays a dim arcade stage even in a light app.
+            // Follow: track the app theme via CSS vars, so a dark app theme
+            // no longer leaves Ninja stuck bright.
+            backgroundColor:
+              studyTheme === "follow" ? "var(--muted)" : "oklch(0.19 0.014 60)",
+            // Read by InkCanvas so the trail/burst colours also flip instead
+            // of hardcoded black-on-dark.
+            "--ninja-ink": studyTheme === "follow" ? "var(--foreground)" : "oklch(0.93 0.014 85)",
+            transform:
+              shakeIntensity > 0
+                ? `translate(${shakeOffset * shakeIntensity}px, ${shakeOffset * shakeIntensity}px)`
+                : undefined,
+            transitionDuration: "60ms",
+          } as React.CSSProperties
+        }
       >
         {view.tiles.map((tile) => (
           <NinjaTile

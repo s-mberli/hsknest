@@ -49,9 +49,13 @@ export function laneLayout(bounds: StageBounds, waveSize: number = 4): LayoutRes
   const targetDiameterPx = tileSizePx * TARGET_CIRCLE_RATIO;
 
   // Derive lane count: if 4 lanes don't fit without overlapping, use 3.
-  // Each lane needs at least `diameterPx * 1.15` width to avoid overlap.
+  // Each lane needs at least `diameterPx * 1.35` width to avoid overlap —
+  // was 1.15, which left a ~390px phone needing only 91px/lane against an
+  // actual 97.5px, so the 3-lane fallback never triggered on the exact
+  // viewport it exists for. 1.35 also leaves headroom for the horizontal
+  // drift launchTile now applies (see physics.ts).
   let laneCount = waveSize;
-  const minWidthPerLane = targetDiameterPx * 1.15;
+  const minWidthPerLane = targetDiameterPx * 1.35;
   if (width / laneCount < minWidthPerLane && laneCount > 2) {
     laneCount = 3;
   }

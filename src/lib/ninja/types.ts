@@ -27,12 +27,16 @@ export interface NinjaItem {
   spinRate: number; // degrees/sec (currently 0; no rotation)
   sliced: boolean;
   spawnTime: number; // ms, performance.now()
-  /** CSS font-size, uniform across every tile in a wave (see launchWaveTiles
-   * in engine.ts) — sized off the wave's longest term so a 4-tile wave never
-   * mixes wildly different text sizes. Optional so physics-only test
-   * fixtures that build a NinjaItem by hand don't all need updating;
-   * launchTile (physics.ts) and NinjaTile.tsx both default it when absent. */
-  fontSize?: string;
+  /** Font size in px, uniform across every tile in a wave (see
+   * launchWaveTiles in engine.ts) — sized off the wave's longest term AND
+   * the tile's real circle diameter so multi-character terms (e.g. 我们)
+   * never wrap. A plain px number, not a CSS clamp() string, because it must
+   * be derived from the actual rendered tile size (layout.ts), not
+   * re-approximated from vw independently in three places. Optional so
+   * physics-only test fixtures that build a NinjaItem by hand don't all need
+   * updating; launchTile (physics.ts) and NinjaTile.tsx both default it when
+   * absent. */
+  fontSize?: number;
 }
 
 export interface WaveOutcome {
@@ -76,6 +80,17 @@ export interface EngineState {
   leadInEnd: number; // ms timestamp when lead-in ends
   waveEndTime: number | null; // ms timestamp when wave resolved
   leadInMs: number;
+  /** A wave queued during lead-in, not yet placed on stage — see
+   * launchPendingWave in engine.ts. Tiles are deferred until lead-in ends so
+   * the whole visible flight is inside the sliceable "live" window instead
+   * of burning leadInMs of un-sliceable dead flight. Null once launched (or
+   * before any wave has been queued). */
+  pendingWave: {
+    words: { wordId: string; term: string }[];
+    targetWordId: string;
+    laneCount: number;
+    fontSize: number;
+  } | null;
   waveSize: number;
   trailMs: number;
   /** Words to requeue (missed/wrong slices) — Map of wordId to how many
