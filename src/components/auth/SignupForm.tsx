@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { GuestButton } from "@/components/auth/GuestButton";
+import { useHydrated } from "@/hooks/useHydrated";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackEventOnce } from "@/lib/analytics";
+import { confirmSession } from "@/lib/authClient";
 
 export function SignupForm({
   guestEnabled,
@@ -31,6 +33,7 @@ export function SignupForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const hydrated = useHydrated();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +67,7 @@ export function SignupForm({
       router.push("/login");
       return;
     }
+    await confirmSession();
     window.location.href = "/dashboard";
   }
 
@@ -118,7 +122,7 @@ export function SignupForm({
                 At least 8 characters.
               </p>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || !hydrated}>
               {loading ? "Creating…" : "Create account"}
             </Button>
           </form>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { QueueCounts } from "@/hooks/useStudySession";
 
 interface EmptyQueueProps {
   /** True when the session was narrowed to a language/list selection. */
@@ -15,13 +16,23 @@ interface EmptyQueueProps {
   /** List ids active in the current scope, so a capped scoped session can
    *  fall back to practice of just those lists. */
   listIds?: string[];
+  /** Counts from the queue response — lets us tell "daily cap reached" from
+   *  "genuinely nothing left". The practice branch always returns zeroed
+   *  counts, so callers pass this only for non-practice sessions. */
+  counts?: QueueCounts | null;
 }
 
 export function EmptyQueue({
   scoped,
   practice = false,
   listIds = [],
+  counts = null,
 }: EmptyQueueProps) {
+  // Cap-reached is only meaningful for a real (non-practice) session — the
+  // practice branch of the queue route always returns newAllowedToday: 0,
+  // which would otherwise make every practice empty-state falsely claim a
+  // daily limit was hit.
+  const capReached = !practice && counts !== null && counts.newAllowedToday === 0;
   const router = useRouter();
 
   // Time-orientation for new users: an empty queue reads as a dead end
@@ -70,12 +81,18 @@ export function EmptyQueue({
     >
       <Moon className="size-14 text-primary" aria-hidden="true" />
       <h2 className="text-2xl font-bold tracking-tight">
-        {practice ? "Learn a few words first" : "You've crushed all your flashcards!"}
+        {practice
+          ? "Learn a few words first"
+          : capReached
+            ? "You've hit today's limit"
+            : "You've crushed all your flashcards!"}
       </h2>
       <p className="max-w-sm text-muted-foreground">
         {practice
           ? "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
-          : "Your spaced-repetition queue is empty for now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
+          : capReached
+            ? "You've reached your daily new-word limit — that's your own setting, not a wall. Reviews still come through the moment they're due, and you can raise the limit any time."
+            : "Your spaced-repetition queue is empty for now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
       </p>
 
       {!practice && tomorrowDue !== null && (
@@ -100,9 +117,12 @@ export function EmptyQueue({
         {scoped ? (
           <>
             {/* Scoped + caps hit → practice the scope's lists instead of
-                dead-ending. mode=practice ignores daily caps and drills
-                learned words only. */}
-            {listIds.length > 0 && !practice && (
+                dead-ending. mode=practice ignores daily caps but only draws
+                from already-learned words (excludes NEW/ASSUMED) — offering
+                it when the cap itself is why nothing's here would send the
+                user straight into the same "learn some first" dead end,
+                so it's withheld specifically for capReached. */}
+            {listIds.length > 0 && !practice && !capReached && (
               <Button asChild className="w-full sm:w-auto">
                 <Link
                   href={`/study?mode=practice&listIds=${listIds.join(",")}&limit=500`}
@@ -111,8 +131,13 @@ export function EmptyQueue({
                 </Link>
               </Button>
             )}
+            {capReached && (
+              <Button asChild className="w-full sm:w-auto">
+                <Link href="/settings">Adjust your daily limit</Link>
+              </Button>
+            )}
             <Button
-              variant={listIds.length > 0 && !practice ? "outline" : "default"}
+              variant={listIds.length > 0 && !practice && !capReached ? "outline" : "default"}
               className="w-full sm:w-auto"
               onClick={handleClearScope}
             >
@@ -126,13 +151,21 @@ export function EmptyQueue({
         ) : (
           <>
             {/* Finished the real queue → offer schedule-safe practice, not a
-                dead "nothing here". */}
+                dead "nothing here". Unscoped practice draws from every
+                learned word in the account, so unlike the scoped case above
+                it's a real option even when the cap is why we're here. */}
             <Button asChild className="w-full sm:w-auto">
               <Link href="/study?mode=practice&limit=500">Keep practicing</Link>
             </Button>
-            <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href="/lists">Add more words</Link>
-            </Button>
+            {capReached ? (
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Link href="/settings">Adjust your daily limit</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Link href="/lists">Add more words</Link>
+              </Button>
+            )}
           </>
         )}
         <Button

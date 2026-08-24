@@ -23,6 +23,7 @@ Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
 |---|---|
 | 🧠 | **FSRS / SM-2 / Leitner** — Pluggable scheduling strategies. |
 | 🇨🇳 | **Mandarin-first** — Full New HSK 3.0 (1–9) + 3,000 example sentences with pinyin. |
+| 📖 | **Reading Mode** — Graded HSK 1–5 stories with karaoke audio, tap dictionary, and comprehensible-input matching that recommends what to read next. |
 | 👆 | **Gesture-first swipe deck** — Full-screen dark focus mode with keyboard fallback. |
 | 🔊 | **Hybrid TTS** — Pre-generated Azure neural clips served locally + Web Speech fallback. |
 | 📥 | **CSV / paste import** — Bring vocabulary from spreadsheets or other flashcard tools. |
@@ -65,11 +66,20 @@ npm run db:migrate
 # 4. Seed starter content (sample languages + word lists)
 npm run db:seed
 
-# 5. Run the dev server
+# 5. Ingest Reading Mode's graded stories (optional — flashcards work without
+#    this; skip it and /reading just shows an empty library until you run it)
+npx tsx scripts/ingest-story.ts --all --force
+
+# 6. Run the dev server
 npm run dev
 ```
 
 Open http://localhost:3000, create an account, add or import a word list, and start studying.
+
+Reading Mode's karaoke audio is a separate, optional step — see
+[docs/AUDIO.md](docs/AUDIO.md#reading-mode-story-audio-separate-pipeline).
+Without it, stories still work fully (text, pinyin, tap dictionary) — no
+audio player just doesn't appear on a story that has none.
 
 ## Self-hosting
 
@@ -83,6 +93,7 @@ docker compose up -d --build
 The container will:
 - Auto-generate a `NEXTAUTH_SECRET` and persist it to `/data/.nextauth-secret` (survives restarts)
 - Auto-seed starter content (HSK vocabulary + lists) on first boot
+- Auto-ingest Reading Mode's graded stories on every boot (idempotent; set `READING_MODE_ENABLED=false` to skip)
 - Apply any pending database migrations
 - Serve the app at `http://localhost:3000`
 

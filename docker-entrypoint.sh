@@ -68,5 +68,31 @@ node_modules/.bin/tsx scripts/merge-duplicate-progress.ts || true
 echo "→ Backfilling sentence pinyin…"
 node_modules/.bin/tsx scripts/backfill-sentence-pinyin.ts || true
 
+# Default READING_MODE_ENABLED to true — Reading Mode's story text is small
+# (no audio/font in this step, see docs/AUDIO.md) and ships in every image,
+# so it behaves like starter vocab: on by default, one env var to turn off
+# for anyone who wants a stripped-down instance.
+if [ -z "$READING_MODE_ENABLED" ]; then
+  READING_MODE_ENABLED="true"
+  echo "→ READING_MODE_ENABLED unset; defaulting to true"
+fi
+
+# Ingest Reading Mode's graded stories (idempotent — safe on every boot; see
+# scripts/ingest-story.ts's own docstring). --force allows the repo's
+# draft-status content through; the human-review gate is for the authoring
+# workflow, not for what self-hosters get out of the box.
+if [ "$READING_MODE_ENABLED" = "true" ]; then
+  echo "→ Ingesting Reading Mode stories…"
+  # Non-fatal by design (a content problem shouldn't block boot — the app is
+  # fully usable without Reading Mode) but loud on failure: a prior version
+  # of this line swallowed the exit code with a bare `|| true`, which let a
+  # broken ingest (missing runtime dep) ship silently to production.
+  if ! node_modules/.bin/tsx scripts/ingest-story.ts --all --force; then
+    echo "⚠ WARNING: Reading Mode ingest failed — /reading will be empty. See the error above." >&2
+  fi
+else
+  echo "→ Skipping Reading Mode ingest (READING_MODE_ENABLED!=true)"
+fi
+
 # Hand off to the CMD (node server.js).
 exec "$@"

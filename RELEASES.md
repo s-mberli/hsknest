@@ -8,11 +8,81 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Fixed three places where the app conflated "in your deck" with "you know
+  it," or hit its own limits without saying so: (1) Reading Mode's coverage
+  badge counted enrolled-but-never-studied words as known, so enrolling a
+  curriculum list upfront made every story read as ~100% known / "too easy"
+  and broke "Best next read" — now filtered to actually-studied words. (2)
+  Hitting the daily new-word cap during a scoped study session showed "You've
+  crushed all your flashcards!" (untrue) and offered a "Practice this list"
+  button that dead-ended right back into "learn some words first" — now shows
+  the real reason with a link to adjust the limit. (3) The list detail page's
+  "300 of 300 in your queue" was enrollment count, not learning progress, so
+  it hit its max the instant you enrolled and never moved again — now shows
+  learned/total, matching the lists index page. (Checked, and *not* a bug:
+  multi-list queue mixing already interleaves new cards at the requested
+  N:(N-1):…:1 ratio — it just doesn't apply to due reviews, which are
+  correctly due-date ordered.)
+- Reading Mode's story content now auto-provisions on container boot, closing
+  the self-hosting gap noted in v0.3.0 below: the Docker image now ships
+  `content/reading/**` and the `src/lib/reading` modules `ingest-story.ts`
+  needs, and the entrypoint ingests them idempotently on every boot, the same
+  pattern as starter-vocab seeding. `/reading` has a populated library out of
+  the box now, no manual step. New `READING_MODE_ENABLED` env var (default
+  `true`) skips the ingest for anyone who wants a stripped-down instance —
+  see `docs/CONFIGURATION.md`. Karaoke audio stays a separate, optional
+  mounted layer as before (`docs/AUDIO.md`) — text/pinyin/dictionary work
+  fully without it either way.
 - Follow-up from the Word Ninja release below: `QuizScreen.tsx`,
   `SentenceScreen.tsx`, and `MatchScreen.tsx` all discard the `error` field
   from `useQueueFetcher`, so a failed queue fetch on those screens also
   renders the empty-deck state instead of a retry prompt (same pattern
   fixed in `NinjaScreen.tsx` for v0.2.5). House-wide, not urgent.
+
+## v0.3.0 — 2026-08-21
+
+**Reading Mode** ships — 17 graded HSK 1–5 stories (markdown-authored,
+ingested offline) with karaoke-synced Azure TTS audio, adaptive pinyin, and a
+zero-latency tap dictionary (CEDICT-backed, per-token pinyin/HSK level/senses
+pre-baked at ingest). Tap a word for its meaning and one-tap add-to-deck;
+look it up 3+ times and it nudges you to add it. Reading and the SRS deck
+stay linked but strictly separated: reading can promote a word into a deck
+or count toward your streak/heatmap, but never fabricates a graded review or
+touches `recallRate` — see `docs/ARCHITECTURE.md`'s Reading Mode section.
+
+Follow-up hardening pass on top of the initial ship:
+- Fixed a duplicate-card bug: re-tapping a word in a story that was already
+  tracked from a seeded list (not one you created) silently created a second
+  card on an independent schedule. Deck add now dedupes against every list
+  you track in that language, same rule as list enrollment.
+- Reading now counts toward streak and the heatmap (time-on-task + session
+  completion), closing the gap where finishing a story reported as zero
+  activity. Deliberately activity-only — `recallRate` and lifetime review
+  counts are untouched, since ungraded exposure isn't retrieval. Also fixed
+  a pre-existing inconsistency where the dashboard's streak flame and its
+  heatmap grid could silently disagree (two separate, differently-scoped
+  queries); both now read one shared helper.
+- Comprehensible-input matching: a coverage badge per story ("you know 82%
+  of its words") and a "best next read" recommendation, closest to a 90–98%
+  known-vocabulary comprehension band — using a per-story lemma index that
+  existed since the first ship but had no reader.
+- Post-read batch add: finishing a story now offers "you looked up N words —
+  add them all?" in one request, instead of one add per word against a
+  30/hour cap. Also fixed two quirks in deck-add: words always landed at
+  list position 0 (now increasing), and the "From Reading" list had no
+  queue priority (now ranked in after your other studying lists instead of
+  being silently treated as unranked).
+- Fixed Sentence mode's queue filter (`?sentences=1`) 500ing on SQLite: the
+  encounter-sentence branch used Postgres-only array JSON-path syntax, which
+  Prisma rejects against SQLite/MySQL. Only reachable once a card carries an
+  `encounterSentence` (i.e. once Reading Mode is in use), which is exactly
+  why CI caught it here — no dedicated test had exercised that filter shape
+  before. Regression test added directly against SQLite.
+- Self-hosting note: Reading Mode's story content isn't auto-provisioned by
+  the Docker entrypoint yet (see `docs/DEPLOYMENT.md`) — `/reading` shows an
+  empty library out of the box until you run the ingest step. Every other
+  feature is unaffected; this is flagged as a known gap, not silently left
+  broken.
 
 ## v0.2.5 — 2026-08-16
 

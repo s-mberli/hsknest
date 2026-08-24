@@ -52,6 +52,36 @@ automatically the next time you redeploy — no manual re-seed step needed.
 
 The database lives in the named volume `recall-data`, mounted at `/data`.
 
+### Reading Mode content
+
+Reading Mode's graded stories (text + pinyin + tap dictionary — small text
+files, no audio or fonts involved) are baked into the image and ingested on
+every boot, the same way starter vocabulary is seeded — idempotent, no
+manual step. `/reading` has a populated library out of the box.
+
+Don't want it on a stripped-down instance? Set `READING_MODE_ENABLED=false`
+to skip the ingest step; see [CONFIGURATION.md](CONFIGURATION.md). Every
+other feature is unaffected either way.
+
+Karaoke audio for stories is a separate, optional layer on top — it's
+generated offline and mounted like word/sentence audio, not shipped in the
+image. See [docs/AUDIO.md](AUDIO.md#reading-mode-story-audio-separate-pipeline)
+if you want it; stories read fine without it.
+
+**`/reading` shows "No stories yet." after a deploy?** The ingest step is
+non-fatal on purpose — a content problem shouldn't block boot — but it logs a
+loud warning when it fails:
+
+```bash
+docker compose logs app | grep -A20 "Ingesting Reading Mode"
+```
+
+Re-run it by hand once the underlying issue is fixed:
+
+```bash
+docker compose exec app node_modules/.bin/tsx scripts/ingest-story.ts --all --force
+```
+
 ## Reverse proxy (Caddy) — automatic HTTPS + HSTS
 
 The app ships baseline security headers (X-Frame-Options, X-Content-Type-Options,

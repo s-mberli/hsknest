@@ -63,7 +63,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
 
   const fetchUrl = useMemo(() => `/api/study/queue?${query}&sentences=1`, [query]);
 
-  const { cards: rawCards, loading } = useQueueFetcher(fetchUrl);
+  const { cards: rawCards, counts, loading } = useQueueFetcher(fetchUrl);
 
   const [cards, setCards] = useState<SentenceCard[]>([]);
 
@@ -151,7 +151,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
 
         {done && cards.length === 0 && (
           <div className="flex flex-col items-center gap-3">
-            <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} />
+            <EmptyQueue scoped={scoped} practice={practice} listIds={listIds} counts={counts} />
             {skipped > 0 && (
               <p className="max-w-xs text-center text-xs text-muted-foreground">
                 {skipped} {skipped === 1 ? "word doesn't" : "words don't"} have

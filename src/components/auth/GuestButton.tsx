@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { confirmSession } from "@/lib/authClient";
 
 /**
  * "Try as guest" — creates a throwaway account server-side and signs straight
@@ -37,6 +38,7 @@ export function GuestButton() {
         toast.error("Could not start a guest session.");
         return;
       }
+      await confirmSession();
       router.push("/dashboard");
       router.refresh();
     } finally {

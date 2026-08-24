@@ -40,8 +40,16 @@ COPY --from=build /app/public ./public
 # Prisma schema + migrations + seed data
 COPY --from=build /app/prisma ./prisma
 
-# Maintenance scripts run by the entrypoint (guest pruning)
+# Maintenance scripts run by the entrypoint (guest pruning, reading ingest)
 COPY --from=build /app/scripts ./scripts
+
+# Reading Mode story content (small text files — no audio/font in here, those
+# stay on the mounted volume per docs/AUDIO.md) plus the src/lib modules
+# scripts/ingest-story.ts needs (segmentation, grading, cedict/lexicon
+# lookups). src/ is ~2MB and this app is AGPL/source-available anyway, so
+# shipping it at runtime costs nothing and isn't a new exposure.
+COPY --from=build /app/content ./content
+COPY --from=build /app/src ./src
 
 # All node_modules Prisma needs at runtime (query engine, etc.).
 # tsx is a `dependencies` entry (not devDependencies) — the entrypoint runs

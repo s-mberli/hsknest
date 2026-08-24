@@ -12,6 +12,7 @@ import { ReviewHeatmap } from "@/components/dashboard/ReviewHeatmap";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpiredCard } from "@/components/billing/ExpiredCard";
 import { prisma } from "@/lib/prisma";
+import { getActivityDayBuckets } from "@/lib/readingActivity";
 import { isSelfHosted } from "@/lib/selfHosted";
 import { getCurrentUserId } from "@/lib/session";
 import { getDashboardStats, getLifetimeStats, type LifetimeStats as LifetimeStatsData } from "@/lib/stats";
@@ -182,30 +183,21 @@ async function HeatmapSection({
 
   const oneYearAgo = startOfLocalDay(new Date(now.getTime() - 365 * DAY_MS));
 
-  const reviews = await prisma.reviewLog.findMany({
-    where: { userId, reviewedAt: { gte: oneYearAgo } },
-    select: { reviewedAt: true, quality: true },
-  });
+  // Same source getDashboardStats' streakDays reads (src/lib/readingActivity.ts)
+  // — any review (any source) union reading sessions — so this heatmap and
+  // the dashboard hero's streak flame can never disagree.
+  const dayMap = await getActivityDayBuckets(userId, oneYearAgo);
 
-  if (reviews.length === 0) return null;
+  if (dayMap.size === 0) return null;
 
-  // Bucket by local calendar day using startOfLocalDay — same logic as
-  // computeStreak, so the heatmap and the streak flame always agree.
-  const dayMap = new Map<string, { count: number; correct: number }>();
-  for (const r of reviews) {
-    const dayKey = startOfLocalDay(r.reviewedAt).toISOString().slice(0, 10);
-    const entry = dayMap.get(dayKey) ?? { count: 0, correct: 0 };
-    entry.count += 1;
-    if (r.quality >= 3) entry.correct += 1;
-    dayMap.set(dayKey, entry);
-  }
-
-  const days = Array.from(dayMap, ([date, data]) => ({
-    date,
-    ...data,
+  const days = Array.from(dayMap.values(), (d) => ({
+    date: d.date,
+    count: d.reviewCount,
+    correct: d.correctCount,
+    readingCount: d.readingCount,
   }));
 
-  // Streak from the heatmap's own data (consistent with the day-bucketing).
+  // Streak from the same buckets (consistent with the day-bucketing).
   let streakDays = 0;
   const today = startOfLocalDay(now).toISOString().slice(0, 10);
   const yesterday = startOfLocalDay(new Date(now.getTime() - DAY_MS)).toISOString().slice(0, 10);
