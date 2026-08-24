@@ -111,7 +111,12 @@ export default async function ReadingPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
-      <h1 className="mb-1 text-2xl font-bold tracking-tight">Read</h1>
+      <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold tracking-tight">
+        Read
+        <span className="rounded-full bg-amber/15 px-2 py-0.5 text-[10px] font-medium text-amber">
+          Testing
+        </span>
+      </h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Graded Chinese stories
         {hasAnyAudio ? " with karaoke audio" : ""} and a tap dictionary.
