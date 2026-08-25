@@ -1,0 +1,12 @@
+# Expected version of each audio release pack, checked at boot by
+# docker-entrypoint.sh against installed markers on the volume
+# (/app/public/audio/.pack-<name>-<version>). Bump the relevant line in the
+# SAME commit that adds/changes the audio it describes — that's what lets a
+# self-hoster's next redeploy pull the update instead of silently keeping
+# stale or missing audio for new content (see docs/AUDIO.md#drift-detection).
+#
+# format: <pack-name>=<version>
+stories=v1
+words=v1
+sentences=v1
+de=v1

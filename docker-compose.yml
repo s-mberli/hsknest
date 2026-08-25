@@ -36,6 +36,13 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_PRICE_ID: ${STRIPE_PRICE_ID:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      # Which audio packs to download from GitHub Releases on boot (see
+      # docs/AUDIO.md). Defaults to "stories" (~10MB, Reading Mode
+      # narration) if unset. Space-separated: "stories words sentences".
+      # Set to an empty string to skip audio entirely (Web Speech fallback).
+      AUDIO_PACKS: ${AUDIO_PACKS-stories}
+      # Override only if you maintain a fork with its own audio releases.
+      AUDIO_PACK_REPO: ${AUDIO_PACK_REPO:-s-mberli/hsknest}
       # Optional operator page (/mb-admin) + cookieless Umami analytics.
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
