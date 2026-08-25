@@ -32,6 +32,11 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV DATABASE_URL=file:/data/recall.db
 
+# curl: the entrypoint uses it to fetch versioned audio packs from GitHub
+# Releases at boot (see docs/AUDIO.md, audio/PACK_VERSIONS). Not present in
+# the base alpine image. tar/sha256sum are already provided by busybox.
+RUN apk add --no-cache curl
+
 # The standalone server plus its static assets and public files.
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
@@ -50,6 +55,10 @@ COPY --from=build /app/scripts ./scripts
 # shipping it at runtime costs nothing and isn't a new exposure.
 COPY --from=build /app/content ./content
 COPY --from=build /app/src ./src
+
+# Expected audio-pack versions, checked by the entrypoint against markers on
+# the audio volume (see docs/AUDIO.md, audio/PACK_VERSIONS).
+COPY --from=build /app/audio ./audio
 
 # All node_modules Prisma needs at runtime (query engine, etc.).
 # tsx is a `dependencies` entry (not devDependencies) — the entrypoint runs

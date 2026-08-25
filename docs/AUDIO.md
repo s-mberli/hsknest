@@ -59,7 +59,14 @@ Output lands in `audio-out/<lang>/{w,s}/*.mp3` plus a per-language
 run is ~14k short clips, ~300–500 MB, roughly 20–40 minutes at the default
 concurrency. German's ~270 clips take well under a minute.
 
-## 2. Serve the clips from the VPS
+## 2. Self-hosting: audio installs itself
+
+Self-hosters don't run the generator or `docker cp` anything — the
+maintainer already ran step 1 once and published the result as versioned
+GitHub Release assets (`scripts/build-audio-pack.sh`), and
+`docker-entrypoint.sh` downloads them on boot. This section is for anyone
+extending or forking the project; for using it, see the README's "Audio"
+section.
 
 The clips live on the named volume `recall-audio`, declared in
 `docker-compose.yml` and mounted at `/app/public/audio` in the app container,
@@ -71,68 +78,93 @@ modify, or manage volumes, edit your Docker Compose file"). The volume is
 already declared in the repo's `docker-compose.yml`; you don't add it in the
 UI.
 
-**Two env vars are involved, and they're not the same:**
-- `NEXT_PUBLIC_AUDIO_BASE_URL` — a **build-time** var (Next.js inlines
-  `NEXT_PUBLIC_*` vars into the client bundle at build). It must be set
-  *before* the image is built — it's passed through as a Docker build arg
-  (see `docker-compose.yml`'s `build.args` and the `Dockerfile`'s `ARG`).
-  Setting only a runtime `environment:` entry for it is a no-op.
-- Everything else in `environment:` is runtime and takes effect on container
-  start.
+**`NEXT_PUBLIC_AUDIO_BASE_URL` is a build-time var**, separate from the
+`AUDIO_PACKS` runtime var below. Next.js inlines `NEXT_PUBLIC_*` vars into
+the client bundle at build time, so it must be set *before* the image is
+built — it's passed through as a Docker build arg (see `docker-compose.yml`'s
+`build.args` and the `Dockerfile`'s `ARG`). A runtime-only `environment:`
+entry for it is a no-op. It ships pre-set to `/audio` in the repo's
+`docker-compose.yml`, so most self-hosters never touch it.
 
-Steps:
+**Pack publication status:** `stories` is published
+([Releases](https://github.com/s-mberli/hsknest/releases)) and installs by
+default. `words`, `sentences`, and `de` are wired into the same mechanism
+(`audio/PACK_VERSIONS`, `docker-entrypoint.sh`) but have no published
+release yet — until one exists, setting `AUDIO_PACKS=words` gets a logged
+download failure and Web Speech fallback, not an error. Whoever generates
+those next just needs to run `scripts/generate-audio.py`, then
+`scripts/build-audio-pack.sh` + `gh release create` per "Maintainer:
+publishing a pack" below — the download/verify/install side is already
+built and doesn't change.
 
-1. **Set the env var** in Coolify (or `.env` next to `docker-compose.yml`):
-   `NEXT_PUBLIC_AUDIO_BASE_URL=/audio`.
-2. **Redeploy** — this rebuilds the image (baking in the var) *and* creates
-   the `recall-audio` volume on first run if it doesn't exist yet.
-3. **Copy the files onto the volume.** The volume is empty after a fresh
-   deploy — a redeploy replaces the container, so anything copied into the
-   *old* container's filesystem (rather than the volume) is gone. Find the
-   volume's host path and copy the generated tree onto it directly, or copy
-   into the freshly-deployed container (which now has the volume mounted):
-   ```bash
-   # from the VPS, find the volume mount and copy the generated audio tree in
-   docker volume inspect <project>_recall-audio --format '{{.Mountpoint}}'
-   # copy audio-out/<lang>/{w,s}/*.mp3 into <mountpoint>/<lang>/
-   ```
-   or, into the running container (same effect, since it's the mounted volume):
-   ```bash
-   docker cp audio-out/zh/. <app-container>:/app/public/audio/zh/
-   docker cp audio-out/de/. <app-container>:/app/public/audio/de/
-   ```
+### How the boot-time download works
 
-**Restart the app container after copying files in** — the Next.js standalone
-server caches its `public/` directory listing at process startup, so files
-added via `docker cp` while it's already running 404 until the process
-restarts (`docker restart <app-container>`; no rebuild needed, just a restart).
+`docker-entrypoint.sh`, on every boot:
 
-Verify: open a Mandarin flashcard and reveal the reading — the Network tab shows
-a `200` for `…/audio/zh/w/<hash>.mp3` and the voice is natural. Unset the env
-(and redeploy) to return to Web Speech.
+1. Reads `AUDIO_PACKS` (default: `stories`) and looks up each named pack's
+   expected version in `audio/PACK_VERSIONS`.
+2. Skips a pack if its version marker (`.pack-<name>-<version>`) already
+   exists on the volume — so this costs nothing on a normal restart.
+3. Otherwise downloads `recall-audio-<name>-<version>.tar.gz` from
+   `https://github.com/<AUDIO_PACK_REPO>/releases/download/audio-<name>-<version>/`,
+   verifies its SHA-256 against the sidecar `.sha256` file, extracts it into
+   the volume, and writes the marker.
+4. Never blocks boot on failure — a bad network or missing release logs a
+   warning and the app starts anyway (audio is optional; see
+   `docs/adr/0001-audio-availability-is-derived.md`). No marker written on
+   failure, so the next boot retries automatically.
 
-## Self-hosting
+**Offline server, or want to inspect the pack first?** Download it from
+[Releases](https://github.com/s-mberli/hsknest/releases) yourself, verify
+the checksum, then either place it where `docker-entrypoint.sh` would find
+it, or extract straight onto the volume:
+```bash
+docker volume inspect <project>_recall-audio --format '{{.Mountpoint}}'
+tar -xzf recall-audio-stories-v1.tar.gz -C <mountpoint>
+# then touch <mountpoint>/.pack-stories-v1 so the entrypoint doesn't
+# re-download it on the next boot
+```
+Restart the app container afterward — the Next.js standalone server caches
+its `public/` directory listing at process startup, so files that land on
+the volume without a restart 404 until one happens.
 
-Self-hosted instances default to Web Speech (no setup). To get the natural
-clips, run `scripts/generate-audio.py` yourself and mount the output as above —
-the audio is not bundled in the Docker image to keep it small.
+Verify: open a Reading Mode story or a Mandarin flashcard — the Network tab
+shows a `200` for `…/audio/zh/...` and the voice is natural.
 
-## Regenerating after data changes
+## 3. Maintainer: publishing a pack after regenerating audio
 
-If you change the seed word/sentence data, re-run the generator (it only
-synthesizes new/changed text) and copy the new files up. Old, now-unused clips
-can be left in place or pruned against the fresh `manifest.json`.
+If you change the seed word/sentence data or add stories, regenerate (step
+1 above only synthesizes new/changed text), then:
+
+```bash
+# Build the tarball + manifest + checksum for one pack from public/audio/
+scripts/build-audio-pack.sh <name> <subpath-under-public/audio> <new-version>
+# e.g.: scripts/build-audio-pack.sh stories zh/r v2
+
+# Upload the three output files (in dist-audio-packs/) to a new GitHub
+# Release tagged audio-<name>-<new-version>
+gh release create audio-<name>-<new-version> dist-audio-packs/recall-audio-<name>-<new-version>.tar.gz{,.sha256} dist-audio-packs/<name>-<new-version>.manifest.json
+```
+
+Then **bump that pack's version in `audio/PACK_VERSIONS` in the same commit**
+as the content change that made the new audio necessary — that's the whole
+drift-detection mechanism. A self-hoster's next redeploy compares the image's
+`audio/PACK_VERSIONS` against the marker already on their volume, sees the
+mismatch, and re-downloads automatically. Skipping this step means new
+content ships with silently stale or missing audio for every existing
+self-hosted instance.
 
 ## Reading Mode story audio (separate pipeline)
 
 Reading Mode's per-story karaoke audio is a different pipeline from the
 hash-addressed word/sentence clips above — it needs one full-story narration
-plus word-level timing marks, not per-term clips.
+plus word-level timing marks, not per-term clips. Availability is derived
+from the filesystem at render time (`src/lib/reading/storyAudio.ts`,
+`docs/adr/0001-audio-availability-is-derived.md`) — there's no database row
+asserting a story has audio, so the files being present *is* the only
+source of truth; nothing to "link" separately.
 
-Three steps, **in this order** — the ingest step must run *after* the audio
-files are in place, because that's the only thing that links a story to its
-audio in the database (a `ReadingAudio` row); dropping the files alone
-doesn't do it, and stories already ingested need a re-run to pick audio up:
+Maintainer generation, two steps:
 
 ```bash
 # 1. Generate (free Microsoft Edge TTS — same engine as generate-audio.py
@@ -140,21 +172,12 @@ doesn't do it, and stories already ingested need a re-run to pick audio up:
 #    audio-out/zh/r/<slug>.mp3 + <slug>.timings.json
 python scripts/generate-story-audio.py
 
-# 2. Sync into the serving location the app (and step 3) actually reads:
-#    audio-out/zh → public/audio/zh
+# 2. Sync into the serving location: audio-out/zh → public/audio/zh
 python scripts/sync-audio.py
-
-# 3. Link it: create/update the ReadingAudio row for every story whose
-#    files are now under public/audio/zh/r. Safe to re-run — idempotent.
-npx tsx scripts/ingest-story.ts --all --force
 ```
 
-For a Docker deployment, steps 1–2 happen wherever you like (they need
-nothing but Python), then copy the result onto the container's audio volume
-the same way as word/sentence audio (see above) — into `/app/public/audio`,
-**not** `/app/audio-out` (that directory only exists on whatever machine
-ran step 1, never in the image or on any volume) — then run step 3 inside
-the container, or just restart it: the boot entrypoint re-runs the ingest
-every time. Story content itself is authored as markdown and ingested by
-that same script — see `docs/content/gemini-prompt.md` for the
-authoring/editing workflow.
+Then build and publish the `stories` pack per "Maintainer: publishing a
+pack" above. Story content itself is authored as markdown and ingested by
+`scripts/ingest-story.ts` — see `docs/content/gemini-prompt.md` for the
+authoring/editing workflow (ingest reads/writes story text and metadata;
+it has nothing to do with whether that story's audio pack is installed).

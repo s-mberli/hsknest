@@ -77,10 +77,25 @@ npm run dev
 
 Open http://localhost:3000, create an account, add or import a word list, and start studying.
 
-Reading Mode's karaoke audio is a separate, optional step — see
-[docs/AUDIO.md](docs/AUDIO.md#reading-mode-story-audio-separate-pipeline).
-Without it, stories still work fully (text, pinyin, tap dictionary) — no
-audio player just doesn't appear on a story that has none.
+### Audio
+
+Recall ships without audio files baked into the image (too large for git).
+The container downloads them itself on first boot — no Python toolchain,
+no `docker cp`.
+
+**Default:** story narration for Reading Mode (~10MB) installs automatically.
+
+**To add word + sentence audio**, set in Coolify → Environment Variables (or
+your `.env`): `AUDIO_PACKS=stories words sentences` — then redeploy.
+
+**To skip audio entirely:** `AUDIO_PACKS=`
+
+**No internet on your server?** Download packs from
+[Releases](https://github.com/s-mberli/hsknest/releases), then
+`docker cp` + `tar -xzf` onto the audio volume — see `docs/AUDIO.md`.
+
+**No audio playing?** See `docs/AUDIO.md` for how to check the container logs
+for the pack-download line.
 
 ## Self-hosting
 
