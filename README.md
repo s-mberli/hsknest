@@ -24,6 +24,7 @@ Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
 | 🧠 | **FSRS / SM-2 / Leitner** — Pluggable scheduling strategies. |
 | 🇨🇳 | **Mandarin-first** — Full New HSK 3.0 (1–9) + 3,000 example sentences with pinyin. |
 | 📖 | **Reading Mode** — Graded HSK 1–5 stories with karaoke audio, tap dictionary, and comprehensible-input matching that recommends what to read next. |
+| 🥷 | **Word Ninja** — A fast-paced slice-the-falling-word mini-game that drills recognition speed as a break from flashcard review. |
 | 👆 | **Gesture-first swipe deck** — Full-screen dark focus mode with keyboard fallback. |
 | 🔊 | **Hybrid TTS** — Pre-generated Azure neural clips served locally + Web Speech fallback. |
 | 📥 | **CSV / paste import** — Bring vocabulary from spreadsheets or other flashcard tools. |
@@ -110,13 +111,18 @@ Visit `http://localhost:3000`, create an account, and start studying. Your data 
 
 Deeper guides live in `docs/`: [IMPORT.md](docs/IMPORT.md) (bring your own vocabulary), [CONFIGURATION.md](docs/CONFIGURATION.md), [DEPLOYMENT.md](docs/DEPLOYMENT.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md), [AUDIO.md](docs/AUDIO.md).
 
-## Roadmap
+## Changelog & roadmap
 
-See **[RELEASES.md](RELEASES.md)** for release notes and what's next.
+See **[RELEASES.md](RELEASES.md)** for release notes, recent fixes, and what's next.
 
 ## Contributing
 
 Bug reports and ideas: file them from the app (**Settings → Feedback**), open an issue, or see `CONTRIBUTING.md` for the PR guide.
+
+## Security
+
+Found a vulnerability? See **[SECURITY.md](SECURITY.md)** for how to report
+it privately — please don't open a public issue.
 
 ## Credits
 
