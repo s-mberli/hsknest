@@ -55,7 +55,7 @@ interface ReaderViewProps {
 
 const SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5];
 const PY_LABEL: Record<Prefs["pinyinMode"], string> = { full: "Pinyin", off: "汉字", adaptive: "Auto" };
-const LONG_PRESS_MS = 300;
+const LONG_PRESS_MS = 450;
 const SWIPE_UP_PX = 30;
 
 function fmt(sec: number) { const m = Math.floor(sec / 60), s = Math.floor(sec % 60); return `${m}:${String(s).padStart(2, "0")}`; }
@@ -288,7 +288,13 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   const clearLP = () => { if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; } };
   const onTouchStart = (e: React.TouchEvent, tk: StoryToken) => { if (tk.isPunct) return; const t = e.touches[0]; touchStart.current = { x: t.clientX, y: t.clientY }; longPressFired.current = false; clearLP(); longPressTimer.current = setTimeout(() => { longPressFired.current = true; if (navigator.vibrate) navigator.vibrate(10); }, LONG_PRESS_MS); };
   const onTouchMove = (e: React.TouchEvent, tk: StoryToken) => { if (!touchStart.current || !longPressFired.current) return; const t = e.touches[0]; if (touchStart.current.y - t.clientY > SWIPE_UP_PX) { clearLP(); setSelectedToken(null); setActionMenu({ x: t.clientX, y: t.clientY - 60, token: tk }); } };
-  const onTouchEnd = (_e: React.TouchEvent, tk: StoryToken) => { const was = longPressFired.current; clearLP(); touchStart.current = null; if (!was) handleWordTap(tk); };
+  // preventDefault on the short-press path stops the browser from also
+  // firing a compatibility `click` afterward — without it, the touch state
+  // machine's tap/long-press decision was racing an unconditional onClick
+  // on the same span, and outcomes varied by device/browser depending on
+  // which one "won". Touch devices now resolve entirely through this path;
+  // onClick remains for mouse/pointer input, which never fires touch events.
+  const onTouchEnd = (e: React.TouchEvent, tk: StoryToken) => { const was = longPressFired.current; clearLP(); touchStart.current = null; if (!was) { e.preventDefault(); handleWordTap(tk); } };
   const onContextMenu = (e: React.MouseEvent, tk: StoryToken) => { if (tk.isPunct) return; e.preventDefault(); setActionMenu({ x: e.clientX, y: e.clientY - 60, token: tk }); };
 
   /* ── prefs ────────────────────────────────────────────────── */
@@ -374,7 +380,7 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
                     const isSel = selectedToken?.s === tk.s && selectedToken?.e === tk.e;
                     const isNew = hskUnderline && tk.lvl !== null && tk.lvl >= level && !isKnown;
                     return (
-                      <span key={`${tk.s}-${tk.e}`} className={`cursor-pointer rounded-sm transition-colors duration-75 select-none ${isAW ? "bg-primary/25" : isAS ? "bg-primary/8" : isSel ? "border-b-2 border-dotted border-primary" : ""} ${isMastered ? "text-foreground/40" : isKnown ? "text-foreground/60" : ""} ${isGrowing ? "bg-amber/10" : ""} ${isShaky ? "underline decoration-amber decoration-1 underline-offset-[6px]" : ""} ${isNew ? "underline decoration-primary/40 decoration-1 underline-offset-[6px]" : ""}`}
+                      <span key={`${tk.s}-${tk.e}`} className={`cursor-pointer rounded-sm transition-colors duration-75 select-none touch-manipulation [-webkit-touch-callout:none] ${isAW ? "bg-primary/25" : isAS ? "bg-primary/8" : isSel ? "border-b-2 border-dotted border-primary" : ""} ${isMastered ? "text-foreground/40" : isKnown ? "text-foreground/60" : ""} ${isGrowing ? "bg-amber/10" : ""} ${isShaky ? "underline decoration-amber decoration-1 underline-offset-[6px]" : ""} ${isNew ? "underline decoration-primary/40 decoration-1 underline-offset-[6px]" : ""}`}
                         onClick={() => handleWordTap(tk)}
                         onMouseEnter={() => { if (tk.isPunct) return; clearTimeout(hoverTimer.current!); hoverTimer.current = setTimeout(() => { if (!selectedToken && !actionMenu) setHoverToken(tk); }, 200); }}
                         onMouseLeave={() => { clearTimeout(hoverTimer.current!); hoverTimer.current = setTimeout(() => setHoverToken(null), 100); }}
