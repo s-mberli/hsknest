@@ -13,7 +13,7 @@ export type Prefs = {
 };
 
 const KEY = "hn-reader-prefs";
-const defaults: Prefs = { pinyinMode: "full", fontSize: DEFAULT_READER_FONT_SIZE, speed: 1.0, showTranslations: false, hskUnderline: true };
+const defaults: Prefs = { pinyinMode: "full", fontSize: DEFAULT_READER_FONT_SIZE, speed: 1.0, showTranslations: true, hskUnderline: true };
 
 export const Prefs = {
   load: (): Prefs => {
