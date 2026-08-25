@@ -203,6 +203,30 @@ else
   echo "→ AUDIO_PACKS is empty; skipping all audio pack downloads (Web Speech fallback only)."
 fi
 
+# Three-line summary, diagnosable from Coolify's log pane alone — no exec
+# needed for the common case. Full detail (per-word/sentence counts, DB
+# cross-checks) is npm run doctor's job (scripts/doctor.ts); this is
+# intentionally just "is the volume there and what got installed".
+if [ -d "$AUDIO_ROOT" ]; then
+  root_writable="no"
+  probe="$AUDIO_ROOT/.entrypoint-write-probe"
+  if ( : > "$probe" ) 2>/dev/null; then root_writable="yes"; rm -f "$probe"; fi
+  echo "→ audio root: $AUDIO_ROOT (writable: $root_writable)"
+else
+  echo "→ audio root: $AUDIO_ROOT does not exist"
+fi
+installed_summary=""
+for f in "$AUDIO_ROOT"/.pack-*-*; do
+  [ -e "$f" ] || continue
+  name=$(basename "$f" | sed 's/^\.pack-//')
+  installed_summary="$installed_summary ${name}"
+done
+echo "→ audio packs installed this boot:${installed_summary:- none}"
+story_count=$(find "$AUDIO_ROOT/zh/r" -name '*.mp3' 2>/dev/null | wc -l | tr -d ' ')
+word_count=$(find "$AUDIO_ROOT/zh/w" -name '*.mp3' 2>/dev/null | wc -l | tr -d ' ')
+sentence_count=$(find "$AUDIO_ROOT/zh/s" -name '*.mp3' 2>/dev/null | wc -l | tr -d ' ')
+echo "-> audio: stories ${story_count} mp3, words ${word_count} mp3, sentences ${sentence_count} mp3 (run 'npm run doctor' for full detail)"
+
 set -e
 
 # Hand off to the CMD (node server.js).

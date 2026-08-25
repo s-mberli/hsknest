@@ -67,6 +67,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Audio pack content is content-hashed (word/sentence clips) or
+        // otherwise stable per-slug (story narration) — a filename never
+        // changes meaning, only a version bump introduces a new one. ~143MB
+        // of this was being re-served from the VPS on every session with no
+        // client-side caching at all (see docs/AUDIO.md).
+        source: "/audio/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "Content-Security-Policy", value: csp },

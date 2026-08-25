@@ -138,6 +138,17 @@ vars, and terminates HTTPS through its bundled proxy:
 Subsequent updates are just `git push` — Coolify redeploys, and migrations run
 on boot.
 
+> ⚠️ **Never delete-and-recreate the Coolify app resource.** Coolify's named
+> volumes (`recall-data`, `recall-audio`) are attached to the resource
+> instance, not to the git repo or the compose file. Deleting the resource
+> to "start fresh" or fix a stuck deploy **silently destroys both volumes** —
+> your entire user database and any hand-copied/backed-up audio go with it,
+> with no prompt and no undo. **To change configuration (compose file, env
+> vars, image), edit and `git push` — Coolify redeploys the existing
+> resource in place and the volumes survive.** If a deploy is stuck, use
+> Coolify's restart/redeploy action on the existing resource, not
+> delete-then-recreate.
+
 ## Backups
 
 SQLite is a single file; back it up with its online-backup command so you get a
@@ -209,6 +220,21 @@ For continuous, near-zero-RPO backups, consider
 [Litestream](https://litestream.io/), which streams SQLite's WAL to S3-style
 storage. This removes the restore downtime and is recommended for high-availability
 setups.
+
+### The `recall-audio` volume is NOT covered by the backup above
+
+The `sqlite-backup` sidecar (`docker-compose.yml`) only backs up `/data`
+(the `recall-data` volume — your database). `recall-audio` (~10-150MB
+depending which packs are installed, see `docs/AUDIO.md`) has no backup job
+of its own.
+
+For the standard `stories`/`words`/`sentences`/`de` packs, this is mostly
+moot: they're re-fetchable by URL + checksum from GitHub Releases (see
+`docs/AUDIO.md`), so losing the volume just means the next boot re-downloads
+them — no data loss, just a delay. `npm run doctor` flags files present on
+the volume but absent from a pack's manifest — those are the only audio
+files that are genuinely irreplaceable (e.g. a maintainer's hand-copied
+custom clip) and worth adding to your own backup rotation if you have any.
 
 ### Hosted-instance extras (self-hosters: skip)
 
