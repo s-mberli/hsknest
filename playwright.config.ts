@@ -8,7 +8,14 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
   fullyParallel: false,
-  retries: 0,
+  // CI gets 1 retry: the shared logIn() helper races a known NextAuth
+  // cookie-visibility issue (see src/lib/authClient.ts's confirmSession()
+  // comment) under CI's slower/CPU-constrained runner, so a single spec
+  // times out on `waitForURL` roughly once every few runs. A retry turns
+  // that into "green on the second try" without masking a real regression
+  // (a test that fails twice still fails the job). Local runs stay at 0 —
+  // a flake locally should be investigated, not silently retried away.
+  retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: [["list"]],
   // Pre-compile every route once before the suite (dev mode compiles routes on
