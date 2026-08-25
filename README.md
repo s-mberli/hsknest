@@ -94,8 +94,9 @@ your `.env`): `AUDIO_PACKS=stories words sentences` — then redeploy.
 [Releases](https://github.com/s-mberli/hsknest/releases), then
 `docker cp` + `tar -xzf` onto the audio volume — see `docs/AUDIO.md`.
 
-**No audio playing?** See `docs/AUDIO.md` for how to check the container logs
-for the pack-download line.
+**No audio playing?** Run `docker exec <container> npm run doctor` — it
+reports what's installed, what's missing, and why, from inside the
+container (no login, no admin route needed).
 
 ## Self-hosting
 
