@@ -93,6 +93,10 @@ next-env.d.ts
 /LAUNCH-CHECKLIST.md
 /docs/marketing/
 
+# Claude Code agent-skill definitions — internal tooling, not documentation
+# for self-hosters/contributors. Purged from git history 2026-08-25.
+/docs/skills/
+
 # private product sequencing — deliberately NOT in the public RELEASES.md
 # roadmap (see docs/marketing/positioning.md: multi-language is an
 # architecture story, not a marketing promise we want to owe anyone).
