@@ -215,6 +215,14 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
   const spawnedRef = useRef(false);
   const lastOutcomeRef = useRef<NinjaOutcomeFeedback | null>(null);
   const prevMissedRef = useRef(0);
+  // stepWaveLogic (called from the RAF loop below) can flip state.tiles from
+  // [] to a fully-populated wave mid-frame (launchPendingWave, once lead-in
+  // expires) without ever going through a waveStatus transition that this
+  // loop already calls setView for. Without tracking that transition here
+  // too, React never mounts the <NinjaTile> elements for the new wave until
+  // the wave resolves (slice/miss) — tiles simulate and move invisibly, then
+  // all pop in at once, already mid-flight, the instant a slice happens.
+  const prevTileCountRef = useRef(0);
   // Callers (e.g. NinjaScreen) typically pass an inline onWaveOutcome that's
   // a fresh function identity every render. Read it via a ref that's kept
   // current below, rather than putting it in the game-loop effect's
@@ -465,6 +473,13 @@ export function useNinjaEngine({ words, config = {}, onWaveOutcome }: UseNinjaEn
           stepWaveLogic(state, now, rngRef.current);
           remaining -= step;
           substeps += 1;
+        }
+
+        // See prevTileCountRef's comment above: mount the wave's tiles the
+        // moment they exist, not only when the wave later resolves.
+        if (state.tiles.length !== prevTileCountRef.current) {
+          prevTileCountRef.current = state.tiles.length;
+          setView(projectView(state, lastOutcomeRef.current));
         }
       }
 
