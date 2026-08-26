@@ -6839,7 +6839,7 @@
   {
     "term": "待",
     "translation": "to wait; to treat; to deal with",
-    "phonetic": "dài",
+    "phonetic": "dāi",
     "metadata": {
       "level": 4,
       "pos": [
@@ -21246,7 +21246,7 @@
   {
     "term": "咳",
     "translation": "sound of sighing",
-    "phonetic": "hāi",
+    "phonetic": "ké",
     "metadata": {
       "level": 4,
       "pos": [
@@ -24244,7 +24244,7 @@
   {
     "term": "亚洲",
     "translation": "Asia",
-    "phonetic": "Ya4 zhou1",
+    "phonetic": "Yà zhōu",
     "metadata": {
       "level": 4
     }
@@ -24252,7 +24252,7 @@
   {
     "term": "使馆",
     "translation": "consulate; diplomatic mission",
-    "phonetic": "shi3 guan3",
+    "phonetic": "shǐ guǎn",
     "metadata": {
       "level": 4
     }
@@ -24260,7 +24260,7 @@
   {
     "term": "健身房",
     "translation": "gym; fitness club",
-    "phonetic": "jian4 shen1 fang2",
+    "phonetic": "jiàn shēn fáng",
     "metadata": {
       "level": 4
     }
@@ -24268,7 +24268,7 @@
   {
     "term": "入住",
     "translation": "to check in (at a hotel etc); to move into (a house)",
-    "phonetic": "ru4 zhu4",
+    "phonetic": "rù zhù",
     "metadata": {
       "level": 4
     }
@@ -24276,7 +24276,7 @@
   {
     "term": "动车",
     "translation": "(PRC) (D- or C-class) high-speed train; power car; multiple-unit train",
-    "phonetic": "dong4 che1",
+    "phonetic": "dòng chē",
     "metadata": {
       "level": 4
     }
@@ -24284,7 +24284,7 @@
   {
     "term": "味",
     "translation": "taste; smell; (fig.) (noun suffix) feel",
-    "phonetic": "wei4",
+    "phonetic": "wèi",
     "metadata": {
       "level": 4
     }
@@ -24292,7 +24292,7 @@
   {
     "term": "售票员",
     "translation": "ticket seller",
-    "phonetic": "shou4 piao4 yuan2",
+    "phonetic": "shòu piào yuán",
     "metadata": {
       "level": 4
     }
@@ -24300,7 +24300,7 @@
   {
     "term": "嗯",
     "translation": "(a groaning sound)",
-    "phonetic": "en1",
+    "phonetic": "ēn",
     "metadata": {
       "level": 4
     }
@@ -24308,7 +24308,7 @@
   {
     "term": "头痛",
     "translation": "to have a headache",
-    "phonetic": "tou2 tong4",
+    "phonetic": "tóu tòng",
     "metadata": {
       "level": 4
     }
@@ -24316,7 +24316,7 @@
   {
     "term": "扫码",
     "translation": "to scan a QR code or barcode",
-    "phonetic": "sao3 ma3",
+    "phonetic": "sǎo mǎ",
     "metadata": {
       "level": 4
     }
@@ -24324,7 +24324,7 @@
   {
     "term": "换乘",
     "translation": "to change train (plane, bus etc); transfer between modes of transport",
-    "phonetic": "huan4 cheng2",
+    "phonetic": "huàn chéng",
     "metadata": {
       "level": 4
     }
@@ -24332,7 +24332,7 @@
   {
     "term": "森林",
     "translation": "forest",
-    "phonetic": "sen1 lin2",
+    "phonetic": "sēn lín",
     "metadata": {
       "level": 4
     }
@@ -24340,7 +24340,7 @@
   {
     "term": "窗",
     "translation": "window",
-    "phonetic": "chuang1",
+    "phonetic": "chuāng",
     "metadata": {
       "level": 4
     }
@@ -24348,7 +24348,7 @@
   {
     "term": "纸巾",
     "translation": "paper towel; napkin; facial tissue",
-    "phonetic": "zhi3 jin1",
+    "phonetic": "zhǐ jīn",
     "metadata": {
       "level": 4
     }
@@ -24356,7 +24356,7 @@
   {
     "term": "线上",
     "translation": "online",
-    "phonetic": "xian4 shang4",
+    "phonetic": "xiàn shàng",
     "metadata": {
       "level": 4
     }
@@ -24364,7 +24364,7 @@
   {
     "term": "线下",
     "translation": "offline; below the line",
-    "phonetic": "xian4 xia4",
+    "phonetic": "xiàn xià",
     "metadata": {
       "level": 4
     }
@@ -24372,7 +24372,7 @@
   {
     "term": "结账",
     "translation": "to settle accounts; to pay the bill",
-    "phonetic": "jie2 zhang4",
+    "phonetic": "jié zhàng",
     "metadata": {
       "level": 4
     }
@@ -24380,7 +24380,7 @@
   {
     "term": "网购",
     "translation": "Internet shopping; to purchase online",
-    "phonetic": "wang3 gou4",
+    "phonetic": "wǎng gòu",
     "metadata": {
       "level": 4
     }
@@ -24388,7 +24388,7 @@
   {
     "term": "老虎",
     "translation": "tiger",
-    "phonetic": "lao3 hu3",
+    "phonetic": "lǎo hǔ",
     "metadata": {
       "level": 4
     }
@@ -24396,7 +24396,7 @@
   {
     "term": "聚餐",
     "translation": "to get together for a meal; to dine together",
-    "phonetic": "ju4 can1",
+    "phonetic": "jù cān",
     "metadata": {
       "level": 4
     }
@@ -24404,7 +24404,7 @@
   {
     "term": "自习",
     "translation": "to study outside of class time (reviewing one's lessons); to study in one's free time; individual study",
-    "phonetic": "zi4 xi2",
+    "phonetic": "zì xí",
     "metadata": {
       "level": 4
     }
@@ -24412,7 +24412,7 @@
   {
     "term": "表示",
     "translation": "(of sb) to express; to state; to show; (of sth) to indicate; to signify; to show; expression; manifestation",
-    "phonetic": "biao3 shi4",
+    "phonetic": "biǎo shì",
     "metadata": {
       "level": 4
     }
@@ -24420,7 +24420,7 @@
   {
     "term": "袋子",
     "translation": "bag",
-    "phonetic": "dai4 zi5",
+    "phonetic": "dài zi",
     "metadata": {
       "level": 4
     }
@@ -24428,7 +24428,7 @@
   {
     "term": "身",
     "translation": "body; life; oneself",
-    "phonetic": "shen1",
+    "phonetic": "shēn",
     "metadata": {
       "level": 4
     }
@@ -24436,7 +24436,7 @@
   {
     "term": "转发",
     "translation": "to transmit; to forward (mail, SMS, packets of data); to pass on",
-    "phonetic": "zhuan3 fa1",
+    "phonetic": "zhuǎn fā",
     "metadata": {
       "level": 4
     }

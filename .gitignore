@@ -114,6 +114,9 @@ next-env.d.ts
 # record, not user-facing documentation
 /docs/hsk-wordlist-diff-report.md
 
+# local vocabulary-quality audit records (see audits/ README inside)
+/audits/
+
 # python bytecode cache
 __pycache__/
 *.pyc

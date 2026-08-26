@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 import { Prisma, PrismaClient } from "@prisma/client";
 
+import { isBadLead } from "../src/lib/glossGuard";
+
 const prisma = new PrismaClient();
 
 type SeedWord = {
@@ -360,6 +362,12 @@ async function retireSeededList(name: string) {
 /**
  * Load and apply curated overrides for a list (e.g., curated/new1.json).
  * Merges translation and metadata.meanings if present. Returns modified copy.
+ * Tripwire: an override whose LEAD meaning is dictionary plumbing or a
+ * proper-noun reading is applied anyway but logged loudly — that pattern
+ * previously shipped cards like 联想="Lenovo" (see
+ * audits/hsk-gloss-audit-2026-08.md, systemic finding 2). The compile step
+ * (scripts/compile-curated-glosses.ts) guards against this at write time;
+ * this check catches regressions from hand-edits.
  */
 function applyCuratedOverrides(file: string, words: SeedWord[]): SeedWord[] {
   try {
@@ -370,11 +378,23 @@ function applyCuratedOverrides(file: string, words: SeedWord[]): SeedWord[] {
     return words.map((w) => {
       const override = curated[w.term];
       if (!override) return w;
+      const meanings = Array.isArray(override.meanings)
+        ? (override.meanings as { gloss: string; reading?: string }[])
+        : undefined;
+      if (meanings && meanings.length > 0) {
+        const lead = meanings[0];
+        if (isBadLead(lead, w.phonetic || undefined)) {
+          console.warn(
+            `[curated-guard] ${file}:${w.term} override leads with a suspect gloss ` +
+              `"${lead.gloss}" — run scripts/compile-curated-glosses.ts or fix by hand`
+          );
+        }
+      }
       return {
         ...w,
         translation: override.translation ?? w.translation,
-        metadata: override.meanings
-          ? { ...(typeof w.metadata === 'object' && w.metadata !== null ? w.metadata : {}), meanings: override.meanings }
+        metadata: meanings
+          ? { ...(typeof w.metadata === 'object' && w.metadata !== null ? w.metadata : {}), meanings }
           : w.metadata,
       };
     });

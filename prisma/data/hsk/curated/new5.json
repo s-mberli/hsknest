@@ -806,10 +806,13 @@
     ]
   },
   "朝": {
-    "translation": "imperial or royal court",
+    "translation": "towards; facing; dynasty",
     "meanings": [
       {
-        "gloss": "imperial or royal court"
+        "gloss": "towards; facing"
+      },
+      {
+        "gloss": "dynasty; imperial court"
       }
     ]
   },
@@ -1683,13 +1686,13 @@
     ]
   },
   "调": {
-    "translation": "to adjust; to regulate; to transfer (implied by to reallocate/regulate)",
+    "translation": "to adjust; to regulate",
     "meanings": [
       {
         "gloss": "to adjust; to regulate"
       },
       {
-        "gloss": "to transfer (implied by to reallocate/regulate)"
+        "gloss": "to blend; to harmonize"
       }
     ]
   },
@@ -2244,16 +2247,13 @@
     ]
   },
   "盖": {
-    "translation": "lid; cover; to cover",
+    "translation": "to cover; lid",
     "meanings": [
       {
-        "gloss": "lid"
-      },
-      {
-        "gloss": "cover"
-      },
-      {
         "gloss": "to cover"
+      },
+      {
+        "gloss": "lid; cover (n.)"
       }
     ]
   },
@@ -2976,13 +2976,13 @@
     ]
   },
   "集": {
-    "translation": "classifier for sections of a TV series: episode; to gather; collected works",
+    "translation": "to gather; episode; collected works",
     "meanings": [
       {
-        "gloss": "classifier for sections of a TV series: episode"
+        "gloss": "to gather; to collect"
       },
       {
-        "gloss": "to gather"
+        "gloss": "episode (of a TV series)"
       },
       {
         "gloss": "collected works"
@@ -3166,16 +3166,13 @@
     ]
   },
   "剪": {
-    "translation": "scissors; to cut with scissors; to trim",
+    "translation": "to cut (with scissors)",
     "meanings": [
       {
+        "gloss": "to cut with scissors; to trim"
+      },
+      {
         "gloss": "scissors"
-      },
-      {
-        "gloss": "to cut with scissors"
-      },
-      {
-        "gloss": "to trim"
       }
     ]
   },
@@ -3815,10 +3812,10 @@
     ]
   },
   "老板": {
-    "translation": "Robam (brand)",
+    "translation": "boss; proprietor",
     "meanings": [
       {
-        "gloss": "Robam (brand)"
+        "gloss": "boss; proprietor; shopkeeper"
       }
     ]
   },
@@ -4747,10 +4744,16 @@
     ]
   },
   "齐": {
-    "translation": "(name of states and dynasties at several different periods)",
+    "translation": "neat; even",
     "meanings": [
       {
-        "gloss": "(name of states and dynasties at several different periods)"
+        "gloss": "neat; even; uniform"
+      },
+      {
+        "gloss": "all together; simultaneously"
+      },
+      {
+        "gloss": "Qi (ancient state/dynasty)"
       }
     ]
   },
@@ -4898,10 +4901,13 @@
     ]
   },
   "切": {
-    "translation": "definitely; absolutely (not)",
+    "translation": "to cut; to slice",
     "meanings": [
       {
-        "gloss": "definitely; absolutely (not)"
+        "gloss": "to cut; to slice (qiē)"
+      },
+      {
+        "gloss": "definitely; absolutely (not) (qiè)"
       }
     ]
   },
@@ -6027,13 +6033,16 @@
     ]
   },
   "套": {
-    "translation": "cover; to cover",
+    "translation": "set; to cover",
     "meanings": [
       {
-        "gloss": "cover"
+        "gloss": "set; suite (also measure word for sets)"
       },
       {
-        "gloss": "to cover"
+        "gloss": "cover; case; sheath"
+      },
+      {
+        "gloss": "to cover; to encase"
       }
     ]
   },
@@ -6646,10 +6655,13 @@
     ]
   },
   "现代": {
-    "translation": "Hyundai, South Korean company",
+    "translation": "modern; modern times",
     "meanings": [
       {
-        "gloss": "Hyundai, South Korean company"
+        "gloss": "modern; contemporary"
+      },
+      {
+        "gloss": "Hyundai (company name)"
       }
     ]
   },
@@ -6709,13 +6721,13 @@
     ]
   },
   "相当": {
-    "translation": "equivalent to; considerably",
+    "translation": "quite; considerably",
     "meanings": [
       {
-        "gloss": "equivalent to"
+        "gloss": "quite; considerably"
       },
       {
-        "gloss": "considerably"
+        "gloss": "equivalent to; corresponding to"
       }
     ]
   },
@@ -7096,10 +7108,13 @@
     ]
   },
   "延长": {
-    "translation": "Yanchang county in Yan'an 安, Shaanxi",
+    "translation": "to lengthen; to extend; to prolong",
     "meanings": [
       {
-        "gloss": "Yanchang county in Yan'an 安, Shaanxi"
+        "gloss": "to lengthen; to extend; to prolong"
+      },
+      {
+        "gloss": "to delay"
       }
     ]
   },
@@ -7313,8 +7328,14 @@
     ]
   },
   "以": {
-    "translation": "to use",
+    "translation": "with; by means of; in order to",
     "meanings": [
+      {
+        "gloss": "with; by means of; according to"
+      },
+      {
+        "gloss": "in order to; so as to"
+      },
       {
         "gloss": "to use"
       }
@@ -7450,13 +7471,13 @@
     ]
   },
   "优惠": {
-    "translation": "favorable (terms); discount (price)",
+    "translation": "discount; special offer",
     "meanings": [
       {
-        "gloss": "favorable (terms)"
+        "gloss": "discount; special offer"
       },
       {
-        "gloss": "discount (price)"
+        "gloss": "favorable; preferential (terms, treatment)"
       }
     ]
   },
@@ -7892,13 +7913,13 @@
     ]
   },
   "阵": {
-    "translation": "classifier for events or states of short duration; burst, spell",
+    "translation": "burst; spell",
     "meanings": [
       {
-        "gloss": "classifier for events or states of short duration"
+        "gloss": "burst, spell (一阵风， 一阵雨)"
       },
       {
-        "gloss": "burst, spell"
+        "gloss": "classifier for events or states of short duration"
       }
     ]
   },
@@ -7969,13 +7990,13 @@
     ]
   },
   "支": {
-    "translation": "branch; classifier for rod-like objects",
+    "translation": "classifier for rod-like objects; branch",
     "meanings": [
       {
-        "gloss": "branch"
+        "gloss": "classifier for rods such as pens and guns; for songs"
       },
       {
-        "gloss": "classifier for rod-like objects"
+        "gloss": "branch; division"
       }
     ]
   },
@@ -8032,27 +8053,24 @@
     ]
   },
   "至": {
-    "translation": "to arrive; to; until",
+    "translation": "to; until",
     "meanings": [
       {
-        "gloss": "to arrive"
+        "gloss": "to; until"
       },
       {
-        "gloss": "to; until"
+        "gloss": "to arrive"
       }
     ]
   },
   "治": {
-    "translation": "to govern; to manage; to treat (a disease)",
+    "translation": "to treat; to govern",
     "meanings": [
       {
-        "gloss": "to govern"
+        "gloss": "to treat (an illness); to cure"
       },
       {
-        "gloss": "to manage"
-      },
-      {
-        "gloss": "to treat (a disease)"
+        "gloss": "to govern; to manage"
       }
     ]
   },
@@ -8474,9 +8492,355 @@
     ]
   },
   "纪录": {
-    "translation": "record; to record"
+    "translation": "record",
+    "meanings": [
+      {
+        "gloss": "record (n.)"
+      },
+      {
+        "gloss": "written record; note-taker"
+      }
+    ]
   },
   "哈": {
     "translation": "ha (expression of laughter)"
+  },
+  "伟大": {
+    "translation": "great; grand; mighty",
+    "meanings": [
+      {
+        "gloss": "great; grand; mighty"
+      },
+      {
+        "gloss": "admirable; important"
+      }
+    ]
+  },
+  "进一步": {
+    "translation": "further",
+    "meanings": [
+      {
+        "gloss": "(adv.) further; one step further"
+      },
+      {
+        "gloss": "to go a step further"
+      }
+    ]
+  },
+  "报警": {
+    "translation": "to call the police",
+    "meanings": [
+      {
+        "gloss": "to report sth to the police; to call the police"
+      },
+      {
+        "gloss": "to sound an alarm"
+      }
+    ]
+  },
+  "玫瑰": {
+    "translation": "rose",
+    "meanings": [
+      {
+        "gloss": "rose (flower)"
+      },
+      {
+        "gloss": "rugosa rose (Rosa rugosa), shrub"
+      }
+    ]
+  },
+  "登录": {
+    "translation": "to log in",
+    "meanings": [
+      {
+        "gloss": "to log in"
+      },
+      {
+        "gloss": "to register"
+      }
+    ]
+  },
+  "赛场": {
+    "translation": "competition venue",
+    "meanings": [
+      {
+        "gloss": "competition venue; arena"
+      },
+      {
+        "gloss": "racetrack; athletics field"
+      }
+    ]
+  },
+  "公务员": {
+    "translation": "civil servant",
+    "meanings": [
+      {
+        "gloss": "civil servant; public servant"
+      },
+      {
+        "gloss": "functionary"
+      }
+    ]
+  },
+  "引进": {
+    "translation": "to introduce (from outside)",
+    "meanings": [
+      {
+        "gloss": "to introduce; bring in (technology, talent, etc.)"
+      },
+      {
+        "gloss": "to recommend"
+      }
+    ]
+  },
+  "不符": {
+    "translation": "inconsistent (with)",
+    "meanings": [
+      {
+        "gloss": "inconsistent; not in agreement with"
+      },
+      {
+        "gloss": "to not tally with"
+      }
+    ]
+  },
+  "兔子": {
+    "translation": "rabbit",
+    "meanings": [
+      {
+        "gloss": "rabbit"
+      },
+      {
+        "gloss": "hare"
+      }
+    ]
+  },
+  "商家": {
+    "translation": "merchant; vendor",
+    "meanings": [
+      {
+        "gloss": "merchant; vendor"
+      },
+      {
+        "gloss": "business; enterprise"
+      }
+    ]
+  },
+  "拼音": {
+    "translation": "pinyin (Chinese romanization)",
+    "meanings": [
+      {
+        "gloss": "pinyin (Chinese romanization)"
+      },
+      {
+        "gloss": "phonetic writing"
+      }
+    ]
+  },
+  "派出所": {
+    "translation": "local police station",
+    "meanings": [
+      {
+        "gloss": "local police station"
+      },
+      {
+        "gloss": "police substation"
+      }
+    ]
+  },
+  "点赞": {
+    "translation": "to like (on social media)",
+    "meanings": [
+      {
+        "gloss": "to like; to upvote (on social media)"
+      },
+      {
+        "gloss": "to give a thumbs-up"
+      }
+    ]
+  },
+  "职场": {
+    "translation": "workplace",
+    "meanings": [
+      {
+        "gloss": "workplace"
+      },
+      {
+        "gloss": "job market; professional world"
+      }
+    ]
+  },
+  "语文": {
+    "translation": "Chinese language and literature (school subject)",
+    "meanings": [
+      {
+        "gloss": "literature and language"
+      },
+      {
+        "gloss": "(PRC) Chinese as a school subject"
+      }
+    ]
+  },
+  "退还": {
+    "translation": "to return; to refund",
+    "meanings": [
+      {
+        "gloss": "to return (sth borrowed etc); send back"
+      },
+      {
+        "gloss": "to refund"
+      }
+    ]
+  },
+  "雪糕": {
+    "translation": "ice cream bar",
+    "meanings": [
+      {
+        "gloss": "ice cream bar"
+      },
+      {
+        "gloss": "popsicle"
+      }
+    ]
+  },
+  "驾驶": {
+    "translation": "to drive",
+    "meanings": [
+      {
+        "gloss": "to drive (a vehicle)"
+      },
+      {
+        "gloss": "to pilot (ship, airplane etc)"
+      }
+    ]
+  },
+  "环节": {
+    "translation": "link; part (of a process)",
+    "meanings": [
+      {
+        "gloss": "link; segment of a process/system"
+      },
+      {
+        "gloss": "(zoology) body segment"
+      }
+    ]
+  },
+  "影片": {
+    "translation": "film; movie",
+    "meanings": [
+      {
+        "gloss": "film; movie"
+      },
+      {
+        "gloss": "a copy of a film"
+      }
+    ]
+  },
+  "农民": {
+    "translation": "farmer",
+    "meanings": [
+      {
+        "gloss": "farmer"
+      },
+      {
+        "gloss": "peasant"
+      }
+    ]
+  },
+  "大厦": {
+    "translation": "large building; edifice",
+    "meanings": [
+      {
+        "gloss": "large building; edifice"
+      },
+      {
+        "gloss": "used in names of grand buildings"
+      }
+    ]
+  },
+  "天上": {
+    "translation": "the sky; in the sky",
+    "meanings": [
+      {
+        "gloss": "the sky; in the sky"
+      },
+      {
+        "gloss": "heavenly"
+      }
+    ]
+  },
+  "诗人": {
+    "translation": "poet",
+    "meanings": [
+      {
+        "gloss": "poet"
+      }
+    ]
+  },
+  "胆小": {
+    "translation": "timid",
+    "meanings": [
+      {
+        "gloss": "timid"
+      },
+      {
+        "gloss": "cowardly"
+      }
+    ]
+  },
+  "涨价": {
+    "translation": "to increase in price",
+    "meanings": [
+      {
+        "gloss": "to increase in price"
+      },
+      {
+        "gloss": "to appreciate (in value)"
+      }
+    ]
+  },
+  "橡皮": {
+    "translation": "eraser; rubber",
+    "meanings": [
+      {
+        "gloss": "an eraser"
+      },
+      {
+        "gloss": "rubber"
+      }
+    ]
+  },
+  "二维码": {
+    "translation": "QR code",
+    "meanings": [
+      {
+        "gloss": "QR code"
+      },
+      {
+        "gloss": "two-dimensional barcode"
+      }
+    ]
+  },
+  "一下儿": {
+    "translation": "erhua form of 一下 (one time; once)",
+    "meanings": [
+      {
+        "gloss": "one time; once"
+      },
+      {
+        "gloss": "erhua variant of 一下"
+      }
+    ]
+  },
+  "池": {
+    "translation": "pond; pool",
+    "meanings": [
+      {
+        "gloss": "pond; pool"
+      },
+      {
+        "gloss": "surname Chi"
+      }
+    ]
   }
 }

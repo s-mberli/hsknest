@@ -47,6 +47,97 @@ export type SeedWord = {
 /** Rank for ordering words within a list; unknown frequency sinks to the end. */
 export const UNKNOWN_RANK = 1000000;
 
+/**
+ * Tone-mark lookup for the vowel-carrying letters, index 0 = tone 1.
+ * Uppercase forms are derived by case-preserving application.
+ */
+const TONE_MARKS: Record<string, [string, string, string, string]> = {
+  a: ["ā", "á", "ǎ", "à"],
+  o: ["ō", "ó", "ǒ", "ò"],
+  e: ["ē", "é", "ě", "è"],
+  i: ["ī", "í", "ǐ", "ì"],
+  u: ["ū", "ú", "ǔ", "ù"],
+  ü: ["ǖ", "ǘ", "ǚ", "ǜ"],
+};
+
+function markVowel(letter: string, tone: number): string {
+  const lower = letter.toLowerCase();
+  const marked = TONE_MARKS[lower]?.[tone - 1];
+  if (!marked) return letter;
+  return letter === lower ? marked : marked.toUpperCase();
+}
+
+/**
+ * Convert one pinyin syllable from numbered/colon style ("zhe4", "lu:4",
+ * "lv3") to tone-marked style ("zhè", "lǜ"). Syllables already carrying
+ * tone marks (e.g. "méifǎr" fragments) or neutral-tone digits ("ge5")
+ * pass through unchanged. Case is preserved ("Ya4" → "Yà").
+ */
+export function normalizePinyinSyllable(syllable: string): string {
+  // Accept Latin + tone-marked Latin (so misplaced-mark repair below can run
+  // on already-marked input); digits are the numbered-tone suffix if present.
+  const m = syllable.match(/^([A-Za-z\u00C0-\u024F:üv]+)([1-5])?$/u);
+  if (!m) return syllable;
+  const letters = m[1].replace(/u:/gi, (s) => (s[0] === "U" ? "Ü" : "ü")).replace(/v/g, "ü");
+  const tone = m[2] ? parseInt(m[2], 10) : 5;
+
+  // Repair misplaced tone marks on -iu digraphs straight from the upstream
+  // dataset (e.g. "qíu" → "qiú", "xīu" → "xiū"): the mark always falls on
+  // the u, never the i. Applied before numbered-tone handling.
+  let repaired = letters;
+  const misplaced = repaired.match(/^(.*?)[īíǐì](u)$/i);
+  if (misplaced) {
+    const toneOf: Record<string, number> = { "ī": 1, "í": 2, "ǐ": 3, "ì": 4 };
+    const markedChar = [...repaired][misplaced[1].length].toLowerCase();
+    const toneOfMarked = toneOf[markedChar];
+    if (toneOfMarked) {
+      const chars = [...repaired];
+      chars[misplaced[1].length] = "i"; // strip the misplaced mark
+      chars[misplaced[1].length + 1] = markVowel("u", toneOfMarked);
+      repaired = chars.join("");
+    }
+  }
+
+  if (tone === 5) return repaired;
+  const lower = letters.toLowerCase();
+
+  // Standard mark placement: a, else o, else e, else the last vowel —
+  // which also covers the i/u digraphs (mark falls on the latter: liú, guì).
+  let idx: number;
+  const aPos = lower.indexOf("a");
+  const oPos = lower.indexOf("o");
+  const ePos = lower.indexOf("e");
+  if (aPos >= 0) idx = aPos;
+  else if (oPos >= 0) idx = oPos;
+  else if (ePos >= 0) idx = ePos;
+  else {
+    idx = -1;
+    for (let i = lower.length - 1; i >= 0; i--) {
+      if (TONE_MARKS[lower[i]]) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx < 0) return letters; // no vowel — leave untouched
+  }
+
+  const chars = [...letters];
+  chars[idx] = markVowel(chars[idx], tone);
+  return chars.join("");
+}
+
+/**
+ * Normalize any mixed-style pinyin string (word-level phonetics and per-sense
+ * readings) to tone-marked form. Whitespace and apostrophe separators are
+ * preserved. Idempotent on already-normalized input.
+ */
+export function normalizePinyin(pinyin: string): string {
+  return pinyin
+    .split(/(\s+|')/)
+    .map((part) => (/^[\s']+$/.test(part) ? part : normalizePinyinSyllable(part)))
+    .join("");
+}
+
 /** Glosses that are dictionary cross-references, not learnable senses. */
 const NOISE_GLOSS =
   /^(variant of|old variant of|unofficial variant|archaic variant|used in |see )/i;
@@ -119,7 +210,9 @@ export function rankForms(forms: RawForm[], term?: string): RawForm[] {
 }
 
 function normReading(s: string): string {
-  return s.trim().toLowerCase();
+  // Normalize style (numbered/colon → tone-marked) before comparing, so
+  // e.g. a "zhe4" form matches a "zhè" preferred reading.
+  return normalizePinyin(s.trim()).toLowerCase();
 }
 
 /**
@@ -221,11 +314,11 @@ export function buildTranslation(glosses: string[]): string {
  */
 export function buildMeanings(forms: RawForm[], term?: string): SeedMeaning[] {
   const ranked = rankForms(forms, term);
-  const primaryPinyin = ranked[0]?.transcriptions.pinyin;
+  const primaryPinyin = normalizePinyin(ranked[0]?.transcriptions.pinyin ?? "");
   const out: SeedMeaning[] = [];
   const seen = new Set<string>();
   for (const form of ranked) {
-    const reading = form.transcriptions.pinyin;
+    const reading = normalizePinyin(form.transcriptions.pinyin);
     for (const gloss of cleanGlosses(form.meanings)) {
       const key = `${reading}|${gloss.toLowerCase()}`;
       if (seen.has(key)) continue;
@@ -254,7 +347,9 @@ export function transformEntry(entry: RawEntry, level: number): SeedWord {
     translation: buildTranslation(
       primaryGlosses.length > 0 ? primaryGlosses : meanings.map((m) => m.gloss)
     ),
-    phonetic: primary.transcriptions.pinyin,
+    // The upstream dataset mixes tone-marked, numbered ("zhe4"), and
+    // colon-style ("lu:4") pinyin — normalize so every card shows marks.
+    phonetic: normalizePinyin(primary.transcriptions.pinyin),
     metadata: {
       level,
       ...(entry.pos && entry.pos.length > 0 ? { pos: entry.pos } : {}),
