@@ -184,10 +184,83 @@ async function sameSeedContent(listId: string, words: SeedWord[]): Promise<boole
 }
 
 /**
+ * Update an existing list's words in place, matched by term, instead of
+ * deleting the list. Preserves Word ids so UserProgress/ReviewLog rows
+ * (which reference wordId) survive a content refresh. Terms no longer
+ * present in the incoming dataset are left alone rather than deleted —
+ * an in-place refresh should never be the thing that removes data.
+ */
+async function refreshListInPlace(listId: string, words: SeedWord[]) {
+  const existingWords = await prisma.word.findMany({
+    where: { wordListId: listId },
+    select: { id: true, term: true, translation: true, phonetic: true, metadata: true, position: true },
+  });
+  const byTerm = new Map(existingWords.map((w) => [w.term, w]));
+
+  let updated = 0;
+  let created = 0;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const existing = byTerm.get(w.term);
+    if (!existing) {
+      await prisma.word.create({
+        data: {
+          term: w.term,
+          translation: w.translation,
+          phonetic: w.phonetic,
+          metadata: w.metadata,
+          wordListId: listId,
+          position: i,
+        },
+      });
+      created++;
+      continue;
+    }
+    const same =
+      existing.translation === w.translation &&
+      (existing.phonetic ?? "") === w.phonetic &&
+      stableStringify(existing.metadata) === stableStringify(w.metadata) &&
+      existing.position === i;
+    if (same) continue;
+    await prisma.word.update({
+      where: { id: existing.id },
+      data: {
+        translation: w.translation,
+        phonetic: w.phonetic,
+        metadata: w.metadata,
+        position: i,
+      },
+    });
+    updated++;
+  }
+
+  const incomingTerms = new Set(words.map((w) => w.term));
+  const orphaned = existingWords.filter((w) => !incomingTerms.has(w.term));
+  if (orphaned.length > 0) {
+    console.warn(
+      `[seed] ${orphaned.length} word(s) in listId=${listId} no longer appear in the source ` +
+        `data and were left in place (not deleted) to avoid losing progress: ` +
+        orphaned.slice(0, 5).map((w) => w.term).join(", ") +
+        (orphaned.length > 5 ? ", …" : "")
+    );
+  }
+  return { updated, created };
+}
+
+/**
  * Idempotently seed a word list, refreshing outdated content:
  * - missing → create with words;
  * - exists with the same word count and same sampled content → current, no-op;
- * - exists with different content (outdated dataset) → replace (delete old, create new).
+ * - exists with different content, no progress recorded against it → replace
+ *   (delete old, create new) — cheap and fine, nothing to lose;
+ * - exists with different content AND real progress recorded → refresh in
+ *   place instead (see refreshListInPlace) so UserProgress/ReviewLog survive.
+ *   (Regression note: this list previously always deleted-and-recreated on
+ *   any content change, silently wiping every user's SRS history for that
+ *   list on the next AUTO_SEED boot after a data-only content update — see
+ *   audits/hsk-gloss-audit-2026-08.md's incident addendum, 2026-08-26. A
+ *   progressCount() helper existed for exactly this check but was never
+ *   wired in.)
  */
 async function seedList(
   languageId: string,
@@ -207,9 +280,18 @@ async function seedList(
     ) {
       return; // current
     }
-    // Always delete and replace, don't keep legacy lists
-    await deleteSeededList(existing.id);
-    console.log(`Replacing outdated list: ${name}`);
+    const progress = await progressCount(existing.id);
+    if (progress === 0) {
+      await deleteSeededList(existing.id);
+      console.log(`Replacing outdated list: ${name}`);
+    } else {
+      const { updated, created } = await refreshListInPlace(existing.id, words);
+      console.log(
+        `Refreshed in place (${progress} progress row(s) preserved): ${name} ` +
+          `— ${updated} updated, ${created} added`
+      );
+      return;
+    }
   }
 
   const list = await prisma.wordList.create({
