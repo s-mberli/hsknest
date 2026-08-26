@@ -1,11 +1,14 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 
+import { isBadLead, promoteCleanLead } from "../glossGuard";
 import {
   buildFrequencyList,
   buildLevel,
   buildMeanings,
   buildTranslation,
   cleanGlosses,
+  normalizePinyin,
+  normalizePinyinSyllable,
   stripTranslationCruft,
   transformEntry,
   type RawEntry,
@@ -348,5 +351,124 @@ describe("buildLevel / buildFrequencyList", () => {
     expect(freq).toHaveLength(1);
     expect(freq[0].term).toBe("了");
     expect(freq[0].metadata.level).toBe(0);
+  });
+});
+
+describe("normalizePinyinSyllable", () => {
+  it("converts numbered pinyin to tone marks", () => {
+    expect(normalizePinyinSyllable("zhe4")).toBe("zhè");
+    expect(normalizePinyinSyllable("ge5")).toBe("ge");
+    expect(normalizePinyinSyllable("yi1")).toBe("yī");
+    expect(normalizePinyinSyllable("bing4")).toBe("bìng");
+  });
+
+  it("handles ü via u: and v spellings", () => {
+    expect(normalizePinyinSyllable("lu:4")).toBe("lǜ");
+    expect(normalizePinyinSyllable("lv3")).toBe("lǚ");
+    expect(normalizePinyinSyllable("nü3")).toBe("nǚ");
+  });
+
+  it("places the mark by standard precedence rules", () => {
+    expect(normalizePinyinSyllable("biao1")).toBe("biāo"); // a wins
+    expect(normalizePinyinSyllable("hou2")).toBe("hóu");
+    expect(normalizePinyinSyllable("men5")).toBe("men"); // neutral
+    expect(normalizePinyinSyllable("liu2")).toBe("liú"); // iu digraph: mark on latter vowel
+    expect(normalizePinyinSyllable("gui4")).toBe("guì"); // ui digraph: mark on i
+    expect(normalizePinyinSyllable("er4")).toBe("èr");
+  });
+
+  it("preserves capitalization for proper nouns", () => {
+    expect(normalizePinyinSyllable("Ya4")).toBe("Yà");
+    expect(normalizePinyinSyllable("Zhong1")).toBe("Zhōng");
+  });
+
+  it("repairs misplaced -iu marks and passes correct marked input", () => {
+    expect(normalizePinyinSyllable("qíu")).toBe("qiú");
+    expect(normalizePinyinSyllable("jìu")).toBe("jiù");
+  });
+
+  it("passes through already-marked or non-syllable input", () => {
+    expect(normalizePinyinSyllable("zhè")).toBe("zhè");
+    expect(normalizePinyinSyllable("méifǎr5")).toBe("méifǎr"); // stray digit stripped
+    expect(normalizePinyinSyllable("")).toBe("");
+  });
+});
+
+describe("normalizePinyin", () => {
+  it("normalizes each syllable of a spaced string", () => {
+    expect(normalizePinyin("zhe4 ge5")).toBe("zhè ge");
+    expect(normalizePinyin("zhen1 zhuo2")).toBe("zhēn zhuó");
+    expect(normalizePinyin("hong2 lu:4 deng1")).toBe("hóng lǜ dēng");
+    expect(normalizePinyin("Ya4 zhou1")).toBe("Yà zhōu");
+    expect(normalizePinyin("jian1'ao2")).toBe("jiān'áo"); // apostrophe kept
+  });
+
+  it("is idempotent", () => {
+    const once = normalizePinyin("yi1 bing4");
+    expect(normalizePinyin(once)).toBe(once);
+  });
+
+  it("normalizes phonetics produced by transformEntry (regression: 1187 numbered cards)", () => {
+    const word = transformEntry(
+      {
+        simplified: "一并",
+        level: ["new-7"],
+        forms: [
+          {
+            traditional: "一並",
+            transcriptions: { pinyin: "yi1 bing4" },
+            meanings: ["together with"],
+          },
+        ],
+      },
+      7
+    );
+    expect(word.phonetic).toBe("yī bìng");
+  });
+});
+
+describe("glossGuard integration", () => {
+  it("demotes a proper-noun lead when the sense carries a capitalized reading", () => {
+    const { meanings, changed } = promoteCleanLead(
+      [
+        { gloss: "Lenovo", reading: "Liánxiǎng" },
+        { gloss: "to associate (in the mind)" },
+      ],
+      "lián xiǎng"
+    );
+    expect(changed).toBe(true);
+    expect(meanings[0].gloss).toBe("to associate (in the mind)");
+  });
+
+  it("demotes dictionary-plumbing leads (abbr./see-/variant pointers)", () => {
+    const { meanings, changed } = promoteCleanLead(
+      [
+        { gloss: "abbr. for 体格检查" },
+        { gloss: "physical examination; medical checkup" },
+      ],
+      "tǐ jiǎn"
+    );
+    expect(changed).toBe(true);
+    expect(meanings[0].gloss).toBe("physical examination; medical checkup");
+  });
+
+  it("cannot detect proper-noun-ness without a reading — leaves as-is", () => {
+    // Detection without readings happens at generation time instead.
+    const { changed } = promoteCleanLead(
+      [{ gloss: "Lenovo" }, { gloss: "to associate" }],
+      "lián xiǎng"
+    );
+    expect(changed).toBe(false);
+  });
+
+  it("leaves genuine proper-noun words untouched", () => {
+    const { changed } = promoteCleanLead([{ gloss: "(the) Mid-Autumn Festival" }], "Zhōng qiū");
+    expect(changed).toBe(false);
+  });
+
+  it("flags accented-capital readings as proper nouns", () => {
+    expect(isBadLead({ gloss: "Anning District of Lanzhou City" }, "Ā níng")).toBe(true);
+    expect(isBadLead({ gloss: "Asia" }, "Yà zhōu")).toBe(true);
+    expect(isBadLead({ gloss: "peaceful" }, "ān níng")).toBe(false);
   });
 });

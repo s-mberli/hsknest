@@ -31,6 +31,18 @@ npx tsx scripts/fix-primary-glosses.ts --write      # then re-seed, or:
 npx tsx scripts/fix-hsk-meanings.ts                 # push into an existing DB, preserving progress
 ```
 
+**Do not bypass the bad-lead guard when editing curated overrides.**
+`src/lib/glossGuard.ts` (`isBadLead` / `promoteCleanLead`) is the single
+source of truth for "what may lead a card": dictionary plumbing
+(abbr./variant/see-/surname pointers, pure grammar labels) and proper-noun
+readings must never be a card's first sense. It is enforced at three points —
+`fix-primary-glosses.ts` (generated files), `compile-curated-glosses.ts`
+(curated compilation), and a seed-time tripwire warning in `prisma/seed.ts`.
+If an edit "doesn't take" or a warning fires, the guard is rejecting a bad
+lead on purpose (past incidents: 联想 = "Lenovo", 富裕 = a county name) — fix
+the gloss order, don't remove the guard. Background:
+`audits/hsk-gloss-audit-2026-08.md` (local-only).
+
 (The legacy `hsk1.json` … `hsk6.json` files — the old HSK 2.0 lists — were
 removed once the app migrated to the HSK 3.0 lists above (November 2025
 syllabus, effective July 2026). Seeding matches an existing list by name and

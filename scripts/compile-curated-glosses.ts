@@ -14,6 +14,8 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
+import { promoteCleanLead } from "../src/lib/glossGuard";
+
 // ── Paths ──────────────────────────────────────────────────────────
 const JOURNAL_PATH =
   "C:\\Users\\mrks\\.claude\\projects\\C--Users-mrks-Documents-claude-project\\764bd506-3f71-4deb-b4d4-b98170bc2066\\subagents\\workflows\\wf_cc7a22a6-021\\journal.jsonl";
@@ -140,6 +142,7 @@ function main() {
     const overrides: Record<string, CuratedOverride> = {};
     let journalHits = 0;
     let ruleHits = 0;
+    let demoted = 0;
 
     for (const entry of entries) {
       const curatedSenses = journalMap.get(entry.term);
@@ -153,6 +156,17 @@ function main() {
         ruleHits++;
       }
 
+      // Guard: never let dictionary plumbing or a proper-noun reading be the
+      // face of a card. This is the same rule fix-primary-glosses.ts applies
+      // to generated files — without it here, journal/rule output could
+      // reintroduce e.g. 联想="Lenovo"-style leads via the curated layer.
+      const guarded = promoteCleanLead(
+        after.map((gloss) => ({ gloss })),
+        entry.phonetic
+      );
+      if (guarded.changed) demoted++;
+      after = guarded.meanings.map((m) => m.gloss);
+
       overrides[entry.term] = {
         translation: after.join("; "),
         meanings: after.map((g) => ({ gloss: g })),
@@ -163,7 +177,7 @@ function main() {
     writeFileSync(outPath, JSON.stringify(overrides, null, 2) + "\n", "utf-8");
 
     console.log(
-      `${outFile}.json: ${entries.length} words (journal=${journalHits} rule=${ruleHits})`
+      `${outFile}.json: ${entries.length} words (journal=${journalHits} rule=${ruleHits} bad-leads-demoted=${demoted})`
     );
     totalWords += entries.length;
     totalJournal += journalHits;

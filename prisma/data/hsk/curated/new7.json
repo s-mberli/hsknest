@@ -50,10 +50,16 @@
     ]
   },
   "安定": {
-    "translation": "Anting township in Tainan county 台南县, Taiwan",
+    "translation": "stable; settled",
     "meanings": [
       {
-        "gloss": "Anting township in Tainan county 台南县, Taiwan"
+        "gloss": "stable; calm; settled"
+      },
+      {
+        "gloss": "to stabilize"
+      },
+      {
+        "gloss": "Valium (diaze­pam, trademark)"
       }
     ]
   },
@@ -69,10 +75,13 @@
     ]
   },
   "安宁": {
-    "translation": "Anning District of Lanzhou City 兰州市, Gansu",
+    "translation": "peaceful; tranquil",
     "meanings": [
       {
-        "gloss": "Anning District of Lanzhou City 兰州市, Gansu"
+        "gloss": "peaceful"
+      },
+      {
+        "gloss": "tranquil; calm"
       }
     ]
   },
@@ -155,16 +164,19 @@
     ]
   },
   "扒": {
-    "translation": "to dig; to pull down; to peel",
+    "translation": "to peel; to pull down",
     "meanings": [
       {
+        "gloss": "to peel; to skin"
+      },
+      {
+        "gloss": "to pull down; to tear"
+      },
+      {
+        "gloss": "to cling to (sth while climbing)"
+      },
+      {
         "gloss": "to dig"
-      },
-      {
-        "gloss": "to pull down"
-      },
-      {
-        "gloss": "to peel"
       }
     ]
   },
@@ -205,10 +217,10 @@
     ]
   },
   "把手": {
-    "translation": "to shake hands",
+    "translation": "handle; grip; knob",
     "meanings": [
       {
-        "gloss": "to shake hands"
+        "gloss": "handle; grip; knob"
       }
     ]
   },
@@ -260,16 +272,16 @@
     ]
   },
   "摆设": {
-    "translation": "to display; to furnish (a room or house); to set out",
+    "translation": "ornament; decorative item",
     "meanings": [
       {
-        "gloss": "to display"
+        "gloss": "ornament; decorative item"
       },
       {
-        "gloss": "to furnish (a room or house)"
+        "gloss": "(fig.) sth merely for show"
       },
       {
-        "gloss": "to set out"
+        "gloss": "to set out; to display"
       }
     ]
   },
@@ -723,13 +735,14 @@
     ]
   },
   "本事": {
-    "translation": "source material; original story",
+    "translation": "skill; ability",
     "meanings": [
       {
-        "gloss": "source material"
+        "gloss": "skill; ability; capability (coll.)"
       },
       {
-        "gloss": "original story"
+        "gloss": "source material; original story (literary)",
+        "reading": "běn shì"
       }
     ]
   },
@@ -1009,16 +1022,16 @@
     ]
   },
   "编制": {
-    "translation": "to compile; staffing structure; to put together (a lesson plan, budget etc)",
+    "translation": "authorized staffing; staffing establishment",
     "meanings": [
       {
+        "gloss": "authorized staffing (in government/public institutions)"
+      },
+      {
+        "gloss": "to weave"
+      },
+      {
         "gloss": "to compile"
-      },
-      {
-        "gloss": "staffing structure"
-      },
-      {
-        "gloss": "to put together (a lesson plan, budget etc)"
       }
     ]
   },
@@ -1187,10 +1200,10 @@
     ]
   },
   "标致": {
-    "translation": "Peugeot",
+    "translation": "beautiful; pretty (of a woman)",
     "meanings": [
       {
-        "gloss": "Peugeot"
+        "gloss": "beautiful; pretty (of a woman)"
       }
     ]
   },
@@ -2457,16 +2470,13 @@
     ]
   },
   "出局": {
-    "translation": "(fig.) to be weeded out; to get the chop (in a competitive environment); (of a player or team) to be eliminated from a competition; (of a batter) to be put out (in baseball); to be dismissed (in cricket)",
+    "translation": "to be eliminated (from a competition)",
     "meanings": [
-      {
-        "gloss": "(fig.) to be weeded out; to get the chop (in a competitive environment)"
-      },
       {
         "gloss": "(of a player or team) to be eliminated from a competition"
       },
       {
-        "gloss": "(of a batter) to be put out (in baseball); to be dismissed (in cricket)"
+        "gloss": "(fig.) to be forced out; to get cut"
       }
     ]
   },
@@ -2507,13 +2517,16 @@
     ]
   },
   "出手": {
-    "translation": "to undertake a task; to dispose of",
+    "translation": "to make a move; to sell off",
     "meanings": [
       {
-        "gloss": "to undertake a task"
+        "gloss": "to make a move; to act; to step in"
       },
       {
-        "gloss": "to dispose of"
+        "gloss": "to dispose of; to sell off (goods, assets)"
+      },
+      {
+        "gloss": "to spend (freely)"
       }
     ]
   },
@@ -2554,10 +2567,13 @@
     ]
   },
   "出息": {
-    "translation": "to yield interest, profit etc",
+    "translation": "promise; prospects",
     "meanings": [
       {
-        "gloss": "to yield interest, profit etc"
+        "gloss": "promise; prospects (有出息)"
+      },
+      {
+        "gloss": "profit; to yield profit"
       }
     ]
   },
@@ -2595,13 +2611,16 @@
     ]
   },
   "除外": {
-    "translation": "to exclude; except for",
+    "translation": "except for; not including",
     "meanings": [
       {
-        "gloss": "to exclude"
+        "gloss": "except for; apart from"
       },
       {
-        "gloss": "except for"
+        "gloss": "not including (when counting or listing)"
+      },
+      {
+        "gloss": "to exclude"
       }
     ]
   },
@@ -3222,13 +3241,13 @@
     ]
   },
   "大肆": {
-    "translation": "without restraint (of enemy or malefactor); wantonly",
+    "translation": "大肆",
     "meanings": [
       {
-        "gloss": "without restraint (of enemy or malefactor)"
+        "gloss": "wantonly"
       },
       {
-        "gloss": "wantonly"
+        "gloss": "without restraint"
       }
     ]
   },
@@ -3568,10 +3587,13 @@
     ]
   },
   "得罪": {
-    "translation": "to commit an offense",
+    "translation": "to offend sb",
     "meanings": [
       {
-        "gloss": "to commit an offense"
+        "gloss": "to offend sb; to make a faux pas"
+      },
+      {
+        "gloss": "to commit an offense; to violate the law"
       }
     ]
   },
@@ -5209,10 +5231,17 @@
     ]
   },
   "分量": {
-    "translation": "(vector) component",
+    "translation": "weight; importance",
     "meanings": [
       {
-        "gloss": "(vector) component"
+        "gloss": "quantity; weight; measure"
+      },
+      {
+        "gloss": "(fig.) weight; importance; prestige"
+      },
+      {
+        "gloss": "(food) portion size",
+        "reading": "fèn liàng"
       }
     ]
   },
@@ -5341,10 +5370,16 @@
     ]
   },
   "丰满": {
-    "translation": "Fengman district of Jilin city 吉林市, Jilin province",
+    "translation": "plump; well-developed",
     "meanings": [
       {
-        "gloss": "Fengman district of Jilin city 吉林市, Jilin province"
+        "gloss": "ample; plump; well-developed"
+      },
+      {
+        "gloss": "fully rounded"
+      },
+      {
+        "gloss": "Fengman district of Jilin city"
       }
     ]
   },
@@ -5533,13 +5568,13 @@
     ]
   },
   "腐败": {
-    "translation": "to rot; corruption",
+    "translation": "corruption; rotten",
     "meanings": [
       {
-        "gloss": "to rot"
+        "gloss": "corruption (of officials etc)"
       },
       {
-        "gloss": "corruption"
+        "gloss": "to rot; rotten; decayed"
       }
     ]
   },
@@ -5739,10 +5774,13 @@
     ]
   },
   "复兴": {
-    "translation": "Fuxing district of Handan city 邯郸市, Hebei",
+    "translation": "to revive; renaissance",
     "meanings": [
       {
-        "gloss": "Fuxing district of Handan city 邯郸市, Hebei"
+        "gloss": "to revive; to rejuvenate"
+      },
+      {
+        "gloss": "Fuxing district of Handan city, Hebei"
       }
     ]
   },
@@ -5924,13 +5962,13 @@
     ]
   },
   "高潮": {
-    "translation": "high tide; climax of a story or competition",
+    "translation": "climax; peak",
     "meanings": [
       {
-        "gloss": "high tide"
+        "gloss": "climax (of a story, event, competition)"
       },
       {
-        "gloss": "climax of a story or competition"
+        "gloss": "high tide"
       }
     ]
   },
@@ -6306,13 +6344,16 @@
     ]
   },
   "够呛": {
-    "translation": "enough; unbearable",
+    "translation": "unbearable; terrible (coll.)",
     "meanings": [
       {
-        "gloss": "enough"
+        "gloss": "unbearable; terrible (coll.)"
       },
       {
-        "gloss": "unbearable"
+        "gloss": "unlikely (coll., e.g. 他够呛能来)"
+      },
+      {
+        "gloss": "quite a lot; quite enough"
       }
     ]
   },
@@ -6429,16 +6470,16 @@
     ]
   },
   "故": {
-    "translation": "reason; cause; former",
+    "translation": "therefore; reason",
     "meanings": [
       {
-        "gloss": "reason"
+        "gloss": "therefore; hence"
       },
       {
-        "gloss": "cause"
+        "gloss": "reason; cause"
       },
       {
-        "gloss": "former"
+        "gloss": "former; old"
       }
     ]
   },
@@ -6748,10 +6789,13 @@
     ]
   },
   "光泽": {
-    "translation": "Guangze county in Nanping 平 Fujian",
+    "translation": "luster; gloss",
     "meanings": [
       {
-        "gloss": "Guangze county in Nanping 平 Fujian"
+        "gloss": "luster; sheen"
+      },
+      {
+        "gloss": "gloss; smooth shine"
       }
     ]
   },
@@ -7094,10 +7138,16 @@
     ]
   },
   "海湾": {
-    "translation": "(Persian) Gulf",
+    "translation": "bay",
     "meanings": [
       {
-        "gloss": "(Persian) Gulf"
+        "gloss": "bay"
+      },
+      {
+        "gloss": "gulf"
+      },
+      {
+        "gloss": "the Gulf (e.g. Persian Gulf)"
       }
     ]
   },
@@ -8451,8 +8501,11 @@
     ]
   },
   "吉利": {
-    "translation": "Geely, Chinese car make",
+    "translation": "auspicious; lucky",
     "meanings": [
+      {
+        "gloss": "auspicious; lucky; propitious"
+      },
       {
         "gloss": "Geely, Chinese car make"
       }
@@ -8606,27 +8659,27 @@
     ]
   },
   "家伙": {
-    "translation": "household dish, implement or furniture; domestic animal; (coll.) guy",
+    "translation": "guy; chap",
     "meanings": [
       {
-        "gloss": "household dish, implement or furniture"
+        "gloss": "(coll.) guy; chap"
+      },
+      {
+        "gloss": "tool; implement"
       },
       {
         "gloss": "domestic animal"
-      },
-      {
-        "gloss": "(coll.) guy"
       }
     ]
   },
   "家教": {
-    "translation": "family education; private tutor; upbringing",
+    "translation": "private tutor; tutoring",
     "meanings": [
       {
-        "gloss": "family education"
+        "gloss": "private tutor"
       },
       {
-        "gloss": "private tutor"
+        "gloss": "tutoring"
       },
       {
         "gloss": "upbringing"
@@ -9231,16 +9284,13 @@
     ]
   },
   "轿车": {
-    "translation": "car or bus; limousine; enclosed carriage for carrying passengers",
+    "translation": "sedan; private car",
     "meanings": [
       {
-        "gloss": "car or bus"
+        "gloss": "sedan; private car"
       },
       {
-        "gloss": "limousine"
-      },
-      {
-        "gloss": "enclosed carriage for carrying passengers"
+        "gloss": "(old) enclosed carriage for carrying passengers"
       }
     ]
   },
@@ -9811,13 +9861,13 @@
     ]
   },
   "境界": {
-    "translation": "boundary; realm",
+    "translation": "realm; state; level (of attainment)",
     "meanings": [
       {
-        "gloss": "boundary"
+        "gloss": "realm; state; level (of attainment)"
       },
       {
-        "gloss": "realm"
+        "gloss": "boundary; limit"
       }
     ]
   },
@@ -10091,13 +10141,13 @@
     ]
   },
   "俊": {
-    "translation": "talented; handsome; eminent",
+    "translation": "handsome",
     "meanings": [
       {
-        "gloss": "talented"
+        "gloss": "handsome"
       },
       {
-        "gloss": "handsome"
+        "gloss": "talented"
       },
       {
         "gloss": "eminent"
@@ -10105,10 +10155,10 @@
     ]
   },
   "俊俏": {
-    "translation": "attractive and intelligent; charming",
+    "translation": "pretty; cute (of looks)",
     "meanings": [
       {
-        "gloss": "attractive and intelligent"
+        "gloss": "pretty; good-looking (of face or features)"
       },
       {
         "gloss": "charming"
@@ -10191,16 +10241,13 @@
     ]
   },
   "开朗": {
-    "translation": "open and clear; (of character) optimistic; cheerful",
+    "translation": "(of personality) cheerful and optimistic",
     "meanings": [
       {
-        "gloss": "open and clear"
+        "gloss": "(of character) optimistic; cheerful"
       },
       {
-        "gloss": "(of character) optimistic"
-      },
-      {
-        "gloss": "cheerful"
+        "gloss": "spacious and well-lit; open and clear"
       }
     ]
   },
@@ -10216,13 +10263,16 @@
     ]
   },
   "开拓": {
-    "translation": "to open up (a new seam); fig. to open up (new horizons)",
+    "translation": "to open up; to pioneer",
     "meanings": [
       {
-        "gloss": "to open up (a new seam)"
+        "gloss": "to open up (new territory, markets)"
       },
       {
-        "gloss": "fig. to open up (new horizons)"
+        "gloss": "to pioneer"
+      },
+      {
+        "gloss": "to develop (border regions)"
       }
     ]
   },
@@ -10354,16 +10404,14 @@
     ]
   },
   "壳": {
-    "translation": "shell; carapace; crust (earth's crust etc)",
+    "translation": "shell; hard outer covering",
     "meanings": [
       {
-        "gloss": "shell"
+        "gloss": "(bound form) shell; crust (地壳， 地壳运动)"
       },
       {
-        "gloss": "carapace"
-      },
-      {
-        "gloss": "crust (earth's crust etc)"
+        "gloss": "(coll., everyday) shell of an egg, nut etc; casing; housing",
+        "reading": "ké"
       }
     ]
   },
@@ -10585,10 +10633,13 @@
     ]
   },
   "口音": {
-    "translation": "oral speech sounds (linguistics)",
+    "translation": "accent",
     "meanings": [
       {
-        "gloss": "oral speech sounds (linguistics)"
+        "gloss": "accent"
+      },
+      {
+        "gloss": "voice"
       }
     ]
   },
@@ -10923,10 +10974,13 @@
     ]
   },
   "来宾": {
-    "translation": "Laibin prefecture-level city in Guangxi",
+    "translation": "guest; visitor",
     "meanings": [
       {
-        "gloss": "Laibin prefecture-level city in Guangxi"
+        "gloss": "guest; visitor"
+      },
+      {
+        "gloss": "Laibin, prefecture-level city in Guangxi"
       }
     ]
   },
@@ -11134,10 +11188,13 @@
     ]
   },
   "冷战": {
-    "translation": "(US-Soviet) Cold War",
+    "translation": "cold war; silent treatment",
     "meanings": [
       {
-        "gloss": "(US-Soviet) Cold War"
+        "gloss": "strained relations; giving sb the silent treatment"
+      },
+      {
+        "gloss": "the (US-Soviet) Cold War"
       }
     ]
   },
@@ -11615,7 +11672,7 @@
     ]
   },
   "领略": {
-    "translation": "to appreciate; to realize; to have a taste of",
+    "translation": "to appreciate; to have a taste of",
     "meanings": [
       {
         "gloss": "to appreciate"
@@ -11879,7 +11936,7 @@
     ]
   },
   "略": {
-    "translation": "to omit; brief; sketchy; plan; strategy",
+    "translation": "to omit; brief; plan",
     "meanings": [
       {
         "gloss": "to omit"
@@ -11929,16 +11986,13 @@
     ]
   },
   "落差": {
-    "translation": "disparity; drop in elevation; gap (in wages, expectations etc)",
+    "translation": "drop in elevation",
     "meanings": [
       {
-        "gloss": "disparity"
+        "gloss": "drop in elevation (e.g. waterfall)"
       },
       {
-        "gloss": "drop in elevation"
-      },
-      {
-        "gloss": "gap (in wages, expectations etc)"
+        "gloss": "gap; disparity (in wages, expectations etc)"
       }
     ]
   },
@@ -12306,13 +12360,21 @@
     ]
   },
   "蒙": {
-    "translation": "to cover; ignorant",
+    "translation": "to cover; to deceive",
     "meanings": [
       {
         "gloss": "to cover"
       },
       {
-        "gloss": "ignorant"
+        "gloss": "ignorant; dim-sighted; to receive (favor)"
+      },
+      {
+        "gloss": "to deceive; to make a wild guess (coll.)",
+        "reading": "mēng"
+      },
+      {
+        "gloss": "Mongolia (abbr.)",
+        "reading": "Měng"
       }
     ]
   },
@@ -12738,8 +12800,11 @@
     ]
   },
   "末日": {
-    "translation": "Judgment Day (in Christian eschatology)",
+    "translation": "doomsday; the end of the world",
     "meanings": [
+      {
+        "gloss": "doomsday; the end of the world"
+      },
       {
         "gloss": "Judgment Day (in Christian eschatology)"
       }
@@ -12901,13 +12966,13 @@
     ]
   },
   "内地": {
-    "translation": "mainland China; Japan (used in Taiwan during Japanese colonization)",
+    "translation": "inland; interior",
     "meanings": [
       {
-        "gloss": "mainland China"
+        "gloss": "inland; interior; hinterland"
       },
       {
-        "gloss": "Japan (used in Taiwan during Japanese colonization)"
+        "gloss": "mainland China (vs Hong Kong/Macau/Taiwan)"
       }
     ]
   },
@@ -13254,10 +13319,16 @@
     ]
   },
   "拍板": {
-    "translation": "auctioneer's hammer",
+    "translation": "to make the final decision; (auctioneer's) gavel; wooden clappers",
     "meanings": [
       {
-        "gloss": "auctioneer's hammer"
+        "gloss": "(fig.) to make the final call; to settle sth"
+      },
+      {
+        "gloss": "(auctioneer's) gavel"
+      },
+      {
+        "gloss": "wooden clappers (percussion); beat time"
       }
     ]
   },
@@ -13320,13 +13391,13 @@
     ]
   },
   "盘算": {
-    "translation": "to calculate; to scheme",
+    "translation": "to reckon; to plan in one's mind // to scheme; to plot",
     "meanings": [
       {
-        "gloss": "to calculate"
+        "gloss": "to calculate mentally; to plan; to weigh up"
       },
       {
-        "gloss": "to scheme"
+        "gloss": "to scheme; to plot"
       }
     ]
   },
@@ -13720,10 +13791,16 @@
     ]
   },
   "平和": {
-    "translation": "Pinghe county in Zhangzhou 州, Fujian",
+    "translation": "gentle; mild; even-tempered",
     "meanings": [
       {
-        "gloss": "Pinghe county in Zhangzhou 州, Fujian"
+        "gloss": "gentle; mild; placid"
+      },
+      {
+        "gloss": "moderate; even-tempered"
+      },
+      {
+        "gloss": "Pinghe county in Zhangzhou, Fujian"
       }
     ]
   },
@@ -14257,16 +14334,13 @@
     ]
   },
   "牵制": {
-    "translation": "to pin down (enemy troops); to restrict; to curb",
+    "translation": "to restrain; to tie down // to restrict; to curb",
     "meanings": [
       {
-        "gloss": "to pin down (enemy troops)"
+        "gloss": "to restrain; to check; to tie down"
       },
       {
-        "gloss": "to restrict"
-      },
-      {
-        "gloss": "to curb"
+        "gloss": "to restrict; to curb"
       }
     ]
   },
@@ -14740,16 +14814,13 @@
     ]
   },
   "情调": {
-    "translation": "sentiment; tone and mood; taste",
+    "translation": "ambience; mood; flavor",
     "meanings": [
       {
-        "gloss": "sentiment"
+        "gloss": "ambience; mood"
       },
       {
-        "gloss": "tone and mood"
-      },
-      {
-        "gloss": "taste"
+        "gloss": "flavor; taste"
       }
     ]
   },
@@ -16345,8 +16416,11 @@
     ]
   },
   "世故": {
-    "translation": "the ways of the world",
+    "translation": "worldly-wise; sophisticated",
     "meanings": [
+      {
+        "gloss": "worldly-wise; sophisticated (of a person)"
+      },
       {
         "gloss": "the ways of the world"
       }
@@ -16627,16 +16701,13 @@
     ]
   },
   "疏导": {
-    "translation": "to enlighten; to clear the way; to dredge",
+    "translation": "to dredge; to channel; to relieve (congestion, emotions)",
     "meanings": [
       {
-        "gloss": "to enlighten"
+        "gloss": "to dredge; to channel (traffic, floodwater, emotions)"
       },
       {
-        "gloss": "to clear the way"
-      },
-      {
-        "gloss": "to dredge"
+        "gloss": "to enlighten; to counsel"
       }
     ]
   },
@@ -16777,13 +16848,16 @@
     ]
   },
   "摔跤": {
-    "translation": "to wrestle; to trip and fall",
+    "translation": "摔跤",
     "meanings": [
+      {
+        "gloss": "to trip and fall"
+      },
       {
         "gloss": "to wrestle"
       },
       {
-        "gloss": "to trip and fall"
+        "gloss": "wrestling (sport)"
       }
     ]
   },
@@ -16866,13 +16940,16 @@
     ]
   },
   "爽": {
-    "translation": "bright, clear, crisp; frank, straightforward",
+    "translation": "crisp; refreshing",
     "meanings": [
       {
         "gloss": "bright, clear, crisp"
       },
       {
         "gloss": "frank, straightforward"
+      },
+      {
+        "gloss": "to feel great; pleasurable"
       }
     ]
   },
@@ -16935,13 +17012,13 @@
     ]
   },
   "顺路": {
-    "translation": "conveniently; by the way",
+    "translation": "on the way; conveniently en route",
     "meanings": [
       {
-        "gloss": "conveniently"
+        "gloss": "on the way; conveniently en route"
       },
       {
-        "gloss": "by the way"
+        "gloss": "while out doing sth else"
       }
     ]
   },
@@ -16960,13 +17037,13 @@
     ]
   },
   "顺手": {
-    "translation": "easily; handy",
+    "translation": "handy; conveniently while doing sth else",
     "meanings": [
       {
-        "gloss": "easily"
+        "gloss": "conveniently; in passing (while one is at it)"
       },
       {
-        "gloss": "handy"
+        "gloss": "smooth; easy (of use)"
       }
     ]
   },
@@ -17051,30 +17128,30 @@
     ]
   },
   "松弛": {
-    "translation": "to relax; relaxed; lax",
+    "translation": "lax; slack",
     "meanings": [
       {
-        "gloss": "to relax"
+        "gloss": "lax; slack; loose (muscles, discipline)"
       },
       {
         "gloss": "relaxed"
       },
       {
-        "gloss": "lax"
+        "gloss": "to relax"
       }
     ]
   },
   "酥": {
-    "translation": "flaky pastry; crisp; soft",
+    "translation": "crisp; flaky (of pastry)",
     "meanings": [
       {
+        "gloss": "crisp, flaky (of pastry texture)"
+      },
+      {
+        "gloss": "short (of pastry)"
+      },
+      {
         "gloss": "flaky pastry"
-      },
-      {
-        "gloss": "crisp"
-      },
-      {
-        "gloss": "soft"
       }
     ]
   },
@@ -17722,13 +17799,16 @@
     ]
   },
   "天桥": {
-    "translation": "Tianqiao district in Beijing, formerly a center of folk culture; Tianqiao district of Jinan city 济南市, Shandong",
+    "translation": "pedestrian bridge; overpass",
     "meanings": [
       {
-        "gloss": "Tianqiao district in Beijing, formerly a center of folk culture"
+        "gloss": "pedestrian bridge; overpass"
       },
       {
-        "gloss": "Tianqiao district of Jinan city 济南市, Shandong"
+        "gloss": "Tianqiao district in Beijing"
+      },
+      {
+        "gloss": "Tianqiao district of Jinan, Shandong"
       }
     ]
   },
@@ -17924,16 +18004,13 @@
     ]
   },
   "通报": {
-    "translation": "circular; to notify; bulletin",
+    "translation": "to officially notify; official circular",
     "meanings": [
       {
-        "gloss": "circular"
+        "gloss": "to officially notify; to announce"
       },
       {
-        "gloss": "to notify"
-      },
-      {
-        "gloss": "bulletin"
+        "gloss": "official circular; bulletin"
       }
     ]
   },
@@ -17960,13 +18037,13 @@
     ]
   },
   "通俗": {
-    "translation": "common; everyday",
+    "translation": "popular; accessible; easy to understand // common; everyday",
     "meanings": [
       {
-        "gloss": "common"
+        "gloss": "popular; accessible; easily understood (by ordinary people)"
       },
       {
-        "gloss": "everyday"
+        "gloss": "common; everyday"
       }
     ]
   },
@@ -18026,13 +18103,13 @@
     ]
   },
   "同期": {
-    "translation": "concurrent; the corresponding time period (in a different year etc)",
+    "translation": "the same period (in a different year etc) // concurrent; synchronous",
     "meanings": [
       {
-        "gloss": "concurrent"
+        "gloss": "the corresponding/same period (e.g. year-on-year comparison)"
       },
       {
-        "gloss": "the corresponding time period (in a different year etc)"
+        "gloss": "concurrent; synchronous"
       }
     ]
   },
@@ -18706,10 +18783,10 @@
     ]
   },
   "威信": {
-    "translation": "Weixin county in Zhaotong 通, Yunnan",
+    "translation": "prestige; authority",
     "meanings": [
       {
-        "gloss": "Weixin county in Zhaotong 通, Yunnan"
+        "gloss": "prestige; reputation; authority"
       }
     ]
   },
@@ -18761,13 +18838,13 @@
     ]
   },
   "为人": {
-    "translation": "for sb; for others' interest",
+    "translation": "character; how one conducts oneself",
     "meanings": [
       {
-        "gloss": "for sb"
+        "gloss": "(bound form) personal conduct; character"
       },
       {
-        "gloss": "for others' interest"
+        "gloss": "for sb; for sb's interest"
       }
     ]
   },
@@ -18894,10 +18971,10 @@
     ]
   },
   "温泉": {
-    "translation": "Arishang Nahiyisi or Wenquan county in Börtala Mongol autonomous prefecture 博尔塔拉蒙古自治州, Xinjiang",
+    "translation": "hot spring",
     "meanings": [
       {
-        "gloss": "Arishang Nahiyisi or Wenquan county in Börtala Mongol autonomous prefecture 博尔塔拉蒙古自治州, Xinjiang"
+        "gloss": "hot spring"
       }
     ]
   },
@@ -19940,10 +20017,13 @@
     ]
   },
   "小康": {
-    "translation": "Xiaokang, a Confucian near-ideal state of society",
+    "translation": "moderately prosperous; well-off; Xiaokang",
     "meanings": [
       {
-        "gloss": "Xiaokang, a Confucian near-ideal state of society"
+        "gloss": "moderately prosperous; reasonably well-off"
+      },
+      {
+        "gloss": "Xiaokang, Confucian near-ideal society"
       }
     ]
   },
@@ -20855,13 +20935,13 @@
     ]
   },
   "丫头": {
-    "translation": "servant girl; girl; (used deprecatingly, but sometimes also as a term of endearment)",
+    "translation": "girl",
     "meanings": [
       {
-        "gloss": "servant girl"
+        "gloss": "girl"
       },
       {
-        "gloss": "girl"
+        "gloss": "servant girl"
       },
       {
         "gloss": "(used deprecatingly, but sometimes also as a term of endearment)"
@@ -21122,13 +21202,13 @@
     ]
   },
   "演绎": {
-    "translation": "(logic) to deduce; (of a story etc) to unfold",
+    "translation": "to unfold; to enact; to deduce",
     "meanings": [
       {
-        "gloss": "(logic) to deduce"
+        "gloss": "(of a story, role etc) to unfold; to enact; to portray"
       },
       {
-        "gloss": "(of a story etc) to unfold"
+        "gloss": "(logic) to deduce; to infer"
       }
     ]
   },
@@ -21188,10 +21268,10 @@
     ]
   },
   "养殖": {
-    "translation": "to cultivate; cultivation",
+    "translation": "to breed and raise (animals, fish)",
     "meanings": [
       {
-        "gloss": "to cultivate"
+        "gloss": "to breed and raise (animals, fish); aquaculture"
       },
       {
         "gloss": "cultivation"
@@ -21274,13 +21354,13 @@
     ]
   },
   "要命": {
-    "translation": "to cause sb's death; extremely; terribly",
+    "translation": "extremely; terribly",
     "meanings": [
       {
-        "gloss": "to cause sb's death"
+        "gloss": "extremely; terribly"
       },
       {
-        "gloss": "extremely; terribly"
+        "gloss": "to cause sb's death"
       }
     ]
   },
@@ -21734,13 +21814,13 @@
     ]
   },
   "隐性": {
-    "translation": "recessive (gene); hidden",
+    "translation": "hidden; implicit",
     "meanings": [
       {
-        "gloss": "recessive (gene)"
+        "gloss": "hidden; implicit; latent"
       },
       {
-        "gloss": "hidden"
+        "gloss": "recessive (gene)"
       }
     ]
   },
@@ -21825,16 +21905,13 @@
     ]
   },
   "营造": {
-    "translation": "to build (housing); to construct; to make",
+    "translation": "to create (an atmosphere); to build",
     "meanings": [
       {
-        "gloss": "to build (housing)"
+        "gloss": "to create (an atmosphere or environment)"
       },
       {
-        "gloss": "to construct"
-      },
-      {
-        "gloss": "to make"
+        "gloss": "to build; to construct"
       }
     ]
   },
@@ -22734,10 +22811,16 @@
     ]
   },
   "张扬": {
-    "translation": "Zhang Yang (1967-), PRC film director and screenwriter",
+    "translation": "flamboyant; ostentatious",
     "meanings": [
       {
-        "gloss": "Zhang Yang (1967-), PRC film director and screenwriter"
+        "gloss": "flamboyant; brash"
+      },
+      {
+        "gloss": "to make public; to spread around"
+      },
+      {
+        "gloss": "Zhang Yang (1967-), PRC film director"
       }
     ]
   },
@@ -22936,13 +23019,13 @@
     ]
   },
   "珍重": {
-    "translation": "precious; Please take good care of yourself!",
+    "translation": "to cherish; to value highly",
     "meanings": [
       {
-        "gloss": "precious"
+        "gloss": "to cherish; to treasure"
       },
       {
-        "gloss": "Please take good care of yourself!"
+        "gloss": "take good care of yourself (farewell)"
       }
     ]
   },
@@ -23183,13 +23266,17 @@
     ]
   },
   "正当": {
-    "translation": "timely; just when needed",
+    "translation": "honest; reasonable; fair",
     "meanings": [
       {
-        "gloss": "timely"
+        "gloss": "honest; upright"
       },
       {
-        "gloss": "just when needed"
+        "gloss": "reasonable; fair; sensible"
+      },
+      {
+        "gloss": "timely; just (when needed)",
+        "reading": "zhèng dāng"
       }
     ]
   },
@@ -23702,10 +23789,13 @@
     ]
   },
   "中庸": {
-    "translation": "the Doctrine of the Mean",
+    "translation": "the Doctrine of the Mean; moderate, middle-of-the-road",
     "meanings": [
       {
-        "gloss": "the Doctrine of the Mean"
+        "gloss": "the Doctrine of the Mean (Confucian classic); golden mean"
+      },
+      {
+        "gloss": "moderate; middle-of-the-road; so-so"
       }
     ]
   },
@@ -23876,10 +23966,16 @@
     ]
   },
   "筑": {
-    "translation": "short name for Guiyang 贵阳",
+    "translation": "to build",
     "meanings": [
       {
-        "gloss": "short name for Guiyang 贵阳"
+        "gloss": "to build"
+      },
+      {
+        "gloss": "to construct"
+      },
+      {
+        "gloss": "short name for Guiyang"
       }
     ]
   },
@@ -24083,10 +24179,16 @@
     ]
   },
   "壮": {
-    "translation": "Zhuang ethnic group of Guangxi",
+    "translation": "strong",
     "meanings": [
       {
-        "gloss": "Zhuang ethnic group of Guangxi"
+        "gloss": "strong; robust"
+      },
+      {
+        "gloss": "to strengthen"
+      },
+      {
+        "gloss": "Zhuang ethnic group"
       }
     ]
   },
@@ -24661,5 +24763,1348 @@
   },
   "做证": {
     "translation": "to bear witness; to testify"
+  },
+  "罢了": {
+    "translation": "that's all (sentence-final particle)",
+    "meanings": [
+      {
+        "gloss": "(sentence-final particle) that's all; nothing more"
+      }
+    ]
+  },
+  "火焰": {
+    "translation": "flame",
+    "meanings": [
+      {
+        "gloss": "flame"
+      },
+      {
+        "gloss": "blaze"
+      }
+    ]
+  },
+  "变异": {
+    "translation": "variation; mutation",
+    "meanings": [
+      {
+        "gloss": "variation"
+      },
+      {
+        "gloss": "mutation (e.g. of a virus)"
+      }
+    ]
+  },
+  "梳": {
+    "translation": "to comb",
+    "meanings": [
+      {
+        "gloss": "to comb"
+      },
+      {
+        "gloss": "comb"
+      }
+    ]
+  },
+  "特制": {
+    "translation": "specially made; custom-made",
+    "meanings": [
+      {
+        "gloss": "specially made"
+      },
+      {
+        "gloss": "custom-made"
+      }
+    ]
+  },
+  "私自": {
+    "translation": "secretly; without authorization",
+    "meanings": [
+      {
+        "gloss": "secretly; without authorization"
+      },
+      {
+        "gloss": "private; personal"
+      }
+    ]
+  },
+  "无关紧要": {
+    "translation": "unimportant; of no consequence",
+    "meanings": [
+      {
+        "gloss": "unimportant; of no consequence"
+      },
+      {
+        "gloss": "irrelevant; insignificant"
+      }
+    ]
+  },
+  "吊销": {
+    "translation": "to revoke (e.g. a license)",
+    "meanings": [
+      {
+        "gloss": "to revoke (e.g. a license)"
+      },
+      {
+        "gloss": "to suspend (an agreement)"
+      }
+    ]
+  },
+  "教养": {
+    "translation": "upbringing; good manners",
+    "meanings": [
+      {
+        "gloss": "upbringing; good manners"
+      },
+      {
+        "gloss": "to educate; to bring up"
+      }
+    ]
+  },
+  "眼界": {
+    "translation": "horizon; outlook",
+    "meanings": [
+      {
+        "gloss": "field of vision; horizon; outlook"
+      },
+      {
+        "gloss": "scope; range of knowledge"
+      }
+    ]
+  },
+  "容颜": {
+    "translation": "face; looks",
+    "meanings": [
+      {
+        "gloss": "face; looks; countenance"
+      },
+      {
+        "gloss": "complexion"
+      }
+    ]
+  },
+  "僻静": {
+    "translation": "secluded",
+    "meanings": [
+      {
+        "gloss": "secluded"
+      },
+      {
+        "gloss": "remote and quiet"
+      },
+      {
+        "gloss": "lonely; unfrequented"
+      }
+    ]
+  },
+  "夺魁": {
+    "translation": "to win first place",
+    "meanings": [
+      {
+        "gloss": "to win first place"
+      },
+      {
+        "gloss": "to take the championship"
+      }
+    ]
+  },
+  "敷衍": {
+    "translation": "perfunctory",
+    "meanings": [
+      {
+        "gloss": "perfunctory; going through the motions"
+      },
+      {
+        "gloss": "to elaborate on a theme (archaic)"
+      }
+    ]
+  },
+  "斟酌": {
+    "translation": "to deliberate; to consider",
+    "meanings": [
+      {
+        "gloss": "to consider; to deliberate"
+      },
+      {
+        "gloss": "to fill up a cup to the brim"
+      }
+    ]
+  },
+  "烈日": {
+    "translation": "scorching sun",
+    "meanings": [
+      {
+        "gloss": "scorching sun; blazing sun"
+      }
+    ]
+  },
+  "眯": {
+    "translation": "to squint; to get dust in one's eye",
+    "meanings": [
+      {
+        "gloss": "(mī) to narrow one's eyes; to squint"
+      },
+      {
+        "gloss": "(mí) to get dust in one's eyes"
+      }
+    ]
+  },
+  "资质": {
+    "translation": "aptitude; qualifications",
+    "meanings": [
+      {
+        "gloss": "aptitude; natural endowments"
+      },
+      {
+        "gloss": "qualifications; credentials"
+      }
+    ]
+  },
+  "话": {
+    "translation": "words; speech",
+    "meanings": [
+      {
+        "gloss": "words; speech"
+      },
+      {
+        "gloss": "talk; conversation"
+      },
+      {
+        "gloss": "what sb said"
+      },
+      {
+        "gloss": "language"
+      },
+      {
+        "gloss": "dialect"
+      }
+    ]
+  },
+  "心中": {
+    "translation": "in one's heart",
+    "meanings": [
+      {
+        "gloss": "in one's heart"
+      },
+      {
+        "gloss": "in one's thoughts"
+      }
+    ]
+  },
+  "瓦": {
+    "translation": "roof tile",
+    "meanings": [
+      {
+        "gloss": "roof tile; earthenware"
+      },
+      {
+        "gloss": "watt (abbr. of 瓦特)"
+      }
+    ]
+  },
+  "合约": {
+    "translation": "contract; agreement",
+    "meanings": [
+      {
+        "gloss": "contract"
+      },
+      {
+        "gloss": "agreement"
+      }
+    ]
+  },
+  "阴谋": {
+    "translation": "conspiracy; plot",
+    "meanings": [
+      {
+        "gloss": "conspiracy; plot"
+      },
+      {
+        "gloss": "to conspire; to plot"
+      }
+    ]
+  },
+  "可笑": {
+    "translation": "ridiculous; laughable",
+    "meanings": [
+      {
+        "gloss": "ridiculous; laughable"
+      },
+      {
+        "gloss": "absurd; silly"
+      }
+    ]
+  },
+  "指南": {
+    "translation": "guidebook",
+    "meanings": [
+      {
+        "gloss": "guidebook"
+      },
+      {
+        "gloss": "to guide"
+      }
+    ]
+  },
+  "可不是": {
+    "translation": "exactly! / indeed",
+    "meanings": [
+      {
+        "gloss": "exactly! indeed; that's for sure"
+      },
+      {
+        "gloss": "that's just the way it is"
+      }
+    ]
+  },
+  "依法": {
+    "translation": "according to law",
+    "meanings": [
+      {
+        "gloss": "according to law"
+      },
+      {
+        "gloss": "legally"
+      }
+    ]
+  },
+  "全力以赴": {
+    "translation": "to make an all-out effort",
+    "meanings": [
+      {
+        "gloss": "to go all out"
+      },
+      {
+        "gloss": "to devote every effort"
+      }
+    ]
+  },
+  "整合": {
+    "translation": "to integrate",
+    "meanings": [
+      {
+        "gloss": "to integrate"
+      },
+      {
+        "gloss": "to consolidate"
+      }
+    ]
+  },
+  "慷慨": {
+    "translation": "generous",
+    "meanings": [
+      {
+        "gloss": "generous"
+      },
+      {
+        "gloss": "magnanimous"
+      },
+      {
+        "gloss": "vehement; fervent"
+      }
+    ]
+  },
+  "掺": {
+    "translation": "to mix",
+    "meanings": [
+      {
+        "gloss": "to mix"
+      },
+      {
+        "gloss": "to blend"
+      },
+      {
+        "gloss": "to dilute"
+      },
+      {
+        "gloss": "to adulterate"
+      }
+    ]
+  },
+  "破案": {
+    "translation": "to solve a case",
+    "meanings": [
+      {
+        "gloss": "to solve a criminal case"
+      }
+    ]
+  },
+  "平原": {
+    "translation": "plain; flatlands",
+    "meanings": [
+      {
+        "gloss": "plain; flatlands"
+      },
+      {
+        "gloss": "field"
+      }
+    ]
+  },
+  "共鸣": {
+    "translation": "sympathetic response; resonance",
+    "meanings": [
+      {
+        "gloss": "sympathetic response; emotional resonance"
+      },
+      {
+        "gloss": "(physics) to resonate; resonance"
+      }
+    ]
+  },
+  "接纳": {
+    "translation": "接纳",
+    "meanings": [
+      {
+        "gloss": "to accept (a person, idea etc)"
+      },
+      {
+        "gloss": "to admit into a group"
+      }
+    ]
+  },
+  "疲倦": {
+    "translation": "疲倦",
+    "meanings": [
+      {
+        "gloss": "tired"
+      },
+      {
+        "gloss": "weary"
+      },
+      {
+        "gloss": "to tire"
+      }
+    ]
+  },
+  "秤": {
+    "translation": "秤",
+    "meanings": [
+      {
+        "gloss": "scales"
+      },
+      {
+        "gloss": "weighing balance"
+      },
+      {
+        "gloss": "steelyard"
+      }
+    ]
+  },
+  "飞跃": {
+    "translation": "飞跃",
+    "meanings": [
+      {
+        "gloss": "to leap"
+      },
+      {
+        "gloss": "(fig.) great leap forward; breakthrough (in progress)"
+      }
+    ]
+  },
+  "痴呆": {
+    "translation": "痴呆",
+    "meanings": [
+      {
+        "gloss": "dementia"
+      },
+      {
+        "gloss": "(of old usage) stupid; dull"
+      }
+    ]
+  },
+  "小提琴": {
+    "translation": "小提琴",
+    "meanings": [
+      {
+        "gloss": "violin"
+      }
+    ]
+  },
+  "催眠": {
+    "translation": "催眠",
+    "meanings": [
+      {
+        "gloss": "to hypnotize"
+      },
+      {
+        "gloss": "hypnosis"
+      },
+      {
+        "gloss": "to lull to sleep"
+      }
+    ]
+  },
+  "法制": {
+    "translation": "legal system",
+    "meanings": [
+      {
+        "gloss": "legal system and institutions"
+      }
+    ]
+  },
+  "蜡": {
+    "translation": "wax",
+    "meanings": [
+      {
+        "gloss": "wax"
+      },
+      {
+        "gloss": "candle"
+      }
+    ]
+  },
+  "自然而然": {
+    "translation": "naturally; as a matter of course",
+    "meanings": [
+      {
+        "gloss": "naturally; as a matter of course"
+      },
+      {
+        "gloss": "natural; unforced"
+      }
+    ]
+  },
+  "纵容": {
+    "translation": "to condone; to indulge (wrongdoing)",
+    "meanings": [
+      {
+        "gloss": "to condone or tolerate (bad behavior)"
+      },
+      {
+        "gloss": "to indulge (sb) in wrongdoing"
+      }
+    ]
+  },
+  "外貌": {
+    "translation": "appearance; looks",
+    "meanings": [
+      {
+        "gloss": "appearance; looks"
+      },
+      {
+        "gloss": "facial features"
+      }
+    ]
+  },
+  "收买": {
+    "translation": "to buy over; to bribe",
+    "meanings": [
+      {
+        "gloss": "to buy over (sb); to win over"
+      },
+      {
+        "gloss": "to purchase; to buy"
+      }
+    ]
+  },
+  "反倒": {
+    "translation": "on the contrary; actually",
+    "meanings": [
+      {
+        "gloss": "but on the contrary; instead"
+      },
+      {
+        "gloss": "contrary to what one expects"
+      }
+    ]
+  },
+  "烟火": {
+    "translation": "fireworks",
+    "meanings": [
+      {
+        "gloss": "fireworks"
+      },
+      {
+        "gloss": "smoke and fire"
+      }
+    ]
+  },
+  "太极": {
+    "translation": "tai chi; taijiquan (martial art) // the Supreme Ultimate (cosmological principle)",
+    "meanings": [
+      {
+        "gloss": "tai chi; taijiquan (martial art)"
+      },
+      {
+        "gloss": "the Supreme Ultimate, source of all things (Chinese cosmology)"
+      }
+    ]
+  },
+  "下意识": {
+    "translation": "subconscious (mind) // subconsciously; unconsciously",
+    "meanings": [
+      {
+        "gloss": "subconscious; the subconscious mind"
+      },
+      {
+        "gloss": "subconsciously; unconsciously"
+      }
+    ]
+  },
+  "团员": {
+    "translation": "member of an organization (esp. the Communist Youth League) // group member",
+    "meanings": [
+      {
+        "gloss": "member (of an organization), esp. Communist Youth League member"
+      },
+      {
+        "gloss": "member of a group; group member"
+      }
+    ]
+  },
+  "遗物": {
+    "translation": "personal effects of the deceased",
+    "meanings": [
+      {
+        "gloss": "personal effects of the deceased; relics"
+      },
+      {
+        "gloss": "remains"
+      }
+    ]
+  },
+  "骨干": {
+    "translation": "backbone; mainstay (key person)",
+    "meanings": [
+      {
+        "gloss": "backbone; mainstay (key person)"
+      },
+      {
+        "gloss": "diaphysis (of a bone)"
+      }
+    ]
+  },
+  "挟持": {
+    "translation": "to seize sb; to hold under duress",
+    "meanings": [
+      {
+        "gloss": "to seize (a person); to hold under duress"
+      },
+      {
+        "gloss": "to hijack; to abduct"
+      }
+    ]
+  },
+  "贴切": {
+    "translation": "apt; appropriate (of wording)",
+    "meanings": [
+      {
+        "gloss": "apt; appropriate; well put (of words, expressions)"
+      }
+    ]
+  },
+  "脱节": {
+    "translation": "to be disconnected (from); out of step with",
+    "meanings": [
+      {
+        "gloss": "to be disconnected (from); out of step with"
+      },
+      {
+        "gloss": "to come apart"
+      }
+    ]
+  },
+  "阅历": {
+    "translation": "experience (gained from life)",
+    "meanings": [
+      {
+        "gloss": "experience; knowledge gained from experience"
+      },
+      {
+        "gloss": "to experience"
+      }
+    ]
+  },
+  "玄机": {
+    "translation": "secret; mystery; profound principles",
+    "meanings": [
+      {
+        "gloss": "mystery; secret"
+      },
+      {
+        "gloss": "hidden principle; profound subtlety"
+      }
+    ]
+  },
+  "威慑": {
+    "translation": "to deter; deterrence",
+    "meanings": [
+      {
+        "gloss": "deterrence; deterrent"
+      },
+      {
+        "gloss": "to deter (esp. militarily)"
+      }
+    ]
+  },
+  "叫板": {
+    "translation": "to challenge; to pick a fight with",
+    "meanings": [
+      {
+        "gloss": "(coll.) to challenge; to defy"
+      },
+      {
+        "gloss": "(Chinese opera) to signal the musicians before a song"
+      }
+    ]
+  },
+  "取经": {
+    "translation": "to learn from others' experience; lit. to seek Buddhist scriptures",
+    "meanings": [
+      {
+        "gloss": "(fig.) to learn from someone else's experience; to seek tips"
+      },
+      {
+        "gloss": "lit. to journey for Buddhist scriptures (Journey to the West)"
+      }
+    ]
+  },
+  "驮": {
+    "translation": "tuó: to carry on one's back (of a person or animal); duò: load carried by a pack animal",
+    "meanings": [
+      {
+        "gloss": "to carry on the back (tuó)"
+      },
+      {
+        "gloss": "load carried by a pack animal (duò)"
+      }
+    ]
+  },
+  "海量": {
+    "translation": "huge volume",
+    "meanings": [
+      {
+        "gloss": "huge volume; massive quantity"
+      },
+      {
+        "gloss": "great capacity for alcohol"
+      },
+      {
+        "gloss": "(courteous) magnanimity"
+      }
+    ]
+  },
+  "翠绿": {
+    "translation": "emerald green",
+    "meanings": [
+      {
+        "gloss": "emerald green; vivid green"
+      }
+    ]
+  },
+  "师长": {
+    "translation": "teacher; elder",
+    "meanings": [
+      {
+        "gloss": "teacher; elder and respected scholar"
+      },
+      {
+        "gloss": "division commander (military)"
+      }
+    ]
+  },
+  "精练": {
+    "translation": "concise; refined",
+    "meanings": [
+      {
+        "gloss": "concise; succinct (of writing)"
+      },
+      {
+        "gloss": "(textiles) to scour; to degum (silk)"
+      }
+    ]
+  },
+  "经贸": {
+    "translation": "economy and trade",
+    "meanings": [
+      {
+        "gloss": "economy and trade (abbr. of 经济贸易)"
+      }
+    ]
+  },
+  "离谱儿": {
+    "translation": "outrageous; way off the mark",
+    "meanings": [
+      {
+        "gloss": "outrageous; wildly off the mark (erhua form of 离谱)"
+      }
+    ]
+  },
+  "两下子": {
+    "translation": "some skill; a few tricks up one's sleeve",
+    "meanings": [
+      {
+        "gloss": "(real) skill; tricks of the trade"
+      },
+      {
+        "gloss": "a couple of times; the same old trick"
+      }
+    ]
+  },
+  "两翼": {
+    "translation": "both wings; both flanks",
+    "meanings": [
+      {
+        "gloss": "both wings (of a bird, aircraft or building)"
+      },
+      {
+        "gloss": "(military) both flanks"
+      }
+    ]
+  },
+  "五官": {
+    "translation": "facial features",
+    "meanings": [
+      {
+        "gloss": "facial features"
+      },
+      {
+        "gloss": "five sense organs of TCM (鼻目口舌耳)"
+      }
+    ]
+  },
+  "何": {
+    "translation": "what; how; why (literary)",
+    "meanings": [
+      {
+        "gloss": "what; how; why (literary)"
+      },
+      {
+        "gloss": "surname He"
+      }
+    ]
+  },
+  "做主": {
+    "translation": "to make the decision; to be in charge",
+    "meanings": [
+      {
+        "gloss": "to take responsibility for a decision"
+      },
+      {
+        "gloss": "to be in charge; call the shots"
+      }
+    ]
+  },
+  "兑": {
+    "translation": "to exchange; to cash (a check etc); to add or blend (liquid)",
+    "meanings": [
+      {
+        "gloss": "to exchange; to convert"
+      },
+      {
+        "gloss": "to cash (a check etc)"
+      },
+      {
+        "gloss": "to add or blend (liquid)"
+      },
+      {
+        "gloss": "one of the Eight Trigrams"
+      },
+      {
+        "gloss": "surname Dui"
+      }
+    ]
+  },
+  "功利": {
+    "translation": "utilitarian; pragmatic (often pej., profit-driven); utility (philosophy)",
+    "meanings": [
+      {
+        "gloss": "utilitarian; mercenary (profit-driven)"
+      },
+      {
+        "gloss": "utility (philosophy)"
+      }
+    ]
+  },
+  "压轴": {
+    "translation": "grand finale; climactic final item (on a program)",
+    "meanings": [
+      {
+        "gloss": "grand finale; final and most important item on a program"
+      },
+      {
+        "gloss": "(traditional opera) penultimate item on the program"
+      },
+      {
+        "gloss": "climactic; final (attributive)"
+      }
+    ]
+  },
+  "受益匪浅": {
+    "translation": "to benefit greatly (from sth)",
+    "meanings": [
+      {
+        "gloss": "to benefit greatly"
+      },
+      {
+        "gloss": "to gain a tremendous amount from sth"
+      }
+    ]
+  },
+  "口哨儿": {
+    "translation": "whistle",
+    "meanings": [
+      {
+        "gloss": "whistle (sound made by puckering the lips)"
+      }
+    ]
+  },
+  "嗅": {
+    "translation": "to smell; to sniff",
+    "meanings": [
+      {
+        "gloss": "to smell; to sniff"
+      }
+    ]
+  },
+  "奔驰": {
+    "translation": "to gallop; to speed along; Mercedes-Benz (car brand)",
+    "meanings": [
+      {
+        "gloss": "to gallop; to speed along"
+      },
+      {
+        "gloss": "Mercedes-Benz, German car maker"
+      }
+    ]
+  },
+  "孔": {
+    "translation": "hole; opening",
+    "meanings": [
+      {
+        "gloss": "hole; opening"
+      },
+      {
+        "gloss": "surname Kong"
+      }
+    ]
+  },
+  "对牛弹琴": {
+    "translation": "lit. to play the lute to a cow (idiom); fig. casting pearls before swine",
+    "meanings": [
+      {
+        "gloss": "lit. to play the lute to a cow (idiom)"
+      },
+      {
+        "gloss": "fig. offering something to an unappreciative audience"
+      }
+    ]
+  },
+  "就此": {
+    "translation": "at this point; thus",
+    "meanings": [
+      {
+        "gloss": "at this point"
+      },
+      {
+        "gloss": "thus"
+      },
+      {
+        "gloss": "from then on"
+      }
+    ]
+  },
+  "就绪": {
+    "translation": "to be ready; to be in order",
+    "meanings": [
+      {
+        "gloss": "to be ready"
+      },
+      {
+        "gloss": "to be in order"
+      }
+    ]
+  },
+  "居于": {
+    "translation": "to be located in; to occupy (a position)",
+    "meanings": [
+      {
+        "gloss": "to be located in"
+      },
+      {
+        "gloss": "to occupy (a position, e.g. 居于首位)"
+      }
+    ]
+  },
+  "微": {
+    "translation": "tiny; micro-; slightly",
+    "meanings": [
+      {
+        "gloss": "tiny; micro-"
+      },
+      {
+        "gloss": "slightly; faintly"
+      },
+      {
+        "gloss": "surname Wei"
+      }
+    ]
+  },
+  "急于求成": {
+    "translation": "anxious for quick results (idiom)",
+    "meanings": [
+      {
+        "gloss": "anxious for quick results (idiom)"
+      },
+      {
+        "gloss": "impatient for success"
+      }
+    ]
+  },
+  "按钮": {
+    "translation": "button",
+    "meanings": [
+      {
+        "gloss": "button (that triggers an action)"
+      },
+      {
+        "gloss": "to push a button"
+      }
+    ]
+  },
+  "探究": {
+    "translation": "to investigate; to probe",
+    "meanings": [
+      {
+        "gloss": "to investigate"
+      },
+      {
+        "gloss": "to delve into"
+      },
+      {
+        "gloss": "to probe"
+      }
+    ]
+  },
+  "揠苗助长": {
+    "translation": "(idiom) to spoil things by excessive eagerness; pull up seedlings to help them grow",
+    "meanings": [
+      {
+        "gloss": "(idiom) to spoil things by being over-eager"
+      }
+    ]
+  },
+  "支流": {
+    "translation": "tributary (river)",
+    "meanings": [
+      {
+        "gloss": "tributary (river)"
+      }
+    ]
+  },
+  "救死扶伤": {
+    "translation": "to heal the wounded and rescue the dying",
+    "meanings": [
+      {
+        "gloss": "to help the dying and heal the injured"
+      }
+    ]
+  },
+  "星球": {
+    "translation": "celestial body; heavenly body",
+    "meanings": [
+      {
+        "gloss": "celestial body (planet etc)"
+      },
+      {
+        "gloss": "heavenly body"
+      }
+    ]
+  },
+  "星系": {
+    "translation": "galaxy",
+    "meanings": [
+      {
+        "gloss": "galaxy"
+      }
+    ]
+  },
+  "标识": {
+    "translation": "identifying mark; label; to mark for identification",
+    "meanings": [
+      {
+        "gloss": "identifying mark; sign; label"
+      },
+      {
+        "gloss": "to mark or label for identification"
+      }
+    ]
+  },
+  "梦寐以求": {
+    "translation": "(lit.) to yearn for sth even in one's dreams (idiom); to deeply long for",
+    "meanings": [
+      {
+        "gloss": "to yearn for sth even in one's dreams"
+      },
+      {
+        "gloss": "to deeply long for; to covet"
+      }
+    ]
+  },
+  "气流": {
+    "translation": "airflow; stream of air",
+    "meanings": [
+      {
+        "gloss": "stream of air"
+      },
+      {
+        "gloss": "airflow"
+      },
+      {
+        "gloss": "slipstream"
+      }
+    ]
+  },
+  "求同存异": {
+    "translation": "to seek common ground while reserving differences (idiom)",
+    "meanings": [
+      {
+        "gloss": "to put aside differences and work together"
+      },
+      {
+        "gloss": "to seek common ground and cooperate"
+      }
+    ]
+  },
+  "流派": {
+    "translation": "school (of thought); genre",
+    "meanings": [
+      {
+        "gloss": "school (of thought)"
+      },
+      {
+        "gloss": "genre"
+      },
+      {
+        "gloss": "style"
+      }
+    ]
+  },
+  "流逝": {
+    "translation": "(of time) to pass; to elapse",
+    "meanings": [
+      {
+        "gloss": "(of time) to pass"
+      },
+      {
+        "gloss": "to elapse"
+      }
+    ]
+  },
+  "淡水": {
+    "translation": "freshwater",
+    "meanings": [
+      {
+        "gloss": "freshwater"
+      },
+      {
+        "gloss": "Tamsui/Danshui district, New Taipei City, Taiwan"
+      }
+    ]
+  },
+  "源远流长": {
+    "translation": "of long standing; with a long history (idiom)",
+    "meanings": [
+      {
+        "gloss": "of long standing; with a long history"
+      },
+      {
+        "gloss": "stretching back to ancient times"
+      }
+    ]
+  },
+  "漂流": {
+    "translation": "to drift along; rafting",
+    "meanings": [
+      {
+        "gloss": "to float on the current"
+      },
+      {
+        "gloss": "to drift along or about"
+      },
+      {
+        "gloss": "rafting"
+      }
+    ]
+  },
+  "皆大欢喜": {
+    "translation": "to everyone's delight and satisfaction (idiom)",
+    "meanings": [
+      {
+        "gloss": "to everyone's delight and satisfaction"
+      },
+      {
+        "gloss": "As You Like It, comedy by Shakespeare"
+      }
+    ]
+  },
+  "磨炼": {
+    "translation": "to temper; to hone",
+    "meanings": [
+      {
+        "gloss": "to temper (oneself)"
+      },
+      {
+        "gloss": "to hone (skills/will)"
+      }
+    ]
+  },
+  "精彩纷呈": {
+    "translation": "wonderfully varied; full of splendor",
+    "meanings": [
+      {
+        "gloss": "splendid things in profusion"
+      },
+      {
+        "gloss": "wonderful and exciting (variety)"
+      }
+    ]
+  },
+  "羞耻": {
+    "translation": "shame; disgrace",
+    "meanings": [
+      {
+        "gloss": "(a feeling of) shame"
+      }
+    ]
+  },
+  "荤": {
+    "translation": "non-vegetarian food (meat, fish etc)",
+    "meanings": [
+      {
+        "gloss": "non-vegetarian food (meat, fish etc); meat dish"
+      },
+      {
+        "gloss": "strong-smelling vegetable such as garlic"
+      },
+      {
+        "gloss": "vulgar"
+      }
+    ]
+  },
+  "衰落": {
+    "translation": "to decline; to go downhill",
+    "meanings": [
+      {
+        "gloss": "to decline; to wane; to go downhill (of a family, empire, influence etc)"
+      },
+      {
+        "gloss": "to fall; to drop"
+      }
+    ]
+  },
+  "裁缝": {
+    "translation": "tailor; dressmaker; to make an item of clothing",
+    "meanings": [
+      {
+        "gloss": "tailor; dressmaker"
+      },
+      {
+        "gloss": "to make an item of clothing; to tailor"
+      }
+    ]
+  },
+  "诉求": {
+    "translation": "demand; request; appeal",
+    "meanings": [
+      {
+        "gloss": "demand; wish; request; appeal"
+      },
+      {
+        "gloss": "to demand; to petition; to call for"
+      },
+      {
+        "gloss": "to appeal to (consumers); brand pitch"
+      }
+    ]
+  },
+  "贫乏": {
+    "translation": "lacking; deficient; meager",
+    "meanings": [
+      {
+        "gloss": "lacking; deficient; meager (content, resources, vocabulary)"
+      },
+      {
+        "gloss": "impoverished"
+      },
+      {
+        "gloss": "lack; deficiency"
+      }
+    ]
+  },
+  "连贯": {
+    "translation": "coherent; well-connected",
+    "meanings": [
+      {
+        "gloss": "coherent (narrative, argument etc)"
+      },
+      {
+        "gloss": "to link up (disparate elements)"
+      }
+    ]
+  },
+  "逗留": {
+    "translation": "to stay for a while; to sojourn",
+    "meanings": [
+      {
+        "gloss": "to stay for a while; to sojourn"
+      }
+    ]
+  },
+  "霸道": {
+    "translation": "overbearing; domineering",
+    "meanings": [
+      {
+        "gloss": "overbearing; domineering; high-handed"
+      },
+      {
+        "gloss": "(of liquor, medicine) strong; potent"
+      },
+      {
+        "gloss": "despotic rule; rule by might"
+      },
+      {
+        "gloss": "the Way of the Hegemon (philosophy, opp. 王道)"
+      }
+    ]
+  },
+  "时事": {
+    "translation": "current events; current affairs",
+    "meanings": [
+      {
+        "gloss": "current events; current affairs; news of the day"
+      }
+    ]
+  },
+  "猩猩": {
+    "translation": "orangutan",
+    "meanings": [
+      {
+        "gloss": "orangutan"
+      }
+    ]
+  },
+  "倔": {
+    "translation": "stubborn; gruff",
+    "meanings": [
+      {
+        "gloss": "stubborn; unbending; gruff (of speech)"
+      },
+      {
+        "gloss": "(only in 倔强 jué jiàng)",
+        "reading": "jué"
+      }
+    ]
+  },
+  "熨": {
+    "translation": "to iron; to press (clothes)",
+    "meanings": [
+      {
+        "gloss": "to iron; to press (clothes) (熨衣服， 熨斗)"
+      },
+      {
+        "gloss": "(literary) smooth; reconciled (熨帖)",
+        "reading": "yù"
+      }
+    ]
   }
 }
