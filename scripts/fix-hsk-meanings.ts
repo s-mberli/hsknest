@@ -5,6 +5,11 @@
  * word's translation / phonetic / metadata in place, keyed by (list, term),
  * so UserProgress rows and schedules are untouched.
  *
+ * Applies prisma/data/hsk/curated/*.json overrides on top of the base
+ * new{n}.json files, same as prisma/seed.ts's applyCuratedOverrides() — the
+ * "effective card" a learner sees is the merged result, not the base file
+ * alone, so this script must sync the merged result too.
+ *
  * Idempotent: re-running is a no-op once content matches. Usage:
  *   npx tsx scripts/fix-hsk-meanings.ts
  */
@@ -12,6 +17,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { PrismaClient, Prisma } from "@prisma/client";
+
+import { isBadLead } from "../src/lib/glossGuard";
 
 const prisma = new PrismaClient();
 
@@ -21,6 +28,48 @@ type SeedWord = {
   phonetic: string;
   metadata: unknown;
 };
+
+/**
+ * Mirrors prisma/seed.ts's applyCuratedOverrides() — this script reads the
+ * same base new{n}.json files seed.ts does, so it must apply the same
+ * curated/new{n}.json override merge or it silently skips every curated
+ * translation/priority fix (bug found 2026-08-26: a full HSK gloss audit's
+ * 391 curated edits never reached production because this function was
+ * missing — only the base-file phonetic fixes synced).
+ */
+function applyCuratedOverrides(file: string, words: SeedWord[]): SeedWord[] {
+  try {
+    const curatedPath = join(__dirname, "..", "prisma", "data", "hsk", "curated", `${file}.json`);
+    const curatedRaw = readFileSync(curatedPath, "utf-8");
+    const curated: Record<string, { translation?: string; meanings?: unknown }> = JSON.parse(curatedRaw);
+    if (Object.keys(curated).length === 0) return words;
+    return words.map((w) => {
+      const override = curated[w.term];
+      if (!override) return w;
+      const meanings = Array.isArray(override.meanings)
+        ? (override.meanings as { gloss: string; reading?: string }[])
+        : undefined;
+      if (meanings && meanings.length > 0) {
+        const lead = meanings[0];
+        if (isBadLead(lead, w.phonetic || undefined)) {
+          console.warn(
+            `[curated-guard] ${file}:${w.term} override leads with a suspect gloss "${lead.gloss}"`
+          );
+        }
+      }
+      return {
+        ...w,
+        translation: override.translation ?? w.translation,
+        metadata: meanings
+          ? { ...(typeof w.metadata === "object" && w.metadata !== null ? w.metadata : {}), meanings }
+          : w.metadata,
+      };
+    });
+  } catch {
+    // File not found or parse error — return unchanged words.
+    return words;
+  }
+}
 
 // Must mirror ZH_LISTS in prisma/seed.ts (file → seeded list name).
 const LISTS: { file: string; name: string }[] = [
@@ -48,9 +97,10 @@ async function main() {
       continue;
     }
 
-    const seed = JSON.parse(
+    const base = JSON.parse(
       readFileSync(join(__dirname, "..", "prisma", "data", "hsk", `${file}.json`), "utf8")
     ) as SeedWord[];
+    const seed = applyCuratedOverrides(file, base);
     const byTerm = new Map(seed.map((w) => [w.term, w]));
 
     const words = await prisma.word.findMany({
