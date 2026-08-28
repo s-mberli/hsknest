@@ -141,7 +141,12 @@ test("header +/- buttons and settings slider agree on the same ladder", async ({
   // Open the settings drawer and confirm the slider reports the same value —
   // this is the exact disagreement the original bug produced.
   await page.getByRole("button", { name: "Reading settings" }).click();
-  const slider = page.getByRole("slider");
+  // Scope to the settings dialog: the audio scrubber is also role="slider"
+  // (accessible seeking, added alongside this drawer's a11y pass), so a bare
+  // page-wide getByRole("slider") now matches two elements.
+  const slider = page
+    .getByRole("dialog", { name: "Reading settings" })
+    .getByRole("slider");
   await expect(slider).toBeVisible();
   const sliderValue = await slider.evaluate((el) => (el as HTMLInputElement).value);
   const sizes = [25, 28, 31, 35, 39, 44];
