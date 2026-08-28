@@ -279,10 +279,15 @@ test("hide a starter list and restore it", async ({ page }) => {
   const target = page
     .getByRole("link", { name: /Everyday Conversations/i })
     .first();
+  // The hide button is a sibling of the link, not a descendant (the two are
+  // separate interactive elements stacked in one card — a <button> nested
+  // inside an <a> would be invalid HTML), so scope from the shared card
+  // container rather than from the link itself.
+  const card = target.locator("xpath=..");
   const hidden = page.waitForResponse(
     (res) => res.url().includes("/hide") && res.request().method() === "POST"
   );
-  await target.getByRole("button", { name: /hide this list/i }).click();
+  await card.getByRole("button", { name: /hide this list/i }).click();
   expect((await hidden).ok()).toBeTruthy();
 
   // It moves into the collapsed Hidden section.

@@ -9,6 +9,7 @@ import { findSentenceForMark, findSentenceForToken, sentenceSurface } from "@/li
 import type { StoryTimings } from "@/lib/reading/storyAudio";
 
 import { ReaderSettings, Prefs } from "./ReaderSettings";
+import { WordInfoCard } from "./WordInfoCard";
 
 /* ── Types ─────────────────────────────────────────────────── */
 
@@ -222,6 +223,7 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   /* ── actions ──────────────────────────────────────────────── */
   const togglePlay = useCallback(() => { const a = audioRef.current; if (!a || !audioReady) return; if (playing) a.pause(); else a.play().catch(() => setAudioReady(false)); setPlaying(!playing); }, [playing, audioReady]);
   const seek = useCallback((e: React.MouseEvent<HTMLDivElement>) => { const a = audioRef.current; if (!a || !timings) return; const r = e.currentTarget.getBoundingClientRect(); const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); a.currentTime = p * (timings.durationMs / 1000); setCurrentTime(p * timings.durationMs); }, [timings]);
+  const seekBy = useCallback((deltaMs: number) => { const a = audioRef.current; if (!a || !timings) return; const next = Math.min(timings.durationMs, Math.max(0, currentTime + deltaMs)); a.currentTime = next / 1000; setCurrentTime(next); }, [timings, currentTime]);
   const tokenTimeMs = useCallback((tk: StoryToken): number | null => { if (!timings) return null; const mk = timings.marks.find(m => m.s >= tk.s && m.s < tk.e); return mk ? mk.t0 : null; }, [timings]);
 
   const logEncounter = useCallback((tok: StoryToken) => {
@@ -339,6 +341,35 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   }, [updatePrefs]);
   useEffect(() => { if (audioRef.current) audioRef.current.playbackRate = speed; }, [speed, audioReady]);
 
+  // Escape closes whichever overlay is open — none of the three had any
+  // keyboard dismiss path before this; a keyboard/screen-reader user had no
+  // way out short of a mouse click on the backdrop.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (actionMenu) { setActionMenu(null); return; }
+      if (selectedToken) { setSelectedToken(null); return; }
+      if (showBatchPrompt) { setShowBatchPrompt(false); setBatchPromptDismissed(true); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [actionMenu, selectedToken, showBatchPrompt]);
+
+  // A story short enough to fit one viewport never overflows, so the
+  // scroll-threshold completion check in the effect above never fires for
+  // it — exactly the shortest HSK1 stories, where the "nice job" reward
+  // moment matters most. Treat "nothing to scroll" as trivially complete.
+  useEffect(() => {
+    if (!doc || completedRef.current) return;
+    const el = textRef.current;
+    if (!el) return;
+    const max = el.scrollHeight - el.clientHeight;
+    if (max > 0) return; // real overflow — the scroll-based check owns this case
+    completedRef.current = true;
+    setShowBatchPrompt(true);
+    fetch("/api/reading/progress", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ textId, position: 100, completed: true }) }).catch(() => {});
+  }, [doc, textId]);
+
   if (!doc) return <main className="mx-auto w-full max-w-2xl px-6 py-8"><p className="text-muted-foreground">Loading…</p></main>;
 
   const markToToken = (mi: number): number => { if (!timings || mi < 0) return -1; const mk = timings.marks[mi]; for (let i = 0; i < doc.tokens.length; i++) { const tk = doc.tokens[i]; if (tk.s === mk.s || (tk.s <= mk.s && tk.e > mk.s)) return i; } return -1; };
@@ -380,8 +411,13 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
                     const isSel = selectedToken?.s === tk.s && selectedToken?.e === tk.e;
                     const isNew = hskUnderline && tk.lvl !== null && tk.lvl >= level && !isKnown;
                     return (
-                      <span key={`${tk.s}-${tk.e}`} className={`cursor-pointer rounded-sm transition-colors duration-75 select-none touch-manipulation [-webkit-touch-callout:none] ${isAW ? "bg-primary/25" : isAS ? "bg-primary/8" : isSel ? "border-b-2 border-dotted border-primary" : ""} ${isMastered ? "text-foreground/40" : isKnown ? "text-foreground/60" : ""} ${isGrowing ? "bg-amber/10" : ""} ${isShaky ? "underline decoration-amber decoration-1 underline-offset-[6px]" : ""} ${isNew ? "underline decoration-primary/40 decoration-1 underline-offset-[6px]" : ""}`}
+                      <span key={`${tk.s}-${tk.e}`}
+                        role={tk.isPunct ? undefined : "button"}
+                        tabIndex={tk.isPunct ? -1 : 0}
+                        aria-label={tk.isPunct ? undefined : tk.py ? `${tk.w}, ${tk.py}` : tk.w}
+                        className={`cursor-pointer rounded-sm transition-colors duration-75 select-none touch-manipulation [-webkit-touch-callout:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isAW ? "bg-primary/25" : isAS ? "bg-primary/8" : isSel ? "border-b-2 border-dotted border-primary" : ""} ${isMastered ? "text-foreground/40" : isKnown ? "text-foreground/60" : ""} ${isGrowing ? "bg-amber/10" : ""} ${isShaky ? "underline decoration-amber decoration-1 underline-offset-[6px]" : ""} ${isNew ? "underline decoration-primary/40 decoration-1 underline-offset-[6px]" : ""}`}
                         onClick={() => handleWordTap(tk)}
+                        onKeyDown={e => { if (tk.isPunct) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleWordTap(tk); } }}
                         onMouseEnter={() => { if (tk.isPunct) return; clearTimeout(hoverTimer.current!); hoverTimer.current = setTimeout(() => { if (!selectedToken && !actionMenu) setHoverToken(tk); }, 200); }}
                         onMouseLeave={() => { clearTimeout(hoverTimer.current!); hoverTimer.current = setTimeout(() => setHoverToken(null), 100); }}
                         onTouchStart={e => onTouchStart(e, tk)} onTouchMove={e => onTouchMove(e, tk)} onTouchEnd={e => onTouchEnd(e, tk)} onContextMenu={e => onContextMenu(e, tk)}>
@@ -399,26 +435,29 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
       {selectedToken && !selectedToken.isPunct && (() => {
         const saved = addedWords.has(selectedToken.w);
         const cnt = encounterCounts[selectedToken.w];
+        const meanings = selectedToken.senses && selectedToken.senses.length > 0
+          ? selectedToken.senses.flatMap(s => s.meanings.slice(0, 3).map(stripTranslationCruft)).filter((m): m is string => !!m)
+          : [];
         return (
           <>
             <div className="fixed inset-0 z-39" onClick={() => setSelectedToken(null)} />
             <div className="fixed bottom-16 inset-x-0 z-40 mx-auto max-w-2xl px-3">
-            <div className="rounded-2xl border bg-card px-4 pt-3 pb-4 shadow-xl">
-              <div className="mx-auto mb-2 h-1 w-8 rounded-full bg-muted" />
-              <div className="flex items-baseline gap-2.5 mb-2">
-                <span className="text-2xl font-bold">{selectedToken.w}</span>
-                {selectedToken.py && <span className="text-sm text-muted-foreground">{selectedToken.py}</span>}
-                {selectedToken.lvl && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">HSK {selectedToken.lvl}</span>}
-                {saved && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">In deck ✓</span>}
-              </div>
-              {selectedToken.senses && selectedToken.senses.length > 0 ? (
-                <div className="mb-3 space-y-0.5">{selectedToken.senses.flatMap((s, si2) => s.meanings.slice(0, 3).map((m, j) => { const c = stripTranslationCruft(m); return c ? <p key={`${si2}-${j}`} className="text-sm text-muted-foreground">{c}</p> : null; })).filter(Boolean)}</div>
-              ) : <p className="mb-3 text-sm text-muted-foreground italic">No dictionary entry</p>}
-              <div>
-                {!saved ? <button onClick={() => addToDeck(selectedToken)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Add to vocabulary</button> : <span className="rounded-lg bg-success/15 px-4 py-2 text-sm font-medium text-success">Added ✓</span>}
-              </div>
-              {nudgeWord === selectedToken.w && cnt !== undefined && cnt >= 3 && !saved && <p className="mt-2 text-xs text-primary">Looked up {cnt}× — add it to your deck?</p>}
-            </div>
+              <WordInfoCard
+                placement="sheet"
+                showHandle
+                role="dialog"
+                aria-modal
+                aria-label={`${selectedToken.w} definition`}
+                term={selectedToken.w}
+                pinyin={selectedToken.py}
+                level={selectedToken.lvl}
+                meanings={meanings}
+                statusBadge={saved && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">In deck ✓</span>}
+                footer={<>
+                  {!saved ? <button onClick={() => addToDeck(selectedToken)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Add to vocabulary</button> : <span className="rounded-lg bg-success/15 px-4 py-2 text-sm font-medium text-success">Added ✓</span>}
+                  {nudgeWord === selectedToken.w && cnt !== undefined && cnt >= 3 && !saved && <p className="mt-2 text-xs text-primary">Looked up {cnt}× — add it to your deck?</p>}
+                </>}
+              />
             </div>
           </>
         );
@@ -426,10 +465,11 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
 
       {actionMenu && (<>
         <div className="fixed inset-0 z-40" onClick={() => setActionMenu(null)} />
-        <div className="fixed z-50 flex flex-col gap-1 rounded-xl border bg-card p-1.5 shadow-xl" style={{ left: Math.min(actionMenu.x - 60, (typeof window !== "undefined" ? window.innerWidth : 400) - 150), top: Math.max(actionMenu.y, 80) }}>
-          <button onClick={() => { addToDeck(actionMenu.token); setActionMenu(null); }} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-accent text-left"><Bookmark className="size-4 text-primary" /> Save to deck</button>
-          <button onClick={() => { navigator.clipboard?.writeText(actionMenu.token.w); showToast("Copied"); setActionMenu(null); }} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-accent text-left"><Copy className="size-4 text-muted-foreground" /> Copy</button>
-          <button onClick={() => setActionMenu(null)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent text-left"><X className="size-4" /> Cancel</button>
+        <div role="menu" aria-label="Word actions" className="fixed z-50 flex flex-col gap-1 overflow-hidden rounded-xl border bg-card p-1.5 shadow-xl" style={{ left: Math.min(actionMenu.x - 60, (typeof window !== "undefined" ? window.innerWidth : 400) - 150), top: Math.max(actionMenu.y, 80) }}>
+          <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:16px_16px]" />
+          <button role="menuitem" onClick={() => { addToDeck(actionMenu.token); setActionMenu(null); }} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-accent text-left"><Bookmark className="size-4 text-primary" /> Save to deck</button>
+          <button role="menuitem" onClick={() => { navigator.clipboard?.writeText(actionMenu.token.w); showToast("Copied"); setActionMenu(null); }} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-accent text-left"><Copy className="size-4 text-muted-foreground" /> Copy</button>
+          <button role="menuitem" onClick={() => setActionMenu(null)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent text-left"><X className="size-4" /> Cancel</button>
         </div>
       </>)}
 
@@ -438,7 +478,8 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
         <>
           <div className="fixed inset-0 z-39" onClick={() => { setShowBatchPrompt(false); setBatchPromptDismissed(true); }} />
           <div className="fixed bottom-16 inset-x-0 z-40 mx-auto max-w-2xl px-3">
-            <div className="rounded-2xl border bg-card px-4 pt-3 pb-4 shadow-xl">
+            <div role="dialog" aria-modal="true" aria-label="Add looked-up words to your deck" className="relative overflow-hidden rounded-2xl border bg-card px-4 pt-3 pb-4 shadow-xl">
+              <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:16px_16px]" />
               <div className="mx-auto mb-2 h-1 w-8 rounded-full bg-muted" />
               <p className="mb-3 text-sm font-medium">
                 Nice job! You looked up {unaddedLookups.length} word{unaddedLookups.length === 1 ? "" : "s"} — add {unaddedLookups.length === 1 ? "it" : "them all"} to your deck?
@@ -468,14 +509,13 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
         const display = cleanForDisplay(firstMeaning);
         return (
           <div className="fixed bottom-16 inset-x-0 z-38 mx-auto max-w-2xl px-3 pointer-events-none">
-            <div className="rounded-xl border bg-card px-3 py-2 shadow-lg inline-block max-w-xs">
-              <div className="flex items-baseline gap-2 mb-0.5">
-                <span className="text-lg font-bold">{hoverToken.w}</span>
-                {hoverToken.py && <span className="text-xs text-muted-foreground">{hoverToken.py}</span>}
-                {hoverToken.lvl && <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">HSK {hoverToken.lvl}</span>}
-              </div>
-              {display && <p className="text-xs text-muted-foreground">{display}</p>}
-            </div>
+            <WordInfoCard
+              placement="tooltip"
+              term={hoverToken.w}
+              pinyin={hoverToken.py}
+              level={hoverToken.lvl}
+              meanings={display ? [display] : []}
+            />
           </div>
         );
       })()}
@@ -484,7 +524,20 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
         <div className="fixed bottom-16 inset-x-0 z-20 mx-auto max-w-2xl px-3 pb-1">
           <div className="flex items-center gap-3 rounded-2xl border bg-card/95 px-4 py-2.5 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80">
             <button onClick={togglePlay} className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0" aria-label={playing ? "Pause" : "Play"}>{playing ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}</button>
-            <div className="flex-1 min-w-0 cursor-pointer" onClick={seek}><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width] duration-100" style={{ width: timings ? `${(currentTime / timings.durationMs) * 100}%` : "0%" }} /></div></div>
+            <div
+              role="slider"
+              tabIndex={0}
+              aria-label="Seek"
+              aria-valuemin={0}
+              aria-valuemax={timings ? Math.round(timings.durationMs / 1000) : 0}
+              aria-valuenow={Math.round(currentTime / 1000)}
+              className="flex-1 min-w-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
+              onClick={seek}
+              onKeyDown={e => {
+                if (e.key === "ArrowRight") { e.preventDefault(); seekBy(5000); }
+                else if (e.key === "ArrowLeft") { e.preventDefault(); seekBy(-5000); }
+              }}
+            ><div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width] duration-100" style={{ width: timings ? `${(currentTime / timings.durationMs) * 100}%` : "0%" }} /></div></div>
             <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">{fmt(currentTime / 1000)}{timings ? ` / ${fmt(timings.durationMs / 1000)}` : ""}</span>
             <button onClick={() => { const next = SPEEDS[(SPEEDS.indexOf(speed) - 1 + SPEEDS.length) % SPEEDS.length]; updatePrefs({ speed: next }); }} className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors shrink-0"><Volume2 className="size-3.5" />×{speed}</button>
           </div>

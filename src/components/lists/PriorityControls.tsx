@@ -81,7 +81,7 @@ export function PriorityControls({
           onClick={(e) => move(-1, e)}
           disabled={busy || atTop}
           aria-label="Move up in queue"
-          className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-card"
+          className="flex size-11 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-card"
         >
           <ChevronUp className="size-4" />
         </button>
@@ -90,7 +90,7 @@ export function PriorityControls({
           onClick={(e) => move(1, e)}
           disabled={busy || atBottom}
           aria-label="Move down in queue"
-          className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-card"
+          className="flex size-11 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-30 disabled:hover:bg-card"
         >
           <ChevronDown className="size-4" />
         </button>

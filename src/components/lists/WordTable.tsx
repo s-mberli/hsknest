@@ -214,7 +214,16 @@ export function WordTable({ words }: { words: WordRow[] }) {
                   <StrengthCell word={w} />
                 </TableCell>
                 <TableCell className="text-right text-xs tabular-nums text-muted-foreground">
-                  {w.dueAt ? relativeDueLabel(w.dueAt, "in").replace(/^in /, "") : "—"}
+                  {/* NEW-state words carry dueAt = now (so the queue can pick them
+                      up immediately) — showing that raw dueAt here would render
+                      "due today" for a word the learner has never studied, which
+                      contradicts the Words tab's due count (isDueNow excludes
+                      NEW). Label NEW rows "new" instead of the misleading date. */}
+                  {w.state === "NEW"
+                    ? "new"
+                    : w.dueAt
+                      ? relativeDueLabel(w.dueAt, "in").replace(/^in /, "")
+                      : "—"}
                 </TableCell>
               </TableRow>
             ))}

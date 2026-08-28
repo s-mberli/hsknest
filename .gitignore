@@ -92,6 +92,9 @@ next-env.d.ts
 
 # impeccable design skill working dir — critique snapshots, live-mode state, caches
 /.impeccable/
+# impeccable init output — local design-context notes, not part of the app
+/PRODUCT.md
+/DESIGN.md
 
 # private launch/ops notes
 /LAUNCH-CHECKLIST.md
@@ -120,3 +123,6 @@ next-env.d.ts
 # python bytecode cache
 __pycache__/
 *.pyc
+
+# agent working notes — local only
+/.learnings/

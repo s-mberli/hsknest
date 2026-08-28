@@ -19,8 +19,13 @@ const items = [
 export function BottomNav() {
   const pathname = usePathname();
 
-  // Study (and its game modes) run full-screen with no chrome.
+  // Study (and its game modes) run full-screen with no chrome. Reading's
+  // actual reading surface gets the same treatment — it needs at least as
+  // much sustained, uninterrupted attention as a study session, and the
+  // bottom nav plus the persistent audio bar were together eating ~24% of a
+  // mobile viewport's height (DESIGN.md's Focus Mode Rule).
   if (pathname === "/study" || pathname.startsWith("/study/")) return null;
+  if (pathname.startsWith("/reading/") && pathname.endsWith("/read")) return null;
 
   return (
     <nav className="sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">

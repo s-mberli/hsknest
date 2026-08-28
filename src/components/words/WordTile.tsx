@@ -14,7 +14,11 @@ export const TILE: Record<Strength, string> = {
   mastered: "bg-primary text-primary-foreground border-transparent",
   solid: "bg-primary/50 border-transparent",
   growing: "bg-primary/15 border-transparent",
-  shaky: "bg-primary/15 border-transparent ring-1 ring-destructive/40",
+  // Lapsed/struggling is a normal, expected SRS state, not a failure —
+  // DESIGN.md reserves destructive red for delete confirmations and amber
+  // for exactly this "needs extra attention" case (Study's flashcard
+  // already gets this right; Words/Lists had drifted onto the wrong token).
+  shaky: "bg-primary/15 border-transparent ring-1 ring-amber/40",
   known: "bg-muted text-muted-foreground border-transparent",
   // Solid fill on cream paper — transparent ghosts looked empty until hover.
   new: "bg-card text-foreground border-border",
@@ -76,7 +80,7 @@ export function WordTile({ word, tabIndex, onKeyDown, tileRef }: WordTileProps) 
       {word.strength === "shaky" && (
         <span
           aria-hidden
-          className="absolute right-1 top-1 size-1.5 rounded-full bg-destructive"
+          className="absolute right-1 top-1 size-1.5 rounded-full bg-amber"
         />
       )}
     </WordHoverCard>

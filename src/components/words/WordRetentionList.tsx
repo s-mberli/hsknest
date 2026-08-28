@@ -17,7 +17,7 @@ const DOT: Record<Strength, string> = {
   mastered: "bg-primary",
   solid: "bg-primary/50",
   growing: "bg-primary/25",
-  shaky: "bg-destructive",
+  shaky: "bg-amber", // lapse is a normal SRS signal, not a delete/failure state
   known: "bg-muted-foreground/50",
   new: "bg-border",
 };
@@ -152,7 +152,10 @@ export function WordRetentionList({
     <ul role="list" className="divide-y rounded-lg border">
       {sorted.map((w) => {
         const meta = STRENGTH_META[w.strength];
-        const ariaLabel = `${w.term}, ${meta.label}, ${relativeDueLabel(w.dueAt)}`;
+        // NEW words carry dueAt = now (queue-eligibility marker, not a real
+        // review date) — relativeDueLabel would misreport them as "due today".
+        const dueLabel = w.state === "NEW" ? "new" : relativeDueLabel(w.dueAt);
+        const ariaLabel = `${w.term}, ${meta.label}, ${dueLabel}`;
         return (
           <li
             key={w.wordId}
@@ -190,7 +193,7 @@ export function WordRetentionList({
               <span className="flex shrink-0 items-center gap-2">
                 <Sparkline word={w} now={now} />
                 <span className="w-20 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-                  {relativeDueLabel(w.dueAt).replace(/^due /, "")}
+                  {w.state === "NEW" ? "new" : relativeDueLabel(w.dueAt).replace(/^due /, "")}
                 </span>
               </span>
             </WordHoverCard>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { DEFAULT_READER_FONT_SIZE, READER_FONT_SIZES, readerFontSizeIndex, snapReaderFontSize } from "@/lib/reading/fontSize";
 
 /* ── Reader preferences (persisted to localStorage) ──────── */
@@ -41,11 +42,21 @@ interface Props {
 }
 
 export function ReaderSettings({ open, onClose, prefs, onChange }: Props) {
+  // Escape closes the drawer — previously the backdrop click was the only exit.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50" onClick={onClose}>
       <div className="absolute inset-0 bg-black/20" />
-      <div className="absolute bottom-0 inset-x-0 mx-auto max-w-2xl rounded-t-2xl border bg-card p-5 pb-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" aria-label="Reading settings" className="absolute bottom-0 inset-x-0 mx-auto max-w-2xl overflow-hidden rounded-t-2xl border bg-card p-5 pb-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+        {/* Paper-grain: ties this surface to the Study/Reading/Ninja family (DESIGN.md). */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:16px_16px]" />
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted" />
         <h2 className="text-sm font-semibold mb-4">Reading settings</h2>
 

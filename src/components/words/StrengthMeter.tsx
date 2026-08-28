@@ -6,7 +6,9 @@ export const METER: Record<Strength, { fill: number; className: string }> = {
   mastered: { fill: 1, className: "bg-success" },
   solid: { fill: 0.8, className: "bg-success/80" },
   growing: { fill: 0.5, className: "bg-primary" },
-  shaky: { fill: 0.25, className: "bg-destructive" },
+  // Warning Amber, not destructive red — a lapse is a normal SRS signal,
+  // not a delete/failure state (DESIGN.md's Trouble/shaky color rule).
+  shaky: { fill: 0.25, className: "bg-amber" },
   known: { fill: 0.9, className: "bg-muted-foreground/60" },
   // Floor high enough to read as "empty strength", not a missing bar.
   new: { fill: 0.22, className: "bg-muted-foreground/50" },

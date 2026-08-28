@@ -37,7 +37,7 @@ export function ListVisibilityButton({
       disabled={busy}
       aria-label={hidden ? "Show this list again" : "Hide this list from your shelf (progress kept)"}
       title={hidden ? "Show this list again" : "Hide this list from your shelf (progress kept)"}
-      className="rounded-full p-1.5 text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+      className="flex size-11 items-center justify-center rounded-full text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
     >
       {hidden ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
     </button>
