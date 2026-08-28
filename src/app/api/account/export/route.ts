@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
+import { rateLimit } from "@/lib/rateLimit";
 
 /** Escape a value for RFC-4180 CSV (quote if it contains comma, quote, or newline). */
 function csvCell(value: unknown): string {
@@ -27,6 +28,13 @@ export async function GET() {
   const userId = await getCurrentUserId();
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Rate-limit expensive data export: 3 per user per day
+  if (!rateLimit(`account-export:${userId}`, 3, 24 * 60 * 60 * 1000)) {
+    return new Response("Data export rate limited — try again later", {
+      status: 429,
+    });
   }
 
   const rows = await prisma.userProgress.findMany({

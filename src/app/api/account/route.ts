@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { logApiError, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 
 /**
  * Destructive: delete the account and everything it owns. Progress, review
@@ -12,6 +13,14 @@ import { prisma } from "@/lib/prisma";
 export async function DELETE() {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Rate-limit destructive account deletion: 1 per user per day
+  if (!rateLimit(`account-delete:${userId}`, 1, 24 * 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: "Account deletion rate limited — try again tomorrow" },
+      { status: 429 }
+    );
+  }
 
   try {
     await prisma.$transaction([
