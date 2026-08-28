@@ -113,7 +113,7 @@ export function WordStrengthGrid({
               )}
             >
               {l.band === "shaky" && (
-                <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-destructive" />
+                <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-amber" />
               )}
             </span>
             {l.label}
@@ -306,7 +306,7 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
               <WordHoverCard
                 word={w}
                 wrapperClassName="block size-full"
-                ariaLabel={`${w.term}, ${meta.label}, ${relativeDueLabel(w.dueAt)}`}
+                ariaLabel={`${w.term}, ${meta.label}, ${w.state === "NEW" ? "new" : relativeDueLabel(w.dueAt)}`}
                 tabIndex={i === 0 ? 0 : -1}
                 onKeyDown={(e) => onKeyDown(e, i)}
                 triggerRef={(el) => {
@@ -323,7 +323,7 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
                 {w.strength === "shaky" && (
                   <span
                     aria-hidden
-                    className="absolute right-[12%] top-[12%] size-1.5 rounded-full bg-destructive"
+                    className="absolute right-[12%] top-[12%] size-1.5 rounded-full bg-amber"
                   />
                 )}
               </WordHoverCard>

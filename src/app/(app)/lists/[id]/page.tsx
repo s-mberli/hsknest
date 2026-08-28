@@ -116,10 +116,10 @@ export default async function ListDetailPage({
                 {/* Secondary actions: Assume + Unenroll behind a kebab. */}
                 {(progress.length > 0 || !allEnrolled) && (
                   <details className="relative group/actions">
-                    <summary className="cursor-pointer list-none rounded-full p-1.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <summary className="flex size-11 cursor-pointer list-none items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                       <MoreHorizontal className="size-4 text-muted-foreground" />
                     </summary>
-                    <div className="absolute right-0 z-10 mt-1 w-56 rounded-lg border bg-card p-2 shadow-md">
+                    <div className="absolute right-0 z-10 mt-1 w-56 rounded-lg border bg-card p-2 shadow-card">
                       <div className="space-y-2">
                         <AssumeButton listId={list.id} />
                         {progress.length > 0 && (

@@ -134,6 +134,7 @@ export function ListManageBar({
       <Button
         variant="ghost"
         size="icon"
+        className="size-11"
         aria-label="List settings"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((v) => !v)}
@@ -150,7 +151,7 @@ export function ListManageBar({
             className="fixed inset-0 z-10 cursor-default"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="absolute right-0 top-full z-20 mt-1 w-36 overflow-hidden rounded-lg border bg-popover py-1 shadow-md">
+          <div className="absolute right-0 top-full z-20 mt-1 w-36 overflow-hidden rounded-lg border bg-popover py-1 shadow-card">
             <button
               type="button"
               className="block w-full px-3 py-2 text-left text-sm hover:bg-accent"

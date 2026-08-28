@@ -96,7 +96,7 @@ export default async function ListsPage() {
   );
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-8">
+    <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="mb-1 text-3xl font-extrabold tracking-tight">Word lists</h1>
@@ -123,7 +123,7 @@ export default async function ListsPage() {
             The top of this stack feeds your new words. Reviews always come
             first, wherever they live.
           </p>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {studying.map((l) => card(l, { studying: true }))}
           </div>
         </section>
@@ -134,7 +134,7 @@ export default async function ListsPage() {
           <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
             Your lists
           </h2>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             {ownLists.map((l) => card(l))}
           </div>
         </section>
@@ -163,7 +163,7 @@ export default async function ListsPage() {
                   <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
                     {g.title}
                   </h3>
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     {g.lists.map((l) => card(l))}
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export default async function ListsPage() {
               Hidden ({hiddenLists.length})
             </span>
           </summary>
-          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 opacity-60 transition-opacity hover:opacity-100">
+          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 opacity-60 transition-opacity hover:opacity-100">
             {hiddenLists.map((l) => card(l, { hidden: true }))}
           </div>
         </details>
@@ -221,39 +221,50 @@ function ListCard({
   showRankControls?: boolean;
 }) {
   return (
-    <Link href={`/lists/${id}`} className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
-      <Card className="relative flex h-full flex-col overflow-hidden bg-card transition-colors duration-200 hover:border-primary/30 hover:bg-accent/40">
-        <CardContent className="flex flex-1 flex-col p-5">
-          {/* Top row: name + language on the left, hide toggle pinned right. */}
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center gap-2">
-                <p className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
-                  {name}
-                </p>
-                {owner && (
-                  <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-                    Yours
-                  </span>
-                )}
-              </div>
-              <p className="truncate text-sm font-medium text-muted-foreground/80">{languageName}</p>
+    // "Stretched link" pattern: the Link is a sibling overlay (z-0), not an
+    // ancestor of the card's real content — a <button> (ListVisibilityButton)
+    // inside an <a> is invalid HTML and an accessibility hazard for
+    // keyboard/AT users (ambiguous or duplicate interactive targets). The
+    // whole card still reads as one click target because the overlay Link
+    // fills it; content above stays pointer-events-none except the two real
+    // interactive controls, which opt back in explicitly.
+    <Card className="group relative flex h-full flex-col overflow-hidden bg-card transition-colors duration-200 hover:border-primary/30 hover:bg-accent/40">
+      <Link
+        href={`/lists/${id}`}
+        aria-label={`Open ${name}`}
+        className="absolute inset-0 z-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      />
+      <CardContent className="relative z-[1] flex flex-1 flex-col p-5 pointer-events-none">
+        {/* Top row: name + language on the left, hide toggle pinned right. */}
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <p className="truncate text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                {name}
+              </p>
+              {owner && (
+                <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Yours
+                </span>
+              )}
             </div>
-            {hideable && (
-              <div className="relative z-10 shrink-0 -mt-1 -mr-1">
-                <ListVisibilityButton listId={id} hidden={hidden} />
-              </div>
-            )}
+            <p className="truncate text-sm font-medium text-muted-foreground/80">{languageName}</p>
           </div>
-
-          {studying && showRankControls && rank !== undefined && studyingOrder && (
-            <div className="relative z-10 mb-3">
-              <PriorityControls listId={id} rank={rank} order={studyingOrder} />
+          {hideable && (
+            <div className="relative z-10 shrink-0 -mt-1 -mr-1 pointer-events-auto">
+              <ListVisibilityButton listId={id} hidden={hidden} />
             </div>
           )}
+        </div>
 
-          {/* Spacer to push stats to bottom */}
-          <div className="mt-auto pt-4 border-t border-border/40">
+        {studying && showRankControls && rank !== undefined && studyingOrder && (
+          <div className="relative z-10 mb-3 pointer-events-auto">
+            <PriorityControls listId={id} rank={rank} order={studyingOrder} />
+          </div>
+        )}
+
+        {/* Spacer to push stats to bottom */}
+        <div className="mt-auto pt-4 border-t border-border/40">
             {studying ? (
               <p className="text-xs font-medium text-muted-foreground">
                 {due > 0 && (
@@ -284,7 +295,6 @@ function ListCard({
             )}
           </div>
         </CardContent>
-      </Card>
-    </Link>
+    </Card>
   );
 }

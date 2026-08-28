@@ -221,7 +221,7 @@ export function WordHoverCard({
               ? { duration: 0 }
               : { type: "spring", stiffness: 500, damping: 30 }
           }
-          className="rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-lg"
+          className="rounded-lg border bg-popover p-3 text-left text-popover-foreground shadow-card"
         >
           <div className="flex items-baseline justify-between gap-2">
             <span data-term className="flex items-center gap-1 text-lg font-semibold">
@@ -280,7 +280,13 @@ export function WordHoverCard({
             </div>
             <div>
               <dt className="text-muted-foreground">Due</dt>
-              <dd className="font-medium">{relativeDueLabel(word.dueAt, "in")}</dd>
+              <dd className="font-medium">
+                {/* dueAt is set to "now" the moment a NEW word is created (so the
+                    queue can surface it) — rendering that raw date here would
+                    tell the learner an unstudied word is "due today", which
+                    contradicts every due *count* in the app (those exclude NEW). */}
+                {word.state === "NEW" ? "new" : relativeDueLabel(word.dueAt, "in")}
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Lapses</dt>
