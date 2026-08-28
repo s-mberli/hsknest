@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Bookmark, Copy, Minus, Play, Pause, Plus, Volume2, X } from "lucide-react";
 import Link from "next/link";
 import { stripTranslationCruft } from "@/lib/hskTransform";
@@ -300,7 +300,7 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   const onContextMenu = (e: React.MouseEvent, tk: StoryToken) => { if (tk.isPunct) return; e.preventDefault(); setActionMenu({ x: e.clientX, y: e.clientY - 60, token: tk }); };
 
   /* ── prefs ────────────────────────────────────────────────── */
-  const prefs = { pinyinMode, fontSize, speed, showTranslations, hskUnderline };
+  const prefs = useMemo(() => ({ pinyinMode, fontSize, speed, showTranslations, hskUnderline }), [pinyinMode, fontSize, speed, showTranslations, hskUnderline]);
   // `updatePrefs` saves through this ref rather than through a separate
   // "auto-save on any prefs change" effect. That was tried first and had a
   // real race: on mount, the "sync from storage" effect below calls

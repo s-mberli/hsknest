@@ -68,7 +68,7 @@ export function SignupForm({
       return;
     }
     await confirmSession();
-    window.location.href = "/dashboard";
+    router.push("/dashboard");
   }
 
   return (

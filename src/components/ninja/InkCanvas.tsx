@@ -227,7 +227,7 @@ const InkCanvas = forwardRef<HTMLCanvasElement, InkCanvasProps>(
         if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
         observer.disconnect();
       };
-    }, [ref]);
+    }, [ref, stateRef]);
 
     return (
       <canvas

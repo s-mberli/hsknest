@@ -44,7 +44,7 @@ export function LoginForm({ guestEnabled }: { guestEnabled: boolean }) {
       return;
     }
     await confirmSession();
-    window.location.href = "/dashboard";
+    router.push("/dashboard");
   }
 
   return (
