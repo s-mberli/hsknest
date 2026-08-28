@@ -61,17 +61,20 @@ npm install
 # 2. Configure environment
 cp .env.example .env      # then edit: set NEXTAUTH_SECRET (`openssl rand -base64 32`)
 
-# 3. Create the database and apply migrations
+# 3. Generate Prisma Client
+npx prisma generate
+
+# 4. Create the database and apply migrations
 npm run db:migrate
 
-# 4. Seed starter content (sample languages + word lists)
+# 5. Seed starter content (sample languages + word lists)
 npm run db:seed
 
-# 5. Ingest Reading Mode's graded stories (optional — flashcards work without
+# 6. Ingest Reading Mode's graded stories (optional — flashcards work without
 #    this; skip it and /reading just shows an empty library until you run it)
 npx tsx scripts/ingest-story.ts --all --force
 
-# 6. Run the dev server
+# 7. Run the dev server
 npm run dev
 ```
 

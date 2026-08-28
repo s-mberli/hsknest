@@ -9,6 +9,7 @@ const eslintConfig = [
       "prisma/**",
       "playwright-report/**",
       "test-results/**",
+      "coverage/**",
     ],
   },
   ...nextCoreWebVitals,
