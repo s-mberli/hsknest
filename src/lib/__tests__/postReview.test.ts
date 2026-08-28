@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { postReview, type PostReviewOptions } from "@/lib/postReview";
+import { toast } from "sonner";
 
 // Mock the sonner toast module to prevent actual toast calls during tests
 vi.mock("sonner", () => ({
@@ -20,18 +21,6 @@ describe("postReview", () => {
   });
 
   describe("successful requests", () => {
-    it("posts a grade with wordId and quality", async () => {
-      fetchMock.mockResolvedValueOnce({ ok: true });
-
-      await postReview("w123", 4);
-
-      expect(fetchMock).toHaveBeenCalledWith("/api/study/review", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wordId: "w123", quality: 4 }),
-      });
-    });
-
     it("calls onSuccess when the request succeeds", async () => {
       fetchMock.mockResolvedValueOnce({ ok: true });
       const onSuccess = vi.fn();
@@ -41,38 +30,53 @@ describe("postReview", () => {
       expect(onSuccess).toHaveBeenCalledOnce();
     });
 
-    it("includes practice flag when practice mode is set", async () => {
-      fetchMock.mockResolvedValueOnce({ ok: true });
+    it.each([
+      { opts: {}, description: "base request with wordId and quality" },
+      {
+        opts: { practice: true },
+        description: "includes practice flag when practice mode is set",
+      },
+      {
+        opts: { source: "quiz" as const },
+        description: "includes source when provided",
+      },
+      {
+        opts: { latencyMs: 2500 },
+        description: "includes latencyMs when provided",
+      },
+    ])(
+      "$description",
+      async ({ opts }) => {
+        fetchMock.mockResolvedValueOnce({ ok: true });
 
-      await postReview("w123", 4, { practice: true });
+        await postReview("w123", 4, opts);
 
-      const body = JSON.parse(
-        fetchMock.mock.calls[0][1]!.body as string
-      );
-      expect(body.practice).toBe(true);
-    });
+        const callArgs = fetchMock.mock.calls[0];
+        expect(callArgs[0]).toBe("/api/study/review");
+        expect(callArgs[1]?.method).toBe("POST");
 
-    it("includes source when provided", async () => {
-      fetchMock.mockResolvedValueOnce({ ok: true });
+        const body = JSON.parse(callArgs[1]!.body as string);
+        expect(body.wordId).toBe("w123");
+        expect(body.quality).toBe(4);
 
-      await postReview("w123", 4, { source: "quiz" });
-
-      const body = JSON.parse(
-        fetchMock.mock.calls[0][1]!.body as string
-      );
-      expect(body.source).toBe("quiz");
-    });
-
-    it("includes latencyMs when provided", async () => {
-      fetchMock.mockResolvedValueOnce({ ok: true });
-
-      await postReview("w123", 4, { latencyMs: 2500 });
-
-      const body = JSON.parse(
-        fetchMock.mock.calls[0][1]!.body as string
-      );
-      expect(body.latencyMs).toBe(2500);
-    });
+        // Verify optional fields are included when provided
+        if (opts.practice) {
+          expect(body.practice).toBe(true);
+        } else {
+          expect(body.practice).toBeUndefined();
+        }
+        if (opts.source) {
+          expect(body.source).toBe(opts.source);
+        } else {
+          expect(body.source).toBeUndefined();
+        }
+        if (opts.latencyMs) {
+          expect(body.latencyMs).toBe(opts.latencyMs);
+        } else {
+          expect(body.latencyMs).toBeUndefined();
+        }
+      }
+    );
 
     it("includes multiple options together", async () => {
       fetchMock.mockResolvedValueOnce({ ok: true });
@@ -155,7 +159,9 @@ describe("postReview", () => {
 
       await postReview("w123", 4);
 
-      // Toast is internal to postReview; just verify fetch was not retried
+      // Assert the correct error message was shown
+      expect(toast.error).toHaveBeenCalledWith("Review failed: Validation error");
+      // Verify fetch was not retried
       expect(fetchMock).toHaveBeenCalledOnce();
     });
 
@@ -170,7 +176,9 @@ describe("postReview", () => {
 
       await postReview("w123", 4);
 
-      // Toast is internal; just verify fetch was not retried
+      // Assert the fallback error message was shown
+      expect(toast.error).toHaveBeenCalledWith("Review failed: Invalid input");
+      // Verify fetch was not retried
       expect(fetchMock).toHaveBeenCalledOnce();
     });
   });
@@ -186,17 +194,6 @@ describe("postReview", () => {
 
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(onSuccess).toHaveBeenCalled();
-    });
-
-    it("waits before retry (tests are not timing-sensitive, just verify retry happens)", async () => {
-      fetchMock
-        .mockResolvedValueOnce({ ok: false, status: 500 })
-        .mockResolvedValueOnce({ ok: true });
-
-      await postReview("w123", 4);
-
-      // Just verify both calls happened; timing is implementation detail
-      expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
     it("retries on 5xx server error", async () => {

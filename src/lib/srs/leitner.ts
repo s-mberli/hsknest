@@ -36,12 +36,27 @@ export class LeitnerSystem implements SRSAlgorithm {
     quality: ReviewQuality,
     now: Date
   ): SRSResult {
+    // Hydrate box from intervalDays when switching from another algorithm.
+    // This ensures that a user who studied on FSRS for 200 days and switches
+    // to Leitner doesn't collapse back to a 1–2 day interval.
+    // Pattern mirrors fsrs.ts:80-82 (hydrate S from intervalDays).
+    let currentBox = state.box;
+    if (currentBox === 1 && state.intervalDays > 0) {
+      // Derive the highest box whose interval ≤ incoming intervalDays
+      for (let b = MAX_BOX; b >= 1; b--) {
+        if (BOX_INTERVALS[b - 1] <= state.intervalDays) {
+          currentBox = b;
+          break;
+        }
+      }
+    }
+
     let box: number;
     let lapses = state.lapses;
     let cardState: SRSState["state"];
 
     if (quality >= 3) {
-      box = Math.min(state.box + 1, MAX_BOX);
+      box = Math.min(currentBox + 1, MAX_BOX);
       cardState = "REVIEW";
     } else {
       box = 1;

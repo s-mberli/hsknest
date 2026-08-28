@@ -39,6 +39,18 @@ export class SM2Algorithm implements SRSAlgorithm {
     const efDelta = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02);
     const easeFactor = Math.max(MIN_EASE_FACTOR, state.easeFactor + efDelta);
 
+    // Hydrate repetitions from intervalDays when switching from another algorithm.
+    // This ensures that a user who studied on Leitner/FSRS and switches to SM2
+    // doesn't lose their interval progress. Pattern mirrors fsrs.ts:80-82.
+    let currentRepetitions = state.repetitions;
+    if (currentRepetitions === 0 && state.intervalDays > 0) {
+      // Non-zero interval with zero repetitions means we're hydrating from
+      // another algorithm. Set repetitions to 2 so that SM2's logic uses
+      // the interval * easeFactor formula (line 60) instead of hardcoded
+      // paths for reps 0 (1 day) or 1 (6 days).
+      currentRepetitions = 2;
+    }
+
     let repetitions: number;
     let intervalDays: number;
     let lapses = state.lapses;
@@ -52,15 +64,15 @@ export class SM2Algorithm implements SRSAlgorithm {
       cardState = "LEARNING";
     } else {
       // Successful recall.
-      if (state.repetitions === 0) {
+      if (currentRepetitions === 0) {
         intervalDays = 1;
-      } else if (state.repetitions === 1) {
+      } else if (currentRepetitions === 1) {
         intervalDays = 6;
       } else {
         intervalDays = Math.round(state.intervalDays * easeFactor);
       }
       intervalDays = Math.min(intervalDays, MAX_INTERVAL_DAYS);
-      repetitions = state.repetitions + 1;
+      repetitions = currentRepetitions + 1;
       cardState = "REVIEW";
     }
 
