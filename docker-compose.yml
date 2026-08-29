@@ -24,6 +24,12 @@ services:
       # Seed/refresh starter word lists on every boot. Idempotent — safe to
       # leave on; only adds/updates seeded (createdById=null) content.
       AUTO_SEED: ${AUTO_SEED:-true}
+      # Self-hosted only: the first account to sign up claims the instance,
+      # then registration (and guest mode) closes automatically. Set to
+      # "true" to reopen both — e.g. to add a second household account.
+      # Fails CLOSED like AUTO_SEED fails open: unset or anything other than
+      # "true" keeps registration closed.
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-false}
       # Optional: enables real email delivery for password reset / email
       # verification via Resend (https://resend.com). Without it, links are
       # logged to the container's stdout instead of emailed.
@@ -43,6 +49,11 @@ services:
       AUDIO_PACKS: ${AUDIO_PACKS-stories}
       # Override only if you maintain a fork with its own audio releases.
       AUDIO_PACK_REPO: ${AUDIO_PACK_REPO:-s-mberli/hsknest}
+      # Ingest Reading Mode's graded stories on every boot (idempotent).
+      # Set to exactly "false" to skip it on a stripped-down instance;
+      # existing reading progress and enrolled words are untouched either
+      # way, only future re-ingests are skipped.
+      READING_MODE_ENABLED: ${READING_MODE_ENABLED:-true}
       # Optional operator page (/mb-admin) + cookieless Umami analytics.
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       NEXT_PUBLIC_UMAMI_URL: ${NEXT_PUBLIC_UMAMI_URL:-}
@@ -57,12 +68,22 @@ services:
     volumes:
       - recall-data:/data
       - recall-audio:/app/public/audio
+    healthcheck:
+      # Real DB round-trip (see src/app/api/health/route.ts), not just "is
+      # the process alive" — catches a hung or DB-broken container so
+      # `restart: unless-stopped` and dependents can actually react.
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   sqlite-backup:
     image: alpine:3.20
     restart: unless-stopped
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     volumes:
       - recall-data:/data
       - ./backups:/backups

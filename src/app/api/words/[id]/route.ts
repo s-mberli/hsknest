@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { ownedWordWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 import { updateWordSchema } from "@/lib/validation";
 
 /** Confirm the word exists and its parent list is owned by the caller. */
@@ -50,6 +51,14 @@ export async function DELETE(
 ) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Rate-limit destructive word deletion: 100 per user per day
+  if (!rateLimit(`word-delete:${userId}`, 100, 24 * 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: "Word deletion rate limited — try again later" },
+      { status: 429 }
+    );
+  }
 
   const { id } = await params;
 

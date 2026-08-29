@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { ownedListWhere, visibleListWhere } from "@/lib/ownership";
+import { rateLimit } from "@/lib/rateLimit";
 import { updateListSchema } from "@/lib/validation";
 
 export async function GET(
@@ -102,6 +103,14 @@ export async function DELETE(
 ) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Rate-limit destructive list deletion: 10 per user per day
+  if (!rateLimit(`list-delete:${userId}`, 10, 24 * 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: "List deletion rate limited — try again later" },
+      { status: 429 }
+    );
+  }
 
   const { id } = await params;
 

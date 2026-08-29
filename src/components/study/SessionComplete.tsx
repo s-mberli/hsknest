@@ -4,13 +4,40 @@ import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AuroraGlow } from "@/components/fx/AuroraGlow";
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
+import { usePrefersReducedMotion } from "@/lib/motion";
+
+// Natural-deceleration curve used throughout the app's authored entrances
+// (see DESIGN.md's motion guidance) — confident arrival, no bounce.
+const EASE_OUT = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * One top-to-bottom reveal, not independent per-element entrances: headline,
+ * then the stat row as a group, then the missed-words card, then actions —
+ * each step a beat behind the last so the eye is told where to look next
+ * instead of everything landing in the same frame as the icon.
+ */
+const revealParent = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+};
+const revealItem = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+};
+// Reduced motion keeps the same beats (so screen-reader/focus order and
+// staggered relevance are unaffected) but drops the spatial travel and delay
+// — a same-frame fade instead of a choreographed rise.
+const revealItemReduced = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.15 } },
+};
 
 interface SessionCompleteProps {
   reviewed: number;
@@ -46,6 +73,8 @@ export function SessionComplete({
   const { data: session } = useSession();
   const isGuest = session?.user?.email?.endsWith("@guest.local") ?? false;
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
+  const item = reducedMotion ? revealItemReduced : revealItem;
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
     accuracy >= 80
@@ -85,92 +114,108 @@ export function SessionComplete({
       >
         <CheckCircle2 className="size-14 text-primary" />
       </motion.div>
-      <h2 className="text-2xl font-bold tracking-tight">
-        {practice ? "Practice done" : "Session complete"}
-      </h2>
-      <p className="text-muted-foreground">
-        You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}.{" "}
-        {practice
-          ? "Just practice — nothing here changed your upcoming reviews."
-          : "Nice work."}
-      </p>
-      {note && (
-        <p className="max-w-xs text-xs text-muted-foreground">{note}</p>
-      )}
-      {tomorrowDue !== null && (
-        <p className="max-w-xs text-sm text-muted-foreground">
-          {tomorrowDue > 0
-            ? `Come back tomorrow — ${tomorrowDue} ${tomorrowDue === 1 ? "review" : "reviews"} will be waiting.`
-            : "Nothing due tomorrow — the schedule brings words back right before you'd forget them."}
-        </p>
-      )}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={revealParent}
+        className="contents"
+      >
+        <motion.h2 variants={item} className="text-2xl font-bold tracking-tight">
+          {practice ? "Practice done" : "Session complete"}
+        </motion.h2>
+        <motion.p variants={item} className="text-muted-foreground">
+          You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}.{" "}
+          {practice
+            ? "Just practice — nothing here changed your upcoming reviews."
+            : "Nice work."}
+        </motion.p>
+        {note && (
+          <motion.p variants={item} className="max-w-xs text-xs text-muted-foreground">
+            {note}
+          </motion.p>
+        )}
+        {tomorrowDue !== null && (
+          <motion.p variants={item} className="max-w-xs text-sm text-muted-foreground">
+            {tomorrowDue > 0
+              ? `Come back tomorrow — ${tomorrowDue} ${tomorrowDue === 1 ? "review" : "reviews"} will be waiting.`
+              : "Nothing due tomorrow — the schedule brings words back right before you'd forget them."}
+          </motion.p>
+        )}
 
-      <div className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3">
-        <Stat label="Accuracy" value={`${accuracy}%`} valueClassName={accuracyTint} />
-        <Stat label="Best combo" value={String(bestCombo)} />
-        <Stat label="Time" value={formatElapsed(elapsedMs)} />
-      </div>
+        <motion.div variants={item} className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3">
+          <Stat
+            label="Accuracy"
+            value={<CountUp to={accuracy} suffix="%" reduced={reducedMotion} />}
+            valueClassName={accuracyTint}
+          />
+          <Stat label="Best combo" value={<CountUp to={bestCombo} reduced={reducedMotion} />} />
+          <Stat label="Time" value={formatElapsed(elapsedMs)} />
+        </motion.div>
 
-      {missed.length > 0 && (
-        <div className="mt-2 w-full max-w-xs rounded-lg border bg-card p-3 text-left">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Toughest this round
-          </p>
-          <ul className="space-y-1.5">
-            {missed.slice(0, 5).map((w) => (
-              <li key={w.term} className="flex items-baseline justify-between gap-3 text-sm">
-                <span data-term className="font-medium">{w.term}</span>
-                <span className="truncate text-muted-foreground">{w.translation}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {missed.length > 0 && (
+          <motion.div variants={item} className="mt-2 w-full max-w-xs rounded-lg border bg-card p-3 text-left">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Toughest this round
+            </p>
+            <ul className="space-y-1.5">
+              {missed.slice(0, 5).map((w) => (
+                <li key={w.term} className="flex items-baseline justify-between gap-3 text-sm">
+                  <span data-term className="font-medium">{w.term}</span>
+                  <span className="truncate text-muted-foreground">{w.translation}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
 
-      {!isGuest && (
-        <div className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center">
-          {missed.length > 0 && (
+        {!isGuest && (
+          <motion.div
+            variants={item}
+            className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center"
+          >
+            {missed.length > 0 && (
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  params.set("mode", "practice");
+                  params.set("limit", String(missed.length));
+                  router.push(`${pathname}?${params.toString()}`);
+                }}
+              >
+                Redo the {missed.length} you missed
+              </Button>
+            )}
             <Button
+              asChild
+              variant={missed.length > 0 ? "outline" : "default"}
+              className="w-full sm:w-auto"
+            >
+              {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
+              <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
+            </Button>
+            <Button
+              variant="outline"
               className="w-full sm:w-auto"
               onClick={() => {
-                const searchParams = new URLSearchParams(window.location.search);
-                searchParams.set("mode", "practice");
-                searchParams.set("limit", String(missed.length));
-                window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+                // Force fresh dashboard counts after studying (avoid stale ring).
+                router.push("/dashboard");
+                router.refresh();
               }}
             >
-              Redo the {missed.length} you missed
+              Back to dashboard
             </Button>
-          )}
-          <Button
-            asChild
-            variant={missed.length > 0 ? "outline" : "default"}
-            className="w-full sm:w-auto"
-          >
-            {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
-            <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={() => {
-              // Force fresh dashboard counts after studying (avoid stale ring).
-              router.push("/dashboard");
-              router.refresh();
-            }}
-          >
-            Back to dashboard
-          </Button>
-        </div>
-      )}
+          </motion.div>
+        )}
 
-      {isGuest && (
-        <div className="mt-4 w-full max-w-xs sm:max-w-md">
-          <Button size="lg" className="w-full text-md font-semibold" onClick={() => setShowUpgrade(true)}>
-            Save Progress & Continue Free
-          </Button>
-        </div>
-      )}
+        {isGuest && (
+          <motion.div variants={item} className="mt-4 w-full max-w-xs sm:max-w-md">
+            <Button size="lg" className="w-full text-md font-semibold" onClick={() => setShowUpgrade(true)}>
+              Save Progress & Continue Free
+            </Button>
+          </motion.div>
+        )}
+      </motion.div>
 
       <UpgradeModal
         isOpen={showUpgrade}
@@ -189,7 +234,7 @@ function Stat({
   valueClassName,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   valueClassName?: string;
 }) {
   return (
@@ -199,5 +244,48 @@ function Stat({
       </p>
       <p className="text-xs text-muted-foreground">{label}</p>
     </div>
+  );
+}
+
+/**
+ * Counts up from 0 to `to` once, on mount — the one number a learner opened
+ * this screen to see gets a tally instead of just appearing, same way a
+ * scoreboard settles rather than snapping to the final total. Runs once
+ * (StrictMode-safe via a ref guard) and renders the final value immediately
+ * under reduced motion instead of animating the digits.
+ */
+function CountUp({
+  to,
+  suffix = "",
+  reduced,
+}: {
+  to: number;
+  suffix?: string;
+  reduced: boolean;
+}) {
+  const [value, setValue] = useState(reduced ? to : 0);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (reduced || started.current) return;
+    started.current = true;
+    const durationMs = 650;
+    const start = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3); // matches EASE_OUT's cubic-ish settle
+      setValue(Math.round(eased * to));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to, reduced]);
+
+  return (
+    <span aria-label={`${to}${suffix}`}>
+      {value}
+      {suffix}
+    </span>
   );
 }
