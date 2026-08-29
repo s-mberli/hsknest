@@ -47,7 +47,7 @@ Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
 **TL;DR (Docker):**
 
 ```bash
-docker run -d -p 3000:3000 -v hsknest-data:/data ghcr.io/s-mberli/hsknest:latest
+docker run -d -p 3000:3000 -v recall-data:/data ghcr.io/s-mberli/hsknest:latest
 ```
 
 **Full local development:**
@@ -82,7 +82,7 @@ Open http://localhost:3000, create an account, add or import a word list, and st
 
 ### Audio
 
-Recall ships without audio files baked into the image (too large for git).
+HSK Nest ships without audio files baked into the image (too large for git).
 The container downloads them itself on first boot — no Python toolchain,
 no `docker cp`.
 
@@ -117,7 +117,7 @@ The container will:
 - Apply any pending database migrations
 - Serve the app at `http://localhost:3000`
 
-Visit `http://localhost:3000`, create an account, and start studying. Your data lives entirely in the `hsknest-data` volume.
+Visit `http://localhost:3000`, create an account, and start studying. Your data lives entirely in the `recall-data` volume.
 
 ## Tech stack
 

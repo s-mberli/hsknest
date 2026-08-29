@@ -4,7 +4,7 @@
 
 ## Context
 
-Recall serves three kinds of pre-generated audio, all of it optional and none
+HSK Nest serves three kinds of pre-generated audio, all of it optional and none
 of it in git (see `docs/AUDIO.md`): per-word clips, per-sentence clips, and
 Reading Mode story narration with a word-timing sidecar. In Docker deployments
 all of it lives on a mounted volume (`recall-audio` → `/app/public/audio`),

@@ -1,6 +1,6 @@
 # Natural pronunciation audio
 
-HSKNest can play natural audio for every word (and, for Mandarin, example
+HSK Nest can play natural audio for every word (and, for Mandarin, example
 sentence too), pre-generated once with [edge-tts](https://github.com/rany2/edge-tts)
 (Microsoft Edge's free TTS — the Azure neural voices, no API key) and served as
 static MP3s. When no audio is configured — or for a language with no

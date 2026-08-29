@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Offline generator for HSKNest's natural pronunciation audio (edge-tts).
+Offline generator for HSK Nest's natural pronunciation audio (edge-tts).
 
 Reads the same seed JSON the app seeds from, dedupes every word `term` and
 sentence `text`, synthesizes each once with Microsoft Edge's free TTS
@@ -190,7 +190,7 @@ async def run(lang: str, out: Path, voice: str, level: int | None, limit: int) -
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Generate HSKNest pronunciation audio (edge-tts).")
+    ap = argparse.ArgumentParser(description="Generate HSK Nest pronunciation audio (edge-tts).")
     ap.add_argument("--lang", default="zh", choices=sorted(LANGS),
                     help="which language's words to synthesize (default: zh)")
     ap.add_argument("--out", default=str(REPO / "audio-out"),

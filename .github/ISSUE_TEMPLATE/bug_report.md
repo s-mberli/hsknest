@@ -17,7 +17,7 @@ A clear description of the bug.
 What you expected instead.
 
 **Setup**
-- Hosted (recall app) or self-hosted? If self-hosted: Docker or `npm run dev`?
+- Hosted (hsknest.com) or self-hosted? If self-hosted: Docker or `npm run dev`?
 - Browser / OS:
 - Language you study:
 

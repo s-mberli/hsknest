@@ -73,6 +73,18 @@ next-env.d.ts
 # from the wrong cwd (e.g. "file:./prisma/dev.db" run from inside prisma/)
 /prisma/prisma/
 
+# repo-root sqlite files — CI sets DATABASE_URL="file:./ci.db" and
+# "file:./e2e.db" (both resolve here, not under /prisma), and anyone
+# reproducing CI locally gets the same. Unanchored, unlike the /prisma/*.db
+# rule above, since these land at the root.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# mutation-testing scratch dir (Stryker), in case it's reintroduced later
+.stryker-tmp/
+
 # self-host: docker-compose.yml bind-mounts nightly SQLite backups here —
 # real user data (emails, password hashes), never commit
 /backups/
@@ -103,6 +115,13 @@ next-env.d.ts
 # Claude Code agent-skill definitions — internal tooling, not documentation
 # for self-hosters/contributors. Purged from git history 2026-08-25.
 /docs/skills/
+
+# raw LLM research dumps and prompts — working inputs to a feature
+# investigation, not documentation a self-hoster or contributor should read.
+# (docs/agents/ is intentionally NOT here: those are curated, human-written
+# contributor docs directly linked from CLAUDE.md, not AI tool output.)
+/docs/research/
+/docs/content/gemini-prompt.md
 
 # private product sequencing — deliberately NOT in the public RELEASES.md
 # roadmap (see docs/marketing/positioning.md: multi-language is an

@@ -15,10 +15,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const title = "HSK Nest — Spaced Repetition";
+const description =
+  "Open-source, self-hostable spaced repetition for learning any language.";
+
 export const metadata: Metadata = {
-  title: "HSK Nest — Spaced Repetition",
-  description:
-    "Open-source, self-hostable spaced repetition for learning any language.",
+  metadataBase: new URL(appUrl),
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    url: "/",
+    siteName: "HSK Nest",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
 };
 
 export default function RootLayout({

@@ -103,7 +103,7 @@ async function main() {
   const problems: string[] = [];
   const push = (line: string) => lines.push(line);
 
-  push("Recall doctor");
+  push("HSK Nest doctor");
 
   // --- Audio root ---
   const root = checkAudioRoot();
