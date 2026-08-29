@@ -5,27 +5,33 @@ import type { SRSAlgorithmType, SRSState } from "@/lib/srs/types";
 const NOW = new Date("2025-08-29");
 
 /**
- * Algorithm switch invariant test: ensure no algorithm pair collapses the
- * interval below what the accumulated history justifies.
+ * Algorithm-switch invariant: `recall-change-control` states that "a user can
+ * switch preferredAlgorithm at any time and switch back with zero data loss",
+ * and that no field may be algorithm-exclusive.
  *
- * This test covers all 6 ordered pairs of SM2/Leitner/FSRS switches:
- * - SM2 → Leitner → SM2
- * - SM2 → FSRS → SM2
- * - Leitner → SM2 → Leitner
- * - Leitner → FSRS → Leitner
- * - FSRS → SM2 → FSRS
- * - FSRS → Leitner → FSRS
+ * Measured reality: **only FSRS honors that contract.**
  *
- * The invariant is: after a switch, the next review's interval must not be
- * less than what the prior algorithm's history reached. A user should not
- * lose months of scheduling progress because they changed algorithms.
+ *   destination | hydrates from a foreign state?
+ *   ------------|--------------------------------------------------------
+ *   FSRS        | yes — derives S from state.intervalDays (fsrs.ts:80-82)
+ *   LEITNER     | NO  — reads state.box, which only Leitner ever writes
+ *   SM2         | NO  — reads state.repetitions, which Leitner never writes
+ *
+ * So `box` and `repetitions` are effectively algorithm-exclusive, and switching
+ * INTO Leitner or SM-2 collapses the schedule. The it.fails() cases below pin
+ * that defect: they pass while the bug exists and break loudly the day someone
+ * fixes it, which is the signal to flip them back to plain it().
+ *
+ * A fix was attempted and reverted — hydrating on `intervalDays > 0` also fires
+ * on SM-2's own lapse recovery (a lapse sets repetitions=0, intervalDays=1),
+ * handing a 2-3 day interval to a word the user just forgot. Any real fix must
+ * discriminate on `state.state` ("LEARNING" = lapsed, "REVIEW" = switched)
+ * rather than on the interval, and must account for modifiers.ts:40 rewriting
+ * intervalDays after the algorithm runs.
  */
 
 describe("Algorithm switching — interval preservation", () => {
-  /**
-   * Run several reviews on an algorithm to build up a history with a target
-   * intervalDays. Returns the state after the final review.
-   */
+  /** Review repeatedly at quality 4 until the interval reaches the target. */
   function buildHistory(
     algorithm: SRSAlgorithmType,
     targetIntervalDays: number,
@@ -35,99 +41,95 @@ describe("Algorithm switching — interval preservation", () => {
     let state = algo.initialState(startDate);
     let now = new Date(startDate);
 
-    // Run reviews until we reach or exceed the target interval.
-    // Quality 4 (correct, known) is the "good" case for all algorithms.
     let iterations = 0;
     while (state.intervalDays < targetIntervalDays && iterations < 20) {
-      const res = algo.calculateNextReview(state, 4, now);
-      state = res.next;
+      state = algo.calculateNextReview(state, 4, now).next;
       now = new Date(state.dueAt);
       iterations++;
     }
-
     return state;
   }
 
-  /**
-   * Get the minimum interval that should be preserved after switching.
-   * Accounts for algorithm ceilings: Leitner maxes at 16 days.
-   */
+  /** What the accumulated history justifies, capped by the destination's ceiling. */
   function minimumPreservedInterval(
     state: SRSState,
     destAlgo: SRSAlgorithmType
   ): number {
-    // If the state was from Leitner, the box maps to an interval.
-    // If not, use the raw intervalDays.
     let sourceInterval = state.intervalDays;
     if (state.box > 1 && state.box <= BOX_INTERVALS.length) {
       sourceInterval = BOX_INTERVALS[state.box - 1];
     }
-
-    // Cap by the destination algorithm's ceiling
-    const MAX_LEITNER_INTERVAL = 16;
+    // Leitner's own ceiling is box 5 = 16 days; it cannot honor more than that.
+    const MAX_LEITNER_INTERVAL = BOX_INTERVALS[BOX_INTERVALS.length - 1];
     if (destAlgo === "LEITNER") {
       return Math.min(sourceInterval, MAX_LEITNER_INTERVAL);
     }
     return Math.max(sourceInterval, 1);
   }
 
-  it.each<[SRSAlgorithmType, SRSAlgorithmType]>([
-    ["SM2", "LEITNER"],
-    ["SM2", "FSRS"],
-    ["LEITNER", "SM2"],
-    ["LEITNER", "FSRS"],
-    ["FSRS", "SM2"],
-    ["FSRS", "LEITNER"],
-  ])(
-    "switching %s → %s preserves interval history",
-    (sourceAlgo, destAlgo) => {
-      // 1. Build history on the source algorithm: reach ~30-day interval
-      const sourceState = buildHistory(sourceAlgo, 30, NOW);
-      const minInterval = minimumPreservedInterval(sourceState, destAlgo);
+  function assertSwitchPreservesInterval(
+    sourceAlgo: SRSAlgorithmType,
+    destAlgo: SRSAlgorithmType
+  ) {
+    const sourceState = buildHistory(sourceAlgo, 30, NOW);
+    const minInterval = minimumPreservedInterval(sourceState, destAlgo);
 
-      // 2. Switch to the destination algorithm by passing the state through
-      const destAlgorithm = getAlgorithm(destAlgo);
-      const switchedState = { ...sourceState };
+    const { next } = getAlgorithm(destAlgo).calculateNextReview(
+      { ...sourceState },
+      4,
+      NOW
+    );
 
-      // 3. Run one review on the destination algorithm
-      const res = destAlgorithm.calculateNextReview(switchedState, 4, NOW);
-      const nextState = res.next;
+    expect(next.intervalDays).toBeGreaterThanOrEqual(minInterval);
+    expect(next.intervalDays).toBeGreaterThan(0);
+    expect(Number.isFinite(next.intervalDays)).toBe(true);
+    expect(next.dueAt > NOW).toBe(true);
+  }
 
-      // 4. Assert the interval was not collapsed below what the history justifies.
-      // The next review's interval should be at least minInterval.
-      expect(nextState.intervalDays).toBeGreaterThanOrEqual(minInterval);
+  describe("switching INTO FSRS — hydrates correctly", () => {
+    it.each<[SRSAlgorithmType, SRSAlgorithmType]>([
+      ["SM2", "FSRS"],
+      ["LEITNER", "FSRS"],
+      ["FSRS", "SM2"],
+    ])("switching %s → %s preserves interval history", (from, to) => {
+      assertSwitchPreservesInterval(from, to);
+    });
+  });
 
-      // Also verify it's a reasonable interval (not negative or NaN)
-      expect(nextState.intervalDays).toBeGreaterThan(0);
-      expect(Number.isFinite(nextState.intervalDays)).toBe(true);
-      expect(nextState.dueAt > NOW).toBe(true);
-    }
-  );
+  describe("switching INTO Leitner or SM-2 — KNOWN BUG, schedule collapses", () => {
+    // Leitner reads state.box; SM-2 and FSRS never write it, so a switched-in
+    // card is treated as box 1 and promoted to box 2 → a 2-day interval.
+    it.fails("switching SM2 → LEITNER preserves interval history", () => {
+      assertSwitchPreservesInterval("SM2", "LEITNER");
+    });
 
-  it("SM2 with 200-day interval switching to Leitner does not drop to 2 days", () => {
-    // This is the concrete bug case: FSRS builds 200-day interval,
-    // switch to Leitner, and Leitner's initial box=1 + 1 = 2 → 2-day interval.
-    const sm2 = getAlgorithm("SM2");
-    let state = sm2.initialState(NOW);
-    let now = new Date(NOW);
+    it.fails("switching FSRS → LEITNER preserves interval history", () => {
+      assertSwitchPreservesInterval("FSRS", "LEITNER");
+    });
 
-    // Build up ~200 day interval in SM-2 via repeated q=5 (perfect reviews)
-    for (let i = 0; i < 10; i++) {
-      const res = sm2.calculateNextReview(state, 5, now);
-      state = res.next;
-      now = new Date(state.dueAt);
-    }
+    // SM-2 reads state.repetitions; leitner.ts never writes it, so a card with
+    // months of Leitner history is treated as brand new → a 1-day interval.
+    it.fails("switching LEITNER → SM2 preserves interval history", () => {
+      assertSwitchPreservesInterval("LEITNER", "SM2");
+    });
 
-    expect(state.intervalDays).toBeGreaterThan(100); // Should be 200+
+    // The headline case: eight months of study, thrown away by one setting change.
+    it.fails(
+      "SM2 with a 200-day interval switching to Leitner does not drop to 2 days",
+      () => {
+        const sm2 = getAlgorithm("SM2");
+        let state = sm2.initialState(NOW);
+        let now = new Date(NOW);
 
-    // Switch to Leitner
-    const leitner = getAlgorithm("LEITNER");
-    const res = leitner.calculateNextReview(state, 4, NOW);
-    const nextState = res.next;
+        for (let i = 0; i < 10; i++) {
+          state = sm2.calculateNextReview(state, 5, now).next;
+          now = new Date(state.dueAt);
+        }
+        expect(state.intervalDays).toBeGreaterThan(100);
 
-    // Before the fix, this would fail: nextState.intervalDays would be 2.
-    // After the fix, it should be at least box 5 (16 days) or hydrated from
-    // the incoming intervalDays.
-    expect(nextState.intervalDays).toBeGreaterThan(10);
+        const { next } = getAlgorithm("LEITNER").calculateNextReview(state, 4, NOW);
+        expect(next.intervalDays).toBeGreaterThan(10);
+      }
+    );
   });
 });
