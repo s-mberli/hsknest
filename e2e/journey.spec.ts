@@ -558,6 +558,72 @@ test("failed card repeats in-session until graded Good", async ({ page }) => {
   });
 });
 
+test("dashboard shows exactly three study entry points", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  // The primary Study button and the Practice + Word Ninja rows are the
+  // three entry points. (In this test context the user has enrolled HSK 1,
+  // so learnedCount > 0 and rotatable modes are available, so all three appear.)
+  const entries = page.getByTestId("study-entry");
+  await expect(entries).toHaveCount(3);
+
+  // Check each entry has the expected data-entry attribute.
+  await expect(entries.filter({ has: page.locator("[data-entry='study']") })).toHaveCount(1);
+  await expect(entries.filter({ has: page.locator("[data-entry='practice']") })).toHaveCount(1);
+  await expect(entries.filter({ has: page.locator("[data-entry='ninja']") })).toHaveCount(1);
+});
+
+test("practice entry navigates to a working practice round", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  // Click the Practice entry (not Study or Ninja).
+  const practiceEntry = page.getByTestId("study-entry").filter({ has: page.locator("[data-entry='practice']") });
+  await practiceEntry.click();
+
+  // The Practice route plays one of the rotated modes. Expect the mode pill
+  // to be visible on the study screen (proving we landed in the rotation screen).
+  await expect(page.locator("span:has-text(/Practice ·/)")).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
+test("word ninja entry navigates to ninja", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  const ninjaEntry = page.getByTestId("study-entry").filter({ has: page.locator("[data-entry='ninja']") });
+  await ninjaEntry.click();
+
+  // Ninja is a distinct entry point, fast-paced and motion-heavy.
+  // Expect the Ninja screen to load (looking for its distinctive class or heading).
+  await expect(page.locator("main")).toContainText(/ninja|tiles/i, { timeout: 10_000 });
+});
+
+test("direct per-mode routes still load and behave as before", async ({ page }) => {
+  await logIn(page);
+
+  // Test each of the five per-mode routes that were prewarm in global-setup.
+  const routes = [
+    "/study/quiz?mode=practice",
+    "/study/match?mode=practice",
+    "/study/pronounce?mode=practice",
+    "/study/sentences?mode=practice",
+    "/study/ninja",
+  ];
+
+  for (const route of routes) {
+    await page.goto(route);
+    // The study screen renders a main element. If the route 404s or redirects
+    // unexpectedly, the main won't appear.
+    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+  }
+});
+
 test("account deletion signs out and frees the email", async ({ page }) => {
   // Throwaway signed-up account so the main journey account survives.
   // (Delete account is hidden for guest accounts — they're already disposable.)
