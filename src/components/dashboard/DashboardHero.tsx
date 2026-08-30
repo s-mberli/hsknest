@@ -17,6 +17,11 @@ import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { usePrefersReducedMotion } from "@/lib/motion";
+import {
+  getPracticeAvailability,
+  PRACTICE_MODE_LABELS,
+  type PracticeModeKey,
+} from "@/lib/practiceModes";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeroProps {
@@ -38,11 +43,6 @@ interface DashboardHeroProps {
   /** The user's account creation date. */
   createdAt?: Date;
 }
-
-// Languages whose reading is a learnable romanization (e.g. pinyin), where a
-// "pick the reading" quiz is meaningful. For IPA-based readings (de/en/es) it
-// would just be "pick the phonetic spelling" — not worth quizzing, so hidden.
-const ROMANIZED_READING_LANGS = new Set(["zh"]);
 
 /** One breakdown chip: color-matched to its ring segment. */
 const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string; tip: string }[] = [
@@ -87,30 +87,37 @@ export function DashboardHero({
       new Date().toDateString() !== new Date(createdAt).toDateString()
   );
 
-  const showReadingQuiz = languageCode
-    ? ROMANIZED_READING_LANGS.has(languageCode)
-    : false;
+  // Icons for each rotatable mode — Ninja is separate.
+  const MODE_ICONS: Record<PracticeModeKey, typeof ListChecks> = {
+    quiz: ListChecks,
+    match: LayoutGrid,
+    pronounce: BookOpen,
+    sentences: MessageSquareText,
+  };
+
+  const availability = getPracticeAvailability({ languageCode, hasSentences });
 
   // The engine is language-agnostic (term/translation, no pinyin
   // assumptions) — works for German, Chinese, or any other language in the
   // queue.
   const PRACTICE_MODES = [
-    { key: "quiz", label: "Meaning Quiz", icon: ListChecks },
-    { key: "match", label: "Word Match", icon: LayoutGrid },
-    ...(showReadingQuiz
-      ? [{ key: "pronounce", label: "Reading Quiz", icon: BookOpen } as const]
+    ...availability.rotatable.map((key) => ({
+      key,
+      label: PRACTICE_MODE_LABELS[key],
+      icon: MODE_ICONS[key],
+    })),
+    ...(availability.ninja
+      ? [
+          {
+            key: "ninja" as const,
+            label: "Word Ninja",
+            icon: Swords,
+            // Fast-paced and motion-heavy — say so up front so nobody is
+            // ambushed by falling tiles when they expected a flashcard.
+            subtitle: "Fast-paced, motion-heavy",
+          },
+        ]
       : []),
-    ...(hasSentences
-      ? [{ key: "sentences", label: "Sentences", icon: MessageSquareText } as const]
-      : []),
-    {
-      key: "ninja",
-      label: "Word Ninja",
-      icon: Swords,
-      // Fast-paced and motion-heavy — say so up front so nobody is
-      // ambushed by falling tiles when they expected a flashcard.
-      subtitle: "Fast-paced, motion-heavy",
-    } as const,
   ] as const;
 
   return (
