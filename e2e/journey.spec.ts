@@ -356,6 +356,54 @@ test("practice mode reviews without moving the schedule", async ({ page }) => {
   expect(after).toBe(before!.dueAt);
 });
 
+test("practice rotation continues into another round rather than exiting to dashboard", async ({ page }) => {
+  await logIn(page);
+
+  // Study a few cards so there are learned words for Practice.
+  await page.goto("/study?limit=3");
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(700);
+  }
+
+  // Open the Practice route with a small limit (2 cards) so the first round is quick.
+  await page.goto("/study/practice?mode=practice&limit=2");
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+
+  // First round: complete it.
+  for (let i = 0; i < 2; i++) {
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(150);
+    await page.keyboard.press("ArrowRight");
+    await page.waitForTimeout(700);
+  }
+
+  // The SessionComplete stats screen appears. Do NOT click "Back to dashboard";
+  // instead, click "Next round" (or wait for it to appear and verify the hand-off).
+  await expect(page.getByText(/practice done|session complete/i)).toBeVisible({ timeout: 10_000 });
+
+  // The "Next round" button should be present (not "Keep practicing" which is only
+  // in standalone routes). Clicking it advances to the next round.
+  const nextRoundButton = page.getByRole("button", { name: /next round/i });
+  await expect(nextRoundButton).toBeVisible();
+  await nextRoundButton.click();
+
+  // After hand-off, the second round begins — the stats screen disappears and
+  // the mode screen returns.
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 10_000 });
+  // The mode pill updates to reflect the new mode (e.g. "Practice · Word Match").
+  // We don't assert which specific mode (random selection is a flake source),
+  // only that we're in a *different* Practice screen, not the dashboard.
+  await expect(page).toHaveURL(/\/study\/practice/);
+});
+
 test("sentence mode: Hard counts as correct and keeps the combo", async ({ page }) => {
   await logIn(page);
 
