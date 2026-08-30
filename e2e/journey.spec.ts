@@ -673,6 +673,28 @@ test("guest mode does not show trial banner", async ({ page }) => {
   ).not.toBeVisible();
 });
 
+test("guest dashboard shows three study entry points", async ({ page }) => {
+  // Guest accounts should see the same three-entry consolidation as authenticated users.
+  await page.goto("/login");
+  await page
+    .getByRole("button", { name: /try it as a guest/i })
+    .click();
+  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.getByRole("button", { name: "Start studying" }).click();
+  await page.waitForURL("**/study**", { timeout: 15_000 });
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  // The primary Study button plus Practice and Ninja rows are the three entry points.
+  const entries = page.getByTestId("study-entry");
+  await expect(entries).toHaveCount(3);
+
+  // Check each entry has the expected data-entry attribute.
+  await expect(entries.filter({ has: page.locator("[data-entry='study']") })).toHaveCount(1);
+  await expect(entries.filter({ has: page.locator("[data-entry='practice']") })).toHaveCount(1);
+  await expect(entries.filter({ has: page.locator("[data-entry='ninja']") })).toHaveCount(1);
+});
+
 test("guest settings does not show billing card", async ({ page }) => {
   // Guests should see the free account-creation form in Settings, not the Billing card.
   await page.goto("/login");

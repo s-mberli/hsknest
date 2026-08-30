@@ -49,7 +49,6 @@ const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string; t
 // Studying always runs today's whole queue (all due + checks + capped new);
 // 500 is the effective "all" cap shared with the queue route.
 const STUDY_HREF = "/study?limit=500";
-const PRACTICE_HREF = "/study?mode=practice&limit=500";
 
 /**
  * Focus-ring hero: the ring shows exactly today's queue (due → checks → new),
@@ -165,7 +164,7 @@ export function DashboardHero({
           </>
         ) : canPractice ? (
           <Button asChild size="lg" className="w-full max-w-xs rounded-full">
-            <Link href={PRACTICE_HREF}>
+            <Link href="/study/practice?mode=practice&limit=500">
               <GraduationCap className="size-4" />
               Refresh learned words
             </Link>
