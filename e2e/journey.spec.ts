@@ -586,7 +586,7 @@ test("practice entry navigates to a working practice round", async ({ page }) =>
 
   // The Practice route plays one of the rotated modes. Expect the mode pill
   // to be visible on the study screen (proving we landed in the rotation screen).
-  await expect(page.locator("span:has-text(/Practice ·/)")).toBeVisible({
+  await expect(page.getByText(/^Practice · /)).toBeVisible({
     timeout: 10_000,
   });
 });
@@ -607,20 +607,23 @@ test("word ninja entry navigates to ninja", async ({ page }) => {
 test("direct per-mode routes still load and behave as before", async ({ page }) => {
   await logIn(page);
 
-  // Test each of the five per-mode routes that were prewarm in global-setup.
+  // Test each of the five per-mode routes that were prewarm in global-setup,
+  // plus the new /study/practice rotation route. Each should render its mode's
+  // distinctive UI, not just a main element (which 404 pages might also have).
   const routes = [
-    "/study/quiz?mode=practice",
-    "/study/match?mode=practice",
-    "/study/pronounce?mode=practice",
-    "/study/sentences?mode=practice",
-    "/study/ninja",
+    { url: "/study/practice", expectText: /Practice · / },  // practice rotation selector
+    { url: "/study/quiz?mode=practice", expectText: /answer|choice|a\)|b\)|c\)|d\)/ }, // quiz has answers
+    { url: "/study/match?mode=practice", expectText: /match|tile|grid/ }, // match has tiles
+    { url: "/study/pronounce?mode=practice", expectText: /pronounce|record|sound/ }, // pronounce has sound
+    { url: "/study/sentences?mode=practice", expectText: /sentence|example|context/ }, // sentences has example
+    { url: "/study/ninja", expectText: /ninja|tile|fall/ }, // ninja has falling tiles
   ];
 
-  for (const route of routes) {
-    await page.goto(route);
-    // The study screen renders a main element. If the route 404s or redirects
-    // unexpectedly, the main won't appear.
-    await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
+  for (const { url, expectText } of routes) {
+    await page.goto(url);
+    // Each mode renders its own distinctive surface (not just a main wrapper).
+    // The expectText regex is mode-specific, so this catches missing or redirected routes.
+    await expect(page.locator("main")).toContainText(expectText, { timeout: 10_000 });
   }
 });
 
