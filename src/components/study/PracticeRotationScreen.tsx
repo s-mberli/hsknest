@@ -24,8 +24,8 @@ interface PracticeRotationScreenProps {
  * server-rendered HTML and first client render agree — random selection at
  * render time is a hydration mismatch. Renders null until resolved.
  *
- * The previous mode lives in component state only. No persistence, no schema
- * change. Ticket 03 will re-resolve on round end using this state.
+ * One round only. Round-to-round hand-off (re-resolving and tracking
+ * previous) is ticket 03.
  */
 export function PracticeRotationScreen({
   available,
@@ -33,15 +33,12 @@ export function PracticeRotationScreen({
   textSize,
 }: PracticeRotationScreenProps) {
   const [current, setCurrent] = useState<PracticeModeKey | null>(null);
-  const [previous, setPrevious] = useState<PracticeModeKey | null>(null);
 
-  // Resolve the mode once on mount. After this, it never changes during the
-  // round. Round-to-round hand-off (re-resolving and tracking previous) is
-  // ticket 03.
+  // Resolve the mode once on mount via Rotation. Never changes during the round.
   useEffect(() => {
-    const next = selectPracticeMode(available, previous);
+    const next = selectPracticeMode(available);
     setCurrent(next);
-  }, [available, previous]);
+  }, []);
 
   // Hydration: while resolving, render nothing. The mode screens already
   // fetch their queue asynchronously, so this costs one frame.
