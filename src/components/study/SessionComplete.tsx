@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { AuroraGlow } from "@/components/fx/AuroraGlow";
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
@@ -107,7 +106,6 @@ export function SessionComplete({
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-4 overflow-hidden px-6 text-center">
-      <AuroraGlow />
       <ConfettiCannon fire={fire} intensity={150} />
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
