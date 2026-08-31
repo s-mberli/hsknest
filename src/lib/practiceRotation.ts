@@ -9,6 +9,13 @@ export interface PracticeRotationState {
   current: PracticeModeKey | null;
   /** The mode that just finished; used to ensure round-to-round variety. */
   previous: PracticeModeKey | null;
+  /**
+   * The mode that WILL play next round — decided now, not re-drawn later.
+   * The UI reads this directly for its "Next round · X" label; it must never
+   * call selectPracticeMode again to guess at it, or the label can promise a
+   * mode the click doesn't deliver. Null only when nothing is available.
+   */
+  next: PracticeModeKey | null;
   /** Round counter, starting at 1. */
   round: number;
 }
@@ -58,26 +65,31 @@ export function startRotation(
   available: readonly PracticeModeKey[],
   rng: () => number = Math.random
 ): PracticeRotationState {
+  const current = selectPracticeMode(available, null, rng);
   return {
-    current: selectPracticeMode(available, null, rng),
+    current,
     previous: null,
+    next: selectPracticeMode(available, current, rng),
     round: 1,
   };
 }
 
 /**
- * Advance to the next round: increments round counter, rotates the mode
- * (calling selectPracticeMode with current as previous), and records
- * the previous mode for variety enforcement.
+ * Advance to the next round: promotes the already-decided `next` mode to
+ * `current` (so the round the user actually gets always matches what was
+ * announced), increments the round counter, records the previous mode for
+ * variety enforcement, and draws a fresh `next` for the round after this one.
  */
 export function advanceRound(
   state: PracticeRotationState,
   available: readonly PracticeModeKey[],
   rng: () => number = Math.random
 ): PracticeRotationState {
+  const current = state.next;
   return {
-    current: selectPracticeMode(available, state.current, rng),
+    current,
     previous: state.current,
+    next: selectPracticeMode(available, current, rng),
     round: state.round + 1,
   };
 }

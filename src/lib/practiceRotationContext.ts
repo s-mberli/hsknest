@@ -2,8 +2,6 @@
 
 import { createContext, useContext } from "react";
 
-import type { PracticeModeKey } from "@/lib/practiceModes";
-
 /**
  * Context passed to SessionComplete and other descendants of
  * PracticeRotationScreen. When present, SessionComplete alters its action row:

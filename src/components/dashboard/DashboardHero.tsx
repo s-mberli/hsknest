@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { getPracticeAvailability } from "@/lib/practiceModes";
-import { getSupplementaryStudyEntries } from "@/lib/studyEntries";
+import { getSupplementaryStudyEntries, PRACTICE_HREF } from "@/lib/studyEntries";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeroProps {
@@ -164,7 +164,7 @@ export function DashboardHero({
           </>
         ) : canPractice ? (
           <Button asChild size="lg" className="w-full max-w-xs rounded-full">
-            <Link href="/study/practice?mode=practice&limit=500">
+            <Link href={PRACTICE_HREF}>
               <GraduationCap className="size-4" />
               Refresh learned words
             </Link>

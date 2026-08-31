@@ -6,7 +6,7 @@ import { MatchScreen } from "@/components/study/MatchScreen";
 import { QuizScreen } from "@/components/study/QuizScreen";
 import { SentenceScreen } from "@/components/study/SentenceScreen";
 import { PracticeRotationContext } from "@/lib/practiceRotationContext";
-import { advanceRound, selectPracticeMode, startRotation, type PracticeRotationState } from "@/lib/practiceRotation";
+import { advanceRound, startRotation, type PracticeRotationState } from "@/lib/practiceRotation";
 import { PRACTICE_MODE_LABELS, type PracticeModeKey } from "@/lib/practiceModes";
 import { type CardTextSize } from "@/lib/textSize";
 
@@ -38,10 +38,28 @@ export function PracticeRotationScreen({
 }: PracticeRotationScreenProps) {
   const [state, setState] = useState<PracticeRotationState | null>(null);
 
-  // Resolve the mode once on mount via Rotation. Never changes during the round.
+  // Resolve the mode once on mount via Rotation. Never changes during the
+  // round. Reacting to Math.random() becoming safe to call post-hydration
+  // (the server can't produce it at all) rather than deriving state from
+  // props/state — the case this lint rule is meant to exempt (same pattern as
+  // ReaderView's post-hydration prefs load).
   useEffect(() => {
-    const initialState = startRotation(available);
-    setState(initialState);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setState(startRotation(available));
+  }, [available]);
+
+  // Advance to the next round: promote the already-decided `next` mode to
+  // `current`, increment the round counter, record current as previous for
+  // variety enforcement. Keying the rendered screen by `${round}-${current}`
+  // forces a full remount, so each round starts with a fresh queue fetch.
+  // Declared before the early return below so hook order never changes
+  // across renders (Rules of Hooks) — regardless of whether `state` is
+  // resolved yet.
+  const handleNextRound = useCallback(() => {
+    setState((prev) => {
+      if (!prev) return prev;
+      return advanceRound(prev, available);
+    });
   }, [available]);
 
   // Hydration: while resolving, render nothing. The mode screens already
@@ -50,20 +68,11 @@ export function PracticeRotationScreen({
 
   const current = state.current;
 
-  // Compute the label for the *next* mode (shown in the "Next round" button).
-  const nextMode = selectPracticeMode(available, current);
-  const nextModeLabel = nextMode ? PRACTICE_MODE_LABELS[nextMode] : null;
-
-  // Advance to the next round: increment round counter, rotate the mode,
-  // record current as previous for variety enforcement. Keying the rendered
-  // screen by `${round}-${current}` forces a full remount, so each round
-  // starts with a fresh queue fetch.
-  const handleNextRound = useCallback(() => {
-    setState((prev) => {
-      if (!prev) return prev;
-      return advanceRound(prev, available);
-    });
-  }, [available]);
+  // The label for the *next* mode (shown in the "Next round" button) is read
+  // from the already-decided `state.next`, never re-drawn here — a fresh
+  // Math.random() call at render time could announce a mode the click then
+  // doesn't deliver.
+  const nextModeLabel = state.next ? PRACTICE_MODE_LABELS[state.next] : null;
 
   const contextValue = {
     nextRound: handleNextRound,

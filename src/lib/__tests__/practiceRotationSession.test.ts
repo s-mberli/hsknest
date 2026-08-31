@@ -76,4 +76,17 @@ describe("advanceRound", () => {
       expect(available).toContain(state.current);
     }
   });
+
+  it("the announced next mode is the mode actually played after advancing", () => {
+    // `state.next` is what the UI shows as "Next round · X" before the user
+    // clicks. It must be a decided fact, not a value re-drawn at render time —
+    // otherwise the label can promise a mode the click doesn't deliver.
+    let state = startRotation(ALL, lcg(13));
+    const rng = lcg(31);
+    for (let i = 0; i < 50; i++) {
+      const announced = state.next;
+      state = advanceRound(state, ALL, rng);
+      expect(state.current).toBe(announced);
+    }
+  });
 });

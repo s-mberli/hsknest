@@ -1,5 +1,7 @@
 import { type PracticeAvailability } from "@/lib/practiceModes";
 
+export const PRACTICE_HREF = "/study/practice?mode=practice&limit=20";
+
 export type StudyEntryKey = "practice" | "ninja";
 
 export interface StudyEntry {
@@ -42,7 +44,7 @@ export function getSupplementaryStudyEntries(input: {
     entries.push({
       key: "practice",
       label: "Practice",
-      href: "/study/practice?mode=practice&limit=500",
+      href: PRACTICE_HREF,
     });
   }
 

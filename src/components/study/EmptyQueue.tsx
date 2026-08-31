@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { QueueCounts } from "@/hooks/useStudySession";
+import { usePracticeRotation } from "@/lib/practiceRotationContext";
 
 interface EmptyQueueProps {
   /** True when the session was narrowed to a language/list selection. */
@@ -34,6 +35,14 @@ export function EmptyQueue({
   // daily limit was hit.
   const capReached = !practice && counts !== null && counts.newAllowedToday === 0;
   const router = useRouter();
+
+  // Non-null only inside PracticeRotationScreen. A mode running its own empty
+  // queue mid-rotation (e.g. Sentences has nothing left this round) must not
+  // dead-end here — it can hand off to the next round like SessionComplete
+  // does. The standalone escape-hatch routes (/study/quiz etc. reached
+  // directly) render EmptyQueue with practice=true too, but have no provider
+  // above them, so this stays null there and the existing copy is unchanged.
+  const rotation = usePracticeRotation();
 
   // Time-orientation for new users: an empty queue reads as a dead end
   // without knowing when the next reviews arrive.
@@ -82,14 +91,18 @@ export function EmptyQueue({
       <Moon className="size-14 text-primary" aria-hidden="true" />
       <h2 className="text-2xl font-bold tracking-tight">
         {practice
-          ? "Learn a few words first"
+          ? rotation
+            ? "Nothing left in this round"
+            : "Learn a few words first"
           : capReached
             ? "You've hit today's limit"
             : "You've crushed all your flashcards!"}
       </h2>
       <p className="max-w-sm text-muted-foreground">
         {practice
-          ? "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
+          ? rotation
+            ? "This mode ran out of words for the round. Move on to the next one."
+            : "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
           : capReached
             ? "You've reached your daily new-word limit — that's your own setting, not a wall. Reviews still come through the moment they're due, and you can raise the limit any time."
             : "Your spaced-repetition queue is empty for now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
@@ -145,9 +158,19 @@ export function EmptyQueue({
             </Button>
           </>
         ) : practice ? (
-          <Button asChild className="w-full sm:w-auto">
-            <Link href="/study?limit=500">Study flashcards</Link>
-          </Button>
+          rotation ? (
+            <Button
+              className="w-full sm:w-auto"
+              onClick={rotation.nextRound}
+              disabled={!rotation.nextModeLabel}
+            >
+              {rotation.nextModeLabel ? `Next round · ${rotation.nextModeLabel}` : "Next round"}
+            </Button>
+          ) : (
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/study?limit=500">Study flashcards</Link>
+            </Button>
+          )
         ) : (
           <>
             {/* Finished the real queue → offer schedule-safe practice, not a

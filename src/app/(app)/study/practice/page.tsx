@@ -7,6 +7,7 @@ import { getSubscriptionInfo } from "@/lib/subscription";
 import { normalizeCardTextSize } from "@/lib/textSize";
 import { getDashboardStats } from "@/lib/stats";
 import { getPracticeAvailability } from "@/lib/practiceModes";
+import { PRACTICE_HREF } from "@/lib/studyEntries";
 
 /**
  * Practice route: resolves one Practice mode via Rotation and renders that
@@ -45,7 +46,7 @@ export default async function PracticePage(props: {
   // a sentence round would post a real Review. Make the guarantee uniform.
   const mode = searchParams.mode;
   if (mode !== "practice") {
-    redirect("/study/practice?mode=practice&limit=500");
+    redirect(PRACTICE_HREF);
   }
 
   // Brand-new learner guard: no learned words yet. Don't land them in an empty screen.
