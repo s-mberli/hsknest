@@ -1,12 +1,14 @@
 import { expect, test } from "playwright/test";
+import { randomBytes } from "crypto";
+import { hash } from "bcryptjs";
+import { prisma } from "../src/lib/prisma";
 
 /**
  * Core learner journey: sign up → enroll a starter list → study flashcards
  * with keyboard grading → session complete → practice modes load.
  *
  * Each run creates a throwaway account (unique email) on the dev database.
- * NOTE: signup is rate-limited to 5/hour per source IP, so rapid repeated
- * local runs can hit a 429 — wait or restart the dev server if that happens.
+ * NOTE: signup is rate-limited to 20/hour per source IP, and disabled in dev.
  */
 
 const email = `e2e-${Date.now()}@example.com`;
@@ -356,6 +358,94 @@ test("practice mode reviews without moving the schedule", async ({ page }) => {
   expect(after).toBe(before!.dueAt);
 });
 
+test("practice rotation continues into another round rather than exiting to dashboard", async ({ page }) => {
+  // Create a test user directly with learned words, so this test can run
+  // independently and quickly without going through signup and study.
+  const suffix = randomBytes(6).toString("hex");
+  const testEmail = `rotation-${suffix}@test.local`;
+  const testPassword = "test-password-rotation";
+  const passwordHash = await hash(testPassword, 12);
+
+  const lang = await prisma.language.findFirst({ where: { code: "zh" } });
+  if (!lang) throw new Error("Rotation test requires the seeded zh language");
+  const user = await prisma.user.create({
+    data: {
+      email: testEmail,
+      passwordHash,
+      name: "Rotation Test",
+      targetLanguageId: lang.id,
+    },
+  });
+
+  // Create REVIEW words so Practice has learned words to rotate through.
+  const words = await prisma.word.findMany({
+    where: { wordList: { languageId: lang.id } },
+    take: 4,
+  });
+
+  if (words.length < 2) throw new Error("Rotation test requires two seeded zh words");
+  await prisma.userProgress.createMany({
+    data: words.slice(0, 2).map((w) => ({
+      userId: user.id,
+      wordId: w.id,
+      state: "REVIEW",
+      dueAt: new Date(),
+    })),
+  });
+
+  // Log in as the test user.
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(testEmail);
+  await page.getByLabel("Password").fill(testPassword);
+  const loginRes = page.waitForResponse(
+    (res) => res.url().includes("/api/auth/callback/credentials")
+  );
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await loginRes;
+  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+
+  // Make this browser journey deterministic. Variety is proven by the pure
+  // Rotation tests; this E2E test proves the user-facing handoff and label
+  // contract without depending on a randomly selected first mode.
+  await page.addInitScript(() => {
+    const originalRandom = Math.random;
+    Math.random = () =>
+      new Error().stack?.includes("startRotation") ? 0 : originalRandom();
+  });
+
+  // The first draw is Meaning Quiz; the next draw is Word Match.
+  await page.goto("/study/practice?mode=practice&limit=2");
+  await expect(page.getByText("Practice · Meaning Quiz")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Pick the meaning")).toBeVisible({ timeout: 15_000 });
+  for (let i = 0; i < 2; i++) {
+    const choice = page.locator("main button").filter({ hasText: /\S/ }).first();
+    await expect(choice).toBeEnabled();
+    await choice.click();
+    await page.waitForTimeout(1_800);
+  }
+
+  // The SessionComplete stats screen appears. Do NOT click "Back to dashboard";
+  // instead, click "Next round" (or wait for it to appear and verify the hand-off).
+  await expect(page.getByText(/practice done|session complete/i)).toBeVisible({ timeout: 10_000 });
+
+  // The "Next round" button should be present (not "Keep practicing" which is only
+  // in standalone routes). Clicking it advances to the next round.
+  const nextRoundButton = page.getByRole("button", { name: /next round/i });
+  await expect(nextRoundButton).toBeVisible();
+  const announced = await nextRoundButton.textContent();
+  expect(announced).toMatch(/^Next round · /);
+  const announcedMode = announced!.replace(/^Next round · /, "");
+  await nextRoundButton.click();
+
+  // After hand-off, the announced mode is the mode that actually renders.
+  // Variety stays covered by the pure Rotation tests instead of a random
+  // browser assertion.
+  await expect(page.getByText(`Practice · ${announcedMode}`)).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page).toHaveURL(/\/study\/practice/);
+});
+
 test("sentence mode: Hard counts as correct and keeps the combo", async ({ page }) => {
   await logIn(page);
 
@@ -510,6 +600,77 @@ test("failed card repeats in-session until graded Good", async ({ page }) => {
   });
 });
 
+test("dashboard shows exactly three study entry points", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  // The primary Study button and the Practice + Word Ninja rows are the
+  // three entry points. (In this test context the user has enrolled HSK 1,
+  // so learnedCount > 0 and rotatable modes are available, so all three appear.)
+  const entries = page.getByTestId("study-entry");
+  await expect(entries).toHaveCount(3);
+
+  // Check each entry has the expected data-entry attribute.
+  await expect(page.locator("[data-testid='study-entry'][data-entry='study']")).toHaveCount(1);
+  await expect(page.locator("[data-testid='study-entry'][data-entry='practice']")).toHaveCount(1);
+  await expect(page.locator("[data-testid='study-entry'][data-entry='ninja']")).toHaveCount(1);
+});
+
+test("practice entry navigates to a working practice round", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  // Click the Practice entry (not Study or Ninja).
+  const practiceEntry = page.locator("[data-testid='study-entry'][data-entry='practice']");
+  await practiceEntry.click();
+
+  // The Practice route plays one of the rotated modes. Expect the mode pill
+  // to be visible on the study screen (proving we landed in the rotation screen).
+  await expect(page.getByText(/^Practice · /)).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
+test("word ninja entry navigates to ninja", async ({ page }) => {
+  await logIn(page);
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  const ninjaEntry = page.locator("[data-testid='study-entry'][data-entry='ninja']");
+  await ninjaEntry.click();
+
+  // Ninja is a distinct entry point, fast-paced and motion-heavy.
+  // Expect the Ninja screen to load (looking for its distinctive class or heading).
+  await expect(page.locator("main")).toContainText(/ninja|tiles/i, { timeout: 10_000 });
+});
+
+test("direct per-mode routes still load and behave as before", async ({ page }) => {
+  await logIn(page);
+
+  // Test each of the five per-mode routes that were prewarm in global-setup,
+  // plus the new /study/practice rotation route. Each should render its mode's
+  // distinctive UI, not just a main element (which 404 pages might also have).
+  await page.goto("/study/practice");
+  await expect(page.getByText(/^Practice · /)).toBeVisible({ timeout: 10_000 });
+
+  await page.goto("/study/quiz?mode=practice");
+  await expect(page.getByText("Pick the meaning")).toBeVisible({ timeout: 10_000 });
+
+  await page.goto("/study/match?mode=practice");
+  await expect(page.getByRole("heading", { name: "Tap matching pairs" })).toBeVisible({ timeout: 10_000 });
+
+  await page.goto("/study/pronounce?mode=practice");
+  await expect(page.getByText("Pick the pronunciation")).toBeVisible({ timeout: 10_000 });
+
+  await page.goto("/study/sentences?mode=practice");
+  await expect(page.getByRole("button", { name: "Show translation" })).toBeVisible({ timeout: 10_000 });
+
+  await page.goto("/study/ninja");
+  await expect(page.getByRole("status", { name: /lives left/i })).toBeVisible({ timeout: 10_000 });
+});
+
 test("account deletion signs out and frees the email", async ({ page }) => {
   // Throwaway signed-up account so the main journey account survives.
   // (Delete account is hidden for guest accounts — they're already disposable.)
@@ -557,6 +718,29 @@ test("guest mode does not show trial banner", async ({ page }) => {
   await expect(
     page.getByText(/days left in your trial/i)
   ).not.toBeVisible();
+});
+
+test("new guest dashboard shows only its primary study entry", async ({ page }) => {
+  // Practice and Ninja require learned words. A brand-new guest has none, so
+  // the dashboard must not advertise modes that would immediately redirect.
+  await page.goto("/login");
+  await page
+    .getByRole("button", { name: /try it as a guest/i })
+    .click();
+  await page.waitForURL("**/onboarding", { timeout: 15_000 });
+  await page.getByRole("button", { name: "Start studying" }).click();
+  await page.waitForURL("**/study**", { timeout: 15_000 });
+  await page.goto("/dashboard");
+  await dismissIntro(page);
+
+  // The sole available study entry is the primary Study action.
+  const entries = page.getByTestId("study-entry");
+  await expect(entries).toHaveCount(1);
+
+  // Its data attribute lives on the entry itself, not on a descendant.
+  await expect(page.locator("[data-testid='study-entry'][data-entry='study']")).toHaveCount(1);
+  await expect(page.locator("[data-testid='study-entry'][data-entry='practice']")).toHaveCount(0);
+  await expect(page.locator("[data-testid='study-entry'][data-entry='ninja']")).toHaveCount(0);
 });
 
 test("guest settings does not show billing card", async ({ page }) => {

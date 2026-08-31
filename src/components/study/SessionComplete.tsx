@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { usePrefersReducedMotion } from "@/lib/motion";
+import { usePracticeRotation } from "@/lib/practiceRotationContext";
 
 // Natural-deceleration curve used throughout the app's authored entrances
 // (see DESIGN.md's motion guidance) — confident arrival, no bounce.
@@ -74,6 +75,7 @@ export function SessionComplete({
   const isGuest = session?.user?.email?.endsWith("@guest.local") ?? false;
   const [showUpgrade, setShowUpgrade] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
+  const rotation = usePracticeRotation();
   const item = reducedMotion ? revealItemReduced : revealItem;
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   const accuracyTint =
@@ -173,27 +175,45 @@ export function SessionComplete({
             variants={item}
             className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center"
           >
-            {missed.length > 0 && (
-              <Button
-                className="w-full sm:w-auto"
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  params.set("mode", "practice");
-                  params.set("limit", String(missed.length));
-                  router.push(`${pathname}?${params.toString()}`);
-                }}
-              >
-                Redo the {missed.length} you missed
-              </Button>
+            {/* In a Practice rotation, offer "Next round" instead of "Keep practicing".
+                Outside a rotation, offer "Redo the N you missed" and "Keep practicing".
+                The "Redo" button only works in standalone routes where mode is fixed. */}
+            {rotation ? (
+              <>
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={rotation.nextRound}
+                  disabled={!rotation.nextModeLabel}
+                >
+                  {rotation.nextModeLabel ? `Next round · ${rotation.nextModeLabel}` : "Next round"}
+                </Button>
+              </>
+            ) : (
+              <>
+                {missed.length > 0 && (
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={() => {
+                      const params = new URLSearchParams();
+                      params.set("mode", "practice");
+                      params.set("limit", String(missed.length));
+                      router.push(`${pathname}?${params.toString()}`);
+                    }}
+                  >
+                    Redo the {missed.length} you missed
+                  </Button>
+                )}
+                <Button
+                  asChild
+                  variant={missed.length > 0 ? "outline" : "default"}
+                  className="w-full sm:w-auto"
+                >
+                  {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
+                  <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
+                </Button>
+              </>
             )}
-            <Button
-              asChild
-              variant={missed.length > 0 ? "outline" : "default"}
-              className="w-full sm:w-auto"
-            >
-              {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
-              <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
-            </Button>
+
             <Button
               variant="outline"
               className="w-full sm:w-auto"

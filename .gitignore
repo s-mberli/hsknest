@@ -145,3 +145,9 @@ __pycache__/
 
 # agent working notes — local only
 /.learnings/
+
+# spec/ticket scratch — local only
+/.scratch/
+
+# local feature specs — working documents, not contributor documentation
+/docs/specs/

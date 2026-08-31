@@ -3,10 +3,8 @@
 import {
   BookOpen,
   GraduationCap,
-  LayoutGrid,
-  ListChecks,
-  MessageSquareText,
   Swords,
+  Shuffle,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -17,6 +15,8 @@ import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { usePrefersReducedMotion } from "@/lib/motion";
+import { getPracticeAvailability } from "@/lib/practiceModes";
+import { getSupplementaryStudyEntries, PRACTICE_HREF } from "@/lib/studyEntries";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeroProps {
@@ -39,11 +39,6 @@ interface DashboardHeroProps {
   createdAt?: Date;
 }
 
-// Languages whose reading is a learnable romanization (e.g. pinyin), where a
-// "pick the reading" quiz is meaningful. For IPA-based readings (de/en/es) it
-// would just be "pick the phonetic spelling" — not worth quizzing, so hidden.
-const ROMANIZED_READING_LANGS = new Set(["zh"]);
-
 /** One breakdown chip: color-matched to its ring segment. */
 const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string; tip: string }[] = [
   { key: "due", label: "review", dot: "bg-primary", tip: "Cards the scheduler says are due today" },
@@ -54,7 +49,6 @@ const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string; t
 // Studying always runs today's whole queue (all due + checks + capped new);
 // 500 is the effective "all" cap shared with the queue route.
 const STUDY_HREF = "/study?limit=500";
-const PRACTICE_HREF = "/study?mode=practice&limit=500";
 
 /**
  * Focus-ring hero: the ring shows exactly today's queue (due → checks → new),
@@ -87,31 +81,11 @@ export function DashboardHero({
       new Date().toDateString() !== new Date(createdAt).toDateString()
   );
 
-  const showReadingQuiz = languageCode
-    ? ROMANIZED_READING_LANGS.has(languageCode)
-    : false;
-
-  // The engine is language-agnostic (term/translation, no pinyin
-  // assumptions) — works for German, Chinese, or any other language in the
-  // queue.
-  const PRACTICE_MODES = [
-    { key: "quiz", label: "Meaning Quiz", icon: ListChecks },
-    { key: "match", label: "Word Match", icon: LayoutGrid },
-    ...(showReadingQuiz
-      ? [{ key: "pronounce", label: "Reading Quiz", icon: BookOpen } as const]
-      : []),
-    ...(hasSentences
-      ? [{ key: "sentences", label: "Sentences", icon: MessageSquareText } as const]
-      : []),
-    {
-      key: "ninja",
-      label: "Word Ninja",
-      icon: Swords,
-      // Fast-paced and motion-heavy — say so up front so nobody is
-      // ambushed by falling tiles when they expected a flashcard.
-      subtitle: "Fast-paced, motion-heavy",
-    } as const,
-  ] as const;
+  const availability = getPracticeAvailability({ languageCode, hasSentences });
+  const supplementaryEntries = getSupplementaryStudyEntries({
+    learnedCount,
+    availability,
+  });
 
   return (
     <div className="flex flex-col items-center gap-5">
@@ -161,13 +135,13 @@ export function DashboardHero({
             </div>
 
             {isDay2 ? (
-              <Button size="lg" className="w-full max-w-xs rounded-full" onClick={() => setShowWall(true)}>
+              <Button data-testid="study-entry" data-entry="study" size="lg" className="w-full max-w-xs rounded-full" onClick={() => setShowWall(true)}>
                 <GraduationCap className="size-4" />
                 Start studying
               </Button>
             ) : (
               <Button asChild size="lg" className="w-full max-w-xs rounded-full">
-                <Link href={STUDY_HREF}>
+                <Link href={STUDY_HREF} data-testid="study-entry" data-entry="study">
                   <GraduationCap className="size-4" />
                   Start studying
                 </Link>
@@ -205,55 +179,50 @@ export function DashboardHero({
         )}
       </div>
 
-      {/* Specialized practice — pure practice, never moves the schedule.
-          Hidden until the user has learned at least one word. */}
-      {learnedCount > 0 && (
+      {/* Supplementary study entries — Practice (rotation) and Word Ninja.
+          Hidden until the user has learned at least one word.
+          Each entry is a quiet bordered row; Study CTA above remains the primary action. */}
+      {supplementaryEntries.length > 0 && (
         <div className="w-full max-w-xl space-y-2">
-          <SectionLabel>More ways to practice</SectionLabel>
+          <SectionLabel>More ways to study</SectionLabel>
           <p className="text-xs text-muted-foreground">
-            Pressure-free games with words you&apos;ve already learned — they
+            Pressure-free practice with words you&apos;ve already learned — they
             never change your review schedule.
           </p>
-          <div
-            className={cn(
-              "grid grid-cols-2 justify-center gap-3 sm:grid-cols-4",
-              // With fewer than 4 modes, center the row from sm up instead of
-              // leaving empty trailing cells.
-              PRACTICE_MODES.length < 4 &&
-                "sm:flex sm:flex-wrap sm:justify-center"
-            )}
-          >
-            {PRACTICE_MODES.map(({ key, label, icon: Icon, ...rest }, i) => {
-              const subtitle = "subtitle" in rest ? rest.subtitle : undefined;
+          <div className="space-y-2">
+            {supplementaryEntries.map((entry, i) => {
+              const Icon = entry.key === "practice" ? Shuffle : Swords;
               return (
                 <motion.div
-                  key={key}
+                  key={entry.key}
                   initial={reducedMotion ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
                     duration: 0.2,
                     delay: reducedMotion ? 0 : i * 0.05,
                   }}
-                  className="sm:w-32"
                 >
                   <Link
-                    href={`/study/${key}?mode=practice`}
-                    title={subtitle}
+                    href={entry.href}
+                    data-testid="study-entry"
+                    data-entry={entry.key}
                     className={cn(
-                      "flex aspect-square min-h-11 flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-3 text-center text-sm font-medium",
-                      "transition-transform hover:-translate-y-0.5 hover:bg-accent motion-reduce:hover:translate-y-0",
+                      "flex items-center gap-3 rounded-xl border bg-card/50 px-4 py-3 text-sm font-medium",
+                      "transition-transform hover:-translate-y-0.5 hover:bg-card motion-reduce:hover:translate-y-0",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     )}
                   >
-                    <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Icon className="size-5" />
+                    <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="size-4" />
                     </span>
-                    <span className="leading-tight">{label}</span>
-                    {subtitle && (
-                      <span className="text-xs font-normal leading-tight text-muted-foreground">
-                        {subtitle}
-                      </span>
-                    )}
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium">{entry.label}</span>
+                      {entry.subtitle && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {entry.subtitle}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 </motion.div>
               );

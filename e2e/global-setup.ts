@@ -27,6 +27,7 @@ const ROUTES = [
   "/dashboard", // the slow one — 307→/login unauthenticated, but still compiles
   "/onboarding",
   "/study",
+  "/study/practice",
   "/study/quiz",
   "/study/match",
   "/study/pronounce",
