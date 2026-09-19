@@ -33,7 +33,7 @@ export function LandingHero() {
     : fadeUp;
 
   return (
-    <main className="relative flex min-h-[85svh] flex-1 items-center overflow-hidden px-6 py-20 sm:py-24">
+    <main className="relative flex min-h-0 flex-1 items-start overflow-hidden px-6 py-12 sm:min-h-[85svh] sm:items-center sm:py-24">
       <div
         aria-hidden="true"
         className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_60%)]"
@@ -54,7 +54,7 @@ export function LandingHero() {
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
               <span aria-hidden="true" className="size-1.5 rounded-full bg-primary" />
-              Open source · Self-hostable
+              Mandarin vocabulary practice
             </span>
           </motion.div>
 
@@ -65,12 +65,18 @@ export function LandingHero() {
             transition={{ delay: 0.1 }}
             className="text-4xl font-extrabold tracking-tight sm:text-6xl"
           >
-            All 11,000 words of <br className="hidden sm:block" />
-            <span className="text-primary">
-              HSK 1–9. <br className="hidden sm:block" />
-              Pre-loaded and ready to swipe.
-            </span>
+            HSK Nest
           </motion.h1>
+
+          <motion.p
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.12 }}
+            className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl"
+          >
+            Daily Chinese vocabulary practice, ready when you are.
+          </motion.p>
 
           <motion.div
             initial={reducedMotion ? undefined : "hidden"}
@@ -79,12 +85,16 @@ export function LandingHero() {
             transition={{ delay: 0.15 }}
             className="mx-auto max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0"
           >
-            <ul className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 lg:justify-start">
+            <p>
+              Preloaded HSK 3.0 vocabulary and short daily Study sessions for
+              building a Mandarin habit without assembling your own decks.
+            </p>
+            <ul className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 lg:justify-start">
               <li className="flex items-center gap-2">
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> 3,000+ example sentences & native audio
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> 3,000 example sentences &amp; Mandarin pronunciation audio
               </li>
               <li className="flex items-center gap-2">
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Powered by modern FSRS science
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Spaced repetition scheduling
               </li>
               <li className="flex items-center gap-2">
                 <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Gesture-first swipe UX
@@ -99,7 +109,7 @@ export function LandingHero() {
             transition={{ delay: 0.2 }}
             className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row lg:justify-start"
           >
-            <TryFreeButton className="w-full sm:w-auto">Start swiping instantly</TryFreeButton>
+            <TryFreeButton className="w-full sm:w-auto">Try without signing up</TryFreeButton>
             <Button
               asChild
               variant="outline"
@@ -110,6 +120,22 @@ export function LandingHero() {
             </Button>
           </motion.div>
 
+          <motion.div
+            initial={reducedMotion ? undefined : "hidden"}
+            animate={reducedMotion ? undefined : "visible"}
+            variants={safeFadeUp}
+            transition={{ delay: 0.23 }}
+            className="grid grid-cols-[auto_1fr] items-center gap-4 rounded-2xl border bg-card/80 p-4 text-left shadow-sm sm:hidden"
+            aria-label="Mandarin vocabulary demo"
+          >
+            <span className="text-5xl font-bold leading-none text-primary">是</span>
+            <div>
+              <p className="text-lg font-semibold">shì</p>
+              <p className="text-sm text-muted-foreground">to be; is; yes</p>
+              <p className="mt-1 text-xs text-muted-foreground">这是我的书。 · This is my book.</p>
+            </div>
+          </motion.div>
+
           <motion.p
             initial={reducedMotion ? undefined : "hidden"}
             animate={reducedMotion ? undefined : "visible"}
@@ -117,14 +143,14 @@ export function LandingHero() {
             transition={{ delay: 0.25 }}
             className="text-sm text-muted-foreground"
           >
-            No signup to try ·{" "}
+            14-day hosted trial · €10/month ·{" "}
             <a
               href="https://github.com/s-mberli/hsknest"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-foreground"
             >
-              or self-host it free, forever
+              self-host free, forever
             </a>
           </motion.p>
         </div>

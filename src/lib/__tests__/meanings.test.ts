@@ -40,6 +40,15 @@ describe("parseMeanings", () => {
       { gloss: "a" },
     ]);
   });
+
+  it("preserves an alternate reading when it is the only structured sense", () => {
+    expect(
+      parseMeanings({
+        translation: "to finish",
+        metadata: { meanings: [{ gloss: "to finish", reading: "liǎo" }] },
+      })
+    ).toEqual([{ gloss: "to finish", reading: "liǎo" }]);
+  });
 });
 
 describe("primaryGloss", () => {

@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-const title = "HSK Nest — Spaced Repetition";
+const title = "HSK Nest — Mandarin Vocabulary Practice";
 const description =
-  "Open-source, self-hostable spaced repetition for learning any language.";
+  "Daily Mandarin vocabulary practice with preloaded HSK 3.0 vocabulary, 3,000 example sentences, and short Study sessions.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -31,6 +31,12 @@ export const metadata: Metadata = {
     siteName: "HSK Nest",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        alt: "HSK Nest — Daily Mandarin vocabulary practice",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",

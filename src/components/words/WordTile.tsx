@@ -36,6 +36,7 @@ const UNDERLINE_FILL: Record<Strength, number> = {
 
 export interface WordTileProps {
   word: WordDetail;
+  now: number;
   /** Roving-tabindex plumbing for arrow-key navigation across a tile grid. */
   tabIndex?: number;
   onKeyDown?: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
@@ -48,13 +49,14 @@ export interface WordTileProps {
  * WordHoverCard for detail. Reused by both the Strength grid and the
  * Timeline lanes so hover/tap detail is identical across views.
  */
-export function WordTile({ word, tabIndex, onKeyDown, tileRef }: WordTileProps) {
+export function WordTile({ word, now, tabIndex, onKeyDown, tileRef }: WordTileProps) {
   const meta = STRENGTH_META[word.strength];
-  const ariaLabel = `${word.term}, ${meta.label}, ${relativeDueLabel(word.dueAt)}`;
+  const ariaLabel = `${word.term}, ${meta.label}, ${relativeDueLabel(word.dueAt, undefined, now)}`;
 
   return (
     <WordHoverCard
       word={word}
+      now={now}
       ariaLabel={ariaLabel}
       tabIndex={tabIndex}
       onKeyDown={onKeyDown}

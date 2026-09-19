@@ -47,6 +47,7 @@ function bubbleRadius(intervalDays: number | null): number {
 interface WordStrengthGridProps {
   words: WordDetail[];
   search?: string;
+  now?: number;
   /** Limit to these bands (e.g. when a filter is active). */
   bands?: Strength[];
   emptyLabel?: string;
@@ -63,10 +64,13 @@ interface WordStrengthGridProps {
 export function WordStrengthGrid({
   words,
   search = "",
+  now,
   bands,
   emptyLabel = "No words to show.",
   hideTableToggle = false,
 }: WordStrengthGridProps) {
+  const [fallbackNow] = useState(Date.now);
+  const displayNow = now ?? fallbackNow;
   const allowed = bands ? new Set(bands) : null;
   const [asGrid, setAsGrid] = useState(false);
 
@@ -145,7 +149,7 @@ export function WordStrengthGrid({
           }))}
         />
       ) : (
-        <BubbleCloud words={sorted} />
+        <BubbleCloud words={sorted} now={displayNow} />
       )}
     </div>
   );
@@ -155,7 +159,7 @@ type Bubble =
   | { kind: "word"; word: WordDetail; r: number }
   | { kind: "summary"; band: Strength; count: number; r: number };
 
-function BubbleCloud({ words }: { words: WordDetail[] }) {
+function BubbleCloud({ words, now }: { words: WordDetail[]; now: number }) {
   const reducedMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const bubbleRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -271,7 +275,7 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
                 key={`summary-${b.band}`}
                 style={style}
                 className="flex items-center justify-center rounded-full border border-dashed bg-muted/50 text-center text-[11px] leading-tight text-muted-foreground"
-                title={`${b.count} more ${STRENGTH_META[b.band].label} words — use "Show all as grid" to see them`}
+                title={`${b.count} more ${STRENGTH_META[b.band].label} words — use "Show as table" to see them`}
               >
                 +{b.count}
                 <span className="sr-only">
@@ -305,8 +309,9 @@ function BubbleCloud({ words }: { words: WordDetail[] }) {
             >
               <WordHoverCard
                 word={w}
+                now={now}
                 wrapperClassName="block size-full"
-                ariaLabel={`${w.term}, ${meta.label}, ${w.state === "NEW" ? "new" : relativeDueLabel(w.dueAt)}`}
+                ariaLabel={`${w.term}, ${meta.label}, ${w.state === "NEW" ? "New" : relativeDueLabel(w.dueAt, undefined, now)}`}
                 tabIndex={i === 0 ? 0 : -1}
                 onKeyDown={(e) => onKeyDown(e, i)}
                 triggerRef={(el) => {

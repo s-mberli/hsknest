@@ -22,7 +22,17 @@ export function Meanings({ word }: { word: MeaningsWord }) {
   const hidden = meanings.length - shown.length;
 
   if (meanings.length <= 1) {
-    return <p className="mt-0.5 text-sm">{meanings[0]?.gloss ?? word.translation}</p>;
+    const meaning = meanings[0];
+    return (
+      <p className="mt-0.5 text-sm">
+        {meaning?.reading && meaning.reading !== word.phonetic && (
+          <span className="mr-1 rounded bg-muted px-1 text-xs text-muted-foreground">
+            {meaning.reading}
+          </span>
+        )}
+        {meaning?.gloss ?? word.translation}
+      </p>
+    );
   }
   return (
     <ol className="mt-0.5 space-y-0.5 text-sm">

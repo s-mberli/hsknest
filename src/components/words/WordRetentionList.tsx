@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
 import { matches, relativeDueLabel } from "@/lib/horizon";
-import { retentionCurve, retentionNow } from "@/lib/retention";
+import { primaryGloss } from "@/lib/meanings";
 import {
   STRENGTH_META,
   STRENGTH_ORDER,
@@ -17,116 +17,32 @@ const DOT: Record<Strength, string> = {
   mastered: "bg-primary",
   solid: "bg-primary/50",
   growing: "bg-primary/25",
-  shaky: "bg-amber", // lapse is a normal SRS signal, not a delete/failure state
+  shaky: "bg-amber",
   known: "bg-muted-foreground/50",
   new: "bg-border",
 };
-
-const SPARK_W = 80;
-const SPARK_H = 24;
-const SPARK_POINTS = 12;
-
-function Sparkline({ word, now }: { word: WordDetail; now: number }) {
-  const hasInterval =
-    word.intervalDays != null && Number.isFinite(word.intervalDays) && word.intervalDays > 0;
-
-  if (!hasInterval) {
-    return (
-      <svg
-        role="img"
-        aria-label="no retention projection available"
-        width={SPARK_W}
-        height={SPARK_H}
-        viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
-        className="shrink-0 text-muted-foreground/40"
-      >
-        <line
-          x1={2}
-          y1={SPARK_H / 2}
-          x2={SPARK_W - 2}
-          y2={SPARK_H / 2}
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeDasharray="2 3"
-        />
-      </svg>
-    );
-  }
-
-  const curve = retentionCurve(word, SPARK_POINTS);
-  const pct = retentionNow(word, now);
-  const pctLabel = pct == null ? "unknown" : `${Math.round(pct * 100)}%`;
-
-  const stepX = (SPARK_W - 4) / (curve.length - 1);
-  const toY = (v: number) => SPARK_H - 2 - v * (SPARK_H - 4);
-  const linePoints = curve
-    .map((v, i) => `${2 + i * stepX},${toY(v)}`)
-    .join(" ");
-  const fillPoints = `2,${SPARK_H - 2} ${linePoints} ${SPARK_W - 2},${SPARK_H - 2}`;
-
-  // "Now" dot: fraction of the interval already elapsed, computed directly
-  // from dueAt so the dot sits on the polyline for any ease factor. The y
-  // value is interpolated along the sampled curve (not raw pct) so a clamped
-  // x (overdue words) still lands exactly on the drawn line.
-  const dueMs = word.dueAt ? new Date(word.dueAt).getTime() : NaN;
-  const interval = word.intervalDays!;
-  const elapsedDays = Number.isNaN(dueMs)
-    ? 0
-    : interval - (dueMs - now) / (24 * 60 * 60 * 1000);
-  const elapsedFrac = Math.max(0, Math.min(1, elapsedDays / interval));
-  const dotX = 2 + elapsedFrac * (SPARK_W - 4);
-  const idx = elapsedFrac * (curve.length - 1);
-  const lo = Math.floor(idx);
-  const hi = Math.min(curve.length - 1, lo + 1);
-  const dotVal = curve[lo] + (curve[hi] - curve[lo]) * (idx - lo);
-  const dotY = toY(dotVal);
-
-  return (
-    <svg
-      role="img"
-      aria-label={`projected retention ${pctLabel}`}
-      width={SPARK_W}
-      height={SPARK_H}
-      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
-      className="shrink-0 text-primary"
-    >
-      <polygon points={fillPoints} fill="currentColor" opacity={0.12} stroke="none" />
-      <polyline
-        points={linePoints}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {pct != null && (
-        <circle cx={dotX} cy={dotY} r={2} fill="currentColor" />
-      )}
-    </svg>
-  );
-}
 
 interface WordRetentionListProps {
   words: WordDetail[];
   search?: string;
   bands?: Strength[];
   emptyLabel?: string;
-  masteryThresholdDays?: number | null;
+  now: number;
 }
 
 /**
- * Dense word list with strength chip, term/phonetic/translation, and a
- * projected-retention sparkline + due chip. Replaces the Table view on the
- * Words tab (Lists page keeps the shared WordTable untouched).
+ * Dense word list with strength cue, term/phonetic/translation, and due
+ * information. The list intentionally reports scheduling facts only; it does
+ * not estimate recall probability.
  */
 export function WordRetentionList({
   words,
   search = "",
   bands,
   emptyLabel = "No words to show.",
+  now,
 }: WordRetentionListProps) {
   const allowed = bands ? new Set(bands) : null;
-  const [now] = useState(() => Date.now());
 
   const sorted = useMemo(() => {
     const rank = new Map(STRENGTH_ORDER.map((b, i) => [b, i]));
@@ -152,9 +68,8 @@ export function WordRetentionList({
     <ul role="list" className="divide-y rounded-lg border">
       {sorted.map((w) => {
         const meta = STRENGTH_META[w.strength];
-        // NEW words carry dueAt = now (queue-eligibility marker, not a real
-        // review date) — relativeDueLabel would misreport them as "due today".
-        const dueLabel = w.state === "NEW" ? "new" : relativeDueLabel(w.dueAt);
+        const dueLabel =
+          w.state === "NEW" ? "New" : relativeDueLabel(w.dueAt, undefined, now);
         const ariaLabel = `${w.term}, ${meta.label}, ${dueLabel}`;
         return (
           <li
@@ -166,35 +81,35 @@ export function WordRetentionList({
           >
             <WordHoverCard
               word={w}
+              now={now}
               ariaLabel={ariaLabel}
               wrapperClassName="block w-full"
               className={cn(
-                "flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left",
+                "flex min-h-11 w-full items-start gap-2 px-3 py-2 text-left sm:items-center sm:gap-3",
                 "hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
               )}
             >
               <span
                 aria-hidden
-                className={cn("size-2.5 shrink-0 rounded-full", DOT[w.strength])}
+                className={cn("mt-2.5 size-2.5 shrink-0 rounded-full sm:mt-0", DOT[w.strength])}
               />
               <span className="min-w-0 flex-1">
-                <span className="flex items-baseline gap-2">
-                  <span data-term className="truncate text-lg font-medium">{w.term}</span>
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span data-term className="max-w-full break-words text-lg font-medium">
+                    {w.term}
+                  </span>
                   {w.phonetic && (
-                    <span className="shrink-0 text-sm text-muted-foreground">
+                    <span className="max-w-full break-words text-sm text-muted-foreground">
                       {w.phonetic}
                     </span>
                   )}
                 </span>
-                <span className="block truncate text-sm text-muted-foreground">
-                  {w.translation}
+                <span className="block break-words text-sm text-muted-foreground">
+                  {primaryGloss(w)}
                 </span>
               </span>
-              <span className="flex shrink-0 items-center gap-2">
-                <Sparkline word={w} now={now} />
-                <span className="w-20 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-                  {w.state === "NEW" ? "new" : relativeDueLabel(w.dueAt).replace(/^due /, "")}
-                </span>
+              <span className="max-w-[6.5rem] shrink-0 text-right text-xs leading-4 tabular-nums text-muted-foreground">
+                {dueLabel}
               </span>
             </WordHoverCard>
           </li>

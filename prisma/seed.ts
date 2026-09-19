@@ -7,11 +7,19 @@ import { isBadLead } from "../src/lib/glossGuard";
 
 const prisma = new PrismaClient();
 
-type SeedWord = {
+export type SeedWord = {
   term: string;
   translation: string;
   phonetic: string;
   metadata: Prisma.InputJsonValue;
+};
+
+type StoredSeedWord = {
+  term: string;
+  translation: string;
+  phonetic: string | null;
+  metadata: unknown;
+  position: number;
 };
 
 // Everyday Conversations — functional speech for getting by day-to-day.
@@ -123,24 +131,24 @@ async function upsertLanguage(code: string, name: string) {
 }
 
 /** How many progress rows hang off a list's words (0 = safe to replace). */
-async function progressCount(listId: string): Promise<number> {
-  return prisma.userProgress.count({
+async function progressCount(listId: string, db: PrismaClient = prisma): Promise<number> {
+  return db.userProgress.count({
     where: { word: { wordListId: listId } },
   });
 }
 
 /** Delete a seeded list plus its ReviewLog rows (no FK, cleared by hand). */
-async function deleteSeededList(listId: string) {
-  const words = await prisma.word.findMany({
+async function deleteSeededList(listId: string, db: PrismaClient = prisma) {
+  const words = await db.word.findMany({
     where: { wordListId: listId },
     select: { id: true },
   });
-  await prisma.$transaction([
-    prisma.reviewLog.deleteMany({
+  await db.$transaction([
+    db.reviewLog.deleteMany({
       where: { wordId: { in: words.map((w) => w.id) } },
     }),
     // Cascade handles words + their UserProgress.
-    prisma.wordList.delete({ where: { id: listId } }),
+    db.wordList.delete({ where: { id: listId } }),
   ]);
 }
 
@@ -159,28 +167,44 @@ function stableStringify(value: unknown): string {
 }
 
 /**
- * Cheap content check for an existing seeded list: compare a few sampled
- * positions against the incoming dataset. Regenerated datasets change most
- * entries, so sampling first/middle/last reliably detects a refresh without
- * loading every word.
+ * Compare every incoming word with its term-matched stored row. Extra stored
+ * terms are intentionally ignored because a progress-preserving refresh keeps
+ * retired terms rather than deleting them.
  */
-async function sameSeedContent(listId: string, words: SeedWord[]): Promise<boolean> {
-  const positions = [...new Set([0, Math.floor(words.length / 2), words.length - 1])];
-  const sampled = await prisma.word.findMany({
-    where: { wordListId: listId, position: { in: positions } },
-    select: { position: true, term: true, translation: true, phonetic: true, metadata: true },
-  });
-  if (sampled.length !== positions.length) return false;
-  return sampled.every((w) => {
-    const incoming = words[w.position];
+export function seedContentMatches(
+  existingWords: readonly StoredSeedWord[],
+  incomingWords: readonly SeedWord[]
+): boolean {
+  const byTerm = new Map<string, StoredSeedWord[]>();
+  for (const word of existingWords) {
+    const matches = byTerm.get(word.term);
+    if (matches) matches.push(word);
+    else byTerm.set(word.term, [word]);
+  }
+
+  return incomingWords.every((incoming, position) => {
+    const matches = byTerm.get(incoming.term);
+    if (!matches || matches.length !== 1) return false;
+    const stored = matches[0];
     return (
-      incoming &&
-      w.term === incoming.term &&
-      w.translation === incoming.translation &&
-      (w.phonetic ?? "") === incoming.phonetic &&
-      stableStringify(w.metadata) === stableStringify(incoming.metadata)
+      stored.position === position &&
+      stored.translation === incoming.translation &&
+      (stored.phonetic ?? "") === incoming.phonetic &&
+      stableStringify(stored.metadata) === stableStringify(incoming.metadata)
     );
   });
+}
+
+async function sameSeedContent(
+  listId: string,
+  words: SeedWord[],
+  db: PrismaClient = prisma
+): Promise<boolean> {
+  const existingWords = await db.word.findMany({
+    where: { wordListId: listId },
+    select: { position: true, term: true, translation: true, phonetic: true, metadata: true },
+  });
+  return seedContentMatches(existingWords, words);
 }
 
 /**
@@ -188,10 +212,16 @@ async function sameSeedContent(listId: string, words: SeedWord[]): Promise<boole
  * deleting the list. Preserves Word ids so UserProgress/ReviewLog rows
  * (which reference wordId) survive a content refresh. Terms no longer
  * present in the incoming dataset are left alone rather than deleted —
- * an in-place refresh should never be the thing that removes data.
+ * an in-place refresh should never be the thing that removes data. Retired
+ * rows are moved after the incoming range in deterministic old-position order
+ * so their retained data cannot collide with compacted incoming positions.
  */
-async function refreshListInPlace(listId: string, words: SeedWord[]) {
-  const existingWords = await prisma.word.findMany({
+async function refreshListInPlace(
+  listId: string,
+  words: SeedWord[],
+  db: PrismaClient = prisma
+) {
+  const existingWords = await db.word.findMany({
     where: { wordListId: listId },
     select: { id: true, term: true, translation: true, phonetic: true, metadata: true, position: true },
   });
@@ -203,7 +233,7 @@ async function refreshListInPlace(listId: string, words: SeedWord[]) {
     const w = words[i];
     const existing = byTerm.get(w.term);
     if (!existing) {
-      await prisma.word.create({
+      await db.word.create({
         data: {
           term: w.term,
           translation: w.translation,
@@ -222,7 +252,7 @@ async function refreshListInPlace(listId: string, words: SeedWord[]) {
       stableStringify(existing.metadata) === stableStringify(w.metadata) &&
       existing.position === i;
     if (same) continue;
-    await prisma.word.update({
+    await db.word.update({
       where: { id: existing.id },
       data: {
         translation: w.translation,
@@ -235,7 +265,23 @@ async function refreshListInPlace(listId: string, words: SeedWord[]) {
   }
 
   const incomingTerms = new Set(words.map((w) => w.term));
-  const orphaned = existingWords.filter((w) => !incomingTerms.has(w.term));
+  const orphaned = existingWords
+    .filter((w) => !incomingTerms.has(w.term))
+    .sort(
+      (a, b) =>
+        a.position - b.position ||
+        (a.term < b.term ? -1 : a.term > b.term ? 1 : 0) ||
+        (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+    );
+  for (let i = 0; i < orphaned.length; i++) {
+    const word = orphaned[i];
+    const position = words.length + i;
+    if (word.position === position) continue;
+    await db.word.update({
+      where: { id: word.id },
+      data: { position },
+    });
+  }
   if (orphaned.length > 0) {
     console.warn(
       `[seed] ${orphaned.length} word(s) in listId=${listId} no longer appear in the source ` +
@@ -250,7 +296,7 @@ async function refreshListInPlace(listId: string, words: SeedWord[]) {
 /**
  * Idempotently seed a word list, refreshing outdated content:
  * - missing → create with words;
- * - exists with the same word count and same sampled content → current, no-op;
+ * - exists with every incoming term matching → current, no-op;
  * - exists with different content, no progress recorded against it → replace
  *   (delete old, create new) — cheap and fine, nothing to lose;
  * - exists with different content AND real progress recorded → refresh in
@@ -262,30 +308,30 @@ async function refreshListInPlace(listId: string, words: SeedWord[]) {
  *   progressCount() helper existed for exactly this check but was never
  *   wired in.)
  */
-async function seedList(
+export async function seedList(
   languageId: string,
   name: string,
   description: string,
-  words: SeedWord[]
+  words: SeedWord[],
+  db: PrismaClient = prisma
 ) {
-  const existing = await prisma.wordList.findFirst({
+  const existing = await db.wordList.findFirst({
     where: { languageId, name, createdById: null },
-    select: { id: true, _count: { select: { words: true } } },
+    select: { id: true },
   });
 
   if (existing) {
     if (
-      existing._count.words === words.length &&
-      (await sameSeedContent(existing.id, words))
+      (await sameSeedContent(existing.id, words, db))
     ) {
       return; // current
     }
-    const progress = await progressCount(existing.id);
+    const progress = await progressCount(existing.id, db);
     if (progress === 0) {
-      await deleteSeededList(existing.id);
+      await deleteSeededList(existing.id, db);
       console.log(`Replacing outdated list: ${name}`);
     } else {
-      const { updated, created } = await refreshListInPlace(existing.id, words);
+      const { updated, created } = await refreshListInPlace(existing.id, words, db);
       console.log(
         `Refreshed in place (${progress} progress row(s) preserved): ${name} ` +
           `— ${updated} updated, ${created} added`
@@ -294,12 +340,12 @@ async function seedList(
     }
   }
 
-  const list = await prisma.wordList.create({
+  const list = await db.wordList.create({
     data: { name, description, isPublic: true, languageId },
     select: { id: true },
   });
 
-  await prisma.word.createMany({
+  await db.word.createMany({
     data: words.map((w, i) => ({
       term: w.term,
       translation: w.translation,
@@ -568,11 +614,13 @@ async function main() {
   console.log("Seed complete.");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (require.main === module) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

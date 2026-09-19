@@ -34,19 +34,19 @@ const STEPS = [
   {
     n: "2",
     title: "Pick a deck",
-    body: "Tell us your HSK level and the right deck is waiting, or import your own lists.",
+    body: "Choose an HSK level and the right deck is waiting, or import your own lists.",
   },
   {
     n: "3",
     title: "Review daily",
-    body: "HSK Nest tells you exactly what to study and when. Optimized by FSRS to minimize your daily review load, keeping your streak alive over years of fluency, not just weeks of cramming.",
+    body: "HSK Nest suggests what to review next as you study, using spaced repetition to help you keep a steady daily habit.",
   },
 ];
 
 const FAQ = [
   {
     q: "Is HSK Nest really free?",
-    a: "Self-hosted, yes, forever, under the AGPL license. The hosted version is €10/month after a 14-day free trial: we handle updates, backups, and hosting.",
+    a: "Self-hosted, yes, forever, under the AGPL license. The hosted version is €10/month or €99/year after a 14-day free trial: we handle updates, backups, and hosting.",
   },
   {
     q: "Do I need a credit card to try it?",
@@ -54,19 +54,19 @@ const FAQ = [
   },
   {
     q: "Can I import my existing Anki decks?",
-    a: "Yes, export them from Anki as CSV/TSV and paste or upload; you map the columns and HSK Nest does the rest.",
+    a: "Yes, export them from Anki as CSV/TSV and import them into HSK Nest.",
   },
   {
     q: "What languages does HSK Nest support?",
-    a: "HSK Nest is built for Mandarin: full HSK 1–9 (11,000 words, November 2025 official syllabus) plus 3,000 example sentences with pinyin. The engine underneath is language-agnostic, so you can import your own CSV decks for anything else you're memorizing.",
+    a: "HSK Nest is built for Mandarin: HSK 1–9 vocabulary organised around the November 2025 HSK 3.0 syllabus, plus 3,000 example sentences with pinyin. You can also import your own CSV decks.",
   },
   {
     q: "What happens to my progress if I stop paying?",
-    a: "Nothing is deleted. You can export your full progress as CSV at any time, and self-hosting is always free, your data isn't locked in.",
+    a: "Nothing is deleted. You can export a vocabulary and progress-summary CSV at any time, and self-hosting is always free, so your data isn't locked in.",
   },
   {
     q: "Is my data private?",
-    a: "Yes. No ad tracking, no analytics cookies, open-source code you can audit, and if you want full control, run it on your own server.",
+    a: "The app uses necessary session cookies. Guest attribution uses a guestId cookie, campaign values use local storage, and optional Umami analytics are cookieless. You can also audit or self-host the open-source code.",
   },
 ];
 
@@ -146,9 +146,9 @@ export function LandingSections() {
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
               <AudioLines className="size-5 text-primary" />
             </span>
-            <h3 className="font-semibold">Native Audio</h3>
+            <h3 className="font-semibold">Mandarin Pronunciation Audio</h3>
             <p className="text-sm text-muted-foreground">
-              Crystal clear pronunciation for every character and word.
+              Mandarin pronunciation audio when available.
             </p>
           </div>
         </div>
@@ -167,11 +167,11 @@ export function LandingSections() {
           </div>
 
           <div className="flex flex-col gap-4 rounded-2xl border bg-card p-6 sm:min-h-[220px]">
-            <p className="text-4xl font-bold text-primary/80">3,000+</p>
+            <p className="text-4xl font-bold text-primary/80">3,000</p>
             <h3 className="font-semibold">Context Sentences</h3>
             <p className="text-sm text-muted-foreground">
               Don&apos;t learn words in a vacuum. Understand nuance with
-              high-quality, practical example sentences.
+              practical example sentences.
             </p>
           </div>
 
@@ -360,7 +360,7 @@ export function LandingSections() {
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-2xl space-y-6">
+      <section id="faq" className="mx-auto max-w-2xl scroll-mt-8 space-y-6">
         <h2 className="text-center text-3xl font-bold tracking-tight">
           Questions, answered
         </h2>

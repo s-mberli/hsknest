@@ -38,6 +38,6 @@ export default defineConfig({
     // The journey suite creates many accounts and exercises guest mode —
     // both are gated to a single claim on self-hosted instances (see
     // src/lib/registration.ts). Reopen registration for local e2e runs too.
-    env: { ALLOW_REGISTRATION: "true" },
+    env: { ALLOW_REGISTRATION: "true", SELF_HOSTED: "false" },
   },
 });

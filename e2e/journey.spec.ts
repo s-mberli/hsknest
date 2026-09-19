@@ -503,15 +503,19 @@ test("words tab toggles to timeline view with a lane heading", async ({ page }) 
   ).toBeVisible({ timeout: 10_000 });
 });
 
-test("words tab toggles to the Words list with retention sparklines", async ({ page }) => {
+test("words tab toggles to the Words list with honest due labels", async ({ page }) => {
   await logIn(page);
   await page.goto("/words");
   await page.getByRole("button", { name: /^Words$/ }).click();
-  // List rows render inside a <ul role="list"> with a retention sparkline SVG.
+  // The list keeps the supported strength/due facts and no longer presents a
+  // projected recall probability.
   await expect(page.getByRole("list").first()).toBeVisible({ timeout: 10_000 });
-  await expect(
-    page.getByRole("img", { name: /retention/i }).first()
-  ).toBeVisible();
+  await expect(page.getByRole("img", { name: /retention/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Words$/ })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await expect(page.getByRole("searchbox", { name: "Search words" })).toBeVisible();
 });
 
 test("words tab toggles to the Strength bubble view", async ({ page }) => {

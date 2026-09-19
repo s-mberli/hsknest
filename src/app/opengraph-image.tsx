@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "HSK Nest — Spaced Repetition";
+export const alt = "HSK Nest — Daily Mandarin vocabulary practice";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -52,7 +52,7 @@ export default function Image() {
             textAlign: "center",
           }}
         >
-          Self-hostable, FSRS-powered spaced repetition
+          Daily Mandarin vocabulary practice
         </div>
         <div
           style={{
@@ -62,7 +62,7 @@ export default function Image() {
             fontWeight: 600,
           }}
         >
-          Open-source · Mandarin-first · Own your data
+          HSK 3.0 vocabulary · Short Study sessions · Own your data
         </div>
       </div>
     ),

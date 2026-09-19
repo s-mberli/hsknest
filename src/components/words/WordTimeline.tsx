@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const MOTION_PERF_GUARD = 400;
 interface WordTimelineProps {
   words: WordDetail[];
   search?: string;
+  now: number;
   /** Limit to these strength bands (e.g. when a strength filter is active). */
   bands?: Strength[];
   emptyLabel?: string;
@@ -30,13 +31,13 @@ function FocusHeader({
   words,
   masteryThresholdDays,
   reducedMotion,
+  now,
 }: {
   words: WordDetail[];
   masteryThresholdDays?: number | null;
   reducedMotion: boolean;
+  now: number;
 }) {
-  const [now] = useState(() => Date.now());
-
   const { nextDue, upcoming } = useMemo(() => {
     const due = words
       .filter((w) => isDueNow(w, now))
@@ -53,8 +54,7 @@ function FocusHeader({
           new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime()
       );
     return { nextDue: due[0] ?? null, upcoming: notDue.slice(0, 8) };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [words]);
+  }, [words, now]);
 
   if (!nextDue) {
     const soonest = words
@@ -68,7 +68,7 @@ function FocusHeader({
         <p className="text-sm font-medium">All caught up</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {soonest
-            ? `Next word surfaces ${relativeDueLabel(soonest.dueAt, "in")}.`
+            ? `Next word surfaces ${relativeDueLabel(soonest.dueAt, "in", now)}.`
             : "Nothing scheduled yet \u2014 enroll a list to begin."}
         </p>
       </div>
@@ -147,7 +147,8 @@ function FocusHeader({
               >
                 <WordHoverCard
                   word={w}
-                  ariaLabel={`${w.term}, ${STRENGTH_META[w.strength].label}, ${relativeDueLabel(w.dueAt, "in")}`}
+                  now={now}
+                  ariaLabel={`${w.term}, ${STRENGTH_META[w.strength].label}, ${relativeDueLabel(w.dueAt, undefined, now)}`}
                   className={cn(
                     "flex min-h-11 w-28 flex-col items-start gap-0.5 rounded-md border bg-card px-2.5 py-2 text-left",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -162,7 +163,7 @@ function FocusHeader({
                     </span>
                   )}
                   <span className="mt-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground">
-                    {relativeDueLabel(w.dueAt, "in")}
+                    {relativeDueLabel(w.dueAt, undefined, now)}
                   </span>
                 </WordHoverCard>
               </motion.li>
@@ -186,8 +187,8 @@ export function WordTimeline({
   bands,
   emptyLabel = "No words to show.",
   masteryThresholdDays,
+  now,
 }: WordTimelineProps) {
-  const [now] = useState(() => Date.now());
   const reducedMotion = usePrefersReducedMotion();
   const allowed = bands ? new Set(bands) : null;
 
@@ -225,6 +226,7 @@ export function WordTimeline({
         words={filtered}
         masteryThresholdDays={masteryThresholdDays}
         reducedMotion={reducedMotion}
+        now={now}
       />
       {lanes.map((lane) => (
         <Lane
