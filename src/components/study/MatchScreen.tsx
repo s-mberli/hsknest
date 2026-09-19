@@ -216,7 +216,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
         practice
       />
 
-      <main className="flex flex-1 flex-col justify-center px-6 pb-16">
+      <main className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16">
         {loading && (
           <div className="mx-auto w-full max-w-sm animate-pulse">
             <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />
@@ -243,7 +243,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
             key={round}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex w-full max-w-md flex-col gap-6"
+            className="mx-auto flex w-full max-w-md flex-col gap-4 sm:gap-6"
           >
             <div className="text-center">
               <h2 className="text-lg font-bold tracking-tight mb-1">Tap matching pairs</h2>

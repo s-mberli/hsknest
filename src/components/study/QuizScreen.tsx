@@ -115,7 +115,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
       />
 
       <main
-        className="flex flex-1 flex-col justify-center px-6 pb-16"
+        className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16"
         onClick={() => {
           if (picked !== null) advance();
         }}
@@ -161,7 +161,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
             key={current.wordId}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex w-full max-w-sm flex-col items-center gap-8"
+            className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 sm:gap-8"
           >
             <div className="flex flex-col items-center gap-2 text-center">
               {/* The speaker sits OUTSIDE the flow (absolute, hugging the
@@ -208,6 +208,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
                   <button
                     key={choice}
                     type="button"
+                    data-correct={isAnswer}
                     disabled={picked !== null}
                     onClick={() => pick(choice)}
                     className={cn(

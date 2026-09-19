@@ -105,14 +105,14 @@ export function SessionComplete({
   }, []);
 
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center gap-4 overflow-hidden px-6 text-center">
+    <div className="relative flex min-h-full flex-none flex-col items-center justify-center gap-4 overflow-hidden px-6 text-center [@media(max-height:600px)]:gap-2 [@media(max-height:600px)]:px-4">
       <ConfettiCannon fire={fire} intensity={150} />
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       >
-        <CheckCircle2 className="size-14 text-primary" />
+        <CheckCircle2 className="size-14 text-primary [@media(max-height:600px)]:size-10" />
       </motion.div>
       <motion.div
         initial="hidden"
@@ -120,10 +120,16 @@ export function SessionComplete({
         variants={revealParent}
         className="contents"
       >
-        <motion.h2 variants={item} className="text-2xl font-bold tracking-tight">
+        <motion.h2
+          variants={item}
+          className="text-2xl font-bold tracking-tight [@media(max-height:600px)]:text-xl"
+        >
           {practice ? "Practice done" : "Session complete"}
         </motion.h2>
-        <motion.p variants={item} className="text-muted-foreground">
+        <motion.p
+          variants={item}
+          className="text-muted-foreground [@media(max-height:600px)]:text-sm [@media(max-height:600px)]:leading-tight"
+        >
           You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}.{" "}
           {practice
             ? "Just practice — nothing here changed your upcoming reviews."
@@ -135,14 +141,20 @@ export function SessionComplete({
           </motion.p>
         )}
         {tomorrowDue !== null && (
-          <motion.p variants={item} className="max-w-xs text-sm text-muted-foreground">
+          <motion.p
+            variants={item}
+            className="max-w-xs text-sm text-muted-foreground [@media(max-height:600px)]:hidden"
+          >
             {tomorrowDue > 0
               ? `Come back tomorrow — ${tomorrowDue} ${tomorrowDue === 1 ? "review" : "reviews"} will be waiting.`
               : "Nothing due tomorrow — the schedule brings words back right before you'd forget them."}
           </motion.p>
         )}
 
-        <motion.div variants={item} className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3">
+        <motion.div
+          variants={item}
+          className="mt-2 grid w-full max-w-xs grid-cols-3 gap-3 [@media(max-height:600px)]:mt-0 [@media(max-height:600px)]:gap-2"
+        >
           <Stat
             label="Accuracy"
             value={<CountUp to={accuracy} suffix="%" reduced={reducedMotion} />}
@@ -153,13 +165,19 @@ export function SessionComplete({
         </motion.div>
 
         {missed.length > 0 && (
-          <motion.div variants={item} className="mt-2 w-full max-w-xs rounded-lg border bg-card p-3 text-left">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <motion.div
+            variants={item}
+            className="mt-2 w-full max-w-xs rounded-lg border bg-card p-3 text-left [@media(max-height:600px)]:mt-0 [@media(max-height:600px)]:p-2"
+          >
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground [@media(max-height:600px)]:mb-1">
               Toughest this round
             </p>
             <ul className="space-y-1.5">
               {missed.slice(0, 5).map((w) => (
-                <li key={w.term} className="flex items-baseline justify-between gap-3 text-sm">
+                <li
+                  key={w.term}
+                  className="flex items-baseline justify-between gap-3 text-sm [@media(max-height:600px)]:text-xs"
+                >
                   <span data-term className="font-medium">{w.term}</span>
                   <span className="truncate text-muted-foreground">{w.translation}</span>
                 </li>
@@ -171,7 +189,7 @@ export function SessionComplete({
         {!isGuest && (
           <motion.div
             variants={item}
-            className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center"
+            className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center [@media(max-height:600px)]:mt-1 [@media(max-height:600px)]:gap-1 [@media(max-height:600px)]:[&_a]:h-8 [@media(max-height:600px)]:[&_button]:h-8"
           >
             {/* In a Practice rotation, offer "Next round" instead of "Keep practicing".
                 Outside a rotation, offer "Redo the N you missed" and "Keep practicing".
@@ -227,7 +245,10 @@ export function SessionComplete({
         )}
 
         {isGuest && (
-          <motion.div variants={item} className="mt-4 w-full max-w-xs sm:max-w-md">
+          <motion.div
+            variants={item}
+            className="mt-4 w-full max-w-xs sm:max-w-md [@media(max-height:600px)]:mt-1 [@media(max-height:600px)]:[&_button]:h-9"
+          >
             <Button size="lg" className="w-full text-md font-semibold" onClick={() => setShowUpgrade(true)}>
               Save Progress & Continue Free
             </Button>
@@ -256,8 +277,10 @@ function Stat({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-3">
-      <p className={`text-xl font-bold tabular-nums ${valueClassName ?? ""}`}>
+    <div className="rounded-lg border bg-card p-3 [@media(max-height:600px)]:p-2">
+      <p
+        className={`text-xl font-bold tabular-nums [@media(max-height:600px)]:text-lg ${valueClassName ?? ""}`}
+      >
         {value}
       </p>
       <p className="text-xs text-muted-foreground">{label}</p>

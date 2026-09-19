@@ -68,6 +68,78 @@ async function logIn(page: import("playwright/test").Page) {
   await dismissCookies(page);
 }
 
+async function createReviewUserAndLogIn(
+  page: import("playwright/test").Page,
+  prefix: string
+) {
+  const suffix = randomBytes(6).toString("hex");
+  const testEmail = `${prefix}-${suffix}@test.local`;
+  const testPassword = "test-password-viewport";
+  const passwordHash = await hash(testPassword, 12);
+  const lang = await prisma.language.findFirst({ where: { code: "zh" } });
+  if (!lang) throw new Error("Viewport test requires the seeded zh language");
+
+  const user = await prisma.user.create({
+    data: {
+      email: testEmail,
+      passwordHash,
+      name: "Viewport Test",
+      targetLanguageId: lang.id,
+    },
+  });
+  const words = await prisma.word.findMany({
+    where: { wordList: { languageId: lang.id } },
+    take: 6,
+  });
+  if (words.length < 5) throw new Error("Viewport test requires five seeded zh words");
+  await prisma.userProgress.createMany({
+    data: words.map((word) => ({
+      userId: user.id,
+      wordId: word.id,
+      state: "REVIEW",
+      dueAt: new Date(),
+    })),
+  });
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(testEmail);
+  await page.getByLabel("Password").fill(testPassword);
+  const loginRes = page.waitForResponse((res) =>
+    res.url().includes("/api/auth/callback/credentials")
+  );
+  await page.getByRole("button", { name: /sign in/i }).click();
+  expect((await loginRes).ok()).toBeTruthy();
+  await page.waitForURL("**/dashboard", { timeout: 15_000 });
+  await dismissIntro(page);
+  await dismissCookies(page);
+}
+
+async function expectDocumentLockedToViewport(
+  page: import("playwright/test").Page
+) {
+  const dimensions = await page.evaluate(() => ({
+    viewportHeight: window.innerHeight,
+    documentHeight: document.documentElement.scrollHeight,
+    bodyHeight: document.body.scrollHeight,
+    scrollY: window.scrollY,
+  }));
+
+  expect(dimensions.scrollY).toBe(0);
+  expect(dimensions.documentHeight).toBeLessThanOrEqual(dimensions.viewportHeight);
+  expect(dimensions.bodyHeight).toBeLessThanOrEqual(dimensions.viewportHeight);
+}
+
+async function expectInsideViewport(
+  page: import("playwright/test").Page,
+  locator: import("playwright/test").Locator
+) {
+  const box = await locator.boundingBox();
+  expect(box).not.toBeNull();
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(viewportHeight);
+}
+
 test("enroll a starter list", async ({ page }) => {
   await logIn(page);
   await page.goto("/lists");
@@ -516,6 +588,134 @@ test("words tab toggles to the Words list with honest due labels", async ({ page
     "true"
   );
   await expect(page.getByRole("searchbox", { name: "Search words" })).toBeVisible();
+});
+
+test("mobile study keeps revealed controls inside the visible viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await createReviewUserAndLogIn(page, "viewport-study");
+  await page.goto("/study?limit=1");
+  await expect(page.getByText(/tap to reveal/i)).toBeVisible({ timeout: 15_000 });
+
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(150);
+  await page.keyboard.press("Space");
+
+  const bottomAction = page
+    .getByRole("button", { name: /got it|again|hard|good|easy/i })
+    .last();
+  await expect(bottomAction).toBeVisible();
+  await expectDocumentLockedToViewport(page);
+  await expectInsideViewport(page, bottomAction);
+
+  // Firefox's expanded browser chrome can leave a 640px-tall phone with only
+  // about 560px of visible page height. The layout must respond in place.
+  await page.setViewportSize({ width: 360, height: 560 });
+  await expectDocumentLockedToViewport(page);
+  await expectInsideViewport(page, bottomAction);
+});
+
+test("mobile practice modes keep their controls inside the viewport", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 390, height: 664 });
+  await createReviewUserAndLogIn(page, "viewport-practice");
+
+  const assertChrome = async () => {
+    const exit = page.getByRole("link", { name: "Exit session" });
+    const timer = page.getByLabel("Session time");
+    const progress = page.getByRole("progressbar", { name: "Session progress" });
+    await expect(exit).toBeVisible({ timeout: 15_000 });
+    await expect(timer).toBeVisible();
+    await expect(progress).toBeVisible();
+    await expectInsideViewport(page, exit);
+    await expectInsideViewport(page, timer);
+    await expectDocumentLockedToViewport(page);
+  };
+
+  await page.addInitScript(() => {
+    const originalRandom = Math.random;
+    Math.random = () =>
+      new Error().stack?.includes("startRotation") ? 0 : originalRandom();
+  });
+  await page.goto("/study/practice?mode=practice&limit=5");
+  await expect(page.getByText("Practice · Meaning Quiz")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expectInsideViewport(
+    page,
+    page.locator('main button:not([aria-label="Play pronunciation"])').last()
+  );
+  await assertChrome();
+
+  await page.goto("/study/quiz?mode=practice&limit=1");
+  await expect(page.getByText("Pick the meaning")).toBeVisible({ timeout: 15_000 });
+  const quizChoice = page
+    .locator('main button:not([aria-label="Play pronunciation"])')
+    .first();
+  await expectInsideViewport(page, quizChoice);
+  await assertChrome();
+  for (let i = 0; i < 10; i++) {
+    if (await page.getByText(/practice done|session complete/i).isVisible()) break;
+    const wrongAnswer = page.locator('main button[data-correct="false"]').first();
+    await expect(wrongAnswer).toBeEnabled();
+    await wrongAnswer.click();
+    await page.waitForTimeout(1_800);
+  }
+  await expect(page.getByText(/practice done|session complete/i)).toBeVisible({
+    timeout: 10_000,
+  });
+  await page.setViewportSize({ width: 360, height: 560 });
+  await page.waitForTimeout(800);
+  const completionTitle = page.getByRole("heading", { name: "Practice done" });
+  const redoAction = page.getByRole("button", { name: /redo the 1 you missed/i });
+  const completionAction = page.getByRole("link", { name: "Keep practicing" });
+  const dashboardAction = page.getByRole("button", { name: "Back to dashboard" });
+  await expect(completionAction).toBeVisible();
+  await expectDocumentLockedToViewport(page);
+  await expectInsideViewport(page, completionTitle);
+  await expectInsideViewport(page, redoAction);
+  await expectInsideViewport(page, completionAction);
+  await expectInsideViewport(page, dashboardAction);
+
+  await page.setViewportSize({ width: 360, height: 400 });
+  await expectDocumentLockedToViewport(page);
+  const contentOverflow = await page.locator("main").evaluate((main) => ({
+    clientHeight: main.clientHeight,
+    scrollHeight: main.scrollHeight,
+  }));
+  expect(contentOverflow.scrollHeight).toBeGreaterThan(contentOverflow.clientHeight);
+  await page.locator("main").evaluate((main) => main.scrollTo(0, main.scrollHeight));
+  await expectInsideViewport(page, dashboardAction);
+
+  await page.setViewportSize({ width: 390, height: 664 });
+  await page.goto("/study/match?mode=practice&limit=5");
+  await expect(page.getByRole("heading", { name: "Tap matching pairs" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expectInsideViewport(page, page.locator("main button").last());
+  await assertChrome();
+
+  await page.goto("/study/pronounce?mode=practice&limit=1");
+  await expect(page.getByText("Pick the pronunciation")).toBeVisible({ timeout: 15_000 });
+  await expectInsideViewport(page, page.locator("main button").first());
+  await assertChrome();
+
+  await page.goto("/study/sentences?mode=practice&limit=1");
+  const reveal = page.getByRole("button", { name: "Show translation" });
+  await expect(reveal).toBeVisible({ timeout: 15_000 });
+  await reveal.click();
+  const sentenceGrade = page.getByRole("button", { name: "Good" });
+  await expect(sentenceGrade).toBeVisible();
+  await expectInsideViewport(page, sentenceGrade);
+  await assertChrome();
+
+  await page.goto("/study/ninja?mode=practice");
+  const lives = page.getByRole("status", { name: /lives left/i });
+  const ninjaPrompt = page.getByText(/slice the word for/i);
+  await expect(lives).toBeVisible({ timeout: 15_000 });
+  await expect(ninjaPrompt).toBeVisible();
+  await expectInsideViewport(page, lives);
+  await expectInsideViewport(page, ninjaPrompt);
+  await expectDocumentLockedToViewport(page);
 });
 
 test("words tab toggles to the Strength bubble view", async ({ page }) => {

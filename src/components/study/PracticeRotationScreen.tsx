@@ -81,7 +81,7 @@ export function PracticeRotationScreen({
 
   return (
     <PracticeRotationContext.Provider value={contextValue}>
-      <div className="relative w-full h-screen">
+      <div className="relative h-dvh w-full overflow-hidden">
         {/* Render the chosen mode's existing screen — completely unchanged.
             It uses Suspense internally, so queue fetches are non-blocking.
             Keying forces a remount on each round, giving a genuinely fresh

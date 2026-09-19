@@ -142,7 +142,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
         practice={practice}
       />
 
-      <main className="flex flex-1 flex-col justify-center px-6 pb-16">
+      <main className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16">
         {loading && (
           <p className="text-center text-sm text-muted-foreground">
             Loading your sentences…
@@ -184,7 +184,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
             key={current.wordId + String(cursor)}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex w-full max-w-sm flex-col items-center gap-8"
+            className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 sm:gap-8"
           >
             <div className="flex flex-col items-center gap-3 text-center">
               <HighlightedSentence
