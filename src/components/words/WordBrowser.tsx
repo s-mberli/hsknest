@@ -10,6 +10,7 @@ import { WordRetentionList } from "@/components/words/WordRetentionList";
 import type { WordDetail } from "@/components/words/WordHoverCard";
 import { cn } from "@/lib/utils";
 import { isDueNow } from "@/lib/horizon";
+import { languageAfterSuccessfulLoad } from "@/lib/wordBrowser";
 import {
   STRENGTH_META,
   STRENGTH_ORDER,
@@ -35,15 +36,6 @@ interface ApiWord {
 
 type Filter = "all" | Strength;
 type View = "timeline" | "cards" | "list";
-
-export function languageAfterSuccessfulLoad(
-  currentLanguage: string,
-  targetLanguageCode: string | null | undefined,
-  hasLoadedSuccessfully: boolean
-): string {
-  if (!hasLoadedSuccessfully && targetLanguageCode) return targetLanguageCode;
-  return currentLanguage;
-}
 
 export function WordBrowser() {
   const [words, setWords] = useState<WordDetail[] | null>(null);

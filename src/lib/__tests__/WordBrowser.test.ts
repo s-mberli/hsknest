@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { languageAfterSuccessfulLoad } from "../../components/words/WordBrowser";
+import { languageAfterSuccessfulLoad } from "../wordBrowser";
 
 describe("languageAfterSuccessfulLoad", () => {
   it("uses the target language only for the first successful load", () => {

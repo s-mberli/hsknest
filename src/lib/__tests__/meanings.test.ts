@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { gameGloss, parseMeanings, primaryGloss } from "../meanings";
+import { alternateReading, gameGloss, parseMeanings, primaryGloss } from "../meanings";
 
 describe("parseMeanings", () => {
   it("prefers structured metadata.meanings", () => {
@@ -54,6 +54,22 @@ describe("parseMeanings", () => {
 describe("primaryGloss", () => {
   it("returns the first sense", () => {
     expect(primaryGloss({ translation: "to yield; to permit" })).toBe("to yield");
+  });
+});
+
+describe("alternateReading", () => {
+  const meaning = { gloss: "to finish", reading: "liào" };
+
+  it("returns a sense-specific reading when it differs from the primary reading", () => {
+    expect(alternateReading({ translation: "to finish", phonetic: "liǎo" }, meaning)).toBe(
+      "liào"
+    );
+  });
+
+  it("omits a reading that matches the primary reading", () => {
+    expect(alternateReading({ translation: "to finish", phonetic: "liào" }, meaning)).toBe(
+      undefined
+    );
   });
 });
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { parseMeanings } from "@/lib/meanings";
+import { alternateReading, parseMeanings } from "@/lib/meanings";
 
 /** Minimal word shape `Meanings` needs — satisfied by WordDetail and WordRow. */
 type MeaningsWord = {
@@ -23,11 +23,12 @@ export function Meanings({ word }: { word: MeaningsWord }) {
 
   if (meanings.length <= 1) {
     const meaning = meanings[0];
+    const reading = meaning ? alternateReading(word, meaning) : undefined;
     return (
       <p className="mt-0.5 text-sm">
-        {meaning?.reading && meaning.reading !== word.phonetic && (
+        {reading && (
           <span className="mr-1 rounded bg-muted px-1 text-xs text-muted-foreground">
-            {meaning.reading}
+            {reading}
           </span>
         )}
         {meaning?.gloss ?? word.translation}
