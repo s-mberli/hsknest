@@ -46,10 +46,17 @@ export function SessionHud({
   const pct = total > 0 ? Math.min(100, (reviewed / total) * 100) : 0;
 
   return (
-    <div className="relative">
+    <div className="relative shrink-0 pt-[env(safe-area-inset-top)]">
       <ConfettiCannon fire={milestoneFire} intensity={40} />
       {/* Thin vermilion progress bar. */}
-      <div className="h-0.5 w-full bg-muted">
+      <div
+        role="progressbar"
+        aria-label="Session progress"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={reviewed}
+        className="h-0.5 w-full bg-muted"
+      >
         <motion.div
           className="h-full bg-primary"
           initial={false}
@@ -93,7 +100,10 @@ export function SessionHud({
               </motion.span>
             )}
           </AnimatePresence>
-          <span className="text-sm tabular-nums text-muted-foreground">
+          <span
+            aria-label="Session time"
+            className="text-sm tabular-nums text-muted-foreground"
+          >
             {formatElapsed(now - startedAt)}
           </span>
         </div>

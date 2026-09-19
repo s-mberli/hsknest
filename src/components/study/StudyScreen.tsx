@@ -206,7 +206,7 @@ function StudySession({
       />
       <GradeIsland lastGrade={lastGrade} />
 
-      <main className="flex flex-1 flex-col justify-center px-6 pb-16">
+      <main className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16">
         {loading && (
           <div className="mx-auto w-full max-w-sm animate-pulse">
             <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />
@@ -229,7 +229,7 @@ function StudySession({
         )}
 
         {!loading && current && (
-          <div className="flex flex-col items-center gap-8">
+          <div className="flex flex-col items-center gap-3 sm:gap-8">
             <CardStack
               current={current}
               upcoming={upcoming}

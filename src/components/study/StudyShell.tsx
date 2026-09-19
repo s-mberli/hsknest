@@ -17,7 +17,7 @@ export function StudyShell({ studyTheme, children }: StudyShellProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex flex-col bg-background text-foreground",
+        "fixed inset-0 z-50 flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none bg-background text-foreground",
         studyTheme === "dark" && "dark"
       )}
     >
