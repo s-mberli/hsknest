@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { HORIZON_ORDER, isDueNow, wordHorizon } from "./horizon";
+import {
+  HORIZON_ORDER,
+  isDueNow,
+  matches,
+  relativeDueLabel,
+  wordHorizon,
+} from "./horizon";
 
 const NOW = new Date("2026-01-01T00:00:00.000Z").getTime();
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -67,5 +73,68 @@ describe("isDueNow", () => {
   it("is false when dueAt is missing or in the future", () => {
     expect(isDueNow({ state: "REVIEW", dueAt: null }, NOW)).toBe(false);
     expect(isDueNow({ state: "REVIEW", dueAt: iso(1) }, NOW)).toBe(false);
+  });
+});
+
+describe("matches", () => {
+  const word = {
+    term: "学习",
+    phonetic: "xué xí",
+    translation: "to study",
+    metadata: { meanings: [{ gloss: "to learn" }] },
+  };
+
+  it("matches pinyin without tone marks, spaces, or apostrophes", () => {
+    expect(matches(word, "xuexi")).toBe(true);
+    expect(matches(word, "xue xi")).toBe(true);
+    expect(matches({ ...word, phonetic: "nǚ'ér" }, "nver")).toBe(true);
+  });
+
+  it("accepts v and u: as ü input without making plain u ambiguous", () => {
+    const lǜ = { ...word, phonetic: "lǜ" };
+    expect(matches(lǜ, "lv")).toBe(true);
+    expect(matches(lǜ, "lu:")).toBe(true);
+    expect(matches(lǜ, "lu")).toBe(false);
+  });
+
+  it("retains Hanzi, English, alternate-meaning, and empty-search behavior", () => {
+    expect(matches(word, "学习")).toBe(true);
+    expect(matches(word, "study")).toBe(true);
+    expect(matches(word, "learn")).toBe(true);
+    expect(matches(word, "")).toBe(true);
+    expect(matches(word, "   ")).toBe(true);
+  });
+});
+
+describe("relativeDueLabel", () => {
+  it("uses one supplied snapshot for overdue, due-now, today, tomorrow, and later dates", () => {
+    const snapshotDate = new Date(2026, 0, 1, 12);
+    const snapshot = snapshotDate.getTime();
+    const sameDay = new Date(snapshotDate);
+    sameDay.setHours(18);
+    const tomorrow = new Date(snapshotDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const later = new Date(snapshotDate);
+    later.setDate(later.getDate() + 2);
+
+    expect(relativeDueLabel(new Date(snapshot - 1), undefined, snapshot)).toBe(
+      "Overdue"
+    );
+    expect(relativeDueLabel(new Date(snapshot), undefined, snapshot)).toBe(
+      "Due now"
+    );
+    expect(relativeDueLabel(sameDay, undefined, snapshot)).toBe(
+      "Today"
+    );
+    expect(relativeDueLabel(tomorrow, undefined, snapshot)).toBe(
+      "Tomorrow"
+    );
+    expect(relativeDueLabel(later, undefined, snapshot)).toBe(
+      new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(later)
+    );
   });
 });

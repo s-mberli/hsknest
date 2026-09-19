@@ -62,6 +62,7 @@ function formatInterval(intervalDays: number | null): string {
 interface WordHoverCardProps {
   word: WordDetail;
   children: React.ReactNode;
+  now: number;
   className?: string;
   /** Extra classes for the positioning wrapper (e.g. "size-full" for bubbles). */
   wrapperClassName?: string;
@@ -81,6 +82,7 @@ interface WordHoverCardProps {
 export function WordHoverCard({
   word,
   children,
+  now,
   className,
   wrapperClassName,
   ariaLabel,
@@ -285,7 +287,9 @@ export function WordHoverCard({
                     queue can surface it) — rendering that raw date here would
                     tell the learner an unstudied word is "due today", which
                     contradicts every due *count* in the app (those exclude NEW). */}
-                {word.state === "NEW" ? "new" : relativeDueLabel(word.dueAt, "in")}
+                {word.state === "NEW"
+                  ? "New"
+                  : relativeDueLabel(word.dueAt, undefined, now)}
               </dd>
             </div>
             <div>

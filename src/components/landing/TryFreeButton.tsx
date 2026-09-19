@@ -1,12 +1,11 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { confirmSession } from "@/lib/authClient";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,7 +14,7 @@ import { cn } from "@/lib/utils";
  */
 export function TryFreeButton({
   className,
-  children = "Try it free",
+  children = "Try without signing up",
 }: {
   className?: string;
   children?: React.ReactNode;
@@ -42,9 +41,15 @@ export function TryFreeButton({
         toast.error("Could not start, please try again.");
         return;
       }
-      await confirmSession();
+      const session = await getSession();
+      if (!session?.user) {
+        toast.error("Could not confirm your session. Please try again.");
+        return;
+      }
       router.push("/dashboard");
       router.refresh();
+    } catch {
+      toast.error("Could not start the guest session. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

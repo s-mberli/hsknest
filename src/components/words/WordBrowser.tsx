@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { WordRetentionList } from "@/components/words/WordRetentionList";
 import type { WordDetail } from "@/components/words/WordHoverCard";
 import { cn } from "@/lib/utils";
 import { isDueNow } from "@/lib/horizon";
+import { languageAfterSuccessfulLoad } from "@/lib/wordBrowser";
 import {
   STRENGTH_META,
   STRENGTH_ORDER,
@@ -41,11 +42,16 @@ export function WordBrowser() {
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
   // Language filter ("all" = every language) and the due-only queue toggle.
   const [language, setLanguage] = useState<string>("all");
+  const languageRef = useRef("all");
+  const updateLanguage = (nextLanguage: string) => {
+    languageRef.current = nextLanguage;
+    setLanguage(nextLanguage);
+  };
   const [dueOnly, setDueOnly] = useState(false);
-  // View mode — Strength bubbles (default), retention-sparkline list, or Timeline.
+  // View mode — Strength bubbles (default), Words list, or Timeline.
   const [view, setView] = useState<View>("cards");
   const [masteryThresholdDays, setMasteryThresholdDays] = useState<
     number | null
@@ -53,9 +59,14 @@ export function WordBrowser() {
 
   useEffect(() => {
     let active = true;
-    (async () => {
+    let loading = false;
+    let hasLoadedSuccessfully = false;
+
+    async function loadWords() {
+      if (loading) return;
+      loading = true;
       try {
-        const res = await fetch("/api/words");
+        const res = await fetch("/api/words", { cache: "no-store" });
         if (!res.ok) throw new Error("fetch failed");
         const data: {
           words: ApiWord[];
@@ -63,13 +74,19 @@ export function WordBrowser() {
           masteryThresholdDays?: number | null;
         } = await res.json();
         if (!active) return;
+        setError(false);
         setMasteryThresholdDays(data.masteryThresholdDays ?? null);
         // Default the filter to the user's target language so words from
         // other languages never mix in unasked — even when the user has no
         // words in the target language yet (they get an empty state instead).
-        if (data.targetLanguageCode) {
-          setLanguage(data.targetLanguageCode);
-        }
+        updateLanguage(
+          languageAfterSuccessfulLoad(
+            languageRef.current,
+            data.targetLanguageCode,
+            hasLoadedSuccessfully
+          )
+        );
+        hasLoadedSuccessfully = true;
         setWords(
           data.words.map((w) => ({
             wordId: w.wordId,
@@ -94,10 +111,31 @@ export function WordBrowser() {
         );
       } catch {
         if (active) setError(true);
+      } finally {
+        loading = false;
       }
-    })();
+    }
+
+    function refreshFromCurrentTab() {
+      setNow(Date.now());
+      void loadWords();
+    }
+
+    void loadWords();
+    const intervalId = window.setInterval(() => {
+      if (!document.hidden) setNow(Date.now());
+    }, 60_000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshFromCurrentTab();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", refreshFromCurrentTab);
+
     return () => {
       active = false;
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", refreshFromCurrentTab);
     };
   }, []);
 
@@ -193,7 +231,7 @@ export function WordBrowser() {
         <div className="flex flex-wrap gap-2">
           <FilterChip
             active={language === "all"}
-            onClick={() => setLanguage("all")}
+            onClick={() => updateLanguage("all")}
             label="All languages"
             count={words.length}
           />
@@ -201,7 +239,7 @@ export function WordBrowser() {
             <FilterChip
               key={l.code}
               active={language === l.code}
-              onClick={() => setLanguage(l.code)}
+            onClick={() => updateLanguage(l.code)}
               label={l.name}
               count={l.count}
             />
@@ -235,6 +273,7 @@ export function WordBrowser() {
 
       <Input
         type="search"
+        aria-label="Search words"
         placeholder="Search words…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -250,7 +289,7 @@ export function WordBrowser() {
             <Button asChild size="sm">
               <Link href="/lists">Browse lists</Link>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setLanguage("all")}>
+            <Button variant="outline" size="sm" onClick={() => updateLanguage("all")}>
               Show all languages
             </Button>
           </div>
@@ -260,6 +299,7 @@ export function WordBrowser() {
           words={visibleWords}
           search={search}
           bands={bands}
+          now={now}
           emptyLabel="No words match this filter."
           masteryThresholdDays={masteryThresholdDays}
         />
@@ -268,6 +308,7 @@ export function WordBrowser() {
           words={visibleWords}
           search={search}
           bands={bands}
+          now={now}
           emptyLabel="No words match this filter."
         />
       ) : (
@@ -275,8 +316,8 @@ export function WordBrowser() {
           words={visibleWords}
           search={search}
           bands={bands}
+          now={now}
           emptyLabel="No words match this filter."
-          masteryThresholdDays={masteryThresholdDays}
         />
       )}
     </div>
@@ -297,6 +338,7 @@ function ToggleBtn({
       type="button"
       variant={active ? "secondary" : "ghost"}
       size="sm"
+      aria-pressed={active}
       onClick={onClick}
       className={cn("h-8", !active && "text-muted-foreground")}
     >
@@ -319,6 +361,7 @@ function FilterChip({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={cn(
         "rounded-full border px-3 py-1 text-sm transition-colors",

@@ -15,26 +15,86 @@ export function matches(
   if (!needle) return true;
   return (
     word.term.toLowerCase().includes(needle) ||
-    (word.phonetic?.toLowerCase().includes(needle) ?? false) ||
+    (word.phonetic
+      ? normalizePronunciation(word.phonetic).includes(
+          normalizePronunciation(query, true)
+        )
+      : false) ||
     word.translation.toLowerCase().includes(needle) ||
     parseMeanings(word).some((m) => m.gloss.toLowerCase().includes(needle))
   );
 }
 
+const PINYIN_BASES: Record<string, string> = {
+  "ā": "a",
+  "á": "a",
+  "ǎ": "a",
+  "à": "a",
+  "ē": "e",
+  "é": "e",
+  "ě": "e",
+  "è": "e",
+  "ī": "i",
+  "í": "i",
+  "ǐ": "i",
+  "ì": "i",
+  "ō": "o",
+  "ó": "o",
+  "ǒ": "o",
+  "ò": "o",
+  "ū": "u",
+  "ú": "u",
+  "ǔ": "u",
+  "ù": "u",
+  "ǖ": "ü",
+  "ǘ": "ü",
+  "ǚ": "ü",
+  "ǜ": "ü",
+};
+
+/** Normalize only the pronunciation comparison; ordinary text search stays literal. */
+export function normalizePronunciation(value: string, isQuery = false): string {
+  let normalized = value.toLocaleLowerCase().replace(/[\s']/g, "");
+  normalized = normalized.replace(
+    /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g,
+    (character) => PINYIN_BASES[character] ?? character
+  );
+  if (isQuery) {
+    normalized = normalized.replace(/u:/g, "ü").replace(/v/g, "ü");
+  }
+  return normalized;
+}
+
 export function relativeDueLabel(
   dueAt: Date | string | null,
-  prefix?: "due in" | "in"
+  prefix?: "due in" | "in",
+  now = Date.now()
 ): string {
   if (!dueAt) return prefix === "in" ? "\u2014" : "not scheduled";
   const due = typeof dueAt === "string" ? new Date(dueAt).getTime() : dueAt.getTime();
   if (Number.isNaN(due)) return prefix === "in" ? "\u2014" : "not scheduled";
-  const diffDays = Math.round((due - Date.now()) / (1000 * 60 * 60 * 24));
-  if (diffDays <= 0) return diffDays < 0 ? "overdue" : "due today";
-  const pfx = prefix ?? "due in";
-  if (diffDays === 1) return `${pfx} 1 day`;
-  if (diffDays < 30) return `${pfx} ${diffDays} days`;
-  const months = Math.round(diffDays / 30);
-  return months === 1 ? `${pfx} 1 month` : `${pfx} ${months} months`;
+  const compact = prefix === "in";
+  if (due < now) return compact ? "overdue" : "Overdue";
+  if (due === now) return compact ? "now" : "Due now";
+
+  const dueDate = new Date(due);
+  const nowDate = new Date(now);
+  const dayKey = (date: Date) =>
+    `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  if (dayKey(dueDate) === dayKey(nowDate)) return compact ? "today" : "Today";
+
+  const tomorrow = new Date(nowDate);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (dayKey(dueDate) === dayKey(tomorrow)) {
+    return compact ? "tomorrow" : "Tomorrow";
+  }
+
+  const date = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(dueDate);
+  return compact ? `on ${date}` : date;
 }
 
 export type Horizon = "due" | "week" | "month" | "later" | "new" | "resting";

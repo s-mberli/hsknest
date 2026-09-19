@@ -10,7 +10,8 @@ HSK Nest schedules your reviews with FSRS, the same memory model behind modern A
 
 It ships Mandarin-first: the complete New HSK 3.0 vocabulary across levels 1–9, 3,000 example sentences with pinyin, dictionary-assisted entry, and natural Azure neural TTS served from your own server.
 
-Own your data, run it on your VPS. No subscriptions, no telemetry, no lock-in.
+Own your data, run it on your VPS. No subscriptions or lock-in; the hosted app
+uses optional cookieless analytics as described in the privacy policy.
 
 > 🚀 **Want to use HSK Nest without setting up a server?** Try our managed cloud version. 14-day free trial, then just €10/month.<br>
 > 👉 **[Visit hsknest.com to sign up](https://hsknest.com)**

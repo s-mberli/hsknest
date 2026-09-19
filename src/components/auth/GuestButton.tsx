@@ -1,12 +1,11 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { confirmSession } from "@/lib/authClient";
 
 /**
  * "Try as guest" — creates a throwaway account server-side and signs straight
@@ -38,9 +37,15 @@ export function GuestButton() {
         toast.error("Could not start a guest session.");
         return;
       }
-      await confirmSession();
+      const session = await getSession();
+      if (!session?.user) {
+        toast.error("Could not confirm your guest session. Please try again.");
+        return;
+      }
       router.push("/dashboard");
       router.refresh();
+    } catch {
+      toast.error("Could not start the guest session. Check your connection and try again.");
     } finally {
       setLoading(false);
     }

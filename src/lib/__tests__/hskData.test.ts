@@ -161,4 +161,17 @@ describe("HSK data regression guard", () => {
     expect(words.length).toBeGreaterThan(0);
     console.log(`Loaded ${words.length} merged vocabulary words`);
   });
+
+  it("keeps 了's compact translation aligned with its primary reading", () => {
+    const liao = words.find((word) => word.term === "了");
+
+    expect(liao).toMatchObject({
+      phonetic: "le",
+      translation: "completed-action particle",
+    });
+    expect(liao?.metadata.meanings).toContainEqual({
+      gloss: "to finish; to understand clearly",
+      reading: "liǎo",
+    });
+  });
 });

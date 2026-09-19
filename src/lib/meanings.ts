@@ -17,6 +17,10 @@ type WordLike = {
   metadata?: unknown;
 };
 
+type PronouncedWordLike = WordLike & {
+  phonetic?: string | null;
+};
+
 function metadataMeanings(metadata: unknown): Meaning[] | null {
   if (!metadata || typeof metadata !== "object") return null;
   const raw = (metadata as { meanings?: unknown }).meanings;
@@ -50,6 +54,16 @@ export function parseMeanings(word: WordLike): Meaning[] {
 /** The single most important gloss — for quiz choices, tables, tooltips. */
 export function primaryGloss(word: WordLike): string {
   return parseMeanings(word)[0]?.gloss ?? word.translation;
+}
+
+/** A sense-specific reading that differs from the word's primary reading. */
+export function alternateReading(
+  word: PronouncedWordLike,
+  meaning: Meaning
+): string | undefined {
+  return meaning.reading && meaning.reading !== word.phonetic
+    ? meaning.reading
+    : undefined;
 }
 
 /**

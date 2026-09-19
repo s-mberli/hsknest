@@ -100,7 +100,7 @@ export default function PricingPage() {
         <p className="text-xs text-muted-foreground">
           More questions? See the{" "}
           <Link
-            href="/#pricing"
+            href="/#faq"
             className="underline underline-offset-2 hover:text-foreground"
           >
             FAQ on the homepage

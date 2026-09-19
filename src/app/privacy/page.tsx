@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           We only collect the information necessary to provide you with the HSK Nest spaced-repetition service. This includes:
         </p>
         <ul>
-          <li><strong>Account Data:</strong> Email address and encrypted password.</li>
+          <li><strong>Account Data:</strong> Email address and a one-way hashed password.</li>
           <li><strong>Usage Data:</strong> Flashcard study progress, review times, and algorithm parameters to schedule your next reviews.</li>
           <li><strong>Billing Data (paid plan only):</strong> Your subscription status and a customer reference at our payment processor. We never see or store your card number.</li>
         </ul>
@@ -42,12 +42,12 @@ export default function PrivacyPage() {
 
         <h2>4. Cookies and Tracking</h2>
         <p>
-          We use strictly necessary cookies to keep you logged in securely (NextAuth session cookies). Our analytics are cookieless. We do not use third-party tracking cookies by default without your explicit consent via our cookie banner.
+          We use a necessary NextAuth session cookie to keep you logged in. Guest entry also creates a guestId attribution cookie. Campaign and referral values are stored in browser local storage. Optional Umami analytics are cookieless and are separate from those session, attribution, and campaign stores.
         </p>
 
         <h2>5. Your Rights: Access, Export, and Deletion</h2>
         <p>
-          You can exercise your data rights directly in the app, no email required: export your full study data as CSV at any time (Settings → Account), and delete your account and all associated data permanently (Settings → Account). These serve as our mechanisms for the GDPR rights of access (Art. 15) and erasure (Art. 17). Export remains available even after a subscription ends.
+          You can use the app to export a vocabulary and progress-summary CSV at any time (Settings → Account), and to delete your account and associated data (Settings → Account). The CSV is a summary export, not a complete backup of every review event or scheduler field. Export remains available after a subscription ends. Contact us if you need help with a request under applicable privacy law.
         </p>
 
         <h2>6. Contact Us</h2>
