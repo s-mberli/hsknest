@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { rateLimit } from "@/lib/rateLimit";
 import { wordStrength } from "@/lib/strength";
+import { TRACKED_STATES } from "@/lib/cardStates";
+import type { CardState } from "@/lib/srs";
 
 export async function GET() {
   const userId = await getCurrentUserId();
@@ -12,7 +14,8 @@ export async function GET() {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  // Words in the user's deck — include ALL states, map to strength bands
+  // Include every deck entry for add-to-deck deduplication; only tracked
+  // states qualify for adaptive hints.
   const progress = await prisma.userProgress.findMany({
     where: { userId },
     select: {
@@ -23,10 +26,17 @@ export async function GET() {
     },
   });
 
-  const result = progress.map((r) => ({
-    lemma: r.word.term,
-    strength: wordStrength({ state: r.state, intervalDays: r.intervalDays, lapses: r.lapses }),
-  }));
+  const byLemma = new Map<string, { lemma: string; strength: string; learned: boolean }>();
+  for (const row of progress) {
+    const learned = TRACKED_STATES.has(row.state as CardState);
+    const previous = byLemma.get(row.word.term);
+    if (previous?.learned && !learned) continue;
+    byLemma.set(row.word.term, {
+      lemma: row.word.term,
+      strength: wordStrength({ state: row.state, intervalDays: row.intervalDays, lapses: row.lapses }),
+      learned,
+    });
+  }
 
-  return NextResponse.json({ known: result });
+  return NextResponse.json({ known: [...byLemma.values()] });
 }

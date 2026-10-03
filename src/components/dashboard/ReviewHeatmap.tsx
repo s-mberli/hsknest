@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { heatmapWeeks, localDate } from "@/lib/heatmapDates";
 
 export interface DayData {
   date: string; // YYYY-MM-DD
@@ -31,32 +33,32 @@ const COL = CELL + GAP;
  * so the grid fills available space on desktop and mobile without overflow.
  */
 export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
+  const router = useRouter();
   const [selected, setSelected] = useState<DayData | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [today, setToday] = useState("");
+  const todayRef = useRef("");
   const containerRef = useRef<HTMLDivElement>(null);
   const [numWeeks, setNumWeeks] = useState(26);
   const [ready, setReady] = useState(false);
 
-  // Set today only after hydration (SSR uses server UTC, not client local).
-  // eslint-disable-next-line -- suppress setState-in-effect for one-time hydration
-  useEffect(() => setMounted(true), []);
-  const today = mounted ? todayStr() : "";
-
-  // All dates: 1 year (365 days), Mon-aligned.
-  const allDates = useMemo(() => {
-    const end = new Date();
-    const start = new Date(end);
-    start.setDate(start.getDate() - 364);
-    const dow = start.getDay();
-    start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
-    const dates: string[] = [];
-    const cur = new Date(start);
-    while (cur <= end) {
-      dates.push(fmt(cur));
-      cur.setDate(cur.getDate() + 1);
-    }
-    return dates;
-  }, []);
+  useEffect(() => {
+    const refresh = () => {
+      const current = localDate(new Date());
+      if (todayRef.current && todayRef.current !== current) router.refresh();
+      todayRef.current = current;
+      setToday(current);
+    };
+    refresh();
+    const timer = setInterval(refresh, 60_000);
+    const onVisible = () => { if (!document.hidden) refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", refresh);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [router]);
 
   const dayMap = useMemo(() => {
     const m = new Map<string, DayData>();
@@ -81,14 +83,8 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
 
   // Weeks: most recent numWeeks columns, each = 7 days (Mon–Sun).
   const weeks = useMemo(() => {
-    const totalWeeks = Math.floor(allDates.length / 7);
-    const startWeek = Math.max(0, totalWeeks - numWeeks);
-    const out: string[][] = [];
-    for (let w = startWeek; w < totalWeeks; w++) {
-      out.push(allDates.slice(w * 7, w * 7 + 7));
-    }
-    return out;
-  }, [allDates, numWeeks]);
+    return today ? heatmapWeeks(today, numWeeks) : [];
+  }, [today, numWeeks]);
 
   // Month labels: show on first week of each new month.
   const monthLabels = useMemo(() => {
@@ -133,15 +129,17 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
                   const d = dayMap.get(date);
                   const activity = (d?.count ?? 0) + (d?.readingCount ?? 0);
                   const isToday = date === today;
+                  const future = date > today;
                   return (
                     <button
                       key={di}
                       type="button"
-                      title={d ? dayTitle(d, date) : date}
+                      title={future ? undefined : d ? dayTitle(d, date) : date}
+                      disabled={future}
                       onClick={() => setSelected(d ?? null)}
                       className={cn(
                         "h-3 w-3 rounded-[2px] border transition-colors",
-                        heatColor(activity),
+                        future ? "border-transparent bg-transparent" : heatColor(activity),
                         isToday && "ring-1 ring-primary"
                       )}
                     />
@@ -239,13 +237,4 @@ function heatColor(count: number): string {
   if (count <= 5) return "bg-primary/25 border-primary/20";
   if (count <= 15) return "bg-primary/50 border-primary/40";
   return "bg-primary border-primary";
-}
-
-function todayStr(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function fmt(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }

@@ -11,6 +11,8 @@ import { gameGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
+import { practiceWordIdsSchema } from "@/lib/validation";
+import { visibleListWhere } from "@/lib/ownership";
 
 /**
  * Attach one example sentence per card, drawn from the seeded
@@ -129,6 +131,11 @@ export async function GET(req: Request) {
   if (userId instanceof NextResponse) return userId;
 
   const url = new URL(req.url);
+  const rawWordIds = url.searchParams.get("wordIds");
+  const selection = rawWordIds === null ? null : practiceWordIdsSchema.safeParse(rawWordIds);
+  if (selection && (!selection.success || url.searchParams.get("mode") !== "practice")) {
+    return NextResponse.json({ error: "Invalid Practice word selection" }, { status: 400 });
+  }
   const { limit, scope } = parseQueueQuery(url.searchParams);
   // Scope is validated against user's visible lists/languages; worst case is an empty queue.
   const scopeWhere = await scopeToWordWhere(scope, userId);
@@ -183,15 +190,28 @@ export async function GET(req: Request) {
         userId,
         state: { in: ["LEARNING", "REVIEW", "LAPSED", "MASTERED"] },
         ...queueWhere,
+        ...(selection?.success ? {
+          wordId: { in: selection.data },
+          AND: [
+            ...queueWhere.AND,
+            { word: { wordList: {
+              ...visibleListWhere(userId),
+              hiddenBy: { none: { userId } },
+              ...(scope.listIds ? { id: { in: scope.listIds } } : {}),
+              ...(scope.languageId ? { languageId: scope.languageId } : {}),
+            } } },
+          ],
+        } : {}),
       },
       orderBy: { dueAt: "asc" },
-      take: limit,
+      take: selection?.success ? selection.data.length : limit,
       include: wordInclude,
     });
     const practiceCards = toCards(practice, "practice");
     return NextResponse.json({
       cards: await attachSentences(url, await attachChoices(url, practiceCards, userId)),
       counts: { due: 0, newAllowedToday: 0, checksAllowedToday: 0 },
+      retryOmitted: selection?.success ? selection.data.length - practice.length : 0,
     });
   }
 

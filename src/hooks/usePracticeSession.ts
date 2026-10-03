@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { breaksStreak, isPass, requeuesInSession } from "@/lib/grading";
 import { postReview, type PostReviewOptions } from "@/lib/postReview";
+import type { MissedWord } from "@/lib/practiceSession";
 
 interface UsePracticeSessionOptions {
   practice?: boolean;
@@ -15,7 +16,7 @@ export function usePracticeSession(
 ) {
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
-  const [missed, setMissed] = useState<{ term: string; translation: string }[]>([]);
+  const [missed, setMissed] = useState<MissedWord[]>([]);
   const [correct, setCorrect] = useState(0);
   const relearning = useRef<Set<string>>(new Set());
 
@@ -33,9 +34,9 @@ export function usePracticeSession(
       }
       if (breaksStreak(quality)) {
         setMissed((m) =>
-          m.some((w) => w.term === term)
+          m.some((w) => w.wordId === wordId)
             ? m
-            : [...m, { term, translation }]
+            : [...m, { wordId, term, translation }]
         );
       }
 

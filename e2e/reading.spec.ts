@@ -27,10 +27,16 @@ async function signUp(page: import("playwright/test").Page) {
 }
 
 async function logIn(page: import("playwright/test").Page) {
+  const initialSession = page.waitForResponse(response => response.url().endsWith("/api/auth/session"));
   await page.goto("/login");
+  await initialSession;
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
+  const authenticated = page.waitForResponse(async response =>
+    response.url().endsWith("/api/auth/session") && (await response.json()).user?.email === email
+  );
   await page.getByRole("button", { name: /sign in/i }).click();
+  await authenticated;
   await page.waitForURL("**/dashboard", { timeout: 15_000 });
   await dismissIntro(page);
   await dismissCookies(page);
@@ -83,9 +89,16 @@ test("add a word to deck from reader", async ({ page }) => {
   await logIn(page);
   await openFirstStory(page);
 
-  // Find a non-punctuation token and click it
-  const token = page.locator("[data-sentence] span").first();
-  await token.click();
+  const knownResponse = await page.request.get("/api/reading/known-words");
+  expect(knownResponse.ok()).toBe(true);
+  const known: string[] = (await knownResponse.json()).known.map((word: { lemma: string }) => word.lemma);
+  const tokens = page.locator("[data-sentence] span[role='button']");
+  const untracked = await tokens.evaluateAll((elements, lemmas) => elements.findIndex(element => {
+    const lemma = element.querySelector("ruby")?.firstChild?.textContent ?? element.textContent ?? "";
+    return !lemmas.includes(lemma);
+  }), known);
+  expect(untracked, "The fixture needs a word outside the starter deck").toBeGreaterThanOrEqual(0);
+  await tokens.nth(untracked).click();
 
   // Popup should appear with a meaning or "Add to deck" button
   const addButton = page.getByRole("button", { name: /add/i });

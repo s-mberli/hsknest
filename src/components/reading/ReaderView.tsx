@@ -108,11 +108,13 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   const [speed, setSpeed] = useState<number>(1.0);
   const [showTranslations, setShowTranslations] = useState<boolean>(false);
   const [hskUnderline, setHskUnderline] = useState<boolean>(true);
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [knownWords, setKnownWords] = useState<Map<string, string>>(new Map());
+  const [knownWords, setKnownWords] = useState<Map<string, { strength: string; learned: boolean }>>(new Map());
   const [actionMenu, setActionMenu] = useState<{ x: number; y: number; token: StoryToken } | null>(null);
 
   const completedRef = useRef(false);
+  const restoredRef = useRef(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const longPressFired = useRef(false);
@@ -121,21 +123,26 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
 
   const doc = hydrated as HydratedText | null;
 
-  /* restore scroll position on mount */
+  /* Restore against the final reading layout, after browser preferences load. */
   useEffect(() => {
-    if (!doc || !textRef.current || !initialScrollPct || initialScrollPct < 5) return;
-    requestAnimationFrame(() => {
+    if (!doc || !prefsLoaded || restoredRef.current || !textRef.current) return;
+    let cancelled = false;
+    document.fonts.ready.then(() => requestAnimationFrame(() => {
+      if (cancelled || restoredRef.current) return;
       const el = textRef.current;
       if (!el) return;
       const max = el.scrollHeight - el.clientHeight;
-      el.scrollTop = (initialScrollPct / 100) * max;
-    });
-  }, [doc, initialScrollPct]);
+      if (el.clientHeight <= 0 || max < 0) return;
+      restoredRef.current = true;
+      if (initialScrollPct && initialScrollPct >= 5) el.scrollTop = (initialScrollPct / 100) * max;
+    }));
+    return () => { cancelled = true; };
+  }, [doc, initialScrollPct, prefsLoaded, fontSize, showTranslations]);
 
   const showToast = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2000); }, []);
 
   /* ── data loading ─────────────────────────────────────────── */
-  useEffect(() => { fetch("/api/reading/known-words").then(r => r.ok ? r.json() : null).then(d => { if (d?.known) setKnownWords(new Map(d.known.map((k: { lemma: string; strength: string }) => [k.lemma, k.strength]))); }).catch(() => {}); }, []);
+  useEffect(() => { fetch("/api/reading/known-words").then(r => r.ok ? r.json() : null).then(d => { if (d?.known) setKnownWords(new Map(d.known.map((k: { lemma: string; strength: string; learned: boolean }) => [k.lemma, { strength: k.strength, learned: k.learned }]))); }).catch(() => {}); }, []);
 
   useEffect(() => {
     if (!audioUrl) return;
@@ -180,9 +187,44 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
   useEffect(() => {
     if (!doc) return;
     let timer: ReturnType<typeof setTimeout>;
-    const onScroll = () => { clearTimeout(timer); timer = setTimeout(() => { const el = textRef.current; if (!el) return; const max = el.scrollHeight - el.clientHeight; const completed = max > 0 && el.scrollTop / max >= 0.95; if (completed && !completedRef.current) { completedRef.current = true; setShowBatchPrompt(true); } fetch("/api/reading/progress", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ textId, position: max > 0 ? Math.round((el.scrollTop / max) * 100) : 0, completed }) }).catch(() => {}); }, 2000); };
-    const el = textRef.current; el?.addEventListener("scroll", onScroll, { passive: true });
-    return () => { el?.removeEventListener("scroll", onScroll); clearTimeout(timer); };
+    let pending: { position: number; atEnd: boolean } | null = null;
+    const el = textRef.current;
+    const save = (leaving = false) => {
+      clearTimeout(timer);
+      if (!pending) return;
+      const { position, atEnd } = pending;
+      pending = null;
+      const completed = !completedRef.current && atEnd;
+      if (completed) {
+        completedRef.current = true;
+        if (!leaving) setShowBatchPrompt(true);
+      }
+      void fetch("/api/reading/progress", {
+        method: "POST", keepalive: leaving,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ textId, position, completed }),
+      }).catch(() => {});
+    };
+    const onScroll = () => {
+      if (!el) return;
+      const max = el.scrollHeight - el.clientHeight;
+      if (max <= 0) return;
+      // Capture while attached: cleanup can run after the DOM loses its size.
+      pending = { position: Math.min(100, Math.round((el.scrollTop / max) * 100)), atEnd: el.scrollTop / max >= 0.95 };
+      clearTimeout(timer);
+      timer = setTimeout(() => save(), 2000);
+    };
+    const onLeave = () => save(true);
+    const onHide = () => { if (document.hidden) onLeave(); };
+    el?.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pagehide", onLeave);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      el?.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pagehide", onLeave);
+      document.removeEventListener("visibilitychange", onHide);
+      save(true);
+    };
   }, [doc, textId]);
 
   /* session tracking: one POST per visit (mount -> leave), reporting elapsed
@@ -338,6 +380,7 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
     // from props/state — the case this lint rule is meant to exempt.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     updatePrefs({ ...saved, speed: SPEEDS.includes(saved.speed) ? saved.speed : 1.0 });
+    setPrefsLoaded(true);
   }, [updatePrefs]);
   useEffect(() => { if (audioRef.current) audioRef.current.playbackRate = speed; }, [speed, audioReady]);
 
@@ -355,42 +398,51 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
     return () => window.removeEventListener("keydown", onKey);
   }, [actionMenu, selectedToken, showBatchPrompt]);
 
-  // A story short enough to fit one viewport never overflows, so the
-  // scroll-threshold completion check in the effect above never fires for
-  // it — exactly the shortest HSK1 stories, where the "nice job" reward
-  // moment matters most. Treat "nothing to scroll" as trivially complete.
+  // Wait for fonts and a measured reading viewport before treating a truly
+  // fitting story as complete. A zero-height initial layout is not a read.
   useEffect(() => {
-    if (!doc || completedRef.current) return;
+    if (!doc || !prefsLoaded || completedRef.current) return;
     const el = textRef.current;
     if (!el) return;
-    const max = el.scrollHeight - el.clientHeight;
-    if (max > 0) return; // real overflow — the scroll-based check owns this case
-    completedRef.current = true;
-    setShowBatchPrompt(true);
-    fetch("/api/reading/progress", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ textId, position: 100, completed: true }) }).catch(() => {});
-  }, [doc, textId]);
+    let cancelled = false;
+    let fontsReady = false;
+    const checkFit = () => {
+      const content = el.firstElementChild as HTMLElement | null;
+      if (cancelled || !fontsReady || completedRef.current || el.clientHeight <= 0 || !content?.offsetHeight || !el.querySelector("[data-sentence]")) return;
+      const textHeight = content.offsetHeight + parseFloat(getComputedStyle(el).paddingTop);
+      if (textHeight > el.clientHeight + 1) return;
+      completedRef.current = true;
+      setShowBatchPrompt(true);
+      fetch("/api/reading/progress", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ textId, position: 100, completed: true }) }).catch(() => {});
+    };
+    const observer = new ResizeObserver(checkFit);
+    observer.observe(el);
+    if (el.firstElementChild) observer.observe(el.firstElementChild);
+    document.fonts.ready.then(() => { fontsReady = true; checkFit(); });
+    return () => { cancelled = true; observer.disconnect(); };
+  }, [doc, textId, prefsLoaded]);
 
   if (!doc) return <main className="mx-auto w-full max-w-2xl px-6 py-8"><p className="text-muted-foreground">Loading…</p></main>;
 
   const markToToken = (mi: number): number => { if (!timings || mi < 0) return -1; const mk = timings.marks[mi]; for (let i = 0; i < doc.tokens.length; i++) { const tk = doc.tokens[i]; if (tk.s === mk.s || (tk.s <= mk.s && tk.e > mk.s)) return i; } return -1; };
   const activeTokenIdx = markToToken(activeMark);
   const sentGroups: StoryToken[][] = doc.sentences.map(s => doc.tokens.slice(s.t0, Math.min(s.t1, doc.tokens.length)));
-  const showRubyFor = (tk: StoryToken) => pinyinMode === "full" || (pinyinMode === "adaptive" && !knownWords.has(tk.w) && !addedWords.has(tk.w));
+  const showRubyFor = (tk: StoryToken) => pinyinMode === "full" || (pinyinMode === "adaptive" && !knownWords.get(tk.w)?.learned);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="fixed inset-0 z-50 flex h-dvh min-h-0 flex-col overflow-hidden bg-background pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+      <header className="z-30 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex max-w-2xl items-center gap-1.5 px-3 py-2">
           <Link href={`/reading/${slug}`} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground" aria-label="Back"><ArrowLeft className="size-5" /></Link>
           <div className="min-w-0 flex-1"><h1 className="truncate text-sm font-semibold">{titleEn ?? title}</h1><p className="text-[11px] text-muted-foreground">HSK {level}{topicEn ? ` · ${topicEn}` : topic ? ` · ${topic}` : ""}{estimatedMin ? ` · ~${estimatedMin} min` : ""}</p></div>
-          <button aria-label="Decrease text size" onClick={() => setFontSize(s => READER_FONT_SIZES[Math.max(0, readerFontSizeIndex(s) - 1)])} className="rounded p-1 text-muted-foreground hover:text-foreground"><Minus className="size-4" /></button>
-          <button aria-label="Increase text size" onClick={() => setFontSize(s => READER_FONT_SIZES[Math.min(READER_FONT_SIZES.length - 1, readerFontSizeIndex(s) + 1)])} className="rounded p-1 text-muted-foreground hover:text-foreground"><Plus className="size-4" /></button>
-          <button onClick={() => setPinyinMode(m => m === "full" ? "off" : m === "off" ? "adaptive" : "full")} className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">{PY_LABEL[pinyinMode]}</button>
+          <button aria-label="Decrease text size" onClick={() => updatePrefs({ fontSize: READER_FONT_SIZES[Math.max(0, readerFontSizeIndex(prefsRef.current.fontSize) - 1)] })} className="rounded p-1 text-muted-foreground hover:text-foreground"><Minus className="size-4" /></button>
+          <button aria-label="Increase text size" onClick={() => updatePrefs({ fontSize: READER_FONT_SIZES[Math.min(READER_FONT_SIZES.length - 1, readerFontSizeIndex(prefsRef.current.fontSize) + 1)] })} className="rounded p-1 text-muted-foreground hover:text-foreground"><Plus className="size-4" /></button>
+          <button onClick={() => updatePrefs({ pinyinMode: prefsRef.current.pinyinMode === "full" ? "off" : prefsRef.current.pinyinMode === "off" ? "adaptive" : "full" })} className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">{PY_LABEL[pinyinMode]}</button>
           <button aria-label="Reading settings" onClick={() => setSettingsOpen(true)} className="rounded p-1.5 text-muted-foreground hover:text-foreground"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-5"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
         </div>
       </header>
 
-      <main ref={textRef} className="mx-auto w-full max-w-[640px] flex-1 overflow-y-auto px-5 pt-5 pb-40">
+      <main ref={textRef} data-testid="reading-scroll" className="mx-auto min-h-0 w-full max-w-[640px] flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className={showTranslations ? "space-y-5" : "leading-[2.1]"} style={{ fontSize: `${fontSize}px`, fontFamily: "var(--font-reader)" }}>
           {sentGroups.map((stks, si) => {
             const en = doc.sentences[si]?.en;
@@ -404,7 +456,7 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
                     const isAW = gi === activeTokenIdx;
                     const isAS = activeSentence >= 0 && doc.sentences[activeSentence] && gi >= doc.sentences[activeSentence].t0 && gi < doc.sentences[activeSentence].t1;
                     const isKnown = knownWords.has(tk.w) || addedWords.has(tk.w);
-                    const strength = knownWords.get(tk.w);
+                    const strength = knownWords.get(tk.w)?.strength;
                     const isGrowing = strength === "growing";
                     const isShaky = strength === "shaky";
                     const isMastered = strength === "mastered";
@@ -520,9 +572,9 @@ export function ReaderView({ textId, slug, title, titleEn, level, topic, topicEn
         );
       })()}
 
-      {audioUrl && audioReady && (
-        <div className="fixed bottom-16 inset-x-0 z-20 mx-auto max-w-2xl px-3 pb-1">
-          <div className="flex items-center gap-3 rounded-2xl border bg-card/95 px-4 py-2.5 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      {audioUrl && (
+        <div className="z-20 w-full shrink-0 px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1">
+          <div className={`mx-auto flex max-w-2xl items-center gap-3 rounded-2xl border bg-card/95 px-4 py-2.5 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80 ${audioReady ? "" : "invisible"}`}>
             <button onClick={togglePlay} className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0" aria-label={playing ? "Pause" : "Play"}>{playing ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}</button>
             <div
               role="slider"

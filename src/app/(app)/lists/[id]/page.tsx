@@ -9,6 +9,7 @@ import { ListManageBar } from "@/components/lists/ListManageBar";
 import { ListWordsView } from "@/components/lists/ListWordsView";
 import { UnenrollButton } from "@/components/lists/UnenrollButton";
 import { computeListDetailStats } from "@/lib/listDetailStats";
+import { directProgressCount } from "@/lib/listMembership";
 import { prisma } from "@/lib/prisma";
 import { termKey } from "@/lib/progressMerge";
 import { getCurrentUserId } from "@/lib/session";
@@ -56,6 +57,8 @@ export default async function ListDetailPage({
   const progress = list.words
     .map((w) => progressByWord.get(w.id) ?? progressByTerm.get(termKey(w.term)))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const removableCount = directProgressCount(list.words.map((w) => w.id), progressByWord.keys());
+  const inheritedCount = progress.length - removableCount;
 
   const words = list.words.map((w) => {
     const p = progressByWord.get(w.id) ?? progressByTerm.get(termKey(w.term));
@@ -122,8 +125,8 @@ export default async function ListDetailPage({
                     <div className="absolute right-0 z-10 mt-1 w-56 rounded-lg border bg-card p-2 shadow-card">
                       <div className="space-y-2">
                         <AssumeButton listId={list.id} />
-                        {progress.length > 0 && (
-                          <UnenrollButton listId={list.id} enrolledCount={progress.length} />
+                        {removableCount > 0 && (
+                          <UnenrollButton listId={list.id} enrolledCount={removableCount} />
                         )}
                       </div>
                     </div>
@@ -143,6 +146,12 @@ export default async function ListDetailPage({
 
       {list.description && (
         <p className="mt-2 text-sm text-muted-foreground">{list.description}</p>
+      )}
+
+      {inheritedCount > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {inheritedCount} {inheritedCount === 1 ? "word shows" : "words show"} progress from another list. Removing this list keeps that progress.
+        </p>
       )}
 
       {progress.length > 0 && (

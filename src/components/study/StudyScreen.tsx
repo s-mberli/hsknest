@@ -9,6 +9,9 @@ import { GradeIsland } from "@/components/study/GradeIsland";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { StudyShell } from "@/components/study/StudyShell";
+import { SessionBoundary } from "@/components/study/SessionBoundary";
+import { QueueError } from "@/components/study/QueueError";
+import { RetryOmissions } from "@/components/study/RetryOmissions";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useStudySession, type SwipeDirection } from "@/hooks/useStudySession";
 import { trackEventOnce } from "@/lib/analytics";
@@ -17,6 +20,8 @@ import { playCelebrate, playGrade, setSoundEnabled } from "@/lib/sound";
 import type { CardTextSize } from "@/lib/textSize";
 
 interface StudyScreenProps {
+  practiceOnly?: boolean;
+  practiceSource?: "match";
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
   showReading?: boolean;
@@ -33,9 +38,12 @@ export function StudyScreen({
   soundEffects = true,
   autoPlayPronunciation = true,
   isGuest = false,
+  practiceOnly = false,
+  practiceSource,
 }: StudyScreenProps) {
   return (
     <Suspense fallback={null}>
+      <SessionBoundary>
       <StudySession
         studyTheme={studyTheme}
         textSize={textSize}
@@ -43,7 +51,10 @@ export function StudyScreen({
         soundEffects={soundEffects}
         autoPlayPronunciation={autoPlayPronunciation}
         isGuest={isGuest}
+        practiceOnly={practiceOnly}
+        practiceSource={practiceSource}
       />
+      </SessionBoundary>
     </Suspense>
   );
 }
@@ -55,10 +66,17 @@ function StudySession({
   soundEffects = true,
   autoPlayPronunciation = true,
   isGuest = false,
+  practiceOnly = false,
+  practiceSource,
 }: StudyScreenProps) {
-  const { query, scoped, practice, listIds } = useQueueQuery();
+  const { query: rawQuery, scoped, practice: queuePractice, listIds } = useQueueQuery();
+  const practice = practiceOnly || queuePractice;
+  const query = practiceOnly && !queuePractice ? `${rawQuery}&mode=practice` : rawQuery;
   const {
     loading,
+    error,
+    retry,
+    retryOmitted,
     cards,
     counts,
     current,
@@ -77,7 +95,7 @@ function StudySession({
     advance,
     swipe,
     continuePreview,
-  } = useStudySession(query, { showReading, practice });
+  } = useStudySession(query, { showReading, practice, practiceSource });
 
   const [, setConsecutiveMouseClicks] = useState(0);
 
@@ -207,6 +225,8 @@ function StudySession({
       <GradeIsland lastGrade={lastGrade} />
 
       <main className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16">
+        {!loading && error && <QueueError retry={retry} />}
+        {!loading && !error && <RetryOmissions count={retryOmitted} />}
         {loading && (
           <div className="mx-auto w-full max-w-sm animate-pulse">
             <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />
