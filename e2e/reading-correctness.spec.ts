@@ -100,8 +100,9 @@ test("reader scroll progress, adaptive hints, and toolbar preferences", async ({
   const unfamiliar = page.locator("[data-sentence] span[role='button'] ruby").first();
   const unfamiliarTerm = await unfamiliar.evaluate(el => el.firstChild?.textContent ?? "");
   await unfamiliar.click();
-  await page.getByRole("button", { name: /add to deck/i }).click();
-  await expect(page.getByText(/added to deck/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add to vocabulary", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Add to vocabulary", exact: true }).click();
+  await expect(page.getByText("Added ✓", { exact: true })).toBeVisible();
   await expect(page.locator("[data-sentence] span[role='button'] ruby").filter({ hasText: unfamiliarTerm }).first()).toBeVisible();
 
   progressPosts.length = 0;
