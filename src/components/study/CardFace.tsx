@@ -181,10 +181,14 @@ export function CardFace({
       />
       <div
         data-card-content
-        className="flex min-h-0 flex-1 flex-col items-center justify-[safe_center] gap-3 overflow-y-auto overscroll-contain p-5 sm:p-8"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
         onPointerDown={(e) => {
           if (e.currentTarget.scrollHeight > e.currentTarget.clientHeight) e.stopPropagation();
         }}
+      >
+      <div
+        data-card-center
+        className="flex min-h-full w-full flex-col items-center justify-center gap-3 p-5 sm:p-8"
       >
       {card.preview && (
         <span className="absolute left-4 top-4 rounded-full bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
@@ -370,6 +374,7 @@ export function CardFace({
           </motion.div>
         )}
 
+      </div>
       </div>
 
       {/* Report this word: corner flag button + overlay form. */}

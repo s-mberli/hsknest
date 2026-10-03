@@ -167,6 +167,23 @@ test("short flashcards retain their content, report form, and grading controls",
   await expect(page.getByRole("heading", { name: "Practice done" })).toBeVisible();
 });
 
+test("the Study term stays vertically centered on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 664 });
+  await login(page);
+  await page.route("**/api/study/queue?**", (route) => route.fulfill({ json: { counts, cards: [cards[0]] } }));
+  await page.goto("/study?mode=practice&limit=1");
+
+  const content = page.locator("[data-card-content]").first();
+  const term = content.locator("[data-term]").first();
+  await expect(term).toBeVisible();
+  const [contentBox, termBox] = await Promise.all([content.boundingBox(), term.boundingBox()]);
+  expect(contentBox).not.toBeNull();
+  expect(termBox).not.toBeNull();
+  const contentCenter = contentBox!.y + contentBox!.height / 2;
+  const termCenter = termBox!.y + termBox!.height / 2;
+  expect(Math.abs(termCenter - contentCenter)).toBeLessThan(8);
+});
+
 test("Ninja prompt and end actions remain reachable on a short viewport", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 360, height: 400 });
