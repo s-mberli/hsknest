@@ -667,7 +667,7 @@ test("mobile practice modes keep their controls inside the viewport", async ({ p
   await page.waitForTimeout(800);
   const completionTitle = page.getByRole("heading", { name: "Practice done" });
   const redoAction = page.getByRole("button", { name: /redo the 1 you missed/i });
-  const completionAction = page.getByRole("link", { name: "Keep practicing" });
+  const completionAction = page.getByRole("button", { name: "Keep practicing" });
   const dashboardAction = page.getByRole("button", { name: "Back to dashboard" });
   await expect(completionAction).toBeVisible();
   await expectDocumentLockedToViewport(page);

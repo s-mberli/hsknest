@@ -2,7 +2,7 @@
 
 import { Moon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export function EmptyQueue({
   // daily limit was hit.
   const capReached = !practice && counts !== null && counts.newAllowedToday === 0;
   const router = useRouter();
+  const retrySelection = useSearchParams().has("wordIds");
 
   // Non-null only inside PracticeRotationScreen. A mode running its own empty
   // queue mid-rotation (e.g. Sentences has nothing left this round) must not
@@ -90,7 +91,7 @@ export function EmptyQueue({
     >
       <Moon className="size-14 text-primary" aria-hidden="true" />
       <h2 className="text-2xl font-bold tracking-tight">
-        {practice
+        {retrySelection ? "No retry words available" : practice
           ? rotation
             ? "Nothing left in this round"
             : "Learn a few words first"
@@ -99,7 +100,7 @@ export function EmptyQueue({
             : "You've crushed all your flashcards!"}
       </h2>
       <p className="max-w-sm text-muted-foreground">
-        {practice
+        {retrySelection ? "Those words are no longer available for Practice in this scope. No replacement words were added." : practice
           ? rotation
             ? "This mode ran out of words for the round. Move on to the next one."
             : "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."

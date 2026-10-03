@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -64,6 +64,7 @@ export function AppearanceSection({
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [studyTheme, setStudyTheme] = useState<StudyTheme>(initialStudyTheme);
   const [cardTextSize, setCardTextSize] =
     useState<CardTextSize>(initialCardTextSize);
@@ -81,19 +82,30 @@ export function AppearanceSection({
   const current = (mounted ? (theme as Theme) : initialTheme) ?? "system";
 
   async function choose(next: Theme) {
+    if (savingRef.current) return;
+    const previous = current;
+    savingRef.current = true;
     setTheme(next);
     setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme: next }),
-    });
-    setSaving(false);
-    if (!res.ok) {
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme: next }),
+      });
+      if (!res.ok) throw new Error("Theme save failed");
+      const data: unknown = await res.json();
+      if (!data || typeof data !== "object" || !("theme" in data) || data.theme !== next) {
+        throw new Error("Invalid theme response");
+      }
+      toast.success("Theme saved.");
+    } catch {
+      setTheme(previous);
       toast.error("Could not save your theme.");
-      return;
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
-    toast.success("Theme saved.");
   }
 
   async function patch<T>(field: string, value: T, revert: () => void) {

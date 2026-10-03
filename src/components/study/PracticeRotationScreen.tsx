@@ -14,6 +14,9 @@ interface PracticeRotationScreenProps {
   available: readonly PracticeModeKey[];
   studyTheme: "dark" | "follow";
   textSize: CardTextSize;
+  showReading?: boolean;
+  soundEffects?: boolean;
+  autoPlayPronunciation?: boolean;
 }
 
 /**
@@ -35,6 +38,9 @@ export function PracticeRotationScreen({
   available,
   studyTheme,
   textSize,
+  showReading,
+  soundEffects,
+  autoPlayPronunciation,
 }: PracticeRotationScreenProps) {
   const [state, setState] = useState<PracticeRotationState | null>(null);
 
@@ -94,7 +100,7 @@ export function PracticeRotationScreen({
             <QuizScreen studyTheme={studyTheme} textSize={textSize} mode="reading" />
           )}
           {current === "match" && (
-            <MatchScreen studyTheme={studyTheme} />
+            <MatchScreen studyTheme={studyTheme} textSize={textSize} showReading={showReading} soundEffects={soundEffects} autoPlayPronunciation={autoPlayPronunciation} />
           )}
           {current === "sentences" && (
             <SentenceScreen studyTheme={studyTheme} textSize={textSize} />

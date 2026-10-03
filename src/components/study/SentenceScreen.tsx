@@ -9,6 +9,9 @@ import { HighlightedSentence } from "@/components/study/HighlightedSentence";
 import { SessionComplete } from "@/components/study/SessionComplete";
 import { SessionHud } from "@/components/study/SessionHud";
 import { StudyShell } from "@/components/study/StudyShell";
+import { SessionBoundary } from "@/components/study/SessionBoundary";
+import { QueueError } from "@/components/study/QueueError";
+import { RetryOmissions } from "@/components/study/RetryOmissions";
 import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
@@ -47,7 +50,7 @@ const KEY_TO_DIRECTION: Record<string, SwipeDirection | undefined> = {
 export function SentenceScreen({ studyTheme, textSize }: SentenceScreenProps) {
   return (
     <Suspense fallback={null}>
-      <SentenceSession studyTheme={studyTheme} textSize={textSize} />
+      <SessionBoundary><SentenceSession studyTheme={studyTheme} textSize={textSize} /></SessionBoundary>
     </Suspense>
   );
 }
@@ -63,7 +66,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
 
   const fetchUrl = useMemo(() => `/api/study/queue?${query}&sentences=1`, [query]);
 
-  const { cards: rawCards, counts, loading } = useQueueFetcher(fetchUrl);
+  const { cards: rawCards, counts, loading, error, retry, retryOmitted } = useQueueFetcher(fetchUrl);
 
   const [cards, setCards] = useState<SentenceCard[]>([]);
 
@@ -77,7 +80,7 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
   }, [rawCards]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
-  const done = !loading && current === null;
+  const done = !loading && !error && current === null;
   const { startedAt, elapsedMs } = useSessionTiming(done);
 
   const reveal = useCallback(() => {
@@ -143,6 +146,8 @@ function SentenceSession({ studyTheme, textSize }: SentenceScreenProps) {
       />
 
       <main className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16">
+        {!loading && error && <QueueError retry={retry} />}
+        {!loading && !error && <RetryOmissions count={retryOmitted} />}
         {loading && (
           <p className="text-center text-sm text-muted-foreground">
             Loading your sentences…

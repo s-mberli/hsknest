@@ -28,6 +28,9 @@ export default async function PracticePage(props: {
     select: {
       studyTheme: true,
       cardTextSize: true,
+      showReading: true,
+      soundEffects: true,
+      autoPlayPronunciation: true,
       targetLanguageId: true,
       targetLanguage: { select: { code: true } },
     },
@@ -70,6 +73,9 @@ export default async function PracticePage(props: {
       available={availability.rotatable}
       studyTheme={studyTheme}
       textSize={textSize}
+      showReading={user.showReading}
+      soundEffects={user.soundEffects}
+      autoPlayPronunciation={user.autoPlayPronunciation}
     />
   );
 }

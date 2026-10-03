@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
@@ -12,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { usePracticeRotation } from "@/lib/practiceRotationContext";
+import { practiceSessionHref, type MissedWord } from "@/lib/practiceSession";
 
 // Natural-deceleration curve used throughout the app's authored entrances
 // (see DESIGN.md's motion guidance) — confident arrival, no bounce.
@@ -45,7 +45,7 @@ interface SessionCompleteProps {
   bestCombo: number;
   elapsedMs: number;
   /** Words graded wrong this session — shown as "toughest this round". */
-  missed?: { term: string; translation: string }[];
+  missed?: MissedWord[];
   /** True when this was a practice/refresh session (schedule untouched). */
   practice?: boolean;
   /** Extra mode-specific footnote, e.g. "3 words without sentences skipped". */
@@ -70,6 +70,13 @@ export function SessionComplete({
 }: SessionCompleteProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const params = useSearchParams();
+  const starting = useRef(false);
+  function startPractice(wordIds?: string[]) {
+    if (starting.current) return;
+    starting.current = true;
+    router.push(practiceSessionHref(pathname, new URLSearchParams(params.toString()), crypto.randomUUID(), wordIds));
+  }
   const { data: session } = useSession();
   const isGuest = session?.user?.email?.endsWith("@guest.local") ?? false;
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -175,7 +182,7 @@ export function SessionComplete({
             <ul className="space-y-1.5">
               {missed.slice(0, 5).map((w) => (
                 <li
-                  key={w.term}
+                  key={w.wordId}
                   className="flex items-baseline justify-between gap-3 text-sm [@media(max-height:600px)]:text-xs"
                 >
                   <span data-term className="font-medium">{w.term}</span>
@@ -209,23 +216,18 @@ export function SessionComplete({
                 {missed.length > 0 && (
                   <Button
                     className="w-full sm:w-auto"
-                    onClick={() => {
-                      const params = new URLSearchParams();
-                      params.set("mode", "practice");
-                      params.set("limit", String(missed.length));
-                      router.push(`${pathname}?${params.toString()}`);
-                    }}
+                    onClick={() => startPractice(missed.map((word) => word.wordId))}
                   >
                     Redo the {missed.length} you missed
                   </Button>
                 )}
                 <Button
-                  asChild
                   variant={missed.length > 0 ? "outline" : "default"}
                   className="w-full sm:w-auto"
+                  onClick={() => startPractice()}
                 >
                   {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
-                  <Link href={`${pathname}?mode=practice&limit=20`}>Keep practicing</Link>
+                  Keep practicing
                 </Button>
               </>
             )}

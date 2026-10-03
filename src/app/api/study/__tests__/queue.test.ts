@@ -143,4 +143,40 @@ describe("GET /api/study/queue?sentences=1", () => {
     );
     expect(res.status).toBe(200);
   });
+
+  it("retries only selected eligible owned words and never widens an empty selection", async () => {
+    const user = await makeUser();
+    currentUserId = user.id;
+    const list = await testPrisma.wordList.create({
+      data: { name: "Retry", languageId: testLang.id, createdById: user.id },
+    });
+    const a = await testPrisma.word.create({ data: { term: "A", translation: "first", wordListId: list.id } });
+    const b = await testPrisma.word.create({ data: { term: "B", translation: "missed", wordListId: list.id } });
+    const untouched = await testPrisma.word.create({ data: { term: "C", translation: "new", wordListId: list.id } });
+    await testPrisma.userProgress.createMany({ data: [
+      { userId: user.id, wordId: a.id, state: "REVIEW", dueAt: new Date(0) },
+      { userId: user.id, wordId: b.id, state: "REVIEW", dueAt: new Date(1000) },
+      { userId: user.id, wordId: untouched.id, state: "NEW" },
+    ] });
+    const res = await queueGET(new Request(`http://localhost/api/study/queue?mode=practice&wordIds=${b.id},${untouched.id}&limit=20`));
+    expect(res.status).toBe(200);
+    const retry = await res.json();
+    expect(retry.cards.map((card: { wordId: string }) => card.wordId)).toEqual([b.id]);
+    expect(retry.retryOmitted).toBe(1);
+    const bounded = await queueGET(new Request(`http://localhost/api/study/queue?mode=practice&wordIds=${a.id},${b.id}&limit=1`));
+    expect((await bounded.json()).cards.map((card: { wordId: string }) => card.wordId).sort()).toEqual([a.id, b.id].sort());
+    const empty = await queueGET(new Request("http://localhost/api/study/queue?mode=practice&wordIds="));
+    expect((await empty.json()).cards).toEqual([]);
+    const foreign = await makeUser();
+    currentUserId = foreign.id;
+    const other = await queueGET(new Request(`http://localhost/api/study/queue?mode=practice&wordIds=${b.id}`));
+    expect((await other.json()).cards).toEqual([]);
+  });
+
+  it("rejects malformed retry IDs and retry filters on Review", async () => {
+    currentUserId = (await makeUser()).id;
+    for (const query of ["mode=practice&wordIds=a,,b", "wordIds=a", `mode=practice&wordIds=${Array(501).fill("a").join(",")}`]) {
+      expect((await queueGET(new Request(`http://localhost/api/study/queue?${query}`))).status).toBe(400);
+    }
+  });
 });

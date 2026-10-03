@@ -11,6 +11,8 @@ import {
   type SwipeDirection,
 } from "@/lib/grading";
 import { postReview } from "@/lib/postReview";
+import type { MissedWord } from "@/lib/practiceSession";
+import { queueResponseSchema } from "@/lib/queueResponse";
 
 export interface StudyCard {
   wordId: string;
@@ -59,6 +61,9 @@ export interface QueueCounts {
 
 interface UseStudySession {
   loading: boolean;
+  error: boolean;
+  retry: () => void;
+  retryOmitted: number;
   cards: StudyCard[];
   /** null until the first fetch resolves. */
   counts: QueueCounts | null;
@@ -74,7 +79,7 @@ interface UseStudySession {
   bestCombo: number;
   correct: number;
   /** Cards graded wrong this session (deduped), for the session summary. */
-  missed: { term: string; translation: string }[];
+  missed: MissedWord[];
   /** Outcome of the most recent grade, or null before the first one. */
   lastGrade: LastGrade | null;
   done: boolean;
@@ -128,23 +133,32 @@ interface StudySessionOptions {
   showReading?: boolean;
   /** true → practice/refresh mode: reviews don't advance the SRS schedule. */
   practice?: boolean;
+  practiceSource?: "match";
 }
 
 /** `query` is the queue query string, e.g. "limit=10" or "minutes=5". */
 export function useStudySession(
   query = "limit=20",
-  { showReading = true, practice = false }: StudySessionOptions = {}
+  { showReading = true, practice = false, practiceSource }: StudySessionOptions = {}
 ): UseStudySession {
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [counts, setCounts] = useState<QueueCounts | null>(null);
   const [cursor, setCursor] = useState(0);
   const [stage, setStage] = useState<Stage>("TERM");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [retryOmitted, setRetryOmitted] = useState(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const [reviewed, setReviewed] = useState(0);
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
   const [correct, setCorrect] = useState(0);
-  const [missed, setMissed] = useState<{ term: string; translation: string }[]>(
+  const [missed, setMissed] = useState<MissedWord[]>(
     []
   );
   const [lastGrade, setLastGrade] = useState<LastGrade | null>(null);
@@ -156,29 +170,40 @@ export function useStudySession(
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
+    queueMicrotask(() => {
+      if (!active) return;
+      setLoading(true);
+      setError(false);
+    });
     (async () => {
       try {
-        const res = await fetch(`/api/study/queue?${query}`);
+        const res = await fetch(`/api/study/queue?${query}`, { signal: controller.signal });
         if (!res.ok) throw new Error("queue fetch failed");
-        const data = await res.json();
+        const data = queueResponseSchema.parse(await res.json());
         if (active) {
           setCards(markPreviews(data.cards ?? []));
           setCounts(data.counts ?? null);
+          setRetryOmitted(data.retryOmitted);
         }
       } catch {
-        if (active) toast.error("Could not load your study session.");
+        if (active) {
+          setError(true);
+          toast.error("Could not load your study session.");
+        }
       } finally {
         if (active) setLoading(false);
       }
     })();
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [query]);
+  }, [query, attempt]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
   const upcoming = cards.slice(cursor + 1, cursor + 3);
-  const done = !loading && current === null;
+  const done = !loading && !error && current === null;
   // Preview entries duplicate their graded reappearance — count each word once.
   const gradeableTotal = cards.filter((c) => !c.preview).length;
 
@@ -244,9 +269,9 @@ export function useStudySession(
           combo: 0,
         });
         setMissed((m) =>
-          m.some((w) => w.term === card.term)
+          m.some((w) => w.wordId === card.wordId)
             ? m
-            : [...m, { term: card.term, translation: card.translation }]
+            : [...m, { wordId: card.wordId, term: card.term, translation: card.translation }]
         );
       }
 
@@ -274,6 +299,7 @@ export function useStudySession(
 
       // Re-queue the card once at the end so progress isn't silently lost.
       const requeue = () => {
+        if (!mounted.current) return;
         if (!requeued.current.has(card.wordId)) {
           requeued.current.add(card.wordId);
           setCards((prev) => [...prev, card]);
@@ -283,17 +309,21 @@ export function useStudySession(
 
       void postReview(card.wordId, quality, {
         practice: practice || isRepeat,
+        ...(practice && practiceSource ? { source: practiceSource } : {}),
         // Launch-funnel activation signal: first saved review ever on this
         // browser (no-op when analytics isn't configured).
         onSuccess: () => trackEventOnce("first_review_complete"),
         onRequeue: requeue,
       });
     },
-    [cards, cursor, practice, continuePreview]
+    [cards, cursor, practice, practiceSource, continuePreview]
   );
 
   return {
     loading,
+    error,
+    retry: () => setAttempt((n) => n + 1),
+    retryOmitted,
     cards,
     counts,
     current,
