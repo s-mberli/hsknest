@@ -99,7 +99,7 @@ test("reader scroll progress, adaptive hints, and toolbar preferences", async ({
   await page.reload();
   const unfamiliar = page.locator("[data-sentence] span[role='button'] ruby").first();
   const unfamiliarTerm = await unfamiliar.evaluate(el => el.firstChild?.textContent ?? "");
-  await unfamiliar.click();
+  await unfamiliar.locator("..").press("Enter");
   await expect(page.getByRole("button", { name: "Add to vocabulary", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Add to vocabulary", exact: true }).click();
   await expect(page.getByText("Added ✓", { exact: true })).toBeVisible();

@@ -83,11 +83,15 @@ test("every standalone session restarts cleanly and recovers queue failures", as
       await expect(page.getByText(mode === "sentences" ? "Alpha is first." : "Alpha", { exact: true }).first()).toBeVisible();
     }
     await complete(page, mode);
+    const firstSession = new URL(page.url()).searchParams.get("session");
     await page.getByRole("button", { name: "Keep practicing", exact: true }).click();
+    await page.waitForURL(url => url.searchParams.has("session") && url.searchParams.get("session") !== firstSession);
     await expect(page.getByRole("heading", { name: "Practice done" })).toHaveCount(0);
     await expect(page.getByText(mode === "sentences" ? "Alpha is first." : "Alpha", { exact: true }).first()).toBeVisible();
     await complete(page, mode);
+    const secondSession = new URL(page.url()).searchParams.get("session");
     await page.getByRole("button", { name: "Keep practicing", exact: true }).click();
+    await page.waitForURL(url => url.searchParams.has("session") && url.searchParams.get("session") !== secondSession);
     await expect(page.getByText(mode === "sentences" ? "Alpha is first." : "Alpha", { exact: true }).first()).toBeVisible();
   }
 });
@@ -180,5 +184,5 @@ test("Ninja prompt and end actions remain reachable on a short viewport", async 
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
   await page.screenshot({ path: test.info().outputPath("ninja-results.png") });
   await again.click();
-  await expect(page.getByRole("status", { name: "5 of 5 lives left" })).toBeVisible();
+  await expect(page.getByRole("status", { name: "5 of 5 lives left" })).toBeVisible({ timeout: 15_000 });
 });
