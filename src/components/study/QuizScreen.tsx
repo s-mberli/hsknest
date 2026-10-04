@@ -2,7 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { SessionBoundary } from "@/components/study/SessionBoundary";
+import { QueueError } from "@/components/study/QueueError";
+import { RetryOmissions } from "@/components/study/RetryOmissions";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
@@ -37,7 +40,7 @@ const ADVANCE_WRONG_MS = 1600;
 export function QuizScreen({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps) {
   return (
     <Suspense fallback={null}>
-      <QuizSession studyTheme={studyTheme} textSize={textSize} mode={mode} />
+      <SessionBoundary><QuizSession studyTheme={studyTheme} textSize={textSize} mode={mode} /></SessionBoundary>
     </Suspense>
   );
 }
@@ -49,6 +52,9 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   const [picked, setPicked] = useState<string | null>(null);
 
   const advanceTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (advanceTimer.current !== null) window.clearTimeout(advanceTimer.current);
+  }, []);
   const sizes = CARD_TEXT_CLASSES[textSize];
 
   const { grade, combo, bestCombo, correct, missed } = usePracticeSession({ practice: true });
@@ -60,7 +66,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
     return `/api/study/queue?${practiceQuery}&choices=${mode}`;
   }, [query, mode]);
 
-  const { cards: rawCards, loading } = useQueueFetcher(fetchUrl);
+  const { cards: rawCards, loading, error, retry, retryOmitted } = useQueueFetcher(fetchUrl);
 
   const { cards, skipped } = useMemo(() => {
     const all = rawCards as QuizCard[];
@@ -69,7 +75,7 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
   }, [rawCards]);
 
   const current = cursor < cards.length ? cards[cursor] : null;
-  const done = !loading && current === null;
+  const done = !loading && !error && current === null;
   const { startedAt, elapsedMs } = useSessionTiming(done);
 
   const answerOf = (c: QuizCard) =>
@@ -120,6 +126,8 @@ function QuizSession({ studyTheme, textSize, mode = "meaning" }: QuizScreenProps
           if (picked !== null) advance();
         }}
       >
+        {!loading && error && <QueueError retry={retry} />}
+        {!loading && !error && <RetryOmissions count={retryOmitted} />}
         {loading && (
           <div className="mx-auto w-full max-w-sm animate-pulse">
             <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />

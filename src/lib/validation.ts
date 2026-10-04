@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+// An explicitly empty retry stays empty; malformed filters never widen a queue.
+export const practiceWordIdsSchema = z.string().max(64_000).transform(
+  (raw) => raw === "" ? [] : raw.split(",")
+).pipe(z.array(z.string().regex(/^[A-Za-z0-9_-]{1,128}$/)).max(500))
+  .transform((ids) => [...new Set(ids)]);
+
 export const signupSchema = z.object({
   email: z.string().email().max(254),
   password: z

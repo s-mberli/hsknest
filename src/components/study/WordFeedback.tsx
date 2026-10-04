@@ -77,7 +77,7 @@ export function WordFeedback({ card, primaryText }: WordFeedbackProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-card p-6"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-[safe_center] gap-3 overflow-y-auto overscroll-contain rounded-2xl bg-card p-4"
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
         >

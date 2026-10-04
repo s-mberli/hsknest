@@ -166,8 +166,7 @@ export function CardFace({
   return (
     <div
       className={cn(
-        "relative flex h-full w-full select-none flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border bg-card p-8 text-center shadow-sm",
-        interactive && "pb-16",
+        "relative flex h-full w-full select-none flex-col overflow-hidden rounded-2xl border bg-card text-center shadow-sm",
         // Brand-new word previews get a sky-blue treatment so it's obvious
         // this is a first look, not a test.
         card.preview &&
@@ -180,6 +179,17 @@ export function CardFace({
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-2xl opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,var(--foreground)_1.5px,transparent_0)] [background-size:16px_16px]"
       />
+      <div
+        data-card-content
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        onPointerDown={(e) => {
+          if (e.currentTarget.scrollHeight > e.currentTarget.clientHeight) e.stopPropagation();
+        }}
+      >
+      <div
+        data-card-center
+        className="flex min-h-full w-full flex-col items-center justify-center gap-3 p-5 sm:p-8"
+      >
       {card.preview && (
         <span className="absolute left-4 top-4 rounded-full bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
           New word
@@ -267,7 +277,7 @@ export function CardFace({
                     key={i}
                     className="max-w-full break-words text-sm text-muted-foreground/70 [overflow-wrap:anywhere]"
                   >
-                    {m.gloss.length > 40 ? m.gloss.slice(0, 40) + "…" : m.gloss}
+                    {m.gloss}
                   </p>
                 ))}
                 {meanings.length > 3 && (
@@ -292,7 +302,7 @@ export function CardFace({
                     key={i}
                     className="max-w-full break-words py-[2px] text-sm text-muted-foreground/70 [overflow-wrap:anywhere]"
                   >
-                    {m.gloss.length > 40 ? m.gloss.slice(0, 40) + "…" : m.gloss}
+                    {m.gloss}
                   </p>
                 ))}
                 <div className="sticky bottom-0 mt-1 bg-card py-1">
@@ -364,6 +374,9 @@ export function CardFace({
           </motion.div>
         )}
 
+      </div>
+      </div>
+
       {/* Report this word: corner flag button + overlay form. */}
       {showFull && !card.preview && (
         <WordFeedback card={card} primaryText={primaryText} />
@@ -371,7 +384,7 @@ export function CardFace({
 
       {/* Prompt + difficult-word hint. */}
       {interactive && (
-        <div className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-1 px-6">
+        <div className="flex shrink-0 flex-col items-center gap-1 px-4 pb-4 pt-2">
           <p className="text-xs text-muted-foreground">
             {card.preview
               ? stage === "FULL"

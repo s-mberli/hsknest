@@ -762,6 +762,28 @@ describe("Reading API routes", () => {
       expect(data.known).toHaveLength(1);
       expect(data.known[0].lemma).toBe("你好");
       expect(data.known[0].strength).toBeDefined();
+      expect(data.known[0].learned).toBe(true);
+    });
+
+    it("distinguishes deck membership from adaptive hint eligibility", async () => {
+      const user = await makeUser();
+      currentUserId = user.id;
+      const list = await testPrisma.wordList.create({
+        data: { name: "Hints", languageId: testLang.id, createdById: user.id },
+      });
+      for (const [term, state] of [["新", "NEW"], ["学", "LEARNING"], ["复", "REVIEW"], ["忘", "LAPSED"], ["熟", "MASTERED"], ["会", "ASSUMED"]] as const) {
+        const word = await testPrisma.word.create({ data: { term, translation: term, wordListId: list.id } });
+        await testPrisma.userProgress.create({ data: { userId: user.id, wordId: word.id, state } });
+      }
+      const otherList = await testPrisma.wordList.create({ data: { name: "Overlap", languageId: testLang.id, createdById: user.id } });
+      const duplicate = await testPrisma.word.create({ data: { term: "学", translation: "study", wordListId: otherList.id } });
+      await testPrisma.userProgress.create({ data: { userId: user.id, wordId: duplicate.id, state: "NEW" } });
+      const res = await knownWordsGET();
+      const { known } = await res.json();
+      expect(known).toHaveLength(6);
+      expect(Object.fromEntries(known.map((row: { lemma: string; learned: boolean }) => [row.lemma, row.learned]))).toEqual({
+        新: false, 学: true, 复: true, 忘: true, 熟: true, 会: true,
+      });
     });
 
     it("scopes to current user only", async () => {

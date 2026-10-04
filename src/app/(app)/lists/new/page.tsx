@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ export default function NewListPage() {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLangs, setLoadingLangs] = useState(true);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -71,6 +72,7 @@ export default function NewListPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!name.trim()) {
       toast.error("Give your list a name.");
       return;
@@ -93,22 +95,27 @@ export default function NewListPage() {
       body.languageId = languageId;
     }
 
+    savingRef.current = true;
     setSaving(true);
-    const res = await fetch("/api/lists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    setSaving(false);
-
-    if (!res.ok) {
+    try {
+      const res = await fetch("/api/lists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Create failed");
+      const data: unknown = await res.json();
+      if (!data || typeof data !== "object" || !("id" in data) ||
+          typeof data.id !== "string" || !data.id) throw new Error("Invalid list response");
+      toast.success("List created.");
+      trackEventOnce("list_created");
+      router.push(`/lists/${data.id}`);
+    } catch {
       toast.error("Could not create the list. Please try again.");
-      return;
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
-    const data = await res.json();
-    toast.success("List created.");
-    trackEventOnce("list_created");
-    router.push(`/lists/${data.id}`);
   }
 
   return (

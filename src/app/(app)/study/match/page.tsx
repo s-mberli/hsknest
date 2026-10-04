@@ -4,6 +4,7 @@ import { MatchScreen } from "@/components/study/MatchScreen";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getSubscriptionInfo } from "@/lib/subscription";
+import { normalizeCardTextSize } from "@/lib/textSize";
 
 export default async function MatchPage() {
   const userId = await getCurrentUserId();
@@ -11,7 +12,7 @@ export default async function MatchPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { studyTheme: true },
+    select: { studyTheme: true, cardTextSize: true, showReading: true, soundEffects: true, autoPlayPronunciation: true },
   });
   if (!user) redirect("/login");
 
@@ -21,5 +22,5 @@ export default async function MatchPage() {
 
   const studyTheme = user.studyTheme === "follow" ? "follow" : "dark";
 
-  return <MatchScreen studyTheme={studyTheme} />;
+  return <MatchScreen studyTheme={studyTheme} textSize={normalizeCardTextSize(user.cardTextSize)} showReading={user.showReading} soundEffects={user.soundEffects} autoPlayPronunciation={user.autoPlayPronunciation} />;
 }

@@ -15,6 +15,7 @@ import { playSliceWrong, playCelebrate } from "@/lib/sound";
 import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
 import { TOTAL_LIVES } from "@/lib/ninja/scoring";
+import { mergeNinjaRecords, parseNinjaRecords, type NinjaRecords } from "@/lib/ninja/records";
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import NinjaTile from "./NinjaTile";
 import InkCanvas from "./InkCanvas";
@@ -55,11 +56,11 @@ export default function NinjaStage({
   // Lazy initializer, not an effect + setState — avoids react-hooks/set-state-in-effect
   // and is strictly simpler: localStorage is read once, synchronously, as the
   // initial value, not synchronized in after mount.
-  const [bestStats, setBestStats] = useState<{ score: number; combo: number; waves?: number } | null>(() => {
+  const [bestStats, setBestStats] = useState<NinjaRecords | null>(() => {
     if (typeof window === "undefined") return null;
     try {
       const stored = localStorage.getItem("ninja-best-run");
-      return stored ? JSON.parse(stored) : null;
+      return stored ? parseNinjaRecords(JSON.parse(stored)) : null;
     } catch {
       return null;
     }
@@ -178,12 +179,13 @@ export default function NinjaStage({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsNewBest(newBest);
 
-    if (newBest) {
-      const updated = {
-        score: Math.max(bestStats?.score ?? 0, view.score),
-        combo: Math.max(bestStats?.combo ?? 0, view.bestCombo),
-        waves: Math.max(bestWaves, currentWaves),
-      };
+    const updated = mergeNinjaRecords(bestStats, {
+      score: view.score,
+      combo: view.bestCombo,
+      waves: currentWaves,
+    });
+    if (!bestStats || updated.score !== bestStats.score ||
+        updated.combo !== bestStats.combo || updated.waves !== bestStats.waves) {
       setBestStats(updated);
       try {
         localStorage.setItem("ninja-best-run", JSON.stringify(updated));
@@ -369,7 +371,7 @@ export default function NinjaStage({
         className="relative min-h-0 flex-1 overflow-hidden transition-transform"
         style={
           {
-            touchAction: "none",
+            touchAction: view.waveStatus === "game-over" ? "pan-y" : "none",
             overscrollBehavior: "contain",
             // Dark focus (default): a fixed dark tone regardless of app
             // theme — Ninja stays a dim arcade stage even in a light app.
@@ -414,8 +416,10 @@ export default function NinjaStage({
         <ConfettiCannon fire={confettiFire} intensity={160} />
 
         {view.waveStatus === "game-over" && (
-          <div className="animate-in fade-in absolute inset-0 flex flex-col items-center justify-center gap-5 bg-background/95 px-6 text-center backdrop-blur-sm duration-300">
-            <div className="space-y-3">
+          <div className="animate-in fade-in absolute inset-0 z-50 overflow-y-auto overscroll-contain bg-background/95 px-6 text-center backdrop-blur-sm duration-300"
+            style={{ touchAction: "pan-y" }}>
+            <div className="flex min-h-full flex-col items-center justify-center gap-5 py-6">
+            <div className="w-full max-w-sm space-y-3">
               {/* Session stats — waves as the primary metric (reps = effort),
                   with personal best alongside. */}
               <div className="space-y-2">
@@ -478,6 +482,7 @@ export default function NinjaStage({
                 <Link href={exitHref}>Exit</Link>
               </Button>
               <Button onClick={() => window.location.reload()}>Play Again</Button>
+            </div>
             </div>
           </div>
         )}

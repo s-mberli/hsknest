@@ -57,6 +57,7 @@ export function ImportWords({
   const [delimiter, setDelimiter] = useState<Delimiter>("auto");
   const [roles, setRoles] = useState<ColumnRole[]>(DEFAULT_ROLES);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const previewRows = useMemo(
     () => splitPreview(text, delimiter),
@@ -106,6 +107,7 @@ export function ImportWords({
   }
 
   async function submit() {
+    if (submittingRef.current) return;
     if (!text.trim()) {
       toast.error("Paste some rows or choose a file first.");
       return;
@@ -120,35 +122,45 @@ export function ImportWords({
       return;
     }
 
+    submittingRef.current = true;
     setSubmitting(true);
-    const res = await fetch(`/api/lists/${listId}/import`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, delimiter, columns }),
-    });
-    setSubmitting(false);
-    if (!res.ok) {
+    try {
+      const res = await fetch(`/api/lists/${listId}/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, delimiter, columns }),
+      });
+      if (!res.ok) throw new Error("Import failed");
+      const data: unknown = await res.json();
+      if (!data || typeof data !== "object" || !("added" in data) ||
+          !("skipped" in data) || typeof data.added !== "number" ||
+          typeof data.skipped !== "number" || !Number.isSafeInteger(data.added) ||
+          !Number.isSafeInteger(data.skipped) || data.added < 0 ||
+          data.skipped < 0 || !("reasons" in data) ||
+          !data.reasons || typeof data.reasons !== "object") {
+        throw new Error("Invalid import response");
+      }
+      const reasons = data.reasons as Record<string, unknown>;
+      const skippedReasons: string[] = [];
+      if (reasons.duplicateInPaste) skippedReasons.push(`${reasons.duplicateInPaste} duplicate in paste`);
+      if (reasons.alreadyInList) skippedReasons.push(`${reasons.alreadyInList} already in the list`);
+      if (reasons.noTerm) skippedReasons.push(`${reasons.noTerm} missing a term`);
+      if (reasons.overCap) skippedReasons.push(`${reasons.overCap} over the ${WORD_LIMITS.importRows}-row cap`);
+      if (reasons.invalid) skippedReasons.push(`${reasons.invalid} invalid`);
+      toast.success(
+        data.skipped > 0
+          ? `Imported ${data.added} words — skipped ${skippedReasons.join(", ") || data.skipped}.`
+          : `Imported ${data.added} words.`
+      );
+      setText("");
+      onClose();
+      router.refresh();
+    } catch {
       toast.error("Import failed. Please try again.");
-      return;
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
-    const data = await res.json();
-    const reasons: string[] = [];
-    if (data.reasons?.duplicateInPaste)
-      reasons.push(`${data.reasons.duplicateInPaste} duplicate in paste`);
-    if (data.reasons?.alreadyInList)
-      reasons.push(`${data.reasons.alreadyInList} already in the list`);
-    if (data.reasons?.noTerm)
-      reasons.push(`${data.reasons.noTerm} missing a term`);
-    if (data.reasons?.overCap)
-      reasons.push(`${data.reasons.overCap} over the ${WORD_LIMITS.importRows}-row cap`);
-    toast.success(
-      data.skipped > 0
-        ? `Imported ${data.added} words — skipped ${reasons.join(", ")}.`
-        : `Imported ${data.added} words.`
-    );
-    setText("");
-    onClose();
-    router.refresh();
   }
 
   return (

@@ -76,6 +76,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
 
     env:
       DATABASE_URL: file:./ci.db
@@ -101,10 +104,7 @@ jobs:
           languages: javascript-typescript
 
       - name: Security audit
-        # Raised to 'high' threshold; pre-existing 'critical'-only was insufficient.
-        # Note: deepmerge-ts transitive via Prisma CLI is reviewed but accepted
-        # (not reachable from @prisma/client at runtime, upstream fix pending).
-        run: npm audit --audit-level=high || true
+        run: npx tsx scripts/security-audit.ts
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -123,6 +123,8 @@ jobs:
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v4
+        with:
+          upload: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
   e2e:
     runs-on: ubuntu-latest

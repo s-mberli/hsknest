@@ -33,6 +33,10 @@ export function useQueueQuery(): {
   }
 
   if (rawListIds) parts.push(`listIds=${encodeURIComponent(rawListIds)}`);
+  const languageId = params.get("languageId");
+  if (languageId) parts.push(`languageId=${encodeURIComponent(languageId)}`);
+  const wordIds = params.get("wordIds");
+  if (wordIds !== null) parts.push(`wordIds=${encodeURIComponent(wordIds)}`);
   if (practice) parts.push("mode=practice");
 
   return {

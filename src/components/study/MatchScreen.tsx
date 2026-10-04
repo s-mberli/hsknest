@@ -1,7 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { SessionBoundary } from "@/components/study/SessionBoundary";
+import { QueueError } from "@/components/study/QueueError";
+import { RetryOmissions } from "@/components/study/RetryOmissions";
+import { StudyScreen } from "@/components/study/StudyScreen";
+import { matchRounds } from "@/lib/matchRounds";
 
 import { EmptyQueue } from "@/components/study/EmptyQueue";
 import { SessionComplete } from "@/components/study/SessionComplete";
@@ -11,13 +16,17 @@ import { usePracticeSession } from "@/hooks/usePracticeSession";
 import { useQueueFetcher } from "@/hooks/useQueueFetcher";
 import { useQueueQuery } from "@/hooks/useQueueQuery";
 import { useSessionTiming } from "@/hooks/useSessionTiming";
-import type { StudyCard } from "@/hooks/useStudySession";
 import { playAudio } from "@/lib/audio";
 import { gameGloss } from "@/lib/meanings";
 import { cn } from "@/lib/utils";
+import type { CardTextSize } from "@/lib/textSize";
 
 interface MatchScreenProps {
   studyTheme: "dark" | "follow";
+  textSize?: CardTextSize;
+  showReading?: boolean;
+  soundEffects?: boolean;
+  autoPlayPronunciation?: boolean;
 }
 
 const ROUND_SIZE = 5;
@@ -86,15 +95,27 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-export function MatchScreen({ studyTheme }: MatchScreenProps) {
+export function MatchScreen(props: MatchScreenProps) {
   return (
     <Suspense fallback={null}>
-      <MatchSession studyTheme={studyTheme} />
+      <SessionBoundary><MatchSession {...props} /></SessionBoundary>
     </Suspense>
   );
 }
 
-function MatchSession({ studyTheme }: MatchScreenProps) {
+function MatchSession({ studyTheme, textSize = "normal", showReading, soundEffects, autoPlayPronunciation }: MatchScreenProps) {
+  const timers = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    const pending = timers.current;
+    return () => { for (const timer of pending) window.clearTimeout(timer); };
+  }, []);
+  function later(callback: () => void, ms: number) {
+    const timer = window.setTimeout(() => {
+      timers.current.delete(timer);
+      callback();
+    }, ms);
+    timers.current.add(timer);
+  }
   const { query, scoped, listIds } = useQueueQuery();
   const practice = true;
   const [round, setRound] = useState(0);
@@ -114,15 +135,10 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
     return `/api/study/queue?${practiceQuery}`;
   }, [query]);
 
-  const { cards, loading } = useQueueFetcher(fetchUrl);
+  const { cards, loading, error, retry, retryOmitted } = useQueueFetcher(fetchUrl);
 
   const rounds = useMemo(() => {
-    const out: StudyCard[][] = [];
-    for (let i = 0; i < cards.length; i += ROUND_SIZE) {
-      const chunk = cards.slice(i, i + ROUND_SIZE);
-      if (chunk.length >= 2) out.push(chunk);
-    }
-    return out;
+    return matchRounds(cards, ROUND_SIZE);
   }, [cards]);
 
   const roundCards = rounds[round] ?? null;
@@ -147,7 +163,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
     };
   }, [roundCards]);
 
-  const done = !loading && (rounds.length === 0 || round >= rounds.length);
+  const done = !loading && !error && (rounds.length === 0 || round >= rounds.length);
   const { startedAt, elapsedMs } = useSessionTiming(done);
 
   function tap(tile: Tile) {
@@ -175,7 +191,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       setMatched((prev) => {
         const next = new Set(prev).add(tile.wordId);
         if (roundCards && roundCards.every((c) => next.has(c.wordId))) {
-          window.setTimeout(() => {
+          later(() => {
             setMatched(new Set());
             setMissed(new Set());
             setRound((r) => r + 1);
@@ -195,7 +211,7 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       setMissed((prev) => new Set(prev).add(selected.wordId));
       setWrongPair({ a: selected, b: tile });
       setShaking(`${tile.side}:${tile.wordId}`);
-      window.setTimeout(() => {
+      later(() => {
         setShaking(null);
         setWrongPair(null);
       }, 400);
@@ -205,6 +221,10 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
 
   const totalWords = rounds.reduce((n, r) => n + r.length, 0);
   const gradedCount = graded.size;
+
+  if (!loading && !error && cards.length === 1) {
+    return <StudyScreen studyTheme={studyTheme} textSize={textSize} showReading={showReading} soundEffects={soundEffects} autoPlayPronunciation={autoPlayPronunciation} practiceOnly practiceSource="match" />;
+  }
 
   return (
     <StudyShell studyTheme={studyTheme}>
@@ -217,6 +237,8 @@ function MatchSession({ studyTheme }: MatchScreenProps) {
       />
 
       <main className="flex min-h-0 flex-1 flex-col justify-[safe_center] overflow-y-auto overscroll-contain px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-16">
+        {!loading && error && <QueueError retry={retry} />}
+        {!loading && !error && <RetryOmissions count={retryOmitted} />}
         {loading && (
           <div className="mx-auto w-full max-w-sm animate-pulse">
             <div className="aspect-[3/4] w-full rounded-2xl border border-muted/60 bg-muted/30" />
