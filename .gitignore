@@ -151,3 +151,10 @@ __pycache__/
 
 # local feature specs — working documents, not contributor documentation
 /docs/specs/
+
+# Local verification and agent caches; keep the reviewed cloud role
+/.codex/*
+!/.codex/agents/
+/.codex/agents/*
+!/.codex/agents/testing-reality-checker.toml
+/debug.log
