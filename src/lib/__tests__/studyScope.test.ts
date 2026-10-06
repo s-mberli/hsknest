@@ -1,4 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const prismaMocks = vi.hoisted(() => ({
+  languageFindFirst: vi.fn(),
+  wordListFindMany: vi.fn(),
+}));
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    language: { findFirst: prismaMocks.languageFindFirst },
+    wordList: { findMany: prismaMocks.wordListFindMany },
+  },
+}));
 
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 
@@ -80,6 +92,13 @@ describe("parseQueueQuery — scope parsing", () => {
 });
 
 describe("scopeToWordWhere", () => {
+  beforeEach(() => {
+    prismaMocks.languageFindFirst.mockReset().mockResolvedValue({ id: "zh" });
+    prismaMocks.wordListFindMany
+      .mockReset()
+      .mockResolvedValue([{ id: "a" }, { id: "b" }]);
+  });
+
   it("returns {} for an empty scope", () => {
     expect(scopeToWordWhere({})).toEqual({});
   });
@@ -108,22 +127,28 @@ describe("scopeToWordWhere", () => {
     expect(scopeToWordWhere({ listIds: [] })).toEqual({});
   });
 
-  it("excludes hidden lists when userId is provided", () => {
-    const result = scopeToWordWhere({}, "user123");
-    // With userId, the result is a Promise due to async validation.
-    // This test validates that the function is async-ready; actual validation
-    // is integration-tested in the queue endpoint.
-    expect(result instanceof Promise).toBe(true);
+  it("excludes hidden lists when userId is provided", async () => {
+    await expect(scopeToWordWhere({}, "user123")).resolves.toEqual({
+      word: {
+        wordList: { hiddenBy: { none: { userId: "user123" } } },
+      },
+    });
   });
 
-  it("combines scope filters and hidden list exclusion with userId", () => {
-    const result = scopeToWordWhere(
-      { languageId: "zh", listIds: ["a", "b"] },
-      "user123"
-    );
-    // With userId, the result is a Promise due to async validation.
-    // This test validates that the function is async-ready; actual validation
-    // is integration-tested in the queue endpoint.
-    expect(result instanceof Promise).toBe(true);
+  it("combines scope filters and hidden list exclusion with userId", async () => {
+    await expect(
+      scopeToWordWhere(
+        { languageId: "zh", listIds: ["a", "b"] },
+        "user123"
+      )
+    ).resolves.toEqual({
+      word: {
+        wordList: {
+          id: { in: ["a", "b"] },
+          languageId: "zh",
+          hiddenBy: { none: { userId: "user123" } },
+        },
+      },
+    });
   });
 });
