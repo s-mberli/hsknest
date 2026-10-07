@@ -33,7 +33,7 @@ export function LandingHero() {
     : fadeUp;
 
   return (
-    <main className="relative flex min-h-0 flex-1 items-start overflow-hidden px-6 py-12 sm:min-h-[85svh] sm:items-center sm:py-24">
+    <section aria-label="Introduction" className="relative flex min-h-0 flex-1 items-start overflow-hidden px-6 py-12 sm:min-h-[85svh] sm:items-center sm:py-24">
       <div
         aria-hidden="true"
         className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_60%)]"
@@ -167,6 +167,6 @@ export function LandingHero() {
           </div>
         </motion.div>
       </div>
-    </main>
+    </section>
   );
 }

@@ -3,8 +3,8 @@
  * are set — see layout.tsx). Everything is a silent no-op when the script
  * isn't present, so self-hosted installs ship zero analytics.
  *
- * Event names are part of the launch metrics contract in
- * docs/marketing/metrics.md — rename only in lockstep with that doc.
+ * Event names are part of the launch metrics contract. Homepage tour event
+ * semantics are documented in docs/launch/teaser-verification.md.
  */
 
 declare global {
@@ -19,7 +19,10 @@ export type FunnelEvent =
   | "guest_upgrade_complete"
   | "guest_checkout_redirect"
   | "signup_complete"
-  | "list_created";
+  | "list_created"
+  | "promo_play"
+  | "promo_complete"
+  | "promo_try_click";
 
 export function trackEvent(event: FunnelEvent): void {
   try {
