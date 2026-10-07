@@ -4,7 +4,13 @@
 
 The section and player are complete locally with the user-uploaded approved
 20-second video. The handoff text was recovered from the originating chat's exact
-file-change output. Nothing has been committed or deployed.
+file-change output. Publication is authorised through PR #108; this document
+records the implementation evidence before production deployment.
+
+The first release CI run found GHSA-wq5f-xc86-pv6w in the existing Sharp dependency.
+Sharp was updated from 0.35.4 to 0.35.5 with matching native/libvips packages;
+unrelated package versions and platform metadata were preserved. A fresh install,
+security-policy audit, poster transformation and production build passed.
 
 Required public assets:
 
