@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { LandingHero } from "@/components/landing/LandingHero";
+import { LandingTeaser } from "@/components/landing/LandingTeaser";
 import { LandingSections } from "@/components/landing/LandingSections";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
@@ -21,9 +22,10 @@ export default async function LandingPage() {
   }
 
   return (
-    <>
+    <main>
       <LandingHero />
+      <LandingTeaser />
       <LandingSections />
-    </>
+    </main>
   );
 }
