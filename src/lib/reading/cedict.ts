@@ -20,9 +20,18 @@ let cache: CedictData | null = null;
 
 export function loadCedict(dataPath?: string): CedictData {
   if (cache && !dataPath) return cache;
-  const file =
-    dataPath ?? path.join(process.cwd(), "prisma", "data", "cedict", "cedict.json.gz");
-  const raw = gunzipSync(fs.readFileSync(file));
+  const defaultDataPath = path.join(
+    process.cwd(),
+    "prisma",
+    "data",
+    "cedict",
+    "cedict.json.gz"
+  );
+  const raw = gunzipSync(
+    dataPath
+      ? fs.readFileSync(/* turbopackIgnore: true */ dataPath)
+      : fs.readFileSync(defaultDataPath)
+  );
   const data = JSON.parse(raw.toString("utf-8")) as CedictData;
   if (!dataPath) cache = data;
   return data;

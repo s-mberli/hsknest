@@ -7,7 +7,7 @@
  * position clamping, completion, and user scoping.
  */
 import { execSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaClient } from "@prisma/client";
@@ -76,6 +76,7 @@ describe("Reading API routes", () => {
 
   beforeAll(async () => {
     deleteTestDbFiles();
+    writeFileSync(TEST_DB_PATH, "");
     execSync("npx prisma db push --skip-generate --accept-data-loss", {
       env: { ...process.env, DATABASE_URL: TEST_DB_URL },
       cwd: process.cwd(),
@@ -147,6 +148,26 @@ describe("Reading API routes", () => {
       currentUserId = user.id;
       const res = await encounterPOST(jsonPost({ lemma: "你好", languageId: "nonexistent" }));
       expect(res.status).toBe(400);
+    });
+
+    it("rejects a language owned by another user", async () => {
+      const user = await makeUser();
+      const languageOwner = await makeUser();
+      const privateLanguage = await testPrisma.language.create({
+        data: {
+          name: "Private language",
+          code: `private-${Date.now()}`,
+          createdById: languageOwner.id,
+        },
+      });
+      currentUserId = user.id;
+
+      const res = await encounterPOST(jsonPost({ lemma: "你好", languageId: privateLanguage.id }));
+
+      expect(res.status).toBe(400);
+      expect(await testPrisma.wordEncounter.count({
+        where: { userId: user.id, languageId: privateLanguage.id },
+      })).toBe(0);
     });
 
     it("creates encounter on first lookup", async () => {
@@ -221,6 +242,29 @@ describe("Reading API routes", () => {
       currentUserId = user.id;
       const res = await deckPOST(jsonPost({ lemma: "你好", languageId: "nonexistent" }, "http://localhost/api/reading/deck"));
       expect(res.status).toBe(400);
+    });
+
+    it("rejects a language owned by another user without creating a list", async () => {
+      const user = await makeUser();
+      const languageOwner = await makeUser();
+      const privateLanguage = await testPrisma.language.create({
+        data: {
+          name: "Private language",
+          code: `private-${Date.now()}`,
+          createdById: languageOwner.id,
+        },
+      });
+      currentUserId = user.id;
+
+      const res = await deckPOST(jsonPost(
+        { lemma: "你好", languageId: privateLanguage.id },
+        "http://localhost/api/reading/deck"
+      ));
+
+      expect(res.status).toBe(400);
+      expect(await testPrisma.wordList.count({
+        where: { createdById: user.id, name: "From Reading" },
+      })).toBe(0);
     });
 
     it("creates word + progress atomically", async () => {
@@ -406,6 +450,29 @@ describe("Reading API routes", () => {
         "http://localhost/api/reading/deck/batch"
       ));
       expect(res.status).toBe(400);
+    });
+
+    it("rejects a language owned by another user without creating a list", async () => {
+      const user = await makeUser();
+      const languageOwner = await makeUser();
+      const privateLanguage = await testPrisma.language.create({
+        data: {
+          name: "Private language",
+          code: `private-${Date.now()}`,
+          createdById: languageOwner.id,
+        },
+      });
+      currentUserId = user.id;
+
+      const res = await deckBatchPOST(jsonPost(
+        { languageId: privateLanguage.id, items: [{ lemma: "你好" }] },
+        "http://localhost/api/reading/deck/batch"
+      ));
+
+      expect(res.status).toBe(400);
+      expect(await testPrisma.wordList.count({
+        where: { createdById: user.id, name: "From Reading" },
+      })).toBe(0);
     });
 
     it("creates a word + progress for every item, all sharing one 'From Reading' list", async () => {

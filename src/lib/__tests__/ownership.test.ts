@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { PrismaClient } from "@prisma/client";
@@ -71,6 +71,7 @@ describe(
   () => {
     beforeAll(() => {
       deleteTestDbFiles();
+      writeFileSync(TEST_DB_PATH, "");
       // `db push` resolves the schema against the schema file's directory,
       // so we MUST use an absolute `file:` URL — a relative one resolves
       // to `prisma/prisma/test-integration.db` and silently lands an

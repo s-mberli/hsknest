@@ -46,7 +46,7 @@ export function LandingHero() {
       <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 text-center lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:text-left">
         <div className="space-y-7">
           <motion.div
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.05 }}
@@ -59,7 +59,7 @@ export function LandingHero() {
           </motion.div>
 
           <motion.h1
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.1 }}
@@ -69,7 +69,7 @@ export function LandingHero() {
           </motion.h1>
 
           <motion.p
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.12 }}
@@ -79,7 +79,7 @@ export function LandingHero() {
           </motion.p>
 
           <motion.div
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.15 }}
@@ -103,7 +103,7 @@ export function LandingHero() {
           </motion.div>
 
           <motion.div
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.2 }}
@@ -121,7 +121,7 @@ export function LandingHero() {
           </motion.div>
 
           <motion.div
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.23 }}
@@ -137,7 +137,7 @@ export function LandingHero() {
           </motion.div>
 
           <motion.p
-            initial={reducedMotion ? undefined : "hidden"}
+            initial={false}
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.25 }}
@@ -156,7 +156,7 @@ export function LandingHero() {
         </div>
 
         <motion.div
-          initial={reducedMotion ? undefined : "hidden"}
+          initial={false}
           animate={reducedMotion ? undefined : "visible"}
           variants={safeFadeUp}
           transition={{ delay: 0.3 }}

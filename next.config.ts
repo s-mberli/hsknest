@@ -61,6 +61,14 @@ const nextConfig: NextConfig = {
   // Emit a self-contained server bundle (.next/standalone) for the Docker image.
   output: "standalone",
 
+  // loadCedict accepts a caller-supplied path for tests, so the bundler cannot
+  // infer its runtime file from the dynamic read. Include only the default
+  // dictionary for the two API routes that call it via reading/deckAdd.ts.
+  outputFileTracingIncludes: {
+    "/api/reading/deck": ["./prisma/data/cedict/cedict.json.gz"],
+    "/api/reading/deck/batch": ["./prisma/data/cedict/cedict.json.gz"],
+  },
+
   // Baseline security headers. HSTS is best set at the TLS-terminating
   // proxy (see docs/DEPLOYMENT.md); we also emit it here as defense in
   // depth so a misconfigured proxy never ships a plain-HTTP session.

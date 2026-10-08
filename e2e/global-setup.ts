@@ -34,6 +34,7 @@ const ROUTES = [
   "/study/sentences",
   "/study/ninja",
   "/lists",
+  "/lists/new",
   "/words",
   "/pricing",
 ];

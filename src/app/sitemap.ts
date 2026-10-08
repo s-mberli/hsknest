@@ -1,10 +1,14 @@
 import type { MetadataRoute } from "next";
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+import { getSiteOrigin } from "@/lib/siteOrigin";
+
+// Registry images learn their public origin from runtime configuration.
+export const dynamic = "force-dynamic";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ["/", "/login", "/signup", "/pricing", "/privacy", "/terms"].map((path) => ({
-    url: `${baseUrl}${path}`,
+  const origin = getSiteOrigin();
+  return ["/", "/pricing", "/privacy", "/terms", "/credits"].map((path) => ({
+    url: `${origin}${path}`,
     changeFrequency: "monthly",
     priority: path === "/" ? 1 : 0.5,
   }));

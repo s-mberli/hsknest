@@ -6,6 +6,11 @@ import { LandingSections } from "@/components/landing/LandingSections";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { isSelfHosted } from "@/lib/selfHosted";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function LandingPage() {
   const userId = await getCurrentUserId();

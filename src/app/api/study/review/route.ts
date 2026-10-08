@@ -8,6 +8,7 @@ import { rateLimit } from "@/lib/rateLimit";
 import { applyUserModifiers, getAlgorithm } from "@/lib/srs";
 import type { CardState, SRSResult, SRSState, UserSRSPrefs } from "@/lib/srs";
 import { addDays } from "@/lib/srs";
+import { hydrateStateForAlgorithm } from "@/lib/srs/algorithmState";
 import { reviewSchema } from "@/lib/validation";
 
 /** Interval granted when an ASSUMED card is confirmed known (before modifiers). */
@@ -98,7 +99,7 @@ export async function POST(req: Request) {
     desiredRetention: user.desiredRetention,
   });
 
-  const currentState: SRSState = {
+  const storedState: SRSState = {
     state: progress.state as CardState,
     easeFactor: progress.easeFactor,
     intervalDays: progress.intervalDays,
@@ -109,6 +110,10 @@ export async function POST(req: Request) {
     lastReviewedAt: progress.lastReviewedAt,
     srsData: (progress.srsData as Record<string, unknown> | null) ?? undefined,
   };
+  const currentState = hydrateStateForAlgorithm(
+    storedState,
+    user.preferredAlgorithm
+  );
 
   const prefs: UserSRSPrefs = {
     intervalModifier: user.intervalModifier,
@@ -158,6 +163,13 @@ export async function POST(req: Request) {
   }
 
   const { next } = result;
+  const persistedSrsData: Record<string, unknown> = {
+    ...(next.srsData ?? {}),
+    algorithm: user.preferredAlgorithm,
+  };
+  if (user.preferredAlgorithm !== "FSRS") {
+    delete persistedSrsData.fsrs;
+  }
 
   try {
     await prisma.$transaction([
@@ -185,9 +197,10 @@ export async function POST(req: Request) {
             ? progress.introducedAt
             : (progress.introducedAt ?? now),
           assumedCheckedAt: isAssumedCheck ? now : progress.assumedCheckedAt,
-          srsData: next.srsData
-            ? (next.srsData as Prisma.InputJsonValue)
-            : undefined,
+          // The marker says which algorithm's per-algorithm fields are current.
+          // Non-FSRS schedules cannot use FSRS stability/difficulty, so remove
+          // that payload after they advance the shared interval.
+          srsData: persistedSrsData as Prisma.InputJsonValue,
         },
       }),
       prisma.reviewLog.create({

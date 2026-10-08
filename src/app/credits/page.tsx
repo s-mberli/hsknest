@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/credits" },
   title: "Data Credits & Licenses | HSK Nest",
   description:
     "Attribution for the open datasets that power HSK Nest's vocabulary decks, dictionary lookups, and example sentences.",

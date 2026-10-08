@@ -113,7 +113,7 @@ test("missed-word retry preserves scope and sends exact target IDs", async ({ pa
   await expect(page.getByText("Alpha", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "first", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Practice done" })).toBeVisible();
-  await expect(page.getByText("You reviewed 1 card.", { exact: false })).toBeVisible();
+  await expect(page.getByText("You practiced 1 card.", { exact: false })).toBeVisible();
 });
 
 test("a partially unavailable Match retry falls back without widening the target set", async ({ page }) => {

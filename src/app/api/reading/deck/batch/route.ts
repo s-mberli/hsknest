@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { rateLimit } from "@/lib/rateLimit";
+import { visibleLanguageWhere } from "@/lib/ownership";
 import { readingDeckBatchSchema } from "@/lib/validation";
 import { termKey } from "@/lib/progressMerge";
 import { ensureReadingList, resolveWordData } from "@/lib/reading/deckAdd";
@@ -27,7 +28,10 @@ export async function POST(req: Request) {
 
   const { languageId, storySlug, items } = parsed.data;
 
-  const lang = await prisma.language.findUnique({ where: { id: languageId }, select: { id: true } });
+  const lang = await prisma.language.findFirst({
+    where: { id: languageId, ...visibleLanguageWhere(userId) },
+    select: { id: true },
+  });
   if (!lang) return NextResponse.json({ error: "Invalid language" }, { status: 400 });
 
   // Dedupe within the request itself (first occurrence of a term wins).

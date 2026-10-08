@@ -120,3 +120,27 @@ test.describe("Guest Architecture E2E Flow", () => {
     await context.close();
   });
 });
+
+test("login recovers from an explicit CSRF response before entering the dashboard", async ({ page }) => {
+  const { email, password } = await createTestGuestUser();
+  let attempts = 0;
+  await page.route("**/api/auth/callback/credentials", async route => {
+    attempts += 1;
+    if (attempts === 1) {
+      const origin = new URL(route.request().url()).origin;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ url: `${origin}/api/auth/signin?csrf=true` }),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: /sign in/i }).click();
+  await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
+  expect(attempts).toBe(2);
+});

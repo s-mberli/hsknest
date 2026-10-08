@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/terms" },
   title: "Terms of Service | HSK Nest",
   description: "Terms of Service for HSK Nest app.",
 };

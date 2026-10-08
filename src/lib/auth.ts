@@ -18,17 +18,29 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = credentials.email.toLowerCase();
+        // NextAuth v4 provides request headers here. Only use a source header
+        // when the deployment's trusted proxy overwrites it; without one we
+        // retain the account/global limits instead of merging every NAT user
+        // into a shared "unknown" source bucket.
+        const forwardedFor = req.headers?.["x-forwarded-for"];
+        const realIp = req.headers?.["x-real-ip"];
+        const source =
+          forwardedFor?.split(",")[0]?.trim() || realIp?.trim() || "";
 
-        // Brute-force guard: 30 attempts/minute per account. NextAuth v4's
-        // authorize() signature exposes no reliable request IP, so we key on
-        // the normalized email only — this throttles per account rather than
-        // per source (the global cap backstops volume attacks). 30/min keeps
-        // brute force impractical while not tripping legit bursts — the e2e
-        // suite's ~17 logins in 3 minutes hit the old 10/min limit.
+        // A per-source ceiling prevents one client from rotating email names
+        // to consume the process-wide budget. X-Forwarded-For / X-Real-IP are
+        // trustworthy only behind a proxy that overwrites them and blocks
+        // direct access to the app port. No header → no shared NAT fallback.
+        if (source && !rateLimit(`login:source:${source}`, 60, 60 * 1000)) {
+          return null;
+        }
+
+        // Keep independent account and process ceilings as defense in depth.
+        // These count all authorize submissions (including successful logins).
         // Returning null makes NextAuth surface a generic failure.
         if (
           !rateLimit("login:global", 1000, 60 * 1000) ||

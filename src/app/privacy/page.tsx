@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Privacy Policy | HSK Nest",
   description: "Privacy Policy for HSK Nest app.",
 };

@@ -1,6 +1,6 @@
 # HSK Nest contributor guide
 
-- For product changes, read [PRODUCT.md](PRODUCT.md); for UI work, read [DESIGN.md](DESIGN.md); for domain terminology, use [CONTEXT.md](CONTEXT.md). If `HANDOFF.md` is present locally, use only its relevant recent dated entries for continuation and check them against current code.
+- For product changes, read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [RELEASES.md](RELEASES.md); for UI work, inspect the approved tokens in `src/app/globals.css` and the relevant existing components; for domain terminology, use [CONTEXT.md](CONTEXT.md). If `HANDOFF.md` is present locally, use only its relevant recent dated entries for continuation and check them against current code.
 - Scheduling supports multiple algorithms. Inspect `src/lib/srs/` and its tests before changing intervals or review state; preserve existing behaviour unless the task changes it. Read the current Prisma schema for data changes instead of redesigning it from a generic language model.
 - Read `package.json` for commands. Start with affected tests. Before Playwright, inspect the reused server at port 3000 and its data/environment: tests can create accounts, and `reuseExistingServer` does not establish isolation.
 - Preserve phone study usability and the approved visual system. Inspect rendered results for layout changes, including relevant phone widths.

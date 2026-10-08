@@ -130,11 +130,17 @@ export function ReviewHeatmap({ days, streakDays }: ReviewHeatmapProps) {
                   const activity = (d?.count ?? 0) + (d?.readingCount ?? 0);
                   const isToday = date === today;
                   const future = date > today;
+                  const label = future
+                    ? `${date}: future date`
+                    : d
+                      ? dayTitle(d, date)
+                      : date;
                   return (
                     <button
                       key={di}
                       type="button"
-                      title={future ? undefined : d ? dayTitle(d, date) : date}
+                      aria-label={label}
+                      title={future ? undefined : label}
                       disabled={future}
                       onClick={() => setSelected(d ?? null)}
                       className={cn(
