@@ -8,7 +8,7 @@
  * when Vitest runs route-test files in parallel.
  */
 import { execSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaClient } from "@prisma/client";
@@ -70,6 +70,7 @@ function deleteTestDbFiles() {
 describe("Practice/Review boundary — scheduler isolation", () => {
   beforeAll(() => {
     deleteTestDbFiles();
+    writeFileSync(TEST_DB_PATH, "");
     execSync("npx prisma db push --skip-generate --accept-data-loss", {
       env: { ...process.env, DATABASE_URL: TEST_DB_URL },
       cwd: process.cwd(),
@@ -265,12 +266,13 @@ describe("Practice/Review boundary — scheduler isolation", () => {
       const user = await makeUser();
       const word = await makeWord();
 
-      // Start with LEARNING 1 day out.
+      // First successful SM-2 reviews are REVIEW with one repetition. A
+      // LEARNING card would have repetitions=0 because lapses reset progress.
       await testPrisma.userProgress.create({
         data: {
           userId: user.id,
           wordId: word.id,
-          state: "LEARNING",
+          state: "REVIEW",
           intervalDays: 1,
           easeFactor: 2.5,
           repetitions: 1,
@@ -288,7 +290,7 @@ describe("Practice/Review boundary — scheduler isolation", () => {
         where: { userId_wordId: { userId: user.id, wordId: word.id } },
       });
       expect(row?.state).toBe("REVIEW");
-      expect(row?.intervalDays).toBeGreaterThan(1); // SM-2: 1 → 6
+      expect(row?.intervalDays).toBe(6); // SM-2: 1 → 6
       expect(row?.repetitions).toBe(2);
     });
 
@@ -301,9 +303,10 @@ describe("Practice/Review boundary — scheduler isolation", () => {
         data: {
           userId: user.id,
           wordId: word.id,
-          state: "LEARNING",
+          state: "REVIEW",
           intervalDays: 1,
           dueAt: originalDue,
+          repetitions: 1,
         },
       });
       currentUserId = user.id;
@@ -313,7 +316,8 @@ describe("Practice/Review boundary — scheduler isolation", () => {
       const row = await testPrisma.userProgress.findUnique({
         where: { userId_wordId: { userId: user.id, wordId: word.id } },
       });
-      // New dueAt should be ~6 days in the future (SM-2 LEARNING→REVIEW interval).
+      expect(row?.intervalDays).toBe(6);
+      // The second successful SM-2 review advances 1 → 6 days.
       expect(row?.dueAt.getTime()).toBeGreaterThan(originalDue.getTime());
     });
 
@@ -325,7 +329,7 @@ describe("Practice/Review boundary — scheduler isolation", () => {
         data: {
           userId: user.id,
           wordId: word.id,
-          state: "LEARNING",
+          state: "REVIEW",
           intervalDays: 1,
           repetitions: 1, // Second review: 1 → 6 days per SM-2
         },
@@ -341,7 +345,7 @@ describe("Practice/Review boundary — scheduler isolation", () => {
       });
       expect(log).toBeDefined();
       expect(log?.intervalBefore).toBe(1);
-      expect(log?.intervalAfter).toBeGreaterThan(1);
+      expect(log?.intervalAfter).toBe(6);
       expect(log?.source).toBe("quiz");
     });
   });

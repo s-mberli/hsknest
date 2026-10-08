@@ -11,7 +11,7 @@
  * parallel.
  */
 import { execSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaClient } from "@prisma/client";
@@ -78,6 +78,7 @@ describe(
   () => {
     beforeAll(() => {
       deleteTestDbFiles();
+      writeFileSync(TEST_DB_PATH, "");
       execSync("npx prisma db push --skip-generate --accept-data-loss", {
         env: { ...process.env, DATABASE_URL: TEST_DB_URL },
         cwd: process.cwd(),

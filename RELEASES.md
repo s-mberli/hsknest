@@ -33,11 +33,28 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
   see `docs/CONFIGURATION.md`. Karaoke audio stays a separate, optional
   mounted layer as before (`docs/AUDIO.md`) — text/pinyin/dictionary work
   fully without it either way.
-- Follow-up from the Word Ninja release below: `QuizScreen.tsx`,
-  `SentenceScreen.tsx`, and `MatchScreen.tsx` all discard the `error` field
-  from `useQueueFetcher`, so a failed queue fetch on those screens also
-  renders the empty-deck state instead of a retry prompt (same pattern
-  fixed in `NinjaScreen.tsx` for v0.2.5). House-wide, not urgent.
+
+## v0.3.1 — 2026-10-09
+
+Launch hardening for the hosted site and self-hosted image:
+
+- Homepage tour is silent, loads only on interaction, and stays below a hero
+  that is visible before JavaScript hydration. Existing video visuals are
+  preserved without re-encoding.
+- Public sitemap and robots use the configured site origin rather than a
+  localhost fallback. Public pages have individual canonical URLs; account
+  and study pages request no indexing.
+- Reading writes reject another user's private language. Mobile navigation
+  announces the current page, and practice completion distinguishes practice
+  from scheduled reviews.
+- Switching mature review cards into SM-2 or Leitner recovers missing progress
+  markers from the shared interval (within Leitner's 16-day ceiling), while
+  lapse recovery is unchanged. A non-FSRS review clears stale FSRS parameters.
+- Login includes a source limiter in addition to existing account/global
+  guards. Deployment requires trusted forwarding headers from the proxy.
+
+See `docs/launch/launch-readiness-review.md` for test evidence, release status,
+and operational checks that cannot be certified from a source review.
 
 ## v0.3.0 — 2026-08-21
 

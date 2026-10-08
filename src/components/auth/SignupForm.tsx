@@ -1,6 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackEventOnce } from "@/lib/analytics";
-import { confirmSession } from "@/lib/authClient";
+import { signInWithCredentials } from "@/lib/authClient";
 
 export function SignupForm({
   guestEnabled,
@@ -38,37 +37,34 @@ export function SignupForm({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name: name || undefined }),
+      });
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name: name || undefined }),
-    });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error ?? "Could not create account");
+        return;
+      }
 
-    if (!res.ok) {
+      trackEventOnce("signup_complete");
+
+      // Auto sign-in after signup.
+      const login = await signInWithCredentials(email, password);
+      if (!login.ok) {
+        toast.error("Account created — please sign in.");
+        router.push("/login");
+        return;
+      }
+      router.push("/dashboard");
+    } catch {
+      toast.error("Could not create account. Check your connection and try again.");
+    } finally {
       setLoading(false);
-      const data = await res.json().catch(() => ({}));
-      toast.error(data.error ?? "Could not create account");
-      return;
     }
-
-    trackEventOnce("signup_complete");
-
-    // Auto sign-in after signup.
-    const login = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setLoading(false);
-
-    if (login?.error) {
-      toast.error("Account created — please sign in.");
-      router.push("/login");
-      return;
-    }
-    await confirmSession();
-    router.push("/dashboard");
   }
 
   return (

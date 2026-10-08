@@ -6,6 +6,7 @@ import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/pricing" },
   title: "Pricing | HSK Nest",
   description:
     "HSK Nest Hosted is €10/mo or €99/yr with a 14-day free trial, no credit card to start. Or self-host it free, forever.",

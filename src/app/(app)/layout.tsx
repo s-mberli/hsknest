@@ -6,6 +6,11 @@ import { TrialBanner } from "@/components/billing/TrialBanner";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { getSubscriptionInfo } from "@/lib/subscription";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AppLayout({
   children,
