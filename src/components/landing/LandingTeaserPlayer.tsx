@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 
 import { trackEvent } from "@/lib/analytics";
 
-const VIDEO_SRC = "/media/hsknest-tour.mp4";
+const VIDEO_SRC = "/media/hsknest-tour-silent.mp4";
 
 export function LandingTeaserPlayer() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -62,6 +62,7 @@ export function LandingTeaserPlayer() {
         className="block aspect-video w-full outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary"
         controls={started}
         playsInline
+        muted
         preload="none"
         poster="/media/hsknest-tour-poster.webp"
         tabIndex={started ? 0 : -1}

@@ -1,21 +1,43 @@
 "use client";
 
-import { getSession } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 
-/**
- * Call right after a successful `signIn("credentials", { redirect: false })`,
- * before navigating to a session-gated route (server components that call
- * getCurrentUserId() and redirect to /login when it's null).
- *
- * NextAuth's redirect:false credentials flow resolves as soon as the
- * callback response is received, but there's a known race — worse under
- * load — where a follow-up navigation can outrun the session cookie
- * actually being visible to the next request, bouncing the user straight
- * back to /login right after they signed in successfully (see
- * nextauthjs/next-auth#1264, #8897). Forcing one round trip through
- * next-auth's own session endpoint here resolves the race: by the time this
- * resolves, the cookie is confirmed readable server-side.
- */
-export async function confirmSession(): Promise<void> {
-  await getSession();
+export type CredentialsSignInResult =
+  | { ok: true }
+  | { ok: false; reason: "credentials" | "session" | "network" };
+
+function isCsrfRedirect(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url, "http://localhost");
+    return parsed.pathname === "/api/auth/signin" && parsed.searchParams.get("csrf") === "true";
+  } catch {
+    return false;
+  }
+}
+
+/** Sign in, retrying only NextAuth's explicit CSRF redirect response once. */
+export async function signInWithCredentials(
+  email: string,
+  password: string
+): Promise<CredentialsSignInResult> {
+  try {
+    let result = await signIn("credentials", { email, password, redirect: false });
+    if (result?.error) return { ok: false, reason: "credentials" };
+
+    if (isCsrfRedirect(result?.url)) {
+      result = await signIn("credentials", { email, password, redirect: false });
+      if (result?.error) return { ok: false, reason: "credentials" };
+      if (isCsrfRedirect(result?.url)) return { ok: false, reason: "session" };
+    }
+    if (!result?.ok) return { ok: false, reason: "credentials" };
+
+    const session = await getSession();
+    return session?.user?.id
+      ? { ok: true }
+      : { ok: false, reason: "session" };
+  } catch {
+    // Keep transport and session endpoint failures inside the form flow.
+    return { ok: false, reason: "network" };
+  }
 }

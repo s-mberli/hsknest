@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+import { getSiteOrigin } from "@/lib/siteOrigin";
+
+// Registry images learn their public origin from runtime configuration.
+export const dynamic = "force-dynamic";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/dashboard", "/study", "/words", "/lists", "/settings"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${getSiteOrigin()}/sitemap.xml`,
   };
 }

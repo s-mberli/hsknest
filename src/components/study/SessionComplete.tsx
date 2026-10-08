@@ -137,10 +137,9 @@ export function SessionComplete({
           variants={item}
           className="text-muted-foreground [@media(max-height:600px)]:text-sm [@media(max-height:600px)]:leading-tight"
         >
-          You reviewed {reviewed} {reviewed === 1 ? "card" : "cards"}.{" "}
           {practice
-            ? "Just practice — nothing here changed your upcoming reviews."
-            : "Nice work."}
+            ? `You practiced ${reviewed} ${reviewed === 1 ? "card" : "cards"}. Just practice — nothing here changed your upcoming reviews.`
+            : `You reviewed ${reviewed} ${reviewed === 1 ? "card" : "cards"}. Nice work.`}
         </motion.p>
         {note && (
           <motion.p variants={item} className="max-w-xs text-xs text-muted-foreground">

@@ -9,7 +9,7 @@
  * as authz.test.ts / staleSession.test.ts).
  */
 import { execSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaClient } from "@prisma/client";
@@ -71,6 +71,7 @@ function deleteTestDbFiles() {
 describe("POST /api/study/review", () => {
   beforeAll(() => {
     deleteTestDbFiles();
+    writeFileSync(TEST_DB_PATH, "");
     execSync("npx prisma db push --skip-generate --accept-data-loss", {
       env: { ...process.env, DATABASE_URL: TEST_DB_URL },
       cwd: process.cwd(),
@@ -203,6 +204,48 @@ describe("POST /api/study/review", () => {
     expect(row?.introducedAt).toBeNull(); // assumed checks must not burn the daily-new budget
   });
 
+  it("hydrates a mature MASTERED assumed check before its next Leitner review", async () => {
+    const user = await makeUser({
+      preferredAlgorithm: "LEITNER",
+      masteryThresholdDays: 10,
+    });
+    const word = await makeWord();
+    await enroll(user.id, word.id, "ASSUMED");
+    currentUserId = user.id;
+
+    const assumedReview = await reviewPOST(
+      jsonRequest({ wordId: word.id, quality: 4 })
+    );
+    expect(assumedReview.status).toBe(200);
+
+    let row = await testPrisma.userProgress.findUnique({
+      where: { userId_wordId: { userId: user.id, wordId: word.id } },
+    });
+    expect(row?.state).toBe("MASTERED");
+    expect(row?.intervalDays).toBe(30);
+    expect(row?.box).toBe(1);
+    expect((row?.srsData as Record<string, unknown> | null)?.algorithm).toBe(
+      "LEITNER"
+    );
+
+    // Bypass only the duplicate-submission guard; the API accepts this row
+    // directly and the next grade exercises MASTERED-state hydration.
+    await testPrisma.userProgress.update({
+      where: { userId_wordId: { userId: user.id, wordId: word.id } },
+      data: { lastReviewedAt: new Date(Date.now() - 10_000) },
+    });
+    const nextReview = await reviewPOST(
+      jsonRequest({ wordId: word.id, quality: 4 })
+    );
+    expect(nextReview.status).toBe(200);
+
+    row = await testPrisma.userProgress.findUnique({
+      where: { userId_wordId: { userId: user.id, wordId: word.id } },
+    });
+    expect(row?.box).toBe(5);
+    expect(row?.intervalDays).toBe(16);
+  });
+
   it("ASSUMED swipe-left restarts the card as LEARNING 1 day out", async () => {
     const user = await makeUser();
     const word = await makeWord();
@@ -258,5 +301,47 @@ describe("POST /api/study/review", () => {
     expect(res.status).toBe(200);
     const log = await testPrisma.reviewLog.findFirst({ where: { userId: user.id } });
     expect(log?.source).toBe("sentences");
+  });
+
+  it("records the active algorithm and clears stale FSRS parameters under SM-2", async () => {
+    const user = await makeUser({ preferredAlgorithm: "SM2" });
+    const word = await makeWord();
+    await testPrisma.userProgress.create({
+      data: {
+        userId: user.id,
+        wordId: word.id,
+        state: "REVIEW",
+        repetitions: 2,
+        intervalDays: 8,
+        srsData: { fsrs: { v: 1, s: 10, d: 5 } },
+      },
+    });
+    currentUserId = user.id;
+
+    const res = await reviewPOST(jsonRequest({ wordId: word.id, quality: 4 }));
+    expect(res.status).toBe(200);
+
+    const row = await testPrisma.userProgress.findUnique({
+      where: { userId_wordId: { userId: user.id, wordId: word.id } },
+    });
+    expect(row?.srsData).toEqual({ algorithm: "SM2" });
+    expect(row?.intervalDays).toBe(20);
+  });
+
+  it("records the active algorithm alongside fresh FSRS parameters", async () => {
+    const user = await makeUser({ preferredAlgorithm: "FSRS" });
+    const word = await makeWord();
+    await enroll(user.id, word.id);
+    currentUserId = user.id;
+
+    const res = await reviewPOST(jsonRequest({ wordId: word.id, quality: 4 }));
+    expect(res.status).toBe(200);
+
+    const row = await testPrisma.userProgress.findUnique({
+      where: { userId_wordId: { userId: user.id, wordId: word.id } },
+    });
+    const srsData = row?.srsData as Record<string, unknown> | null;
+    expect(srsData?.algorithm).toBe("FSRS");
+    expect(srsData?.fsrs).toBeDefined();
   });
 });

@@ -11,6 +11,8 @@ FROM node:26-alpine AS build
 WORKDIR /app
 # NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so they
 # must arrive as build args (a runtime `environment:` entry alone is too late).
+ARG NEXT_PUBLIC_APP_URL=""
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_AUDIO_BASE_URL=""
 ENV NEXT_PUBLIC_AUDIO_BASE_URL=$NEXT_PUBLIC_AUDIO_BASE_URL
 ARG NEXT_PUBLIC_SENTRY_DSN=""

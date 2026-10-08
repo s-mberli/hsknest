@@ -84,9 +84,10 @@ docker compose exec app node_modules/.bin/tsx scripts/ingest-story.ts --all --fo
 
 ## Reverse proxy (Caddy) — automatic HTTPS + HSTS
 
-The app ships baseline security headers (X-Frame-Options, X-Content-Type-Options,
-Referrer-Policy, Permissions-Policy) but **does not** set HSTS or terminate TLS —
-that belongs at the proxy. Caddy handles both with almost no config:
+The app ships baseline security headers, including HSTS, X-Frame-Options,
+X-Content-Type-Options, Referrer-Policy and Permissions-Policy. TLS termination
+belongs at the proxy; configuring HSTS there also covers proxy-generated
+responses. Caddy handles this with almost no config:
 
 ```caddy
 hsknest.example.com {
@@ -99,6 +100,15 @@ hsknest.example.com {
 Caddy provisions and renews Let's Encrypt certificates automatically. Any
 proxy works (nginx, Traefik) — the essentials are TLS termination and the HSTS
 header.
+
+Login throttling also uses the first `X-Forwarded-For` address, falling back
+to `X-Real-IP`, when the request provides one. Treat these headers as trusted
+only when the reverse proxy overwrites client-supplied values and port 3000 is
+not reachable directly from the internet. Without either header, the source
+limit is skipped while the account and process-wide limits remain active; this
+avoids putting users behind one NAT address into a shared source bucket. The
+source, account, and process limits are in-memory and apply per app process, so
+they reset on restart and do not coordinate across replicas.
 
 ## Deploying with Coolify
 

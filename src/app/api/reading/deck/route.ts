@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
 import { rateLimit } from "@/lib/rateLimit";
+import { visibleLanguageWhere } from "@/lib/ownership";
 import { readingDeckSchema } from "@/lib/validation";
 import { termKey } from "@/lib/progressMerge";
 import { ensureReadingList, resolveWordData } from "@/lib/reading/deckAdd";
@@ -20,8 +21,11 @@ export async function POST(req: Request) {
 
   const { lemma, languageId, pinyin, level, sentence, storySlug } = parsed.data;
 
-  // Validate language exists
-  const lang = await prisma.language.findUnique({ where: { id: languageId }, select: { id: true } });
+  // Only global languages and the caller's own languages are visible.
+  const lang = await prisma.language.findFirst({
+    where: { id: languageId, ...visibleLanguageWhere(userId) },
+    select: { id: true },
+  });
   if (!lang) return NextResponse.json({ error: "Invalid language" }, { status: 400 });
 
   // Shared progress by term: skip if the user already tracks this word in

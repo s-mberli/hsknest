@@ -3,6 +3,20 @@ import { expect, test } from "playwright/test";
 type TrackedEvent = { name: string; props?: Record<string, string> };
 
 test.describe("homepage tour teaser", () => {
+  test("shows the hero before hydration and keeps the tour below it", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await page.goto("/");
+    const hero = page.getByRole("heading", { name: "HSK Nest", exact: true });
+    await expect(hero).toBeVisible();
+    await expect(page.getByRole("button", { name: "Try without signing up" }).first()).toBeVisible();
+    const headingBox = await hero.boundingBox();
+    const tourBox = await page.locator('section[aria-labelledby="landing-teaser-title"]').boundingBox();
+    expect(headingBox!.y).toBeLessThan(tourBox!.y);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await context.close();
+  });
+
   test("defers media, keeps its frame stable, and supports keyboard playback activation", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.addInitScript(() => {
@@ -29,7 +43,7 @@ test.describe("homepage tour teaser", () => {
     await play.focus();
     await expect(play).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(video).toHaveAttribute("src", "/media/hsknest-tour.mp4");
+    await expect(video).toHaveAttribute("src", "/media/hsknest-tour-silent.mp4");
     await expect(video.locator("track[kind='captions']")).toHaveAttribute("src", "/media/hsknest-tour.vtt");
     await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.controls)).toBe(true);
     await expect(page.getByText(/The tour could not be played/i)).toBeVisible();
@@ -49,11 +63,11 @@ test.describe("homepage tour teaser", () => {
       w.umami = { track: (name, props) => w.__teaserTracked.push({ name, props }) };
     });
     await page.route("**/api/auth/guest", (route) => route.abort("failed"));
-    await page.route("**/media/hsknest-tour.mp4", (route) => route.abort("failed"));
+    await page.route("**/media/hsknest-tour-silent.mp4", (route) => route.abort("failed"));
     await page.goto("/");
     const video = page.locator('section[aria-labelledby="landing-teaser-title"] video');
     await page.getByRole("button", { name: "Watch the 20-second tour" }).click();
-    await expect(video).toHaveAttribute("src", "/media/hsknest-tour.mp4");
+    await expect(video).toHaveAttribute("src", "/media/hsknest-tour-silent.mp4");
 
     // Synthetic media events here isolate event wiring and deduplication. The
     // separate real-asset test below verifies native decoding and playback.
@@ -86,7 +100,7 @@ test.describe("homepage tour teaser", () => {
       w.umami = { track: (name) => w.__teaserTracked.push(name) };
     });
     page.on("request", (req) => {
-      if (new URL(req.url()).pathname === "/media/hsknest-tour.mp4") mediaRequests.push(req.url());
+      if (new URL(req.url()).pathname === "/media/hsknest-tour-silent.mp4") mediaRequests.push(req.url());
     });
 
     const posterResponse = await request.get("/media/hsknest-tour-poster.webp");
@@ -94,7 +108,7 @@ test.describe("homepage tour teaser", () => {
     expect(posterResponse.headers()["content-type"]).toMatch(/^image\/webp/);
     expect((await posterResponse.body()).byteLength).toBeGreaterThan(0);
 
-    const rangeResponse = await request.get("/media/hsknest-tour.mp4", {
+    const rangeResponse = await request.get("/media/hsknest-tour-silent.mp4", {
       headers: { Range: "bytes=0-1023" },
     });
     expect(rangeResponse.status()).toBe(206);
@@ -108,7 +122,7 @@ test.describe("homepage tour teaser", () => {
     expect(mediaRequests).toHaveLength(0);
 
     await page.getByRole("button", { name: "Watch the 20-second tour" }).click();
-    await expect(video).toHaveAttribute("src", "/media/hsknest-tour.mp4");
+    await expect(video).toHaveAttribute("src", "/media/hsknest-tour-silent.mp4");
     await expect.poll(() => mediaRequests.length).toBeGreaterThan(0);
     await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.readyState)).toBeGreaterThan(0);
     await expect.poll(async () => page.evaluate(() => (window as typeof window & { __teaserTracked: string[] }).__teaserTracked)).toContain("promo_play");

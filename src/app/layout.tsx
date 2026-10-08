@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { UTMTracker } from "@/components/UTMTracker";
+import { getSiteOrigin } from "@/lib/siteOrigin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,13 +16,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const siteOrigin = getSiteOrigin();
 const title = "HSK Nest — Mandarin Vocabulary Practice";
 const description =
   "Daily Mandarin vocabulary practice with preloaded HSK 3.0 vocabulary, 3,000 example sentences, and short Study sessions.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
+  metadataBase: new URL(siteOrigin),
   title,
   description,
   openGraph: {

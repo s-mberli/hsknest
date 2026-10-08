@@ -1,6 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -9,7 +8,7 @@ import { toast } from "sonner";
 import { GuestButton } from "@/components/auth/GuestButton";
 import { useHydrated } from "@/hooks/useHydrated";
 import { Button } from "@/components/ui/button";
-import { confirmSession } from "@/lib/authClient";
+import { signInWithCredentials } from "@/lib/authClient";
 import {
   Card,
   CardContent,
@@ -33,19 +32,20 @@ export function LoginForm({ guestEnabled }: { guestEnabled: boolean }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setLoading(false);
-
-    if (res?.error) {
-      toast.error("Invalid email or password");
-      return;
+    try {
+      const result = await signInWithCredentials(email, password);
+      if (!result.ok) {
+        toast.error(
+          result.reason === "credentials"
+            ? "Invalid email or password"
+            : "Could not confirm your sign in. Check your connection and try again."
+        );
+        return;
+      }
+      router.push("/dashboard");
+    } finally {
+      setLoading(false);
     }
-    await confirmSession();
-    router.push("/dashboard");
   }
 
   return (
