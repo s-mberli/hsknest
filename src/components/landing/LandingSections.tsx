@@ -15,7 +15,7 @@ const GITHUB_URL = "https://github.com/s-mberli/hsknest";
 
 const HSK_LEVEL_PILLS = [
   { label: "HSK 1", words: "300 words" },
-  { label: "HSK 9", words: "11,000 words total" },
+  { label: "HSK 9", words: "11,000 words" },
 ];
 
 const SAMPLE_SENTENCE = {

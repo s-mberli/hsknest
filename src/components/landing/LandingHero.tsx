@@ -8,6 +8,12 @@ import { TryFreeButton } from "@/components/landing/TryFreeButton";
 import { Button } from "@/components/ui/button";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
+const HERO_FEATURES = [
+  "3,000 example sentences with audio",
+  "Spaced repetition scheduling",
+  "Gesture-first swipe UX",
+];
+
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   visible: {
@@ -33,7 +39,7 @@ export function LandingHero() {
     : fadeUp;
 
   return (
-    <section aria-label="Introduction" className="relative flex min-h-0 flex-1 items-start overflow-hidden px-6 py-12 sm:min-h-[85svh] sm:items-center sm:py-24">
+    <section aria-label="Introduction" className="relative flex min-h-0 flex-1 items-start overflow-hidden px-5 pb-12 pt-10 sm:px-6 sm:min-h-[85svh] sm:items-center sm:py-24">
       <div
         aria-hidden="true"
         className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_60%)]"
@@ -44,7 +50,7 @@ export function LandingHero() {
       />
 
       <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 text-center lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:text-left">
-        <div className="space-y-7">
+        <div className="space-y-6 sm:space-y-7">
           <motion.div
             initial={false}
             animate={reducedMotion ? undefined : "visible"}
@@ -73,7 +79,7 @@ export function LandingHero() {
             animate={reducedMotion ? undefined : "visible"}
             variants={safeFadeUp}
             transition={{ delay: 0.12 }}
-            className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl"
+            className="mx-auto max-w-md text-balance text-[1.375rem] font-semibold leading-snug tracking-tight text-primary sm:max-w-none sm:text-3xl lg:mx-0"
           >
             Daily Chinese vocabulary practice, ready when you are.
           </motion.p>
@@ -89,16 +95,13 @@ export function LandingHero() {
               Preloaded HSK 3.0 vocabulary and short daily Study sessions for
               building a Mandarin habit without assembling your own decks.
             </p>
-            <ul className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 lg:justify-start">
-              <li className="flex items-center gap-2">
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> 3,000 example sentences &amp; Mandarin pronunciation audio
-              </li>
-              <li className="flex items-center gap-2">
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Spaced repetition scheduling
-              </li>
-              <li className="flex items-center gap-2">
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" /> Gesture-first swipe UX
-              </li>
+            <ul className="mx-auto mt-5 flex w-fit flex-col gap-2.5 text-left lg:mx-0">
+              {HERO_FEATURES.map((feature) => (
+                <li key={feature} className="flex items-start gap-2.5">
+                  <span aria-hidden className="mt-[0.6em] size-1.5 shrink-0 rounded-full bg-primary" />
+                  {feature}
+                </li>
+              ))}
             </ul>
           </motion.div>
 
@@ -143,12 +146,13 @@ export function LandingHero() {
             transition={{ delay: 0.25 }}
             className="text-sm text-muted-foreground"
           >
-            14-day hosted trial · €10/month ·{" "}
+            <span className="whitespace-nowrap">14-day hosted trial · €10/month</span>
+            <span aria-hidden="true" className="hidden min-[400px]:inline"> · </span>
             <a
               href="https://github.com/s-mberli/hsknest"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-foreground"
+              className="mt-1 block underline underline-offset-2 hover:text-foreground min-[400px]:mt-0 min-[400px]:inline"
             >
               self-host free, forever
             </a>
@@ -160,7 +164,7 @@ export function LandingHero() {
           animate={reducedMotion ? undefined : "visible"}
           variants={safeFadeUp}
           transition={{ delay: 0.3 }}
-          className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-none"
+          className="mx-auto hidden w-full max-w-md sm:block lg:mx-0 lg:max-w-none"
         >
           <div className="mx-auto max-w-sm lg:max-w-md">
             <FlipCard />
