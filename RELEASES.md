@@ -8,6 +8,13 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Homepage on phones: feature bullets no longer leave a stray dot when a line
+  wraps, phones show one compact demo card instead of two stacked ones, and
+  spacing/pricing line are tightened so the sign-up buttons sit higher.
+- Security: Next.js 16.4.0 → 16.4.3 (critical advisory), plus patched vite,
+  zod and fast-uri. CI's dependency audit is green again, which was blocking
+  every Dependabot PR.
+
 - Fixed three places where the app conflated "in your deck" with "you know
   it," or hit its own limits without saying so: (1) Reading Mode's coverage
   badge counted enrolled-but-never-studied words as known, so enrolling a
