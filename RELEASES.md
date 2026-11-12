@@ -8,6 +8,16 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Installable on phones: a web app manifest and home-screen icons mean
+  "Add to Home screen" now gives HSK Nest its own icon and a standalone
+  window. No service worker and no offline mode — that is a separate decision.
+- Homepage hero says what you get (all 11,000 HSK words, a few minutes a
+  day, try in ten seconds) instead of describing the interface, and the guest
+  prompts no longer talk about an "FSRS memory model".
+- Opening Study before choosing a level sent you to a "You've crushed all
+  your flashcards!" screen; it now goes to level selection.
+- `docs/launch/ads-kit.md`: copy, tracking links and a pre-flight checklist
+  for a small paid test.
 - Homepage on phones: feature bullets no longer leave a stray dot when a line
   wraps, phones show one compact demo card instead of two stacked ones, and
   spacing/pricing line are tightened so the sign-up buttons sit higher.

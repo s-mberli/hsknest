@@ -23,7 +23,7 @@ export function UpgradeModal({
   isOpen,
   onClose,
   title = "Save your progress",
-  description = "Create a free account to sync your FSRS memory model across your phone and desktop.",
+  description = "Create a free account to keep your progress and continue on any device.",
   canClose = true,
 }: UpgradeModalProps) {
   const router = useRouter();
