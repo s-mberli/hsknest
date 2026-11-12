@@ -16,8 +16,6 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
   prompts no longer talk about an "FSRS memory model".
 - Opening Study before choosing a level sent you to a "You've crushed all
   your flashcards!" screen; it now goes to level selection.
-- `docs/launch/ads-kit.md`: copy, tracking links and a pre-flight checklist
-  for a small paid test.
 - Homepage on phones: feature bullets no longer leave a stray dot when a line
   wraps, phones show one compact demo card instead of two stacked ones, and
   spacing/pricing line are tightened so the sign-up buttons sit higher.
