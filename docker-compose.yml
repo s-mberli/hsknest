@@ -12,7 +12,11 @@ services:
         NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Loopback only: a reverse proxy on this host (Caddy, nginx) reaches the
+      # app here, and Coolify's Traefik uses the Docker network. Publishing on
+      # 0.0.0.0 would let clients bypass the proxy (no TLS, spoofable
+      # client-IP headers that defeat the rate limits).
+      - "127.0.0.1:3000:3000"
     environment:
       # SQLite database on the named volume mounted at /data.
       DATABASE_URL: file:/data/recall.db
