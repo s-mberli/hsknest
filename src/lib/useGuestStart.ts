@@ -13,13 +13,14 @@ const TIMEOUT_MS = 15_000;
  * Shared guest-start flow for every "try it" button: creates a throwaway
  * account server-side, signs in, and opens the dashboard.
  *
- * - Someone already signed in (a guest returning to /pricing or /login) is
- *   sent to the dashboard instead. Creating a second guest would replace
- *   their session and lose the first guest's progress for good.
+ * - The server answers `{ existing: true }` for a visitor who already has a
+ *   valid session, and the button simply opens their dashboard.
  * - A ref guards against two taps in the same frame; React state alone is
  *   read stale by both.
- * - On success the button stays busy through navigation; it is released
- *   only on failure.
+ * - One deadline covers every stage (guest creation, sign-in, session
+ *   check). When it passes, the button is released with a message and the
+ *   late stages are ignored, so a timed-out attempt never navigates.
+ * - On success the button stays busy through navigation.
  */
 export function useGuestStart() {
   const router = useRouter();
@@ -32,47 +33,62 @@ export function useGuestStart() {
     setLoading(true);
     trackEvent("guest_start_click");
 
+    let settled = false;
+    const controller = new AbortController();
     const fail = (message: string) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(deadline);
       toast.error(message);
       inFlight.current = false;
       setLoading(false);
     };
-
-    const existing = await getSession().catch(() => null);
-    if (existing?.user) {
+    const succeed = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(deadline);
       router.push("/dashboard");
-      return;
-    }
+      router.refresh();
+    };
+    const deadline = setTimeout(() => {
+      controller.abort();
+      fail("This is taking too long. Check your connection and try again.");
+    }, TIMEOUT_MS);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {
       const res = await fetch("/api/auth/guest", {
         method: "POST",
         signal: controller.signal,
       });
+      if (settled) return;
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         fail(data.error ?? "Could not start, please try again.");
         return;
       }
-      const { email, password } = await res.json();
-      const login = await signIn("credentials", { email, password, redirect: false });
+      if (data.existing) {
+        succeed();
+        return;
+      }
+      const login = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+      if (settled) return;
       if (login?.error) {
         fail("Could not start, please try again.");
         return;
       }
       const session = await getSession();
+      if (settled) return;
       if (!session?.user) {
         fail("Could not confirm your session. Please try again.");
         return;
       }
-      router.push("/dashboard");
-      router.refresh();
+      succeed();
     } catch {
       fail("Could not start the guest session. Check your connection and try again.");
-    } finally {
-      clearTimeout(timeout);
     }
   }
 

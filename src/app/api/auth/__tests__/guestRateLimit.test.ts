@@ -6,9 +6,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/registration", () => ({ isGuestModeEnabled: () => true }));
+vi.mock("@/lib/session", () => ({ getCurrentUserId: vi.fn(async () => null) }));
 vi.mock("@/lib/rateLimit", () => ({ rateLimit: vi.fn(() => false) }));
 
 import { rateLimit } from "@/lib/rateLimit";
+import { getCurrentUserId } from "@/lib/session";
 import { POST } from "@/app/api/auth/guest/route";
 
 function guestRequest(headers: Record<string, string> = {}) {
@@ -38,5 +40,13 @@ describe("POST /api/auth/guest rate limiting", () => {
     expect(res.status).toBe(429);
     const keys = vi.mocked(rateLimit).mock.calls.map(([key]) => key);
     expect(keys).toEqual(["guest:global"]);
+  });
+
+  it("returns the existing session instead of creating a guest", async () => {
+    vi.mocked(getCurrentUserId).mockResolvedValueOnce("user-1");
+    const res = await POST(guestRequest({ "x-forwarded-for": "203.0.113.7" }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ existing: true });
+    expect(rateLimit).not.toHaveBeenCalled();
   });
 });

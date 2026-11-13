@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { isGuestModeEnabled } from "@/lib/registration";
+import { getCurrentUserId } from "@/lib/session";
 import { TRIAL_DAYS } from "@/lib/subscription";
 
 /**
@@ -19,6 +20,14 @@ export async function POST(req: Request) {
   // has no funnel to convert into, so it's disabled by default there.
   if (!isGuestModeEnabled()) {
     return NextResponse.json({ error: "Not available" }, { status: 404 });
+  }
+
+  // Someone with a valid session (a guest coming back via /pricing or
+  // /login) keeps it: issuing a new guest would replace their cookie and
+  // strand the old guest's progress. getCurrentUserId also rejects revoked
+  // sessions, which a client-side session check cannot see.
+  if (await getCurrentUserId()) {
+    return NextResponse.json({ existing: true });
   }
 
   // Per-source limit, only when a trusted proxy supplies the client address
