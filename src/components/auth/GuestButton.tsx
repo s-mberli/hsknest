@@ -1,11 +1,7 @@
 "use client";
 
-import { getSession, signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
+import { useGuestStart } from "@/lib/useGuestStart";
 
 /**
  * "Try as guest" — creates a throwaway account server-side and signs straight
@@ -15,41 +11,7 @@ import { Button } from "@/components/ui/button";
  * defense in depth.
  */
 export function GuestButton() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  async function tryAsGuest() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/guest", { method: "POST" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Could not start a guest session.");
-        return;
-      }
-      const { email, password } = await res.json();
-      const login = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (login?.error) {
-        toast.error("Could not start a guest session.");
-        return;
-      }
-      const session = await getSession();
-      if (!session?.user) {
-        toast.error("Could not confirm your guest session. Please try again.");
-        return;
-      }
-      router.push("/dashboard");
-      router.refresh();
-    } catch {
-      toast.error("Could not start the guest session. Check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { start: tryAsGuest, loading } = useGuestStart();
 
   return (
     <div className="mt-4 space-y-3">

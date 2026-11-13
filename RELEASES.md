@@ -8,6 +8,16 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- A signed-in guest who taps a "try it" button again (on pricing, login or
+  signup) now returns to their dashboard instead of being swapped for a new
+  guest, which lost the first guest's progress for good. Both guest buttons
+  share one flow, so the double-tap guard and timeout apply to both.
+- Saving a guest account now says so when the network drops, instead of
+  silently re-enabling the button.
+- Guest accounts are created with a cheaper password hash (the password is
+  already random), so a burst of visitors does not queue on the CPU.
+- List creation and list enrollment are rate-limited per account.
+- The operator page also requires a verified email address.
 - Guest start no longer caps a whole mobile network at five guests an hour:
   the per-address limit is 30 an hour, applies only when the proxy supplies
   the client address, and the site-wide cap still bounds abuse. Previously a

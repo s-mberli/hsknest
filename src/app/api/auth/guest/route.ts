@@ -45,7 +45,9 @@ export async function POST(req: Request) {
   const suffix = randomBytes(6).toString("hex");
   const email = `guest-${suffix}@guest.local`;
   const password = randomBytes(18).toString("base64url");
-  const passwordHash = await hash(password, 12);
+  // The password is 144 random bits, so a slow hash adds no protection here,
+  // only CPU per visitor. Upgrading re-hashes the real password at cost 12.
+  const passwordHash = await hash(password, 4);
 
   await prisma.user.create({
     data: {
