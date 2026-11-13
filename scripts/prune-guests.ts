@@ -1,7 +1,8 @@
 /**
  * Delete stale guest accounts: created more than STALE_MS ago with no review
- * since. Guests are throwaway by design (Settings says so), so this only
- * reclaims rows nobody can log back into anyway. Run at container boot from
+ * and no Reading Mode session since. Guests are throwaway by design
+ * (Settings says so), so this only reclaims rows nobody can log back into
+ * anyway. Run at container boot from
  * docker-entrypoint.sh; safe to run any time.
  *
  * STALE_MS MUST stay >= the NextAuth session `maxAge` in src/lib/auth.ts
@@ -19,6 +20,8 @@
  */
 import { PrismaClient } from "@prisma/client";
 
+import { pruneStaleGuests } from "../src/lib/guestPrune";
+
 const prisma = new PrismaClient();
 
 const SESSION_MAX_AGE_DAYS = 30; // must match session.maxAge in src/lib/auth.ts
@@ -27,30 +30,12 @@ const STALE_MS = (SESSION_MAX_AGE_DAYS + SAFETY_MARGIN_DAYS) * 24 * 60 * 60 * 10
 
 async function main() {
   const cutoff = new Date(Date.now() - STALE_MS);
-
-  const staleGuests = await prisma.user.findMany({
-    where: {
-      email: { endsWith: "@guest.local" },
-      createdAt: { lt: cutoff },
-      reviewLogs: { none: { reviewedAt: { gte: cutoff } } },
-    },
-    select: { id: true },
-  });
-
-  if (staleGuests.length === 0) {
-    console.log("→ No stale guest accounts.");
-    return;
-  }
-
-  const ids = staleGuests.map((u) => u.id);
-  await prisma.$transaction([
-    // Guest-created lists/languages don't cascade from User (optional
-    // relation), so remove them first to avoid orphaned rows.
-    prisma.wordList.deleteMany({ where: { createdById: { in: ids } } }),
-    prisma.language.deleteMany({ where: { createdById: { in: ids } } }),
-    prisma.user.deleteMany({ where: { id: { in: ids } } }),
-  ]);
-  console.log(`→ Pruned ${ids.length} stale guest account(s).`);
+  const pruned = await pruneStaleGuests(prisma, cutoff);
+  console.log(
+    pruned === 0
+      ? "→ No stale guest accounts."
+      : `→ Pruned ${pruned} stale guest account(s).`
+  );
 }
 
 main()

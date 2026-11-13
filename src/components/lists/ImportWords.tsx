@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { GUEST_IMPORT_BLOCKED_MESSAGE } from "@/lib/guest";
 import { parseDelimited, type ColumnRole } from "@/lib/import";
 import { WORD_LIMITS } from "@/lib/validation";
 import { cn } from "@/lib/utils";
@@ -130,6 +131,15 @@ export function ImportWords({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, delimiter, columns }),
       });
+      if (res.status === 403) {
+        const body: unknown = await res.json().catch(() => null);
+        const message =
+          body && typeof body === "object" && "error" in body && typeof body.error === "string"
+            ? body.error
+            : GUEST_IMPORT_BLOCKED_MESSAGE;
+        toast.error(message);
+        return;
+      }
       if (!res.ok) throw new Error("Import failed");
       const data: unknown = await res.json();
       if (!data || typeof data !== "object" || !("added" in data) ||

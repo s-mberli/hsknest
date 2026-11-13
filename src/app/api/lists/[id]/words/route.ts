@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { logApiError, requireUser } from "@/lib/apiRoute";
+import { GUEST_IMPORT_BLOCKED_MESSAGE } from "@/lib/guest";
+import { isGuestUser } from "@/lib/guestAccess";
 import { ownedListWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
@@ -48,6 +50,11 @@ export async function POST(
   // route). Single-word adds are the AddWordRow UI path — one POST per word
   // — so give them a generous bucket a human hand-building a list won't hit.
   const isBulk = words.length > 1;
+  // Bulk add writes up to 2000 rows like import, so it needs a saved account
+  // for the same reason; guests can still add words one at a time.
+  if (isBulk && (await isGuestUser(userId))) {
+    return NextResponse.json({ error: GUEST_IMPORT_BLOCKED_MESSAGE }, { status: 403 });
+  }
   if (
     !rateLimit(
       isBulk ? `words-bulk:${userId}` : `words-single:${userId}`,

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { logApiError } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { clientAddress } from "@/lib/clientAddress";
 import { rateLimit } from "@/lib/rateLimit";
 import { verifyTokenSchema } from "@/lib/validation";
 
@@ -17,9 +18,11 @@ function hashToken(token: string): string {
  */
 export async function GET(request: Request) {
   const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`verify:${ip}`, 20, 60 * 1000)) {
+  const ip = clientAddress(request);
+  if (
+    (ip && !rateLimit(`verify:${ip}`, 20, 60 * 1000)) ||
+    !rateLimit("verify:global", 1000, 60 * 1000)
+  ) {
     return NextResponse.redirect(new URL("/login?verify=error", base));
   }
 

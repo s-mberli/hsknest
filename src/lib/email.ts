@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 
+import { rateLimit } from "@/lib/rateLimit";
 import { isSelfHosted } from "@/lib/selfHosted";
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -296,7 +297,29 @@ export async function sendUpgradeConfirmationEmail(email: string) {
   }
 }
 
+const DEFAULT_VERIFICATION_DAILY_CAP = 200;
+
+/**
+ * Process-wide ceiling on verification emails per 24 hours. Signup, guest
+ * upgrade, guest checkout and resend all send to an address the caller
+ * chose, so without one shared cap a script could drain the email-provider
+ * quota (blocking password resets too) or use the app to mail strangers.
+ * Configurable via VERIFICATION_EMAIL_DAILY_CAP. In-memory like every other
+ * limit here, so a restart resets the window.
+ */
+export function verificationDailyCap(): number {
+  const raw = Number(process.env.VERIFICATION_EMAIL_DAILY_CAP);
+  return Number.isSafeInteger(raw) && raw > 0 ? raw : DEFAULT_VERIFICATION_DAILY_CAP;
+}
+
 export async function sendVerificationEmail(email: string, token: string) {
+  if (!rateLimit("verification-email:global", verificationDailyCap(), 24 * 60 * 60 * 1000)) {
+    // Verification is soft (never gates login), so skipping is safe: the
+    // account still works and the user can resend once the window resets.
+    console.warn("[email] Daily verification email cap reached; verification email not sent.");
+    return { success: false, capped: true, error: new Error("verification email cap reached") };
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const verifyLink = `${baseUrl}/api/auth/verify?token=${token}`;
 

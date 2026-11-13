@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
+import { guestSaveAllowed } from "@/lib/guestAccess";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { getStripe } from "@/lib/stripe";
@@ -23,7 +24,10 @@ export async function POST(req: Request) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
 
-  if (!rateLimit(`billing:${userId}`, 10, 60 * 60 * 1000)) {
+  if (
+    !rateLimit(`billing:${userId}`, 10, 60 * 60 * 1000) ||
+    !guestSaveAllowed(req)
+  ) {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
