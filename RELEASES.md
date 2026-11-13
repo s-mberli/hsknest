@@ -8,6 +8,20 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Phone tap targets are at least 44px: session exit, the card speaker
+  buttons, the report-word flag, the guest "Save my progress" banner buttons
+  and the onboarding "Back" link. Icons keep their size.
+- Onboarding level and language choices announce their selected state to
+  screen readers (`aria-pressed`).
+- The onboarding level picker explains HSK: "HSK is the official Chinese
+  proficiency scale, from 1 (beginner) to 9."
+- Onboarding no longer continues when the chosen level could not be set up.
+  It shows an error and stays on the picker, instead of starting on HSK 1.
+- Saving a guest account with an email that already has an account now
+  offers "Sign in instead" in the error message.
+- Pricing page no longer says "Lock in this price forever".
+- The finished-reviews screen says "Nothing left to review right now."
+  instead of "Your spaced-repetition queue is empty for now."
 - Guests must save their account before importing words or adding many words
   at once. Import and bulk word add return "Save your account first to import
   words", and the list page shows that message with a link to save the

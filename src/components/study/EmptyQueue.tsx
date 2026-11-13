@@ -106,7 +106,7 @@ export function EmptyQueue({
             : "These games practice words you've already learned. Study a handful in flashcards first, then come back and they'll unlock."
           : capReached
             ? "You've reached your daily new-word limit — that's your own setting, not a wall. Reviews still come through the moment they're due, and you can raise the limit any time."
-            : "Your spaced-repetition queue is empty for now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
+            : "Nothing left to review right now. Keep your words fresh with a practice round, add new words, or take a break until your next reviews are due."}
       </p>
 
       {!practice && tomorrowDue !== null && (
