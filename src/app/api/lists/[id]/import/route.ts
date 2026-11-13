@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { logApiError, parseBody, requireUser } from "@/lib/apiRoute";
+import { GUEST_IMPORT_BLOCKED_MESSAGE } from "@/lib/guest";
+import { isGuestUser } from "@/lib/guestAccess";
 import { ownedListWhere } from "@/lib/ownership";
 import { prisma } from "@/lib/prisma";
 import { parseDelimited } from "@/lib/import";
@@ -25,6 +27,12 @@ export async function POST(
 ) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Guests are anonymous and free to create, so a per-account limit doesn't
+  // bound how many rows one client can write. Importing needs a saved account.
+  if (await isGuestUser(userId)) {
+    return NextResponse.json({ error: GUEST_IMPORT_BLOCKED_MESSAGE }, { status: 403 });
+  }
 
   // Imports are heavy (up to 2000 rows each): 20/hour is generous for a
   // human and a wall for a script hammering the DB.

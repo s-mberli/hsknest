@@ -9,6 +9,7 @@ import { ListManageBar } from "@/components/lists/ListManageBar";
 import { ListWordsView } from "@/components/lists/ListWordsView";
 import { UnenrollButton } from "@/components/lists/UnenrollButton";
 import { computeListDetailStats } from "@/lib/listDetailStats";
+import { isGuestEmail } from "@/lib/guest";
 import { directProgressCount } from "@/lib/listMembership";
 import { prisma } from "@/lib/prisma";
 import { termKey } from "@/lib/progressMerge";
@@ -35,6 +36,12 @@ export default async function ListDetailPage({
   if (!list) notFound();
 
   const isOwner = list.createdById === userId;
+  const isGuest =
+    isOwner &&
+    isGuestEmail(
+      (await prisma.user.findUnique({ where: { id: userId }, select: { email: true } }))
+        ?.email
+    );
 
   // Progress is shared per term+language: fetch all rows in this language so
   // a twin word tracked via another list still shows its strength here.
@@ -185,6 +192,7 @@ export default async function ListDetailPage({
           words={words}
           listId={list.id}
           isOwner={isOwner}
+          isGuest={isGuest}
           languageCode={list.language.code}
           languageName={list.language.name}
         />
