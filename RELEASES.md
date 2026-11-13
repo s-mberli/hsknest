@@ -8,6 +8,8 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- New list form can no longer be submitted before the language list has
+  loaded, which sent an empty language and failed with a generic error.
 - A signed-in guest who taps a "try it" button again (on pricing, login or
   signup) now returns to their dashboard instead of being swapped for a new
   guest, which lost the first guest's progress for good. Both guest buttons
