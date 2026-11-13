@@ -264,7 +264,7 @@ function StudySession({
             <p className="text-center text-xs text-muted-foreground">
               {current.preview
                 ? "First look at a new word — no grading yet"
-                : "Tap to reveal · at the answer, swipe or use ← → ↑ ↓ to grade"}
+                : "Tap to reveal, then swipe: → Good · ← Again · ↑ Easy · ↓ Hard"}
             </p>
           </div>
         )}

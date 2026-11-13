@@ -8,6 +8,14 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Guest start no longer caps a whole mobile network at five guests an hour:
+  the per-address limit is 30 an hour, applies only when the proxy supplies
+  the client address, and the site-wide cap still bounds abuse. Previously a
+  missing header put every visitor into one shared bucket.
+- "Try without signing up" can no longer create two guest accounts from a
+  double tap, gives up after 15 seconds with a message instead of spinning,
+  and records a `guest_start_click` event so the main entry point is measured.
+- The study hint on phones names the swipe directions instead of arrow keys.
 - Installable on phones: a web app manifest and home-screen icons mean
   "Add to Home screen" now gives HSK Nest its own icon and a standalone
   window. No service worker and no offline mode — that is a separate decision.
