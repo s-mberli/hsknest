@@ -61,7 +61,9 @@ export async function proxy(req: NextRequest) {
 export const config = {
   // Skip API routes, static/image assets, common public metadata files, and
   // the auth pages themselves (avoid redirect loops on /login etc.).
+  // /unsubscribe works without login, so a stale cookie must not bounce it
+  // to /login and drop the signed link parameters.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|icon.png|login|signup|forgot-password|reset-password).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|icon.png|login|signup|forgot-password|reset-password|unsubscribe).*)",
   ],
 };
