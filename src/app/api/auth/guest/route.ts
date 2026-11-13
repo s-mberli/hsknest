@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { isGuestModeEnabled } from "@/lib/registration";
+import { getCurrentUserId } from "@/lib/session";
 import { TRIAL_DAYS } from "@/lib/subscription";
 
 /**
@@ -21,15 +22,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not available" }, { status: 404 });
   }
 
-  // Same limiter pattern as signup: 5 guest accounts per hour per IP.
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  // Global fallback cap: X-Forwarded-For is client-controlled unless a
-  // trusted proxy overwrites it, so per-IP limits alone can be rotated
-  // around. 100/hour bounds worst-case abuse while staying far above any
-  // legitimate launch-day burst.
+  // Someone with a valid session (a guest coming back via /pricing or
+  // /login) keeps it: issuing a new guest would replace their cookie and
+  // strand the old guest's progress. getCurrentUserId also rejects revoked
+  // sessions, which a client-side session check cannot see.
+  if (await getCurrentUserId()) {
+    return NextResponse.json({ existing: true });
+  }
+
+  // Per-source limit, only when a trusted proxy supplies the client address
+  // (same rule as login in src/lib/auth.ts). Mobile carriers put many phones
+  // behind one address, so the ceiling sits well above one person's use.
+  // Without the header there is no per-source bucket at all: a shared
+  // "unknown" key would cap the whole site at the per-source number.
+  const source =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip")?.trim() ||
+    "";
+  // The global cap bounds abuse when the per-source header is rotated or
+  // absent, and stays far above a realistic launch-day burst.
   if (
-    !rateLimit(`guest:${ip}`, 5, 60 * 60 * 1000) ||
+    (source && !rateLimit(`guest:${source}`, 30, 60 * 60 * 1000)) ||
     !rateLimit("guest:global", 10000, 60 * 60 * 1000)
   ) {
     return NextResponse.json(
@@ -41,7 +54,9 @@ export async function POST(req: Request) {
   const suffix = randomBytes(6).toString("hex");
   const email = `guest-${suffix}@guest.local`;
   const password = randomBytes(18).toString("base64url");
-  const passwordHash = await hash(password, 12);
+  // The password is 144 random bits, so a slow hash adds no protection here,
+  // only CPU per visitor. Upgrading re-hashes the real password at cost 12.
+  const passwordHash = await hash(password, 4);
 
   await prisma.user.create({
     data: {

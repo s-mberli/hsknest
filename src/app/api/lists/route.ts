@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { parseBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 import { visibleLanguageWhere, visibleListWhere } from "@/lib/ownership";
 import { createListSchema } from "@/lib/validation";
 
@@ -60,6 +61,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Generous for a person, a wall for a script creating lists and languages.
+  if (!rateLimit(`list-create:${userId}`, 30, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+  }
 
   const parsed = await parseBody(req, createListSchema);
   if (parsed instanceof NextResponse) return parsed;

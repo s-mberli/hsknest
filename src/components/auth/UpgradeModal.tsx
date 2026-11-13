@@ -23,7 +23,7 @@ export function UpgradeModal({
   isOpen,
   onClose,
   title = "Save your progress",
-  description = "Create a free account to sync your FSRS memory model across your phone and desktop.",
+  description = "Create a free account to keep your progress and continue on any device.",
   canClose = true,
 }: UpgradeModalProps) {
   const router = useRouter();
@@ -62,6 +62,8 @@ export function UpgradeModal({
       trackEvent("guest_upgrade_complete");
       onClose();
       router.refresh();
+    } catch {
+      toast.error("Could not reach the server. Your account was not saved yet, please try again.");
     } finally {
       setLoading(false);
     }

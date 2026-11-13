@@ -18,9 +18,17 @@ export default async function AdminPage() {
 
   const me = await prisma.user.findUnique({
     where: { id: userId },
-    select: { email: true },
+    select: { email: true, emailVerified: true },
   });
-  if (!me || me.email.toLowerCase() !== adminEmail.toLowerCase()) notFound();
+  // Require a verified address: otherwise anyone could claim ADMIN_EMAIL on
+  // an unverified account while no real account holds it.
+  if (
+    !me ||
+    !me.emailVerified ||
+    me.email.toLowerCase() !== adminEmail.toLowerCase()
+  ) {
+    notFound();
+  }
 
   const now = new Date();
   const in7d = new Date(now.getTime() + 7 * 86_400_000);

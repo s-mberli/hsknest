@@ -1,11 +1,7 @@
 "use client";
 
-import { getSession, signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
+import { useGuestStart } from "@/lib/useGuestStart";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,41 +15,7 @@ export function TryFreeButton({
   className?: string;
   children?: React.ReactNode;
 }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  async function start() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/guest", { method: "POST" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Could not start, please try again.");
-        return;
-      }
-      const { email, password } = await res.json();
-      const login = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (login?.error) {
-        toast.error("Could not start, please try again.");
-        return;
-      }
-      const session = await getSession();
-      if (!session?.user) {
-        toast.error("Could not confirm your session. Please try again.");
-        return;
-      }
-      router.push("/dashboard");
-      router.refresh();
-    } catch {
-      toast.error("Could not start the guest session. Check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { start, loading } = useGuestStart();
 
   return (
     <Button

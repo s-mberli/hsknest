@@ -72,7 +72,7 @@ export default function NewListPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (savingRef.current) return;
+    if (savingRef.current || loadingLangs) return;
     if (!name.trim()) {
       toast.error("Give your list a name.");
       return;
@@ -248,7 +248,9 @@ export default function NewListPage() {
               <Button asChild variant="ghost" type="button">
                 <Link href="/lists">Cancel</Link>
               </Button>
-              <Button type="submit" disabled={saving}>
+              {/* Until languages load, languageId is empty and the server would
+                  reject the list, so the form cannot be submitted yet. */}
+              <Button type="submit" disabled={saving || loadingLangs}>
                 {saving ? "Creating…" : "Create list"}
               </Button>
             </div>

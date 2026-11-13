@@ -8,6 +8,34 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- New list form can no longer be submitted before the language list has
+  loaded, which sent an empty language and failed with a generic error.
+- A signed-in guest who taps a "try it" button again (on pricing, login or
+  signup) now returns to their dashboard instead of being swapped for a new
+  guest, which lost the first guest's progress for good. Both guest buttons
+  share one flow, so the double-tap guard and timeout apply to both.
+- Saving a guest account now says so when the network drops, instead of
+  silently re-enabling the button.
+- Guest accounts are created with a cheaper password hash (the password is
+  already random), so a burst of visitors does not queue on the CPU.
+- List creation and list enrollment are rate-limited per account.
+- The operator page also requires a verified email address.
+- Guest start no longer caps a whole mobile network at five guests an hour:
+  the per-address limit is 30 an hour, applies only when the proxy supplies
+  the client address, and the site-wide cap still bounds abuse. Previously a
+  missing header put every visitor into one shared bucket.
+- "Try without signing up" can no longer create two guest accounts from a
+  double tap, gives up after 15 seconds with a message instead of spinning,
+  and records a `guest_start_click` event so the main entry point is measured.
+- The study hint on phones names the swipe directions instead of arrow keys.
+- Installable on phones: a web app manifest and home-screen icons mean
+  "Add to Home screen" now gives HSK Nest its own icon and a standalone
+  window. No service worker and no offline mode — that is a separate decision.
+- Homepage hero says what you get (all 11,000 HSK words, a few minutes a
+  day, try in ten seconds) instead of describing the interface, and the guest
+  prompts no longer talk about an "FSRS memory model".
+- Opening Study before choosing a level sent you to a "You've crushed all
+  your flashcards!" screen; it now goes to level selection.
 - Homepage on phones: feature bullets no longer leave a stray dot when a line
   wraps, phones show one compact demo card instead of two stacked ones, and
   spacing/pricing line are tightened so the sign-up buttons sit higher.

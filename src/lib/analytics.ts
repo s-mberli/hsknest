@@ -22,7 +22,8 @@ export type FunnelEvent =
   | "list_created"
   | "promo_play"
   | "promo_complete"
-  | "promo_try_click";
+  | "promo_try_click"
+  | "guest_start_click";
 
 export function trackEvent(event: FunnelEvent): void {
   try {

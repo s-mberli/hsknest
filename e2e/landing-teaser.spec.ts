@@ -87,9 +87,11 @@ test.describe("homepage tour teaser", () => {
       "promo_play",
       "promo_complete",
       "promo_try_click",
+      // Every guest entry point records the click itself, teaser or not.
+      "guest_start_click",
     ]);
     tracked.push(...(await page.evaluate(() => (window as typeof window & { __teaserTracked: TrackedEvent[] }).__teaserTracked)));
-    expect(tracked.map(({ name }) => name)).toEqual(["promo_play", "promo_complete", "promo_try_click"]);
+    expect(tracked.map(({ name }) => name)).toEqual(["promo_play", "promo_complete", "promo_try_click", "guest_start_click"]);
   });
 
   test("loads and plays the approved assets with native controls, captions, and byte-range delivery", async ({ page, request }) => {
