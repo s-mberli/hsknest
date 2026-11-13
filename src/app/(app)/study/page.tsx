@@ -19,9 +19,13 @@ export default async function StudyPage() {
       showReading: true,
       soundEffects: true,
       autoPlayPronunciation: true,
+      targetLanguageId: true,
     },
   });
   if (!user) redirect("/login");
+  // No language picked yet means no deck: an empty queue here would read as
+  // "all done", which is untrue for someone who has not started.
+  if (!user.targetLanguageId) redirect("/onboarding");
 
   // Expired hosted trial: studying is locked (dashboard shows the upgrade path).
   const sub = await getSubscriptionInfo(userId);

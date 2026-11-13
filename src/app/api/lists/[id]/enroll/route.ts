@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { logApiError, parseOptionalBody, requireUser } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 import { termKey } from "@/lib/progressMerge";
 import { visibleListWhere } from "@/lib/ownership";
 import { enrollSchema } from "@/lib/validation";
@@ -12,6 +13,12 @@ export async function POST(
 ) {
   const userId = await requireUser();
   if (userId instanceof NextResponse) return userId;
+
+  // Each enroll can create a progress row per word (thousands for the larger
+  // HSK lists), so cap repeats well above any real use.
+  if (!rateLimit(`enroll:${userId}`, 60, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Rate limited" }, { status: 429 });
+  }
 
   const { id } = await params;
 

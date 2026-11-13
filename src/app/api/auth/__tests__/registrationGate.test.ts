@@ -18,6 +18,7 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
+vi.mock("@/lib/session", () => ({ getCurrentUserId: vi.fn(async () => null) }));
 vi.mock("@/lib/rateLimit", () => ({
   rateLimit: vi.fn(() => true),
 }));

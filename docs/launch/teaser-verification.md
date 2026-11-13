@@ -48,6 +48,7 @@ deduplicated per mounted page visit, not stored across visits.
 | `promo_play` | first `playing` event | Browser reports playback began |
 | `promo_complete` | first `ended` event | Playback reached the end |
 | `promo_try_click` | first section CTA activation | Guest-entry intent |
+| `guest_start_click` | any guest-start button activation, teaser included | Guest-entry intent from every entry point |
 
 Pause/resume and replay do not inflate counts. CTA intent is not successful guest
 creation. Existing first_review_complete records one review, not a completed Study

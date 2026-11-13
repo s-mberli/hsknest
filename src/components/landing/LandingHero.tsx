@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
 const HERO_FEATURES = [
-  "3,000 example sentences with audio",
-  "Spaced repetition scheduling",
-  "Gesture-first swipe UX",
+  "Start in ten seconds, no signup and no card",
+  "Pinyin, pronunciation audio and 3,000 example sentences",
+  "Each word comes back just before you would forget it",
 ];
 
 const fadeUp = {
@@ -81,7 +81,8 @@ export function LandingHero() {
             transition={{ delay: 0.12 }}
             className="mx-auto max-w-md text-balance text-[1.375rem] font-semibold leading-snug tracking-tight text-primary sm:max-w-none sm:text-3xl lg:mx-0"
           >
-            Daily Chinese vocabulary practice, ready when you are.
+            All 11,000 HSK words, ready to study.{" "}
+            <span className="whitespace-nowrap">A few minutes a day.</span>
           </motion.p>
 
           <motion.div
@@ -92,8 +93,8 @@ export function LandingHero() {
             className="mx-auto max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0"
           >
             <p>
-              Preloaded HSK 3.0 vocabulary and short daily Study sessions for
-              building a Mandarin habit without assembling your own decks.
+              Pick your HSK level, swipe through today&apos;s cards, done.
+              No decks to build and nothing to set up.
             </p>
             <ul className="mx-auto mt-5 flex w-fit flex-col gap-2.5 text-left lg:mx-0">
               {HERO_FEATURES.map((feature) => (
