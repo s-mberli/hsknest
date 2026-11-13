@@ -8,6 +8,12 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- A beginner on "HSK 1 — Foundation" now meets 你好, 谢谢, 再见, 我, 你, 是, 好,
+  不, 他, 这 as their first new words, instead of the ten most frequent
+  particles (的, 了, …). The study queue puts whichever of these a learner has
+  not been introduced to yet ahead of the list's frequency order; after that
+  the order is as before. Stored word positions, browse order in Words and
+  Lists, and review scheduling are unchanged, and no data migration is needed.
 - Guests must save their account before importing words or adding many words
   at once. Import and bulk word add return "Save your account first to import
   words", and the list page shows that message with a link to save the
