@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
+import { clientAddress } from "@/lib/clientAddress";
 import { rateLimit } from "@/lib/rateLimit";
 import { isGuestModeEnabled } from "@/lib/registration";
 import { getCurrentUserId } from "@/lib/session";
@@ -35,10 +36,7 @@ export async function POST(req: Request) {
   // behind one address, so the ceiling sits well above one person's use.
   // Without the header there is no per-source bucket at all: a shared
   // "unknown" key would cap the whole site at the per-source number.
-  const source =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip")?.trim() ||
-    "";
+  const source = clientAddress(req);
   // The global cap bounds abuse when the per-source header is rotated or
   // absent, and stays far above a realistic launch-day burst.
   if (

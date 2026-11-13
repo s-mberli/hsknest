@@ -8,6 +8,22 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- Guests must save their account before importing words or adding many words
+  at once. Import and bulk word add return "Save your account first to import
+  words", and the list page shows that message with a link to save the
+  account. Guests can still add words one at a time.
+- Verification emails have a per-address limit on guest upgrade and guest
+  checkout (10 an hour, shared by both), and one site-wide cap of 200 a day
+  across signup, upgrade, checkout and resend (`VERIFICATION_EMAIL_DAILY_CAP`).
+  Once the cap is reached, accounts are still created and saved, but no
+  email is sent, and "Resend verification email" asks to try again later.
+- Signup, forgot password, reset password and email verification no longer
+  put requests without a client address into one shared "unknown" bucket.
+  They read `X-Forwarded-For`, then `X-Real-IP`, and otherwise rely on their
+  global limits, the same rule as guest start and login. Verification now
+  also has a global limit. One `clientAddress()` helper serves all of them.
+- Guest pruning counts Reading Mode visits as activity: a guest who only reads
+  is no longer deleted after 35 days.
 - A signed-in guest who taps a "try it" button again (on pricing, login or
   signup) now returns to their dashboard instead of being swapped for a new
   guest, which lost the first guest's progress for good. Both guest buttons

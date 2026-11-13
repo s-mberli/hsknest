@@ -3,6 +3,7 @@ import { randomBytes, createHash } from "crypto";
 import { logApiError } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { clientAddress } from "@/lib/clientAddress";
 import { rateLimit } from "@/lib/rateLimit";
 import { forgotPasswordSchema } from "@/lib/validation";
 
@@ -22,14 +23,12 @@ export async function POST(request: Request) {
       );
     }
     const normalizedEmail = parsed.data.email.toLowerCase();
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      "unknown";
+    const ip = clientAddress(request);
 
     // Layered limits prevent both targeted email flooding and broad abuse.
     if (
       !rateLimit(`forgot-password:${normalizedEmail}`, 5, 15 * 60 * 1000) ||
-      !rateLimit(`forgot-password:ip:${ip}`, 20, 15 * 60 * 1000) ||
+      (ip && !rateLimit(`forgot-password:ip:${ip}`, 20, 15 * 60 * 1000)) ||
       !rateLimit("forgot-password:global", 1000, 15 * 60 * 1000)
     ) {
       return NextResponse.json(

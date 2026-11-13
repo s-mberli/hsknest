@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 import { logApiError, parseBody } from "@/lib/apiRoute";
+import { clientAddress } from "@/lib/clientAddress";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 import { isRegistrationOpen } from "@/lib/registration";
@@ -16,16 +17,15 @@ function hashToken(token: string): string {
 }
 
 export async function POST(req: Request) {
-  // ~20 signups per hour per IP. x-forwarded-for's first hop is the client when
-  // behind a trusted proxy; fall back to "unknown" when the header is absent.
-  // This is enough for real launch spikes but prevents scripted trial farming.
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  // ~20 signups per hour per client address, only when a trusted proxy
+  // supplies one (see clientAddress). Enough for real launch spikes but
+  // prevents scripted trial farming. No header → global cap only.
+  const ip = clientAddress(req);
   // Global fallback cap on top of per-IP: X-Forwarded-For can be spoofed if
   // the container is ever reached without the trusted proxy in front, so
   // bound total signup volume too (generous vs. any real launch spike).
   if (
-    !rateLimit(`signup:${ip}`, 20, 60 * 60 * 1000) ||
+    (ip && !rateLimit(`signup:${ip}`, 20, 60 * 60 * 1000)) ||
     !rateLimit("signup:global", 10000, 60 * 60 * 1000)
   ) {
     return NextResponse.json(

@@ -44,7 +44,13 @@ export async function POST() {
         },
       }),
     ]);
-    await sendVerificationEmail(user.email, token);
+    const sent = await sendVerificationEmail(user.email, token);
+    if ("capped" in sent && sent.capped) {
+      return NextResponse.json(
+        { error: "Too many verification emails right now. Please try again later." },
+        { status: 429 }
+      );
+    }
 
     return NextResponse.json({ message: "Verification email sent." });
   } catch (error) {
