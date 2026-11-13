@@ -7,6 +7,7 @@ import {
   Shuffle,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { useState } from "react";
@@ -14,6 +15,7 @@ import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { FocusRing } from "@/components/dashboard/FocusRing";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
+import { shouldPromptReturningGuest } from "@/lib/guest";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { getPracticeAvailability } from "@/lib/practiceModes";
 import { getSupplementaryStudyEntries, PRACTICE_HREF } from "@/lib/studyEntries";
@@ -50,6 +52,26 @@ const SEGMENTS: { key: "due" | "fresh" | "checks"; label: string; dot: string; t
 // 500 is the effective "all" cap shared with the queue route.
 const STUDY_HREF = "/study?limit=500";
 
+// The returning-guest prompt is offered once per browser session; after a
+// "not now" the Start button goes straight to Study.
+const GUEST_PROMPT_SEEN_KEY = "hsknest-guest-return-prompt-seen";
+
+function guestPromptSeen(): boolean {
+  try {
+    return sessionStorage.getItem(GUEST_PROMPT_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markGuestPromptSeen(): void {
+  try {
+    sessionStorage.setItem(GUEST_PROMPT_SEEN_KEY, "1");
+  } catch {
+    // Storage unavailable: the prompt may show again, Study still opens.
+  }
+}
+
 /**
  * Focus-ring hero: the ring shows exactly today's queue (due → checks → new),
  * a per-category breakdown of what awaits, and a single Start button. How many
@@ -68,18 +90,28 @@ export function DashboardHero({
   isGuest = false,
   createdAt,
 }: DashboardHeroProps) {
-  const [showWall, setShowWall] = useState(false);
+  const router = useRouter();
+  const [showPrompt, setShowPrompt] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const total = due + checks + fresh;
   const hasCards = total > 0;
   const canPractice = learnedCount > 0;
   const counts = { due, fresh, checks };
 
-  const isDay2 = Boolean(
-    isGuest &&
-      createdAt &&
-      new Date().toDateString() !== new Date(createdAt).toDateString()
-  );
+  // Decided on click, not during render: the answer depends on the clock and
+  // on sessionStorage, neither of which the server render can see.
+  function onStartStudying(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!shouldPromptReturningGuest({ isGuest, createdAt, due })) return;
+    if (guestPromptSeen()) return;
+    e.preventDefault();
+    markGuestPromptSeen();
+    setShowPrompt(true);
+  }
+
+  function continueToStudy() {
+    setShowPrompt(false);
+    router.push(STUDY_HREF);
+  }
 
   const availability = getPracticeAvailability({ languageCode, hasSentences });
   const supplementaryEntries = getSupplementaryStudyEntries({
@@ -134,19 +166,17 @@ export function DashboardHero({
               ))}
             </div>
 
-            {isDay2 ? (
-              <Button data-testid="study-entry" data-entry="study" size="lg" className="w-full max-w-xs rounded-full" onClick={() => setShowWall(true)}>
+            <Button asChild size="lg" className="w-full max-w-xs rounded-full">
+              <Link
+                href={STUDY_HREF}
+                data-testid="study-entry"
+                data-entry="study"
+                onClick={onStartStudying}
+              >
                 <GraduationCap className="size-4" />
                 Start studying
-              </Button>
-            ) : (
-              <Button asChild size="lg" className="w-full max-w-xs rounded-full">
-                <Link href={STUDY_HREF} data-testid="study-entry" data-entry="study">
-                  <GraduationCap className="size-4" />
-                  Start studying
-                </Link>
-              </Button>
-            )}
+              </Link>
+            </Button>
 
             {/* The real "how fast do I grow" lever lives in Settings. */}
             {dailyNewWords > 0 && (
@@ -232,11 +262,14 @@ export function DashboardHero({
       )}
 
       <UpgradeModal
-        isOpen={showWall}
-        onClose={() => setShowWall(false)}
-        title="Welcome back! Your Day-2 reviews are due."
-        description="Create your free account in 5 seconds to unlock your queue and keep your memory streak alive."
+        isOpen={showPrompt}
+        onClose={() => setShowPrompt(false)}
+        title={`Welcome back! ${due} ${due === 1 ? "word is" : "words are"} due for review.`}
+        description="Guest progress only lives in this browser. Create a free account to keep it and continue on any device, or carry on as a guest."
         canClose={true}
+        source="wall"
+        secondaryAction={{ label: "Not now, keep studying", onClick: continueToStudy }}
+        onUpgraded={continueToStudy}
       />
     </div>
   );

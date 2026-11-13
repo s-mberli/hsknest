@@ -25,12 +25,15 @@ export type FunnelEvent =
   | "promo_try_click"
   | "guest_start_click";
 
-export function trackEvent(event: FunnelEvent): void {
+/** Which guest prompt produced a `guest_upgrade_complete`. */
+export type UpgradeSource = "wall" | "banner" | "session";
+
+export function trackEvent(event: FunnelEvent, data?: Record<string, string>): void {
   try {
     const source = typeof window !== "undefined" ? localStorage.getItem("hsknest-utm-source") : null;
     const campaign = typeof window !== "undefined" ? localStorage.getItem("hsknest-utm-campaign") : null;
     
-    const props: Record<string, string> = {};
+    const props: Record<string, string> = { ...data };
     if (source) props.utm_source = source;
     if (campaign) props.utm_campaign = campaign;
 

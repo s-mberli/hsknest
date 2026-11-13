@@ -263,6 +263,7 @@ export function SessionComplete({
         title="Save your progress"
         description="Create a free account to keep your progress and continue on any device."
         canClose={true}
+        source="session"
       />
     </div>
   );

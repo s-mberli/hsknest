@@ -59,7 +59,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
         return;
       }
       toast.success("Account saved — your progress is yours now.");
-      trackEvent("guest_upgrade_complete");
+      trackEvent("guest_upgrade_complete", { source: "banner" });
       router.refresh();
     } catch {
       toast.error("Could not reach the server. Your account was not saved yet, please try again.");

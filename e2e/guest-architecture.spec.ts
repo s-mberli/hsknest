@@ -80,19 +80,17 @@ test.describe("Guest Architecture E2E Flow", () => {
     await context.close();
   });
 
-  test("Persona B: Returning Guest on Day 2 sees Dashboard but hits Soft Wall on 'Start Studying'", async ({
+  test("Persona B: returning guest with words due is offered an account on 'Start studying' and can decline", async ({
     browser,
   }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     const { user, email, password } = await createTestGuestUser();
 
-    // Backdate createdAt to yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    // Backdate createdAt past the 24-hour threshold (25h, clear of DST shifts).
     await prisma.user.update({
       where: { id: user.id },
-      data: { createdAt: yesterday },
+      data: { createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000) },
     });
 
     await page.goto("/login");
@@ -107,16 +105,43 @@ test.describe("Guest Architecture E2E Flow", () => {
     await page.waitForURL("**/dashboard", { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "Today" })).toBeVisible({ timeout: 15_000 });
 
-    // Click 'Start Studying' -> Day-2 Soft Wall modal triggers
-    await page.getByRole("button", { name: /start studying/i }).click();
+    // 'Start studying' first offers the account, with copy that states what is
+    // really due (not the generic "Save your progress" title used elsewhere).
+    await page.getByRole("link", { name: /start studying/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    // Day-2 soft wall uses its own copy (not the generic "Save your
-    // progress" title shown elsewhere) — same upgrade dialog, different hook.
     await expect(
-      page.getByRole("heading", { name: /day-2 reviews are due/i })
+      page.getByRole("heading", { name: /1 word is due for review/i })
     ).toBeVisible();
+    expect(page.url()).not.toContain("/study");
 
-    await expect(page.url()).not.toContain("/study");
+    // The prompt is dismissible: declining continues into Study.
+    await page.getByRole("button", { name: /not now, keep studying/i }).click();
+    await page.waitForURL("**/study**", { timeout: 15_000 });
+
+    // Once declined, the prompt does not come back in this browser session.
+    await page.goto("/dashboard");
+    await page.getByRole("link", { name: /start studying/i }).click();
+    await page.waitForURL("**/study**", { timeout: 15_000 });
+    await context.close();
+  });
+
+  test("a guest in their first 24 hours goes straight to Study", async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const { email, password } = await createTestGuestUser();
+
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+
+    const loginRes = page.waitForResponse((r) => r.url().includes("/api/auth/callback/credentials"));
+    await page.getByRole("button", { name: /sign in/i }).click();
+    await loginRes;
+
+    await page.waitForURL("**/dashboard", { timeout: 15_000 });
+    await page.getByRole("link", { name: /start studying/i }).click();
+    await page.waitForURL("**/study**", { timeout: 15_000 });
+    await expect(page.getByRole("dialog")).not.toBeVisible();
     await context.close();
   });
 });

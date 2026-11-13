@@ -28,6 +28,15 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
   not been introduced to yet ahead of the list's frequency order; after that
   the order is as before. Stored word positions, browse order in Words and
   Lists, and review scheduling are unchanged, and no data migration is needed.
+- The returning-guest prompt on "Start studying" no longer blocks Study. It
+  appears only when words are due for review and the guest account is at least
+  24 hours old (previously: any guest created on an earlier calendar day, even
+  with nothing due), states the real number due, and offers "Not now, keep
+  studying". It shows once per browser session; saving the account from it
+  continues into Study. Expect fewer forced sign-ups from this prompt.
+- `guest_upgrade_complete` carries a `source` property (`wall`, `banner` or
+  `session`) so Umami shows which guest prompt produced the sign-up. The event
+  name is unchanged.
 - Guests must save their account before importing words or adding many words
   at once. Import and bulk word add return "Save your account first to import
   words", and the list page shows that message with a link to save the
