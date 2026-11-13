@@ -21,8 +21,9 @@ diagnosing a self-hosted instance.
 - **`merge-duplicate-progress.ts`** — one-time-safe merge of duplicate
   `UserProgress` rows from before shared-progress-by-term existed; keeps
   the strongest row per user/term/language.
-- **`check-declining-engagement.ts`**, **`send-trial-emails.ts`** — hosted-
-  instance-only cron jobs (engagement nudge, trial lifecycle emails). Not
+- **`check-declining-engagement.ts`**, **`send-trial-emails.ts`**,
+  **`send-daily-reminders.ts`** — hosted-instance-only cron jobs (engagement
+  nudge, trial lifecycle emails, opt-in daily study reminder). Not
   applicable to self-hosted installs.
 
 ## Reading Mode content pipeline

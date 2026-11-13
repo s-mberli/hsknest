@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -18,15 +19,41 @@ import { SettingRow } from "./shared";
 export function AccountSection({
   email,
   name,
+  initialDailyReminderEmail,
+  showReminderToggle,
 }: {
   email: string;
   name: string | null;
+  initialDailyReminderEmail: boolean;
+  /** False on self-hosted installs, where no reminder job runs. */
+  showReminderToggle: boolean;
 }) {
   const router = useRouter();
   const isGuest = email.endsWith("@guest.local");
   const [confirming, setConfirming] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [deleting, setDeleting] = useState<"idle" | "confirm" | "busy">("idle");
+  const [reminder, setReminder] = useState(initialDailyReminderEmail);
+  const [savingReminder, setSavingReminder] = useState(false);
+
+  async function saveReminder(next: boolean) {
+    setReminder(next);
+    setSavingReminder(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dailyReminderEmail: next }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      toast.success(next ? "Daily reminder on." : "Daily reminder off.");
+    } catch {
+      setReminder(!next);
+      toast.error("Could not save that setting.");
+    } finally {
+      setSavingReminder(false);
+    }
+  }
 
   async function deleteAccount() {
     setDeleting("busy");
@@ -63,6 +90,20 @@ export function AccountSection({
         <CardDescription>Export, reset, and sign out.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        {showReminderToggle && !isGuest && (
+          <SettingRow
+            name="Daily reminder email"
+            description="One short email on days you have cards due or a streak going and haven't studied yet."
+          >
+            <Switch
+              checked={reminder}
+              disabled={savingReminder}
+              onCheckedChange={saveReminder}
+              aria-label="Daily reminder email"
+            />
+          </SettingRow>
+        )}
+
         <SettingRow
           name="Export data"
           description="Download every word and its progress as a CSV file."

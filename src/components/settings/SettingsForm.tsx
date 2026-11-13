@@ -29,6 +29,9 @@ interface SettingsFormProps {
   showReading: boolean;
   soundEffects: boolean;
   autoPlayPronunciation: boolean;
+  dailyReminderEmail: boolean;
+  /** The reminder email is sent by a hosted-only cron job; hide its toggle elsewhere. */
+  selfHosted: boolean;
   desiredRetention: number;
   targetLanguageId: string;
   languages: { id: string; name: string }[];
@@ -134,7 +137,12 @@ export function SettingsForm(props: SettingsFormProps) {
                 patch({ targetLanguageId: next }, () => setTargetLanguageId(prev));
               }}
             />
-            <AccountSection email={props.email} name={props.name} />
+            <AccountSection
+              email={props.email}
+              name={props.name}
+              initialDailyReminderEmail={props.dailyReminderEmail}
+              showReminderToggle={!props.selfHosted}
+            />
           </>
         ),
         support: <FeedbackSection />,

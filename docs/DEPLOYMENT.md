@@ -257,10 +257,20 @@ vars), also schedule the daily trial-lifecycle email job:
 
 # /etc/cron.d/recall-decline-check — 9:15am daily (weekly nudge, checked daily)
 15 9 * * * root docker compose -f /path/to/docker-compose.yml exec -T app npx tsx scripts/check-declining-engagement.ts
+
+# /etc/cron.d/recall-daily-reminders — 8am server time daily (opt-in study reminder)
+0 8 * * * root docker compose -f /path/to/docker-compose.yml exec -T app npx tsx scripts/send-daily-reminders.ts
 ```
 
-Both jobs are idempotent (EmailLog table) and exit immediately when
+All three jobs are idempotent (EmailLog table) and exit immediately when
 `SELF_HOSTED` isn't `false`, so they're harmless everywhere else.
+
+The daily reminder goes only to users who turned it on in Settings, at the
+one time the cron line sets. "Studied today" means the server's calendar day
+(UTC in the container), so pick the hour that suits most of your users. The
+script signs unsubscribe links with `NEXTAUTH_SECRET`, which must be set in
+the container environment (`docker compose exec` does not run the entrypoint
+that would load an auto-generated one). Preview recipients with `--dry-run`.
 
 Stale-guest pruning (`scripts/prune-guests.ts`) is not a cron job — it
 already runs at every container boot from `docker-entrypoint.sh`, which is

@@ -87,6 +87,29 @@ describe("with Resend configured", () => {
     for (const [msg] of send.mock.calls) expect(msg.to).toBe("d@example.com");
   });
 
+  it("sends the daily reminder with study link and one-click unsubscribe", async () => {
+    send.mockResolvedValue({ data: { id: "r" }, error: null });
+    const email = await loadEmail({ resendKey: "re_test", selfHosted: false });
+    const unsub = "https://example.test/api/unsubscribe?u=u1&t=tok";
+
+    const result = await email.sendDailyReminderEmail("r@example.com", {
+      dueCount: 12,
+      streakDays: 4,
+      unsubscribeUrl: unsub,
+    });
+
+    expect(result.success).toBe(true);
+    const msg = send.mock.calls[0][0];
+    expect(msg.subject).toBe("12 cards ready to review");
+    expect(msg.html).toContain("Current streak: 4 days.");
+    expect(msg.html).toContain("https://example.test/study");
+    expect(msg.html).toContain(unsub);
+    expect(msg.headers).toEqual({
+      "List-Unsubscribe": `<${unsub}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    });
+  });
+
   it("reports a provider error without throwing", async () => {
     send.mockResolvedValue({ data: null, error: { message: "rejected" } });
     const email = await loadEmail({ resendKey: "re_test", selfHosted: false });

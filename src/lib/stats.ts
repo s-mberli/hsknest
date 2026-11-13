@@ -34,6 +34,25 @@ export interface DashboardStats {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const FORECAST_DAYS = 7;
 
+/**
+ * Review cards due now in the user's target language: the dashboard's
+ * `dueCount`, shared with the daily reminder email so both say the same.
+ */
+export function countDueCards(
+  userId: string,
+  targetLanguageId: string | null,
+  now: Date
+): Promise<number> {
+  return prisma.userProgress.count({
+    where: {
+      userId,
+      dueAt: { lte: now },
+      state: { in: DUE_STATES_LIST },
+      ...targetLangFilter(targetLanguageId),
+    },
+  });
+}
+
 export async function getDashboardStats(
   userId: string,
   targetLanguageId: string | null = null
@@ -70,14 +89,7 @@ export async function getDashboardStats(
       where: { id: userId },
       select: { dailyNewWords: true, assumedCheckPerDay: true },
     }),
-    prisma.userProgress.count({
-      where: {
-        userId,
-        dueAt: { lte: now },
-        state: { in: DUE_STATES_LIST },
-        ...langFilter,
-      },
-    }),
+    countDueCards(userId, targetLanguageId, now),
     prisma.userProgress.count({ where: { userId, state: "NEW", ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: { in: SOLID_STATES_LIST }, ...langFilter } }),
     prisma.userProgress.count({ where: { userId, state: "MASTERED", ...langFilter } }),

@@ -202,6 +202,63 @@ export async function sendDeclineNudgeEmail(email: string) {
 }
 
 /**
+ * Opt-in daily study reminder (scripts/send-daily-reminders.ts). Plain and
+ * short: what's waiting, the streak, one button. Carries a one-click
+ * unsubscribe link plus List-Unsubscribe headers (RFC 8058).
+ */
+export async function sendDailyReminderEmail(
+  email: string,
+  opts: { dueCount: number; streakDays: number; unsubscribeUrl: string }
+) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const { dueCount, streakDays, unsubscribeUrl } = opts;
+  const subject =
+    dueCount > 0
+      ? `${dueCount} ${dueCount === 1 ? "card" : "cards"} ready to review`
+      : "Today's study session";
+  const lines: string[] = [];
+  if (dueCount > 0) lines.push(`${dueCount} ${dueCount === 1 ? "card is" : "cards are"} due for review.`);
+  if (streakDays > 0) lines.push(`Current streak: ${streakDays} ${streakDays === 1 ? "day" : "days"}.`);
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      ${lines.map((l) => `<p>${l}</p>`).join("\n      ")}
+      <p><a href="${baseUrl}/study" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Study now</a></p>
+      <p style="color: #666; font-size: 12px; margin-top: 40px; border-top: 1px solid #eee; padding-top: 16px;">
+        You turned on daily reminders in HSK Nest.
+        <a href="${unsubscribeUrl}">Unsubscribe</a> ·
+        <a href="${baseUrl}/settings">Settings</a>
+      </p>
+    </div>`;
+
+  if (!resend) {
+    warnNoEmailOnce();
+    console.log(`[email] daily_reminder for ${email}: ${subject}`);
+    return { success: true, data: null };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject,
+      html,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+    if (error) {
+      console.error("Error sending daily reminder email:", error);
+      return { success: false, error };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to send daily reminder email:", error);
+    return { success: false, error };
+  }
+}
+
+/**
  * One honest question on cancellation (hosted instance only) — see
  * customer.subscription.deleted in src/app/api/billing/webhook/route.ts.
  * Gym Launch Secrets ch.16, "Exit Interviews": "we want to know what went
