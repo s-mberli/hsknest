@@ -5,8 +5,9 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const CREATED_AT = vi.hoisted(() => new Date("2026-11-13T02:00:00Z"));
 const db = vi.hoisted(() => ({
-  create: vi.fn(async () => ({})),
+  create: vi.fn(async () => ({ createdAt: CREATED_AT })),
   deleteMany: vi.fn(async () => ({ count: 0 })),
 }));
 const sendVerificationEmail = vi.hoisted(() => vi.fn());
@@ -56,14 +57,15 @@ describe("POST /api/auth/verify/resend", () => {
     expect(db.deleteMany).toHaveBeenCalledTimes(1);
   });
 
-  it("retires older links only after the new email is sent", async () => {
+  it("retires only links created before the new one, after it is sent", async () => {
     sendVerificationEmail.mockResolvedValue({ success: true, data: null });
 
     const res = await POST();
 
     expect(res.status).toBe(200);
+    // Strictly older: an overlapping resend's newer link is left alone.
     expect(db.deleteMany).toHaveBeenCalledWith({
-      where: { email: "learner@example.com", token: { not: newTokenHash() } },
+      where: { email: "learner@example.com", createdAt: { lt: CREATED_AT } },
     });
   });
 });

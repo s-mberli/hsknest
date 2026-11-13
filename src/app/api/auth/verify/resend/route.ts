@@ -38,12 +38,13 @@ export async function POST() {
     // Create the new link first and retire older links only once the email
     // has gone out. If the daily cap or the provider skips delivery, the link
     // the user already received keeps working.
-    await prisma.verificationToken.create({
+    const created = await prisma.verificationToken.create({
       data: {
         email: user.email,
         token: tokenHash,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
+      select: { createdAt: true },
     });
     const sent = await sendVerificationEmail(user.email, token);
     if (!sent.success) {
@@ -59,8 +60,10 @@ export async function POST() {
         { status: 500 }
       );
     }
+    // Retire only links created before this one. Two overlapping resends
+    // (two open tabs) must not delete each other's link; the newest survives.
     await prisma.verificationToken.deleteMany({
-      where: { email: user.email, token: { not: tokenHash } },
+      where: { email: user.email, createdAt: { lt: created.createdAt } },
     });
 
     return NextResponse.json({ message: "Verification email sent." });
