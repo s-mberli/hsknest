@@ -2,6 +2,7 @@ import { compare } from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+import { clientAddressFrom } from "@/lib/clientAddress";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 
@@ -26,10 +27,10 @@ export const authOptions: NextAuthOptions = {
         // when the deployment's trusted proxy overwrites it; without one we
         // retain the account/global limits instead of merging every NAT user
         // into a shared "unknown" source bucket.
-        const forwardedFor = req.headers?.["x-forwarded-for"];
-        const realIp = req.headers?.["x-real-ip"];
-        const source =
-          forwardedFor?.split(",")[0]?.trim() || realIp?.trim() || "";
+        const source = clientAddressFrom(
+          req.headers?.["x-forwarded-for"],
+          req.headers?.["x-real-ip"]
+        );
 
         // A per-source ceiling prevents one client from rotating email names
         // to consume the process-wide budget. X-Forwarded-For / X-Real-IP are

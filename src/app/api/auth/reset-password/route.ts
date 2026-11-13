@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { createHash } from "crypto";
 import { logApiError } from "@/lib/apiRoute";
 import { prisma } from "@/lib/prisma";
+import { clientAddress } from "@/lib/clientAddress";
 import { rateLimit } from "@/lib/rateLimit";
 import { resetPasswordSchema } from "@/lib/validation";
 
@@ -12,10 +13,9 @@ function hashToken(token: string): string {
 
 export async function POST(request: Request) {
   try {
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const ip = clientAddress(request);
     if (
-      !rateLimit(`reset-password:${ip}`, 10, 60 * 1000) ||
+      (ip && !rateLimit(`reset-password:${ip}`, 10, 60 * 1000)) ||
       !rateLimit("reset-password:global", 1000, 60 * 60 * 1000)
     ) {
       return NextResponse.json(

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { OwnerWordTable } from "@/components/lists/OwnerWordTable";
 import { WordTable, type WordRow } from "@/components/lists/WordTable";
 import { WordStrengthGrid } from "@/components/words/WordStrengthGrid";
 import type { WordDetail } from "@/components/words/WordHoverCard";
+import { GUEST_IMPORT_BLOCKED_MESSAGE } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 import { wordStrength } from "@/lib/strength";
 
@@ -31,12 +33,15 @@ export function ListWordsView({
   words,
   listId,
   isOwner = false,
+  isGuest = false,
   languageCode,
   languageName,
 }: {
   words: ListWord[];
   listId?: string;
   isOwner?: boolean;
+  /** Guests can't bulk-import; the import panel explains instead. */
+  isGuest?: boolean;
   languageCode?: string;
   languageName?: string;
 }) {
@@ -134,7 +139,21 @@ export function ListWordsView({
       </div>
 
       {isOwner && listId && importing && (
-        <ImportWords listId={listId} onClose={() => setImporting(false)} />
+        isGuest ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/20 p-4">
+            <p className="text-sm">
+              {GUEST_IMPORT_BLOCKED_MESSAGE}.{" "}
+              <Link href="/settings" className="font-medium underline underline-offset-4">
+                Save it in Settings
+              </Link>
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => setImporting(false)}>
+              Close
+            </Button>
+          </div>
+        ) : (
+          <ImportWords listId={listId} onClose={() => setImporting(false)} />
+        )
       )}
 
       {isOwner && listId && (
