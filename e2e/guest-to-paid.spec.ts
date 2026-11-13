@@ -76,12 +76,12 @@ test.describe("Guest-to-Paid Critical Path", () => {
     // 5. Verify Single-Session Cap UX on Session Complete Screen
     await expect(page.getByText(/session complete|practice done/i)).toBeVisible({ timeout: 10_000 });
     await expect(
-      page.getByRole("button", { name: /save progress & continue free/i })
+      page.getByRole("button", { name: /create free account/i })
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /keep practicing/i })).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /back to dashboard/i })).toBeVisible();
 
     // 6. Upgrade account from modal
-    await page.getByRole("button", { name: /save progress & continue free/i }).click();
+    await page.getByRole("button", { name: /create free account/i }).click();
     const realEmail = `upgraded-${suffix}@e2e.local`;
     await expect(page.locator("#upgrade-email-modal")).toBeVisible({ timeout: 10_000 });
     await page.locator("#upgrade-email-modal").fill(realEmail);

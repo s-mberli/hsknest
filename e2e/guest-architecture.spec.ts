@@ -72,11 +72,12 @@ test.describe("Guest Architecture E2E Flow", () => {
 
     await expect(page.getByText("Session complete")).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /save progress & continue free/i })
+      page.getByRole("button", { name: /create free account/i })
     ).toBeVisible();
+    // Guests keep a way onward next to the save-progress nudge.
     await expect(
-      page.getByRole("link", { name: /keep practicing/i })
-    ).not.toBeVisible();
+      page.getByRole("button", { name: /back to dashboard/i })
+    ).toBeVisible();
     await context.close();
   });
 
