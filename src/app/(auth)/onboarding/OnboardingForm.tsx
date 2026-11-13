@@ -51,13 +51,19 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
       // words the user picked. The settings PATCH below auto-enrolls the HSK 1
       // "Foundation" starter deck only when the user has zero progress in the
       // language — enrolling here first makes that guard skip, so the chosen
-      // level isn't clobbered. Non-fatal: the dashboard still guides deck-less
-      // users to /lists, and a language without a level step falls back to the
-      // settings starter auto-enroll.
+      // level isn't clobbered. A failed enroll stops here: carrying on would
+      // silently start the user on HSK 1 instead of the level they picked.
+      // A language without a level step falls back to the settings starter
+      // auto-enroll.
       if (hasLevelStep && listId) {
-        await fetch(`/api/lists/${listId}/enroll`, { method: "POST" }).catch(
-          () => null
-        );
+        const enroll = await fetch(`/api/lists/${listId}/enroll`, {
+          method: "POST",
+        }).catch(() => null);
+        if (!enroll?.ok) {
+          toast.error("Could not set up your level. Please try again.");
+          setSaving(false);
+          return;
+        }
       }
 
       const res = await fetch("/api/settings", {
@@ -119,9 +125,19 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                 : "Which language do you want to master?"}
             </CardTitle>
             <CardDescription className="text-base mt-3 px-4 leading-relaxed">
-              {isLevelStep
-                ? "Not sure? HSK 1 is the safe start. You can switch anytime."
-                : "You can switch languages anytime in Settings."}
+              {isLevelStep ? (
+                <>
+                  <span className="block">
+                    HSK is the official Chinese proficiency scale, from 1
+                    (beginner) to 9.
+                  </span>
+                  <span className="mt-1 block">
+                    Not sure? HSK 1 is the safe start. You can switch anytime.
+                  </span>
+                </>
+              ) : (
+                "You can switch languages anytime in Settings."
+              )}
             </CardDescription>
           </CardHeader>
 
@@ -140,6 +156,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setListId(list.id)}
+                      aria-pressed={isSelected}
                       className={cn(
                         "relative flex flex-col items-center justify-center rounded-2xl border p-4 text-sm font-semibold transition-all duration-300",
                         isSelected
@@ -181,6 +198,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setSelected(l.id)}
+                      aria-pressed={isSelected}
                       className={cn(
                         "relative flex flex-col items-center justify-center rounded-2xl border p-5 text-sm font-semibold transition-all duration-300",
                         isSelected
@@ -239,7 +257,7 @@ export function OnboardingForm({ languages, hskLists }: OnboardingFormProps) {
                 <button
                   type="button"
                   onClick={() => setStep("language")}
-                  className="mx-auto mt-4 block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  className="mx-auto mt-2 flex min-h-11 w-fit items-center px-4 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
                 >
                   Back
                 </button>

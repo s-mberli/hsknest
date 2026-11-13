@@ -237,7 +237,9 @@ export function CardFace({
                   speakLive ? "Play pronunciation" : "No voice installed"
                 }
                 className={cn(
-                  "rounded-full p-1.5 transition-colors hover:bg-accent",
+                  // 44px hit area around the 20px icon; the negative margin keeps
+                  // the row the same size as before.
+                  "-m-1.5 flex size-11 items-center justify-center rounded-full transition-colors hover:bg-accent",
                   speakLive
                     ? "text-muted-foreground hover:text-foreground"
                     : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -353,7 +355,7 @@ export function CardFace({
                           type="button"
                           onClick={onSpeakSentence}
                           aria-label="Play sentence"
-                          className="shrink-0 rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          className="-m-2.5 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         >
                           <Volume2 className="size-4" />
                         </button>

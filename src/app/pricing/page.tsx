@@ -32,7 +32,7 @@ export default function PricingPage() {
           Simple pricing, no lock-in
         </h1>
         <p className="text-lg text-muted-foreground">
-          Lock in this price forever. 14 days free, no credit card to start, cancel in one click.
+          14 days free, no credit card to start, cancel in one click.
         </p>
       </header>
 

@@ -66,7 +66,8 @@ export function SessionHud({
       </div>
 
       <header className="flex items-center justify-between px-5 py-3">
-        <Button asChild variant="ghost" size="icon">
+        {/* 44px hit area; the negative margin keeps the header the same height. */}
+        <Button asChild variant="ghost" size="icon" className="-m-1 size-11">
           <Link href="/dashboard" aria-label="Exit session">
             <X className="size-5" />
           </Link>

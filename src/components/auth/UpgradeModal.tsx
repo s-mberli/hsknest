@@ -44,7 +44,18 @@ export function UpgradeModal({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Could not save the account.");
+        toast.error(
+          data.error ?? "Could not save the account.",
+          // 409: the email belongs to an existing account.
+          res.status === 409
+            ? {
+                action: {
+                  label: "Sign in instead",
+                  onClick: () => router.push("/login"),
+                },
+              }
+            : undefined
+        );
         return;
       }
       // Email changed, so the JWT session must be re-issued.

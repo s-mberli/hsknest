@@ -33,7 +33,18 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Could not save the account.");
+        toast.error(
+          data.error ?? "Could not save the account.",
+          // 409: the email belongs to an existing account.
+          res.status === 409
+            ? {
+                action: {
+                  label: "Sign in instead",
+                  onClick: () => router.push("/login"),
+                },
+              }
+            : undefined
+        );
         return;
       }
       // Email changed, so the JWT session must be re-issued.
@@ -67,7 +78,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
               Guest progress only lives in this browser. Create a free account to keep your progress and continue on any device.
             </span>
           </p>
-          <Button size="sm" onClick={() => setOpen(true)}>
+          <Button size="sm" className="h-11 sm:h-8" onClick={() => setOpen(true)}>
             Save my progress
           </Button>
         </div>
@@ -102,7 +113,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button type="submit" size="sm" disabled={loading}>
+            <Button type="submit" size="sm" className="h-11 sm:h-8" disabled={loading}>
               {loading ? "Saving…" : "Create my account"}
             </Button>
             {!compact && (
@@ -110,6 +121,7 @@ export function UpgradeBanner({ compact = false }: { compact?: boolean }) {
                 type="button"
                 size="sm"
                 variant="ghost"
+                className="h-11 sm:h-8"
                 onClick={() => setOpen(false)}
               >
                 Not now
