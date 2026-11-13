@@ -72,6 +72,7 @@ export const settingsSchema = z.object({
   showReading: z.boolean().optional(),
   soundEffects: z.boolean().optional(),
   autoPlayPronunciation: z.boolean().optional(),
+  dailyReminderEmail: z.boolean().optional(),
   targetLanguageId: z.string().min(1).nullable().optional(),
 });
 

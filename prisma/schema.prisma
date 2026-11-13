@@ -36,6 +36,7 @@ model User {
   showReading        Boolean          @default(true) // false = flashcards skip the reading hint stage
   soundEffects       Boolean          @default(true) // false = mute study sound effects
   autoPlayPronunciation Boolean       @default(true) // speak the term when its reading is revealed
+  dailyReminderEmail Boolean          @default(false) // opt-in daily study reminder email (hosted cron)
 
   // Learning limits
   dailyNewWords      Int @default(10) // new cards introduced per day; 0 = pause learning
@@ -244,7 +245,7 @@ model Feedback {
 model EmailLog {
   id     String   @id @default(cuid())
   userId String
-  kind   String // "trial_welcome" | "trial_ending" | "trial_ended"
+  kind   String // "trial_welcome" | "trial_ending" | "trial_ended" | "decline_w<n>" | "daily_reminder:YYYY-MM-DD"
   sentAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

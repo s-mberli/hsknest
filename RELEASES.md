@@ -41,6 +41,12 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
   buttons as signed-in users (Keep practicing, Next round, Back to dashboard),
   with a "Create free account" card above them. Guest status now comes from the
   server, so the buttons no longer flash on load.
+- Opt-in daily study reminder email (hosted instance). Off by default; turn
+  it on in Settings → Account. It goes out once a day at the time the cron
+  line sets, only when cards are due or a streak of 2+ days is running and
+  you haven't studied yet today. Every email has a one-click unsubscribe link
+  (no login) and `List-Unsubscribe` headers. New `User.dailyReminderEmail`
+  column and `scripts/send-daily-reminders.ts` cron job.
 - Guests must save their account before importing words or adding many words
   at once. Import and bulk word add return "Save your account first to import
   words", and the list page shows that message with a link to save the

@@ -56,6 +56,10 @@ COPY --from=build /app/scripts ./scripts
 # shipping it at runtime costs nothing and isn't a new exposure.
 COPY --from=build /app/content ./content
 COPY --from=build /app/src ./src
+# tsx reads the `@/*` path alias from tsconfig.json; without it the cron
+# scripts (send-trial-emails, check-declining-engagement,
+# send-daily-reminders) fail to load modules that import `@/lib/...`.
+COPY --from=build /app/tsconfig.json ./tsconfig.json
 
 # Expected audio-pack versions, checked by the entrypoint against markers on
 # the audio volume (see docs/AUDIO.md, audio/PACK_VERSIONS).

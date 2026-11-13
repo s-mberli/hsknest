@@ -54,6 +54,7 @@ describe("seed vocabulary refresh", () => {
         "showReading" BOOLEAN NOT NULL DEFAULT true,
         "soundEffects" BOOLEAN NOT NULL DEFAULT true,
         "autoPlayPronunciation" BOOLEAN NOT NULL DEFAULT true,
+        "dailyReminderEmail" BOOLEAN NOT NULL DEFAULT false,
         "dailyNewWords" INTEGER NOT NULL DEFAULT 10,
         "assumedCheckPerDay" INTEGER NOT NULL DEFAULT 3,
         "intervalModifier" REAL NOT NULL DEFAULT 1.0,

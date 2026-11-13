@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         </p>
         <ul>
           <li><strong>Stripe</strong> — payment processing for the hosted plan. Card details go directly to Stripe; we only receive a customer reference and subscription status.</li>
-          <li><strong>Resend</strong> — delivery of transactional emails (password reset, email verification, trial status, a re-engagement reminder if study activity drops for a week, and a one-question survey if you cancel).</li>
+          <li><strong>Resend</strong> — delivery of transactional emails (password reset, email verification, trial status, a re-engagement reminder if study activity drops for a week, a daily study reminder if you turn it on in Settings, and a one-question survey if you cancel).</li>
           <li><strong>Umami (self-hosted)</strong> — privacy-friendly, cookieless page analytics running on our own server. No data is shared with any third party and no visitor is individually identified.</li>
         </ul>
 

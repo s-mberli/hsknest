@@ -26,6 +26,7 @@ export default async function SettingsPage() {
       showReading: true,
       soundEffects: true,
       autoPlayPronunciation: true,
+      dailyReminderEmail: true,
       desiredRetention: true,
       targetLanguageId: true,
     },
@@ -65,6 +66,8 @@ export default async function SettingsPage() {
         showReading={user.showReading}
         soundEffects={user.soundEffects}
         autoPlayPronunciation={user.autoPlayPronunciation}
+        dailyReminderEmail={user.dailyReminderEmail}
+        selfHosted={sub.selfHosted}
         desiredRetention={user.desiredRetention}
         targetLanguageId={user.targetLanguageId}
         languages={languages}
