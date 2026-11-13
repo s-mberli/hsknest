@@ -9,6 +9,7 @@ import { weightedInterleave } from "@/lib/listPriority";
 import { prisma } from "@/lib/prisma";
 import { gameGloss } from "@/lib/meanings";
 import { buildChoices } from "@/lib/quizChoices";
+import { starterWordWhere, withStarterOrder } from "@/lib/starterOrder";
 import { parseQueueQuery, scopeToWordWhere } from "@/lib/studyScope";
 import { startOfLocalDay } from "@/lib/utils";
 import { practiceWordIdsSchema } from "@/lib/validation";
@@ -274,15 +275,32 @@ export async function GET(req: Request) {
   // 3. New cards — same weighted multi-list mixing as the checks above.
   remaining = limit - due.length - checks.length;
   const freshTake = Math.min(remaining, newAllowedToday);
+  // The seeded HSK 1 list introduces a small starter set (你好, 谢谢, …) before
+  // its frequency order. Those words can sit beyond the position window, so
+  // the learner's still-NEW starter rows are fetched separately and merged —
+  // see src/lib/starterOrder.ts. Stored positions and schedules are untouched.
   const fresh =
     remaining > 0 && newAllowedToday > 0
       ? weightedInterleave(
-          await prisma.userProgress.findMany({
-            where: { userId, state: "NEW", ...queueWhere },
-            orderBy: { word: { position: "asc" } },
-            take: Math.max(freshTake * 10, 100),
-            include: wordInclude,
-          }),
+          withStarterOrder(
+            ...(await Promise.all([
+              prisma.userProgress.findMany({
+                where: { userId, state: "NEW", ...queueWhere },
+                orderBy: { word: { position: "asc" } },
+                take: Math.max(freshTake * 10, 100),
+                include: wordInclude,
+              }),
+              prisma.userProgress.findMany({
+                where: {
+                  userId,
+                  state: "NEW",
+                  ...queueWhere,
+                  word: starterWordWhere,
+                },
+                include: wordInclude,
+              }),
+            ]))
+          ),
           rankByListId,
           freshTake
         )
