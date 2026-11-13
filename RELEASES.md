@@ -8,6 +8,11 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 
 ## Unreleased (next)
 
+- `docker-compose.yml` publishes the app on `127.0.0.1:3000` instead of all
+  interfaces, so it is only reachable through a reverse proxy on the same host
+  (or Coolify's Traefik). **Self-hosters** who opened `http://<server-ip>:3000`
+  directly from another device need to put a reverse proxy in front, or change
+  the line back to `"3000:3000"` on a trusted network.
 - Phone tap targets are at least 44px: session exit, the card speaker
   buttons, the report-word flag, the guest "Save my progress" banner buttons
   and the onboarding "Back" link. Icons keep their size.
