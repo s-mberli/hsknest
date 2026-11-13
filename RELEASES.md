@@ -37,6 +37,10 @@ Solo dev: no GitHub-issues overhead, no artificial milestones. Items move up whe
 - `guest_upgrade_complete` carries a `source` property (`wall`, `banner` or
   `session`) so Umami shows which guest prompt produced the sign-up. The event
   name is unchanged.
+- Guests are no longer stuck on the session-complete screen. They get the same
+  buttons as signed-in users (Keep practicing, Next round, Back to dashboard),
+  with a "Create free account" card above them. Guest status now comes from the
+  server, so the buttons no longer flash on load.
 - Guests must save their account before importing words or adding many words
   at once. Import and bulk word add return "Save your account first to import
   words", and the list page shows that message with a link to save the

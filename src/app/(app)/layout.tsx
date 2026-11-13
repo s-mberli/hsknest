@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeSync } from "@/components/ThemeSync";
+import { GuestProvider } from "@/components/auth/GuestContext";
 import { TrialBanner } from "@/components/billing/TrialBanner";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/session";
@@ -45,7 +46,9 @@ export default async function AppLayout({
     >
       <ThemeSync theme={user?.theme ?? "system"} />
       {showTrialBanner && <TrialBanner daysLeft={sub.daysLeft as number} />}
-      <div className="flex flex-1 flex-col">{children}</div>
+      <div className="flex flex-1 flex-col">
+        <GuestProvider isGuest={isGuest}>{children}</GuestProvider>
+      </div>
       <BottomNav />
     </div>
   );

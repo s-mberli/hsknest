@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { ConfettiCannon } from "@/components/fx/ConfettiCannon";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
+import { useIsGuest } from "@/components/auth/GuestContext";
 import { UpgradeModal } from "@/components/auth/UpgradeModal";
 import { usePrefersReducedMotion } from "@/lib/motion";
 import { usePracticeRotation } from "@/lib/practiceRotationContext";
@@ -77,8 +77,8 @@ export function SessionComplete({
     starting.current = true;
     router.push(practiceSessionHref(pathname, new URLSearchParams(params.toString()), crypto.randomUUID(), wordIds));
   }
-  const { data: session } = useSession();
-  const isGuest = session?.user?.email?.endsWith("@guest.local") ?? false;
+  // Server-decided (see the (app) layout), so the first render is already right.
+  const isGuest = useIsGuest();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const rotation = usePracticeRotation();
@@ -192,69 +192,80 @@ export function SessionComplete({
           </motion.div>
         )}
 
-        {!isGuest && (
-          <motion.div
-            variants={item}
-            className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center [@media(max-height:600px)]:mt-1 [@media(max-height:600px)]:gap-1 [@media(max-height:600px)]:[&_a]:h-8 [@media(max-height:600px)]:[&_button]:h-8"
-          >
-            {/* In a Practice rotation, offer "Next round" instead of "Keep practicing".
-                Outside a rotation, offer "Redo the N you missed" and "Keep practicing".
-                The "Redo" button only works in standalone routes where mode is fixed. */}
-            {rotation ? (
-              <>
-                <Button
-                  className="w-full sm:w-auto"
-                  onClick={rotation.nextRound}
-                  disabled={!rotation.nextModeLabel}
-                >
-                  {rotation.nextModeLabel ? `Next round · ${rotation.nextModeLabel}` : "Next round"}
-                </Button>
-              </>
-            ) : (
-              <>
-                {missed.length > 0 && (
-                  <Button
-                    className="w-full sm:w-auto"
-                    onClick={() => startPractice(missed.map((word) => word.wordId))}
-                  >
-                    Redo the {missed.length} you missed
-                  </Button>
-                )}
-                <Button
-                  variant={missed.length > 0 ? "outline" : "default"}
-                  className="w-full sm:w-auto"
-                  onClick={() => startPractice()}
-                >
-                  {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
-                  Keep practicing
-                </Button>
-              </>
-            )}
-
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={() => {
-                // Force fresh dashboard counts after studying (avoid stale ring).
-                router.push("/dashboard");
-                router.refresh();
-              }}
-            >
-              Back to dashboard
-            </Button>
-          </motion.div>
-        )}
-
+        {/* Guests get the save-progress nudge above the normal actions, never
+            instead of them — the session must always have a way onward. */}
         {isGuest && (
           <motion.div
             variants={item}
-            className="mt-4 w-full max-w-xs sm:max-w-md [@media(max-height:600px)]:mt-1 [@media(max-height:600px)]:[&_button]:h-9"
+            className="mt-2 flex w-full max-w-xs flex-col gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-left [@media(max-height:600px)]:mt-0 [@media(max-height:600px)]:flex-row [@media(max-height:600px)]:items-center [@media(max-height:600px)]:p-2"
           >
-            <Button size="lg" className="w-full text-md font-semibold" onClick={() => setShowUpgrade(true)}>
-              Save Progress & Continue Free
+            <p className="text-sm [@media(max-height:600px)]:flex-1 [@media(max-height:600px)]:text-xs">
+              <span className="font-medium">Your progress only lives in this browser.</span>{" "}
+              <span className="text-muted-foreground [@media(max-height:600px)]:hidden">
+                Create a free account to keep it and continue on any device.
+              </span>
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full [@media(max-height:600px)]:w-auto"
+              onClick={() => setShowUpgrade(true)}
+            >
+              Create free account
             </Button>
           </motion.div>
         )}
+
+        <motion.div
+          variants={item}
+          className="mt-4 flex w-full max-w-xs flex-col gap-2 sm:max-w-md sm:flex-row sm:flex-wrap sm:justify-center [@media(max-height:600px)]:mt-1 [@media(max-height:600px)]:gap-1 [@media(max-height:600px)]:[&_a]:h-8 [@media(max-height:600px)]:[&_button]:h-8"
+        >
+          {/* In a Practice rotation, offer "Next round" instead of "Keep practicing".
+              Outside a rotation, offer "Redo the N you missed" and "Keep practicing".
+              The "Redo" button only works in standalone routes where mode is fixed. */}
+          {rotation ? (
+            <>
+              <Button
+                className="w-full sm:w-auto"
+                onClick={rotation.nextRound}
+                disabled={!rotation.nextModeLabel}
+              >
+                {rotation.nextModeLabel ? `Next round · ${rotation.nextModeLabel}` : "Next round"}
+              </Button>
+            </>
+          ) : (
+            <>
+              {missed.length > 0 && (
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={() => startPractice(missed.map((word) => word.wordId))}
+                >
+                  Redo the {missed.length} you missed
+                </Button>
+              )}
+              <Button
+                variant={missed.length > 0 ? "outline" : "default"}
+                className="w-full sm:w-auto"
+                onClick={() => startPractice()}
+              >
+                {/* Stay in the same mode (sentences, quiz, …), not the flashcard screen. */}
+                Keep practicing
+              </Button>
+            </>
+          )}
+
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => {
+              // Force fresh dashboard counts after studying (avoid stale ring).
+              router.push("/dashboard");
+              router.refresh();
+            }}
+          >
+            Back to dashboard
+          </Button>
+        </motion.div>
       </motion.div>
 
       <UpgradeModal
