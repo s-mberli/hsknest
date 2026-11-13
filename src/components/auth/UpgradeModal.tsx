@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, type UpgradeSource } from "@/lib/analytics";
 import { X } from "lucide-react";
 
 interface UpgradeModalProps {
@@ -17,6 +17,12 @@ interface UpgradeModalProps {
   title?: string;
   description?: string;
   canClose?: boolean;
+  /** Which prompt this is, reported with `guest_upgrade_complete`. */
+  source: UpgradeSource;
+  /** Optional way past the form, e.g. "Not now, keep studying". */
+  secondaryAction?: { label: string; onClick: () => void };
+  /** Runs after a successful upgrade instead of refreshing the current page. */
+  onUpgraded?: () => void;
 }
 
 export function UpgradeModal({
@@ -25,6 +31,9 @@ export function UpgradeModal({
   title = "Save your progress",
   description = "Create a free account to keep your progress and continue on any device.",
   canClose = true,
+  source,
+  secondaryAction,
+  onUpgraded,
 }: UpgradeModalProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -70,9 +79,10 @@ export function UpgradeModal({
         return;
       }
       toast.success("Account saved — your progress is yours now.");
-      trackEvent("guest_upgrade_complete");
+      trackEvent("guest_upgrade_complete", { source });
       onClose();
-      router.refresh();
+      if (onUpgraded) onUpgraded();
+      else router.refresh();
     } catch {
       toast.error("Could not reach the server. Your account was not saved yet, please try again.");
     } finally {
@@ -129,6 +139,17 @@ export function UpgradeModal({
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Saving…" : "Create my account"}
             </Button>
+            {secondaryAction && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="mt-2 w-full"
+                disabled={loading}
+                onClick={secondaryAction.onClick}
+              >
+                {secondaryAction.label}
+              </Button>
+            )}
           </div>
           <p className="text-center text-xs text-muted-foreground">
             At least 8 characters. Your words, lists, and review history stay exactly as they are.
