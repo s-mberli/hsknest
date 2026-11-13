@@ -65,7 +65,7 @@ export function WordFeedback({ card, primaryText }: WordFeedbackProps) {
       <button
         type="button"
         onClick={() => setFeedbackOpen((o) => !o)}
-        className="absolute right-3 top-3 text-muted-foreground/60 transition-colors hover:text-foreground"
+        className="absolute right-0 top-0 flex size-11 items-center justify-center text-muted-foreground/60 transition-colors hover:text-foreground"
         aria-label="Report this word"
       >
         <Flag className="size-4" />
