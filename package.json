@@ -57,7 +57,7 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.4.5",
+    "eslint-config-next": "^16.4.6",
     "fast-check": "^4.10.2",
     "playwright": "^1.65.0",
     "tailwindcss": "^4",
